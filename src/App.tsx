@@ -116,7 +116,7 @@ export function App() {
                 {t.nav.list}
               </a>
             )}
-            {unlocked && editing && (
+            {unlocked && (
               <a className="tab" href={href.register} aria-current={route.view === 'register' ? 'page' : undefined}>
                 {t.nav.register}
               </a>
@@ -151,7 +151,7 @@ export function App() {
                 <Icon name="search" />
               </button>
             )}
-            {unlocked && (
+            {unlocked && (route.view === 'register' || route.view === 'storage') && (
               <button
                 type="button"
                 role="switch"

@@ -5,7 +5,7 @@ export const t = {
   lock: { lock: 'Lås appen' },
   editing: {
     label: 'Redigering',
-    off: 'Redigering er av. Slå på «Redigering» i topplinja for å legge til eller endre.',
+    off: 'Redigering er av. Trykk på blyanten i topplinja for å legge til eller endre.',
   },
   vault: {
     setupTitle: 'Velg et passord',
