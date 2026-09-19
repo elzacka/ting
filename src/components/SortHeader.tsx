@@ -1,5 +1,4 @@
 import type { ColumnDef } from '../lib/fields'
-import { isDateUnit } from '../lib/dates'
 import { nextSort, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -17,7 +16,6 @@ export function SortHeader({ def, label, sort, onSort }: Props) {
       onClick={() => onSort(nextSort(sort, def.id))}
     >
       {label}
-      {def.kind === 'prop' && def.col.unit && !isDateUnit(def.col.unit) && <span className="grid-unit">{def.col.unit}</span>}
       {active && <Icon name={active === 'asc' ? 'arrowUp' : 'arrowDown'} size={14} className="sort-arrow" />}
     </button>
   )

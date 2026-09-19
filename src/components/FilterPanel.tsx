@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import type { Item, Property } from '../db/schema'
 import { activeCount, categoryFilterId, valuesFor, type Filters } from '../lib/filters'
 import { columnDefs, type FieldSettings } from '../lib/fields'
-import { isDateUnit } from '../lib/dates'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
@@ -81,7 +80,6 @@ export function FilterPanel({ items, properties, fields, filters, onChange }: Pr
                   />
                   <span className="num">
                     {v.label}
-                    {def.unit && !isDateUnit(def.unit) && <span className="grid-unit">{def.unit}</span>}
                   </span>
                 </label>
               ))}
