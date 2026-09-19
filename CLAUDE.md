@@ -52,6 +52,7 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
+| `src/lib/editing.ts` | The Redigering switch, stored per device in localStorage. Off hides the edit views and the edit actions; the vault lock is separate |
 | `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
 | `src/components/` | One file per screen or reusable piece. `RegisterTable` holds unsaved edits in memory until "Lagre"; `Report` is print-only; `ErrorBoundary` wraps `main` |
@@ -101,3 +102,4 @@ Photos are stored as `Blob`, never base64.
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
 - Everything from outside (form input, storage) is validated with Zod before it becomes an `Item`
 - The lock is the passphrase: the app always opens locked, the key lives in memory until lock or reload. Decided by elzacka, 19 September 2026
+- Two header controls, never one: the Redigering switch (read-only mode, per device) and the «Lås appen» button (drops the key). One icon-only lock button was ambiguous. Decided by elzacka, 19 September 2026

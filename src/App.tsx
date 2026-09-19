@@ -14,6 +14,7 @@ import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
+import { readEditing, writeEditing } from './lib/editing'
 import { Icon } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
@@ -57,6 +58,7 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({})
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
+  const [editing, setEditing] = useState(readEditing)
   const searchable = route.view === 'list' || route.view === 'register'
   const openSearch = useCallback((initial: string) => {
     setSearchOpen(true)
@@ -90,6 +92,11 @@ export function App() {
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
     if (dirty.current && !window.confirm(t.confirm.unsaved)) e.preventDefault()
   }
+  function toggleEditing() {
+    if (editing && dirty.current && !window.confirm(t.confirm.unsaved)) return
+    writeEditing(!editing)
+    setEditing(!editing)
+  }
 
   return (
     <div className="page">
@@ -107,9 +114,11 @@ export function App() {
             >
               {t.nav.list}
             </a>
-            <a className="tab" href={href.register} aria-current={route.view === 'register' ? 'page' : undefined}>
-              {t.nav.register}
-            </a>
+            {unlocked && editing && (
+              <a className="tab" href={href.register} aria-current={route.view === 'register' ? 'page' : undefined}>
+                {t.nav.register}
+              </a>
+            )}
           </nav>
         ) : (
           <a
@@ -136,8 +145,21 @@ export function App() {
               </button>
             )}
             {unlocked && (
-              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={lock}>
-                <Icon name="lockOpen" />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={editing}
+                className={`btn btn-quiet${editing ? ' is-active' : ''}`}
+                onClick={toggleEditing}
+              >
+                <Icon name={editing ? 'edit' : 'editOff'} size={20} />
+                {t.editing.label}
+              </button>
+            )}
+            {unlocked && (
+              <button type="button" className="btn btn-quiet" onClick={() => lock()}>
+                <Icon name="lock" size={20} />
+                {t.lock.lock}
               </button>
             )}
             {unlocked && (
@@ -161,7 +183,7 @@ export function App() {
           ) : vault.status === 'none' ? (
             <LockScreen mode="setup" onSetup={onSetup} />
           ) : vault.status === 'locked' ? (
-            <LockScreen mode="unlock" onUnlock={onUnlock} />
+            <LockScreen mode="unlock" onUnlock={onUnlock} idle={vault.idle} />
           ) : items === undefined || properties === undefined || fields === undefined ? (
             <p className="hint">{t.list.loading}</p>
           ) : (
@@ -182,6 +204,7 @@ export function App() {
               onWidth={setWidth}
               onDirtyChange={onDirtyChange}
               folder={folder}
+              editing={editing}
             />
           )}
         </ErrorBoundary>
@@ -207,6 +230,7 @@ type ScreenProps = {
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
   folder: ReturnType<typeof useFolderSync>
+  editing: boolean
 }
 
 function Screen({
@@ -226,8 +250,10 @@ function Screen({
   onWidth,
   onDirtyChange,
   folder,
+  editing,
 }: ScreenProps) {
   if (route.view === 'home') return <Home />
+  if (!editing && (route.view === 'register' || route.view === 'edit')) return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   if (route.view === 'list') {
     return (
@@ -268,5 +294,5 @@ function Screen({
   if (route.view === 'edit') {
     return <ItemForm key={item.id} item={item} fields={fields} categories={distinct(items, (i) => i.category)} />
   }
-  return <ItemDetail item={item} fields={fields} />
+  return <ItemDetail item={item} fields={fields} editing={editing} />
 }

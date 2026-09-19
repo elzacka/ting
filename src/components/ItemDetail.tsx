@@ -8,7 +8,7 @@ import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 
-export function ItemDetail({ item, fields }: { item: Item; fields: FieldSettings }) {
+export function ItemDetail({ item, fields, editing }: { item: Item; fields: FieldSettings; editing: boolean }) {
   const url = useObjectUrl(item.photo)
   const [confirming, setConfirming] = useState(false)
 
@@ -66,7 +66,7 @@ export function ItemDetail({ item, fields }: { item: Item; fields: FieldSettings
             </button>
           </div>
         </div>
-      ) : (
+      ) : editing ? (
         <div className="row">
           <a className="btn" href={href.edit(item.id)}>
             <Icon name="edit" size={20} />
@@ -77,7 +77,7 @@ export function ItemDetail({ item, fields }: { item: Item; fields: FieldSettings
             {t.action.delete}
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

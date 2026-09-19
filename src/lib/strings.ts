@@ -2,7 +2,11 @@
 export const t = {
   appName: 'ting',
   nav: { home: 'Til forsiden', list: 'Oversikt', register: 'Legg til og endre', storage: 'Lagring' },
-  lock: { lock: 'Lås' },
+  lock: { lock: 'Lås appen' },
+  editing: {
+    label: 'Redigering',
+    off: 'Redigering er av. Slå på «Redigering» i topplinja for å legge til eller endre.',
+  },
   vault: {
     setupTitle: 'Velg et passord',
     setupIntro:

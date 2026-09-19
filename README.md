@@ -45,7 +45,7 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
 | Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
 | Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Åpning | Appen åpner alltid låst. Låseknappen i topplinja sletter nøkkelen fra minnet. Appen låser seg selv etter ti minutter uten bruk |
+| Åpning | Appen åpner alltid låst. «Lås appen» i topplinja sletter nøkkelen fra minnet, og appen låser seg selv etter ti minutter uten bruk. Bryteren «Redigering» ved siden av er noe annet: Slår du den av, kan du bare lese, ikke endre |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
 Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
