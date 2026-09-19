@@ -13,6 +13,7 @@ import { usePlainPaste } from './lib/plainPaste'
 import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
+import { useAutoLock } from './lib/useAutoLock'
 import { Icon } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
@@ -22,6 +23,7 @@ import { LockScreen } from './components/LockScreen'
 import { RegisterTable } from './components/RegisterTable'
 import { StoragePage } from './components/StoragePage'
 import { UpdateButton } from './components/UpdateButton'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
   const route = useRoute()
@@ -35,6 +37,7 @@ export function App() {
   const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, unlocked)
   const folder = useFolderSync()
   usePlainPaste()
+  useAutoLock(unlocked)
 
   async function onSetup(passphrase: string) {
     const v = await setupVault(passphrase)
@@ -152,34 +155,36 @@ export function App() {
       </header>
 
       <main className="stack">
-        {vault.status === 'loading' ? (
-          <p className="hint">{t.list.loading}</p>
-        ) : vault.status === 'none' ? (
-          <LockScreen mode="setup" onSetup={onSetup} />
-        ) : vault.status === 'locked' ? (
-          <LockScreen mode="unlock" onUnlock={onUnlock} />
-        ) : items === undefined || properties === undefined || fields === undefined ? (
-          <p className="hint">{t.list.loading}</p>
-        ) : (
-          <Screen
-            items={items}
-            properties={properties}
-            fields={fields}
-            route={route}
-            query={query}
-            onQueryChange={setQuery}
-            searchOpen={searchOpen}
-            onSearchClose={closeSearch}
-            filters={filters}
-            onFiltersChange={setFilters}
-            sort={sort}
-            onSortChange={setSort}
-            widths={widths}
-            onWidth={setWidth}
-            onDirtyChange={onDirtyChange}
-            folder={folder}
-          />
-        )}
+        <ErrorBoundary>
+          {vault.status === 'loading' ? (
+            <p className="hint">{t.list.loading}</p>
+          ) : vault.status === 'none' ? (
+            <LockScreen mode="setup" onSetup={onSetup} />
+          ) : vault.status === 'locked' ? (
+            <LockScreen mode="unlock" onUnlock={onUnlock} />
+          ) : items === undefined || properties === undefined || fields === undefined ? (
+            <p className="hint">{t.list.loading}</p>
+          ) : (
+            <Screen
+              items={items}
+              properties={properties}
+              fields={fields}
+              route={route}
+              query={query}
+              onQueryChange={setQuery}
+              searchOpen={searchOpen}
+              onSearchClose={closeSearch}
+              filters={filters}
+              onFiltersChange={setFilters}
+              sort={sort}
+              onSortChange={setSort}
+              widths={widths}
+              onWidth={setWidth}
+              onDirtyChange={onDirtyChange}
+              folder={folder}
+            />
+          )}
+        </ErrorBoundary>
       </main>
     </div>
   )
