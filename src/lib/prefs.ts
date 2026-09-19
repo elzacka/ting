@@ -1,13 +1,9 @@
 // Per-device choices, kept in localStorage: they describe how this device is
 // used, not the data, so they stay out of the vault and the folder.
 //
-// editing: whether the app lets the user add and change things. Off means
-// browse only: the edit views become a hint and every action that changes
-// data is hidden. A phone kept for looking things up stays that way.
-//
 // autoLock: whether the app locks itself after ten minutes without input.
 
-const keys = { editing: 'ting.editing', autoLock: 'ting.autoLock' } as const
+const keys = { autoLock: 'ting.autoLock' } as const
 
 function readFlag(key: string): boolean {
   try {
@@ -25,7 +21,5 @@ function writeFlag(key: string, on: boolean): void {
   }
 }
 
-export const readEditing = () => readFlag(keys.editing)
-export const writeEditing = (on: boolean) => writeFlag(keys.editing, on)
 export const readAutoLock = () => readFlag(keys.autoLock)
 export const writeAutoLock = (on: boolean) => writeFlag(keys.autoLock, on)

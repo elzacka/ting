@@ -14,7 +14,7 @@ import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
-import { readAutoLock, readEditing, writeAutoLock, writeEditing } from './lib/prefs'
+import { readAutoLock, writeAutoLock } from './lib/prefs'
 import { Icon } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
@@ -56,7 +56,11 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({})
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
-  const [editing, setEditing] = useState(readEditing)
+  // Session mode, never stored: every unlock starts read-only.
+  const [editing, setEditing] = useState(false)
+  useEffect(() => {
+    if (!unlocked) setEditing(false)
+  }, [unlocked])
   const [autoLock, setAutoLock] = useState(readAutoLock)
   const toggleAutoLock = useCallback((on: boolean) => {
     writeAutoLock(on)
@@ -106,7 +110,6 @@ export function App() {
   }
   function toggleEditing() {
     if (editing && dirty.current && !window.confirm(t.confirm.unsaved)) return
-    writeEditing(!editing)
     setEditing(!editing)
   }
 
@@ -279,7 +282,7 @@ function Screen({
   autoLock,
   onAutoLockChange,
 }: ScreenProps) {
-  if (!editing && (route.view === 'register' || route.view === 'edit')) return <p className="hint">{t.editing.off}</p>
+  if (!editing && route.view === 'edit') return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   if (route.view === 'list') {
     return (
@@ -300,6 +303,8 @@ function Screen({
   if (route.view === 'register') {
     return (
       <RegisterTable
+        key={editing ? 'edit' : 'read'}
+        locked={!editing}
         items={items}
         properties={properties}
         fields={fields}
