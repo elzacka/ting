@@ -68,8 +68,16 @@ export function fromStored(stored: StoredItem, photo: Blob | null): Item {
 }
 
 const sealedSchema = z.object({ iv: z.string(), data: z.string() })
+// The parameters come from the file, so they are bounded: a crafted file must
+// not be able to ask for gigabytes of memory before the passphrase is checked.
 const vaultSchema = z.object({
-  kdf: z.object({ name: z.literal('argon2id'), m: z.number(), t: z.number(), p: z.number(), salt: z.string() }),
+  kdf: z.object({
+    name: z.literal('argon2id'),
+    m: z.int().min(8).max(262144),
+    t: z.int().min(1).max(10),
+    p: z.int().min(1).max(4),
+    salt: z.string(),
+  }),
   wrappedDek: sealedSchema,
   dekId: z.string(),
 })

@@ -22,6 +22,7 @@ import { SearchField } from './SearchField'
 import { checkColumnWidth, columnWidth, tableWidth } from '../lib/columnWidths'
 import { ColumnResizer } from './ColumnResizer'
 import { ariaSort, SortHeader } from './SortHeader'
+import { errorText } from '../lib/errors'
 
 type RowEdit = { name?: string; category?: string; note?: string; cells?: Record<string, string> }
 type NewRow = {
@@ -386,7 +387,7 @@ export function RegisterTable({
       setSelected(new Set())
       setStatus(t.table.saved)
     } catch (err) {
-      console.error(err)
+      console.error(errorText(err))
       setError(t.error.saveFailed)
     } finally {
       setSaving(false)

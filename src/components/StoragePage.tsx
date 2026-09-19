@@ -6,6 +6,7 @@ import { downloadText, exportFilename } from '../lib/export'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
+import { errorText } from '../lib/errors'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 
@@ -47,7 +48,7 @@ export function StoragePage({ items, properties, folder }: Props) {
         else if (opened !== 'wrong-passphrase') setPending(await itemsFromDataFile(opened.file))
       }
     } catch (err) {
-      console.error(err)
+      console.error(errorText(err))
       setMessage(t.storage.restoreFailed)
     }
     if (fileRef.current) fileRef.current.value = ''

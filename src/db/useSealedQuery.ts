@@ -1,5 +1,6 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useState } from 'react'
+import { errorText } from '../lib/errors'
 
 // Watches sealed rows through Dexie's liveQuery and re-reads the decrypted
 // view whenever they change. Decryption happens outside the liveQuery zone,
@@ -19,9 +20,9 @@ export function useSealedQuery<T>(watch: () => Promise<unknown>, read: () => Pro
           .then((v) => {
             if (alive) setValue(v)
           })
-          .catch((err: unknown) => console.error(err))
+          .catch((err: unknown) => console.error(errorText(err)))
       },
-      error: (err: unknown) => console.error(err),
+      error: (err: unknown) => console.error(errorText(err)),
     })
     return () => {
       alive = false

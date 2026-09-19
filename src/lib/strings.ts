@@ -174,6 +174,8 @@ export const t = {
     nameMissing: 'Navn mangler. Skriv inn et navn.',
     specIncomplete: 'Hver spesifikasjon trenger både egenskap og verdi.',
     saveFailed: 'Kunne ikke lagre. Prøv igjen.',
+    crashed: 'Noe gikk galt. Dataene dine er trygge. Last siden på nytt for å fortsette.',
+    reload: 'Last på nytt',
     rowsMissingName: (n: number) => (n === 1 ? '1 rad mangler navn.' : `${n} rader mangler navn.`),
     rowsMissingCategory: (n: number) => (n === 1 ? '1 rad mangler kategori.' : `${n} rader mangler kategori.`),
     categoryMissing: 'Kategori mangler. Velg eller skriv en kategori.',

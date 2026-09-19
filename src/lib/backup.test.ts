@@ -68,6 +68,13 @@ describe('envelope', () => {
     expect(opened !== 'foreign' && opened !== 'wrong-passphrase' && opened.open.dekId).toBe(a.open.dekId)
   })
 
+  it('rejects an envelope whose key derivation would exhaust memory', async () => {
+    const a = await createVault('passord for enhet a', { m: 256, t: 1, p: 1 })
+    const env = await sealDataFile(a.open, a.vault, toDataFile([], [], 1))
+    const hostile = { ...env, vault: { ...env.vault, kdf: { ...env.vault.kdf, m: 4194304 } } }
+    expect(() => parseAnyFile(JSON.stringify(hostile))).toThrow()
+  })
+
   it('still reads a plain document from before encryption', () => {
     const plain = parseAnyFile('{"app":"ting","format":1,"exportedAt":1,"items":[]}')
     expect(plain.kind).toBe('plain')

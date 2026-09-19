@@ -8,6 +8,7 @@ import { asImage } from '../lib/backup'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
+import { errorText } from '../lib/errors'
 
 type SpecDraft = { key: string; value: string; unit: string }
 
@@ -118,7 +119,7 @@ export function ItemForm({
       await updateItem(item.id, input)
       navigate(href.detail(item.id))
     } catch (err) {
-      console.error(err)
+      console.error(errorText(err))
       setError(t.error.saveFailed)
       setSaving(false)
     }

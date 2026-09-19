@@ -3,6 +3,7 @@ import { itemSchema, propertySchema, type Item, type ItemInput, type Property } 
 import { fromStored, storedItemSchema, toStored } from '../lib/backup'
 import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type Sealed, type Vault } from '../lib/crypto'
 import { fieldSettingsKey, readFieldSettings as parseFieldSettings, type ColumnDef, type FieldSettings } from '../lib/fields'
+import { errorText } from '../lib/errors'
 import { currentKey } from '../lib/vault'
 
 // Every record is stored sealed under the session key: an item is one sealed
@@ -85,14 +86,24 @@ async function openProperty(row: SealedPropertyRow): Promise<Property> {
 
 // --- reads -----------------------------------------------------------------
 
+// One unreadable row must not hide the rest: it is skipped and named in the
+// console. The row itself stays in the table untouched.
+async function openAll<R extends { id: string }, T>(rows: R[], open: (row: R) => Promise<T>): Promise<T[]> {
+  const results = await Promise.allSettled(rows.map(open))
+  const out: T[] = []
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') out.push(r.value)
+    else console.warn(`Skipping unreadable row ${rows[i]?.id}: ${errorText(r.reason)}`)
+  })
+  return out
+}
+
 export async function readItems(): Promise<Item[]> {
-  const rows = await db.items.toArray()
-  return Promise.all(rows.map(openItem))
+  return openAll(await db.items.toArray(), openItem)
 }
 
 export async function readProperties(): Promise<Property[]> {
-  const rows = await db.properties.toArray()
-  return Promise.all(rows.map(openProperty))
+  return openAll(await db.properties.toArray(), openProperty)
 }
 
 export async function readFieldSettings(): Promise<FieldSettings> {
