@@ -51,7 +51,7 @@ Deliberate choices that shape the model:
 | No recovery path | A lost passphrase means lost data. The app says so at setup |
 | No server, no telemetry | Nothing to breach centrally; also nothing to alert on |
 | The app opens locked, always | Reload or close drops the key |
-| Idle lock after ten minutes | A device left open re-locks; unsaved table edits are lost with it |
+| Idle lock after ten minutes, paused while edits are unsaved | A device left open re-locks, unless something is mid-edit; that exception was chosen over losing the edits |
 | No content indexes in IndexedDB | Search decrypts and filters in memory; an index would leak content |
 
 ## OWASP Top 10:2025, category by category
@@ -76,7 +76,7 @@ Deliberate choices that shape the model:
 | P1 | Supply chain: a malicious dependency or action update | Pins, audit and Dependabot reduce the window; they do not close it. Review every dependency PR |
 | P2 | Weak passphrase | Twelve characters is a floor, not strength. Argon2id makes each guess expensive, not impossible |
 | P3 | Sealed-row swap by someone with database write access | Would need AAD on every seal; the attacker already has the device |
-| P3 | Idle lock drops unsaved table edits | The alternative, keeping plaintext edits in memory while locked, is worse |
+| P3 | Idle lock is paused while edits are unsaved | A device left open mid-edit stays open until the edit is saved or discarded |
 
 ## If a language model is ever added
 

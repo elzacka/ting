@@ -10,11 +10,18 @@ import { errorText } from '../lib/errors'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 
-type Props = { items: Item[]; properties: Property[]; folder: ReturnType<typeof useFolderSync> }
+type Props = {
+  items: Item[]
+  properties: Property[]
+  folder: ReturnType<typeof useFolderSync>
+  editing: boolean
+  autoLock: boolean
+  onAutoLockChange: (on: boolean) => void
+}
 
 type Pending = { items: Item[]; properties: Property[] }
 
-export function StoragePage({ items, properties, folder }: Props) {
+export function StoragePage({ items, properties, folder, editing, autoLock, onAutoLockChange }: Props) {
   const { status, connect, grant, adopt, disconnect } = folder
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Pending | null>(null)
@@ -94,10 +101,9 @@ export function StoragePage({ items, properties, folder }: Props) {
 
       <section className="stack-sm">
         <h2 className="section-label">{t.storage.folderTitle}</h2>
-        <p className="hint">{t.storage.folderIntro}</p>
         {status.kind === 'unsupported' && <p>{t.storage.unsupported}</p>}
         {status.kind === 'checking' && <p className="hint">{t.storage.checking}</p>}
-        {status.kind === 'none' && (
+        {status.kind === 'none' && editing && (
           <div>
             <button type="button" className="btn btn-primary" onClick={connect}>
               {t.storage.choose}
@@ -108,9 +114,11 @@ export function StoragePage({ items, properties, folder }: Props) {
           <div className="stack-sm">
             <p>{t.storage.needsPermission(status.name)}</p>
             <div className="row">
-              <button type="button" className="btn btn-primary" onClick={grant}>
-                {t.storage.grant}
-              </button>
+              {editing && (
+                <button type="button" className="btn btn-primary" onClick={grant}>
+                  {t.storage.grant}
+                </button>
+              )}
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
               </button>
@@ -173,9 +181,11 @@ export function StoragePage({ items, properties, folder }: Props) {
               {t.storage.error(status.name, status.message)}
             </p>
             <div className="row">
-              <button type="button" className="btn btn-primary" onClick={connect}>
-                {t.storage.choose}
-              </button>
+              {editing && (
+                <button type="button" className="btn btn-primary" onClick={connect}>
+                  {t.storage.choose}
+                </button>
+              )}
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
               </button>
@@ -186,9 +196,6 @@ export function StoragePage({ items, properties, folder }: Props) {
 
       <section className="stack-sm">
         <h2 className="section-label">{t.storage.copyTitle}</h2>
-        <p className="hint">
-          {t.storage.copyIntro} {t.storage.copyIsSealed}
-        </p>
         <div className="row toolbar">
           <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
             {t.storage.download}
@@ -200,9 +207,11 @@ export function StoragePage({ items, properties, folder }: Props) {
             className="visually-hidden"
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
-          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-            {t.storage.restore}
-          </button>
+          {editing && (
+            <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+              {t.storage.restore}
+            </button>
+          )}
         </div>
         {foreignCopy && (
           <form className="stack-sm" onSubmit={openForeignCopy}>
@@ -255,8 +264,15 @@ export function StoragePage({ items, properties, folder }: Props) {
       </section>
 
       <section className="stack-sm">
+        <h2 className="section-label">{t.vault.lockTitle}</h2>
+        <label className="check-option">
+          <input type="checkbox" checked={autoLock} onChange={(e) => onAutoLockChange(e.target.checked)} />
+          <span>{t.vault.autoLockOption}</span>
+        </label>
+      </section>
+
+      <section className="stack-sm">
         <h2 className="section-label">{t.vault.changeTitle}</h2>
-        <p className="hint">{t.vault.changeIntro}</p>
         {!changingPass ? (
           <div className="row">
             <button

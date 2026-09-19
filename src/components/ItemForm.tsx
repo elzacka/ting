@@ -30,10 +30,12 @@ export function ItemForm({
   item,
   fields,
   categories,
+  onDirtyChange,
 }: {
   item: Item
   fields: FieldSettings
   categories: readonly string[]
+  onDirtyChange: (dirty: boolean) => void
 }) {
   const initial = toDraft(item)
   const [name, setName] = useState(initial.name)
@@ -53,6 +55,11 @@ export function ItemForm({
     note !== initial.note ||
     photo !== initial.photo ||
     JSON.stringify(specs) !== JSON.stringify(initial.specs)
+
+  useEffect(() => {
+    onDirtyChange(dirty)
+    return () => onDirtyChange(false)
+  }, [dirty, onDirtyChange])
 
   // Esc: unchanged form goes straight back, a changed one asks first.
   useEffect(() => {
@@ -127,7 +134,7 @@ export function ItemForm({
 
   return (
     <form className="stack narrow" onSubmit={onSubmit} noValidate>
-      <h1 className="title">{t.form.editTitle}</h1>
+      <h1 className="title">{item.name}</h1>
 
       <div className="field">
         <label htmlFor="name">{fields.name.label ?? t.form.name}</label>
@@ -201,42 +208,39 @@ export function ItemForm({
         {specs.map((s, i) => (
           <div className="spec-row" key={i}>
             <div className="field">
-              <label htmlFor={`spec-key-${i}`} className="visually-hidden">
+              <label htmlFor={`spec-key-${i}`} className={i === 0 ? undefined : 'visually-hidden'}>
                 {t.form.specKey}
               </label>
               <input
                 id={`spec-key-${i}`}
                 className="input"
                 type="text"
-                placeholder={t.form.specKey}
                 value={s.key}
                 onChange={(e) => setSpec(i, { key: e.target.value })}
                 autoComplete="off"
               />
             </div>
             <div className="field">
-              <label htmlFor={`spec-value-${i}`} className="visually-hidden">
+              <label htmlFor={`spec-value-${i}`} className={i === 0 ? undefined : 'visually-hidden'}>
                 {t.form.specValue}
               </label>
               <input
                 id={`spec-value-${i}`}
                 className="input num"
                 type="text"
-                placeholder={t.form.specValue}
                 value={s.value}
                 onChange={(e) => setSpec(i, { value: e.target.value })}
                 autoComplete="off"
               />
             </div>
             <div className="field">
-              <label htmlFor={`spec-unit-${i}`} className="visually-hidden">
+              <label htmlFor={`spec-unit-${i}`} className={i === 0 ? undefined : 'visually-hidden'}>
                 {t.form.specUnit}
               </label>
               <input
                 id={`spec-unit-${i}`}
                 className="input"
                 type="text"
-                placeholder={t.form.specUnit}
                 value={s.unit}
                 onChange={(e) => setSpec(i, { unit: e.target.value })}
                 onKeyDown={(e) => {

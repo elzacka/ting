@@ -48,7 +48,7 @@ export const propertySchema = z.object({
   order: z.number().optional(),
   // Field type. Missing on older rows: dates are recognised by their unit marker, the rest is text.
   type: z.enum(['text', 'choice', 'number', 'date']).optional(),
-  // Choices offered by a Nedtrekk column, on top of values already in use.
+  // Choices offered by a Liste column, on top of values already in use.
   options: z.array(z.string().trim().min(1)).optional(),
 })
 

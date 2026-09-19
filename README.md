@@ -45,7 +45,10 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
 | Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
 | Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet, og appen låser seg selv etter ti minutter uten bruk. Blyanten ved siden av er noe annet: Slår du den av, kan du bare lese, ikke endre |
+| Passordet | Minst 12 tegn. Bruk gjerne en setning. Det låser alt du registrerer, på enheten og i alle kopier |
+| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet. Blyanten ved siden av er noe annet: Slår du den av, kan du bare lese, ikke endre |
+| Automatisk lås | Etter ti minutter uten bruk, men ikke mens du har endringer som ikke er lagret. Kan slås av under Innstillinger |
+| Bytte passord | Under Innstillinger. Dataene krypteres på nytt. Kopier du tok før byttet, åpnes med det gamle passordet |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
 Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
@@ -56,9 +59,29 @@ Alt du skriver inn behandles som tekst, aldri som kode. Appen laster ingenting f
 
 Appen bruker ingen KI.
 
+## Egenskaper
+
+Hver egenskap er en kolonne i tabellen og en linje på tingens side.
+
+| Felttype | Slik |
+|---|---|
+| Tekst | Fritekst |
+| Liste | Velg blant verdiene som finnes, eller skriv en ny. Valgene du oppgir når du lager egenskapen, skilles med komma; verdier som allerede er brukt, kommer i tillegg |
+| Tall | Skriv bare tallet, `1250` og ikke `1250 gram`. Enheten gjelder hele kolonnen |
+| Dato | Skriv `19.09.26` |
+
 ## Innstillinger
 
-Alt lagres i nettleseren på enheten. Koble appen til en mappe under Innstillinger (ikonet lengst til høyre i topplinja), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt. Safari kan ikke koble til mapper. Der bruker du «Last ned kopi». Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
+Ikonet lengst til høyre i topplinja. Alt lagres i nettleseren på enheten; her kan du i tillegg:
+
+| Valg | Slik |
+|---|---|
+| Mappe på disk | Koble appen til en mappe (Chrome og Edge), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt |
+| Kopi | Én fil med alle ting og bilder. Passer som ekstra sikkerhet, eller for å flytte alt til en annen enhet. Safari kan ikke koble til mapper; der er kopien veien |
+| Lås | Slå den automatiske låsen av eller på |
+| Passord | Bytt passord |
+
+Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
 
 ## Lisens
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
@@ -15,6 +15,7 @@ export function LockScreen(props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [show, setShow] = useState(false)
+  const passRef = useRef<HTMLInputElement>(null)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -31,7 +32,7 @@ export function LockScreen(props: Props) {
     setBusy(false)
     if (!ok) {
       setError(t.vault.wrong)
-      setPass('')
+      passRef.current?.select()
     }
   }
 
@@ -39,7 +40,6 @@ export function LockScreen(props: Props) {
     <form className="stack narrow" onSubmit={onSubmit}>
       <div>
         <h1 className="title">{props.mode === 'setup' ? t.vault.setupTitle : t.vault.unlockTitle}</h1>
-        <p>{props.mode === 'setup' ? t.vault.setupIntro : t.vault.unlockIntro}</p>
         {props.mode === 'unlock' && props.idle && <p className="hint">{t.vault.autoLocked}</p>}
       </div>
       <div className="field">
@@ -47,6 +47,7 @@ export function LockScreen(props: Props) {
         <div className="input-reveal">
           <input
             id="pass"
+            ref={passRef}
             className="input"
             type={show ? 'text' : 'password'}
             autoComplete={props.mode === 'setup' ? 'new-password' : 'current-password'}

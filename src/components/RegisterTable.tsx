@@ -530,7 +530,6 @@ export function RegisterTable({
               <input
                 id="col-key"
                 className="input input-key"
-                placeholder={t.table.columnKeyExample}
                 value={columnDraft.key}
                 onChange={(e) => setColumnDraft({ ...columnDraft, key: e.target.value })}
                 autoFocus
@@ -553,13 +552,10 @@ export function RegisterTable({
             </div>
             {columnDraft.type === 'choice' && (
               <div className="field">
-                <label htmlFor="col-options">
-                  {t.table.columnOptions} <span className="hint">({t.table.columnOptionsHint})</span>
-                </label>
+                <label htmlFor="col-options">{t.table.columnOptions}</label>
                 <input
                   id="col-options"
                   className="input input-key"
-                  placeholder={t.table.columnOptionsExample}
                   value={columnDraft.options}
                   onChange={(e) => setColumnDraft({ ...columnDraft, options: e.target.value })}
                 />
@@ -574,7 +570,6 @@ export function RegisterTable({
                   id="col-unit"
                   className="input input-narrow"
                   list="unit-options"
-                  placeholder={t.table.columnUnitExample}
                   value={columnDraft.unit}
                   onChange={(e) => setColumnDraft({ ...columnDraft, unit: e.target.value })}
                 />
@@ -589,7 +584,6 @@ export function RegisterTable({
               </button>
             </div>
           </div>
-          <p className="hint">{t.table.columnHint}</p>
         </form>
       )}
 
@@ -724,7 +718,6 @@ export function RegisterTable({
                         <input
                           className="input"
                           aria-label={t.table.columnKey}
-                          placeholder={t.table.columnKey}
                           value={renaming.key}
                           onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
                           autoFocus
@@ -747,7 +740,6 @@ export function RegisterTable({
                           <input
                             className="input"
                             aria-label={t.table.columnOptions}
-                            placeholder={t.table.columnOptions}
                             value={renaming.options}
                             onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
                           />
@@ -757,7 +749,6 @@ export function RegisterTable({
                             className="input input-narrow"
                             list="unit-options"
                             aria-label={t.table.columnUnit}
-                            placeholder={t.table.columnUnit}
                             value={renaming.unit}
                             onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
                           />
@@ -960,16 +951,16 @@ export function RegisterTable({
         </p>
       )}
 
-      <div className="row">
-        {editing && (
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>
+      {(items.length > 0 || newRows.length > 0) && (
+        <div className="row">
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !editing}>
             {t.action.save}
           </button>
-        )}
-        <span className="hint" aria-live="polite">
-          {dirtyCount > 0 ? t.table.unsaved(dirtyCount) : status}
-        </span>
-      </div>
+          <span className="hint" aria-live="polite">
+            {dirtyCount > 0 ? t.table.unsaved(dirtyCount) : status}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

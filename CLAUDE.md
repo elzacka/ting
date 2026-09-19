@@ -48,12 +48,12 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/filter.ts` | `parseNumber`, `specKeys` |
 | `src/lib/format.ts` | nb-NO numbers and dates, real minus sign, narrow no-break space before units |
 | `src/lib/strings.ts` | Every user-facing string. Nothing hardcoded in components |
-| `src/lib/route.ts` | Hash router: `#/` (home), `#/oversikt`, `#/registrer` (table), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
+| `src/lib/route.ts` | Hash router: `#/` and `#/oversikt` (list), `#/registrer` (table), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
-| `src/lib/editing.ts` | The Redigering switch, stored per device in localStorage. Shown only on Legg til og endre and Innstillinger. Off makes the table view a hint and hides the edit actions; the vault lock is separate |
-| `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible |
+| `src/lib/prefs.ts` | Per-device flags in localStorage: the Redigering switch and the idle-lock setting (both default on). Redigering Shown only on Legg til og endre and Innstillinger. Off makes the table view a hint and hides every action that changes data, on the detail page and on Innstillinger; the vault lock is separate |
+| `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table or the edit form has unsaved edits; can be turned off on Innstillinger |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
 | `src/components/` | One file per screen or reusable piece. `RegisterTable` holds unsaved edits in memory until "Lagre"; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |

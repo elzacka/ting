@@ -14,11 +14,10 @@ import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
-import { readEditing, writeEditing } from './lib/editing'
+import { readAutoLock, readEditing, writeAutoLock, writeEditing } from './lib/prefs'
 import { Icon } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
-import { Home } from './components/Home'
 import { ItemList } from './components/ItemList'
 import { LockScreen } from './components/LockScreen'
 import { RegisterTable } from './components/RegisterTable'
@@ -38,7 +37,6 @@ export function App() {
   const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, unlocked)
   const folder = useFolderSync()
   usePlainPaste()
-  useAutoLock(unlocked)
 
   async function onSetup(passphrase: string) {
     const v = await setupVault(passphrase)
@@ -59,6 +57,11 @@ export function App() {
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
   const [editing, setEditing] = useState(readEditing)
+  const [autoLock, setAutoLock] = useState(readAutoLock)
+  const toggleAutoLock = useCallback((on: boolean) => {
+    writeAutoLock(on)
+    setAutoLock(on)
+  }, [])
   const searchable = route.view === 'list' || route.view === 'register'
   const openSearch = useCallback((initial: string) => {
     setSearchOpen(true)
@@ -82,11 +85,16 @@ export function App() {
     window.history.replaceState(null, '', url)
   }, [query])
   const dirty = useRef(false)
+  const [unsaved, setUnsaved] = useState(false)
   const onDirtyChange = useCallback((d: boolean) => {
     dirty.current = d
+    setUnsaved(d)
   }, [])
+  // Paused while something is unsaved: a lock would drop it. Decided by elzacka.
+  useAutoLock(unlocked && autoLock && !unsaved)
 
-  const isTop = route.view === 'home' || route.view === 'list' || route.view === 'register' || route.view === 'storage'
+  // Locked: only the wordmark, whatever the route.
+  const isTop = !unlocked || route.view === 'list' || route.view === 'register' || route.view === 'storage'
 
   // The table holds unsaved edits in memory; leaving it drops them.
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
@@ -107,7 +115,7 @@ export function App() {
       <header className="topbar">
         {isTop ? (
           <nav className="row" aria-label={t.nav.list}>
-            <a className="wordmark" href={href.home} onClick={guardNav} aria-label={t.nav.home}>
+            <a className="wordmark" href={href.list} onClick={guardNav} aria-label={t.nav.home}>
               {t.appName}
             </a>
             {unlocked && (
@@ -135,7 +143,7 @@ export function App() {
             >
               <Icon name="arrowBack" />
             </a>
-            <a className="wordmark" href={href.home} aria-label={t.nav.home}>
+            <a className="wordmark" href={href.list} aria-label={t.nav.home}>
               {t.appName}
             </a>
           </nav>
@@ -218,6 +226,8 @@ export function App() {
               onDirtyChange={onDirtyChange}
               folder={folder}
               editing={editing}
+              autoLock={autoLock}
+              onAutoLockChange={toggleAutoLock}
             />
           )}
         </ErrorBoundary>
@@ -244,6 +254,8 @@ type ScreenProps = {
   onDirtyChange: (dirty: boolean) => void
   folder: ReturnType<typeof useFolderSync>
   editing: boolean
+  autoLock: boolean
+  onAutoLockChange: (on: boolean) => void
 }
 
 function Screen({
@@ -264,8 +276,9 @@ function Screen({
   onDirtyChange,
   folder,
   editing,
+  autoLock,
+  onAutoLockChange,
 }: ScreenProps) {
-  if (route.view === 'home') return <Home />
   if (!editing && (route.view === 'register' || route.view === 'edit')) return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   if (route.view === 'list') {
@@ -300,12 +313,29 @@ function Screen({
     )
   }
   if (route.view === 'storage') {
-    return <StoragePage items={items} properties={properties} folder={folder} />
+    return (
+      <StoragePage
+        items={items}
+        properties={properties}
+        folder={folder}
+        editing={editing}
+        autoLock={autoLock}
+        onAutoLockChange={onAutoLockChange}
+      />
+    )
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
   if (route.view === 'edit') {
-    return <ItemForm key={item.id} item={item} fields={fields} categories={distinct(items, (i) => i.category)} />
+    return (
+      <ItemForm
+        key={item.id}
+        item={item}
+        fields={fields}
+        categories={distinct(items, (i) => i.category)}
+        onDirtyChange={onDirtyChange}
+      />
+    )
   }
   return <ItemDetail item={item} fields={fields} editing={editing} />
 }
