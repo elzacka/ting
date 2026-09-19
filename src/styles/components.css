@@ -711,11 +711,6 @@
   background: var(--surface);
 }
 
-.tab-quiet {
-  margin-left: auto;
-  font-weight: 400;
-}
-
 .tab {
   white-space: nowrap;
 }
@@ -759,40 +754,8 @@
   margin-left: auto;
 }
 
-.topbar-end .tab-quiet {
-  margin-left: 0;
-}
-
 .btn-icon.is-active {
   color: var(--accent);
-}
-
-/* Header controls with a visible word: same footprint as a tab, no frame */
-.btn-quiet {
-  padding: 0 var(--s-2);
-  border-color: transparent;
-  background: transparent;
-  color: var(--text-2);
-}
-
-.btn-quiet:hover {
-  background: var(--border);
-}
-
-.btn-quiet.is-active {
-  color: var(--accent);
-}
-
-/* On a phone the header keeps the icons and drops the words; the names stay
-   in aria-label and the two icons differ. */
-@media (max-width: 599px) {
-  .btn-quiet {
-    min-width: var(--row-h);
-    padding: 0 var(--s-1);
-  }
-  .btn-word {
-    display: none;
-  }
 }
 
 /* Column header menu: the header is the control, the actions live in a menu */
@@ -903,18 +866,6 @@
   .grid-check input {
     opacity: 1;
   }
-}
-
-.topbar-end {
-  margin-left: auto;
-}
-
-.topbar-end .tab-quiet {
-  margin-left: 0;
-}
-
-.btn-icon.is-active {
-  color: var(--accent);
 }
 
 /* Column header tools (move left, move right, remove) show on hover or focus */
@@ -1180,7 +1131,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 
 /* Suggestion-list fields reserve room for a dropdown indicator. In table cells
    that space is only worth having while the cell is being edited. */

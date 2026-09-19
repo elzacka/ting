@@ -123,13 +123,18 @@ export function App() {
             )}
           </nav>
         ) : (
-          <a
-            className="btn btn-icon"
-            href={route.view === 'edit' ? href.detail(route.id) : href.list}
-            aria-label={t.action.back}
-          >
-            <Icon name="arrowBack" />
-          </a>
+          <nav className="row" aria-label={t.action.back}>
+            <a
+              className="btn btn-icon"
+              href={route.view === 'edit' ? href.detail(route.id) : href.list}
+              aria-label={t.action.back}
+            >
+              <Icon name="arrowBack" />
+            </a>
+            <a className="wordmark" href={href.home} aria-label={t.nav.home}>
+              {t.appName}
+            </a>
+          </nav>
         )}
         {isTop && (
           <div className="row topbar-end">
@@ -151,28 +156,29 @@ export function App() {
                 type="button"
                 role="switch"
                 aria-checked={editing}
-                className={`btn btn-quiet${editing ? ' is-active' : ''}`}
+                className={`btn btn-icon${editing ? ' is-active' : ''}`}
                 aria-label={t.editing.label}
+                title={t.editing.label}
                 onClick={toggleEditing}
               >
-                <Icon name={editing ? 'edit' : 'editOff'} size={20} />
-                <span className="btn-word">{t.editing.label}</span>
+                <Icon name={editing ? 'edit' : 'editOff'} />
               </button>
             )}
             {unlocked && (
-              <button type="button" className="btn btn-quiet" aria-label={t.lock.lock} onClick={() => lock()}>
-                <Icon name="lock" size={20} />
-                <span className="btn-word">{t.lock.lock}</span>
+              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={() => lock()}>
+                <Icon name="lock" />
               </button>
             )}
             {unlocked && (
               <a
-                className="tab tab-quiet"
+                className={`btn btn-icon${route.view === 'storage' ? ' is-active' : ''}`}
                 href={href.storage}
+                aria-label={t.nav.storage}
+                title={t.nav.storage}
                 aria-current={route.view === 'storage' ? 'page' : undefined}
                 onClick={guardNav}
               >
-                {t.nav.storage}
+                <Icon name="instantMix" />
               </a>
             )}
           </div>
