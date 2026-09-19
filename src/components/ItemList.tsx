@@ -71,11 +71,7 @@ export function ItemList({
   )
 
   if (items.length === 0) {
-    return (
-      <div className="empty">
-        <p>{t.list.empty}</p>
-      </div>
-    )
+    return <p className="hint">{t.list.empty}</p>
   }
 
   const selectedVisible = visible.filter((i) => selected.has(i.id))

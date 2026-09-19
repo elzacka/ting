@@ -4,9 +4,9 @@ export const t = {
   nav: { home: 'Til forsiden', list: 'Oversikt', register: 'Legg til og endre', storage: 'Lagring' },
   lock: {
     lock: 'Lås',
-    unlock: 'Lås opp',
-    lockedHint: 'Låst. Lås opp for å endre.',
-    lockedElsewhere: 'Låst. Lås opp under «Legg til og endre» for å endre.',
+    unlock: 'Åpne låsen',
+    lockedHint: 'Låst. Trykk på hengelåsen øverst til høyre for å åpne.',
+    lockedElsewhere: 'Låst. Trykk på hengelåsen under «Legg til og endre» for å åpne.',
   },
   search: {
     label: 'Søk',
