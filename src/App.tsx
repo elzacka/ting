@@ -106,14 +106,16 @@ export function App() {
             <a className="wordmark" href={href.home} onClick={guardNav} aria-label={t.nav.home}>
               {t.appName}
             </a>
-            <a
-              className="tab"
-              href={href.list}
-              aria-current={route.view === 'list' ? 'page' : undefined}
-              onClick={guardNav}
-            >
-              {t.nav.list}
-            </a>
+            {unlocked && (
+              <a
+                className="tab"
+                href={href.list}
+                aria-current={route.view === 'list' ? 'page' : undefined}
+                onClick={guardNav}
+              >
+                {t.nav.list}
+              </a>
+            )}
             {unlocked && editing && (
               <a className="tab" href={href.register} aria-current={route.view === 'register' ? 'page' : undefined}>
                 {t.nav.register}
@@ -150,16 +152,17 @@ export function App() {
                 role="switch"
                 aria-checked={editing}
                 className={`btn btn-quiet${editing ? ' is-active' : ''}`}
+                aria-label={t.editing.label}
                 onClick={toggleEditing}
               >
                 <Icon name={editing ? 'edit' : 'editOff'} size={20} />
-                {t.editing.label}
+                <span className="btn-word">{t.editing.label}</span>
               </button>
             )}
             {unlocked && (
-              <button type="button" className="btn btn-quiet" onClick={() => lock()}>
+              <button type="button" className="btn btn-quiet" aria-label={t.lock.lock} onClick={() => lock()}>
                 <Icon name="lock" size={20} />
-                {t.lock.lock}
+                <span className="btn-word">{t.lock.lock}</span>
               </button>
             )}
             {unlocked && (

@@ -38,7 +38,7 @@ export function LockScreen(props: Props) {
     <form className="stack narrow" onSubmit={onSubmit}>
       <div>
         <h1 className="title">{props.mode === 'setup' ? t.vault.setupTitle : t.vault.unlockTitle}</h1>
-        <p className="hint">{props.mode === 'setup' ? t.vault.setupIntro : t.vault.unlockIntro}</p>
+        <p>{props.mode === 'setup' ? t.vault.setupIntro : t.vault.unlockIntro}</p>
         {props.mode === 'unlock' && props.idle && <p className="hint">{t.vault.autoLocked}</p>}
       </div>
       <div className="field">
