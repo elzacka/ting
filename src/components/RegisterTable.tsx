@@ -246,6 +246,18 @@ export function RegisterTable({
       { id: nextId, key, unit, type: renaming.type },
       (s) => columnId({ key: s.key, unit: s.unit }) === fromId,
     )
+    // Unsaved edits in that column follow it to the new id.
+    if (nextId !== fromId) {
+      const move = (cells: Record<string, string>) => {
+        if (!(fromId in cells)) return cells
+        const { [fromId]: v, ...rest } = cells
+        return { ...rest, [nextId]: v ?? '' }
+      }
+      setEdits((prev) =>
+        Object.fromEntries(Object.entries(prev).map(([id, e]) => [id, { ...e, cells: move(e.cells ?? {}) }])),
+      )
+      setNewRows((prev) => prev.map((r) => ({ ...r, cells: move(r.cells) })))
+    }
     setRenaming(null)
   }
 
@@ -267,6 +279,14 @@ export function RegisterTable({
     } else if (def.kind === 'prop') {
       const id = def.id
       await removeProperty(id, (s) => columnId({ key: s.key, unit: s.unit }) === id)
+      const drop = (cells: Record<string, string>) => {
+        const { [id]: _gone, ...rest } = cells
+        return rest
+      }
+      setEdits((prev) =>
+        Object.fromEntries(Object.entries(prev).map(([rid, e]) => [rid, { ...e, cells: drop(e.cells ?? {}) }])),
+      )
+      setNewRows((prev) => prev.map((r) => ({ ...r, cells: drop(r.cells) })))
     }
     setRemovingColumn(null)
   }
@@ -625,7 +645,10 @@ export function RegisterTable({
 
       {hasRows && (
         <div className="table-wrap">
-          <table className={`grid${selected.size > 0 ? ' has-selection' : ''}`} style={{ width: tableWidth(defs, widths) }}>
+          <table
+            className={`grid${selected.size > 0 ? ' has-selection' : ''}`}
+            style={{ width: tableWidth(defs, widths) }}
+          >
             <colgroup>
               <col style={{ width: checkColumnWidth() }} />
               {defs.map((def) => (
@@ -698,7 +721,7 @@ export function RegisterTable({
                           <Icon name="close" size={20} />
                         </button>
                       </form>
-                    ) : !editing && !locked ? (
+                    ) : !locked ? (
                       <span className="grid-col-head">
                         <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
                         <details

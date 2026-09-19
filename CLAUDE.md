@@ -74,3 +74,4 @@ Photos are stored as `Blob`, never base64.
 - Commit only after the change has been run locally and verified by elzacka. Never push
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
 - Everything from outside (form input, storage) is validated with Zod before it becomes an `Item`
+- The lock is session state only: the app always opens locked, unlocking lasts until reload. Decided by elzacka, 19 September 2026

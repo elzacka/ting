@@ -59,9 +59,12 @@ export function propColumns(defs: readonly ColumnDef[]): Column[] {
   return defs.flatMap((d) => (d.kind === 'prop' ? [d.col] : []))
 }
 
+// Rows written before types existed: the date marker means date, any other
+// unit means number (text columns never carry a unit), otherwise text.
 export function propertyType(p: Pick<Property, 'type' | 'unit'>): PropertyType {
   if (p.type) return p.type
-  return isDateUnit(p.unit) ? 'date' : 'text'
+  if (isDateUnit(p.unit)) return 'date'
+  return p.unit ? 'number' : 'text'
 }
 
 // The unit a stored property gets for a type: dates carry the internal marker, text has none.
