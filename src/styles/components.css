@@ -1,0 +1,1200 @@
+/* Layout */
+
+.page {
+  padding: 0 var(--gutter) var(--s-12);
+}
+
+/* Prose and forms stay at reading width; lists and tables take the full width */
+.narrow {
+  max-width: var(--max-w);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: 56px;
+  margin: 0 calc(var(--gutter) * -1) var(--s-6);
+  padding: 0 var(--gutter);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .tab {
+  min-height: 56px;
+  margin-bottom: -1px;
+}
+
+/* Page-level blocks get more air than the fields inside them */
+.page > main {
+  gap: var(--s-6);
+}
+
+.page > main > section + section,
+.page > main > .stack > section + section {
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--border);
+}
+
+.wordmark {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.stack {
+  display: grid;
+  gap: var(--s-6);
+}
+
+.stack-sm {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.row-end {
+  justify-content: flex-end;
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--row-h);
+  padding: 0 var(--s-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration) ease-out,
+    color var(--duration) ease-out;
+}
+
+.btn:hover {
+  background: var(--bg);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  background: transparent;
+}
+
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-primary:hover {
+  background: #184a3a;
+}
+
+.btn-danger {
+  border-color: transparent;
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn-danger:hover {
+  background: var(--danger-bg);
+}
+
+.btn-icon {
+  min-width: var(--row-h);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn-icon:hover {
+  background: var(--border);
+}
+
+/* Fields */
+
+.field {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.field label,
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: var(--row-h);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: var(--text-sm);
+}
+
+.textarea {
+  min-height: calc(var(--row-h) * 2);
+  resize: vertical;
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--danger);
+}
+
+/* Search and filter */
+
+.search {
+  position: relative;
+}
+
+.search .icon-lead {
+  position: absolute;
+  top: 50%;
+  left: var(--s-3);
+  transform: translateY(-50%);
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.search .input {
+  padding-left: calc(var(--s-3) + 20px + var(--s-2));
+  padding-right: var(--row-h);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search .input::-webkit-search-cancel-button,
+.search .input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search .btn-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.spec-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--s-2);
+  align-items: end;
+}
+
+@media (max-width: 599px) {
+  .spec-filter {
+    grid-template-columns: 1fr 1fr;
+  }
+  .spec-filter .field:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* List */
+
+.count {
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.list-head {
+  justify-content: space-between;
+  min-height: var(--row-h);
+}
+
+.empty {
+  display: grid;
+  gap: var(--s-4);
+  justify-items: start;
+  padding: var(--s-8) 0;
+  color: var(--text-2);
+}
+
+/* Detail */
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.photo {
+  max-height: 320px;
+  border-radius: var(--radius-lg);
+  object-fit: contain;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-top: 1px solid var(--border);
+}
+
+.specs > div {
+  display: contents;
+}
+
+.specs dt,
+.specs dd {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.specs dt {
+  color: var(--text-2);
+}
+
+.specs dd {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.section-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Form: spec rows */
+
+.spec-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+@media (max-width: 599px) {
+  .spec-row {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .spec-row > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.photo-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  object-fit: cover;
+  background: var(--surface);
+}
+
+/* Notice */
+
+.notice {
+  max-width: var(--max-w);
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  padding: var(--s-3);
+  border-radius: var(--radius-lg);
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: var(--text-sm);
+}
+
+.notice p {
+  flex: 1;
+}
+
+.notice .btn {
+  border-color: var(--warn);
+  background: transparent;
+  color: var(--warn);
+}
+
+.confirm {
+  max-width: var(--max-w);
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--radius-lg);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+/* Top-level navigation */
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--row-h);
+  padding: 0 var(--s-2);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.tab[aria-current='page'] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.export {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+}
+
+.section-label {
+  margin-bottom: calc(var(--s-1) * -1);
+}
+
+.wordmark + .tab {
+  margin-left: var(--s-4);
+}
+
+/* Register table */
+
+.toolbar {
+  flex-wrap: wrap;
+}
+
+.column-form .toolbar {
+  align-items: flex-end;
+}
+
+.field-actions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--s-2);
+}
+
+.input-key {
+  width: auto;
+  flex: 1 1 200px;
+  max-width: 280px;
+}
+
+.input-narrow {
+  width: 160px;
+  flex: none;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 0 var(--gutter) 0 0;
+}
+
+.grid {
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.grid th,
+.grid td {
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.grid th {
+  padding: var(--s-2) var(--s-2);
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom-color: var(--border-input);
+}
+
+.grid th.grid-check,
+.grid td.grid-check {
+  border-bottom-color: transparent;
+}
+
+.grid-unit {
+  margin-left: var(--s-1);
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+/* Beats .grid th / .grid td so header and row checkboxes share one centre line */
+.grid .grid-check {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.grid-check input {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+  accent-color: var(--accent);
+}
+
+@media (max-width: 599px) {
+  .grid-check input {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.grid-input {
+  width: 100%;
+  min-height: var(--row-h);
+  padding: var(--s-2);
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--text-sm);
+}
+
+.grid-input:hover {
+  background: var(--surface);
+}
+
+.grid-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface);
+}
+
+.is-dirty td:first-child,
+.is-new td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* First text column sits flush with the page content edge. The input keeps its
+   inner padding (so the caret and text clear the focus border) and is shifted
+   left by the same amount instead. */
+.grid th:nth-child(2) {
+  padding-left: 0;
+}
+
+.grid td:nth-child(2) .grid-input {
+  width: calc(100% + var(--s-2));
+  margin-left: calc(var(--s-2) * -1);
+}
+
+/* Search tips */
+
+.tips summary {
+  cursor: pointer;
+  font-size: var(--text-xs);
+  color: var(--text-2);
+  min-height: 24px;
+}
+
+.tips[open] summary {
+  margin-bottom: var(--s-2);
+}
+
+.tips-table {
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+
+.tips-table td {
+  padding: var(--s-1) var(--s-3) var(--s-1) 0;
+  vertical-align: top;
+}
+
+.tips .hint {
+  margin-top: var(--s-2);
+}
+
+/* Frozen: the checkbox column and the first data column, whichever it is */
+
+.grid th:nth-child(1),
+.grid td:nth-child(1),
+.grid th:nth-child(2),
+.grid td:nth-child(2) {
+  position: sticky;
+  background: var(--bg);
+  z-index: 1;
+}
+
+.grid th:nth-child(1),
+.grid td:nth-child(1) {
+  left: 0;
+}
+
+.grid th:nth-child(2),
+.grid td:nth-child(2) {
+  left: var(--gutter);
+  box-shadow: 1px 0 0 var(--border);
+}
+
+/* Fixed widths clip: header text with an ellipsis, inputs by themselves */
+.grid th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-col-head {
+  max-width: 100%;
+}
+
+/* The name gives way; the menu chevron and the resize handle always stay reachable */
+.sort-btn {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-menu {
+  flex: none;
+}
+
+.grid th.grid-col {
+  padding-right: var(--s-3);
+}
+
+/* Report: print only */
+
+.report {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 15mm;
+  }
+
+  html {
+    background: #fff;
+    font-size: 11pt;
+  }
+
+  .page > *:not(main),
+  main > *:not(.stack),
+  .stack > *:not(.report) {
+    display: none !important;
+  }
+
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .report {
+    display: block;
+  }
+
+  .report-table {
+    width: 100%;
+    margin-top: 8mm;
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 2mm 3mm 2mm 0;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .report-table th {
+    border-bottom: 1px solid #000;
+  }
+
+  .report-table .num {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .report-table tr {
+    break-inside: avoid;
+  }
+}
+
+/* Keyboard hint in the search field */
+
+.kbd {
+  position: absolute;
+  top: 50%;
+  right: var(--s-3);
+  transform: translateY(-50%);
+  padding: 2px 6px;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.tips-body {
+  display: grid;
+  gap: var(--s-2);
+  max-width: 64ch;
+  margin-left: auto;
+}
+
+/* Install notice: same shape as a notice, neutral colours */
+
+.notice-quiet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.notice-quiet .btn {
+  border-color: var(--border-input);
+  color: var(--text);
+}
+
+.notice-quiet > .stack-sm {
+  flex: 1;
+}
+
+.install-steps {
+  margin: 0;
+  padding-left: var(--s-4);
+  font-size: var(--text-sm);
+  color: var(--text-2);
+}
+
+.empty a {
+  color: var(--accent);
+}
+
+/* Tips toggle hangs under the search field, right-aligned */
+
+.stack-sm > .tips {
+  margin-top: calc(var(--s-2) * -1);
+}
+
+.tips summary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+}
+
+.tips summary::-webkit-details-marker {
+  display: none;
+}
+
+.tips-chevron {
+  transform: rotate(90deg);
+  transition: transform var(--duration) ease-out;
+}
+
+.tips[open] .tips-chevron {
+  transform: rotate(-90deg);
+}
+
+.tips[open] .tips-body {
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.tab-quiet {
+  margin-left: auto;
+  font-weight: 400;
+}
+
+.tab {
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .topbar .row {
+    gap: var(--s-1);
+  }
+  .wordmark + .tab {
+    margin-left: var(--s-2);
+  }
+  .tab {
+    padding: 0 var(--s-1);
+    font-size: var(--text-xs);
+  }
+}
+
+/* Checkboxes stay out of the way until the pointer is on the row, the row is
+   checked, the checkbox has keyboard focus, or a selection is under way.
+   Touch devices have no hover, so they always show them. */
+
+.grid-check input {
+  opacity: 0;
+  transition: opacity var(--duration) ease-out;
+}
+
+.grid tr:hover .grid-check input,
+.grid-check input:checked,
+.grid-check input:focus-visible,
+.has-selection .grid-check input {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .grid-check input {
+    opacity: 1;
+  }
+}
+
+.topbar-end {
+  margin-left: auto;
+}
+
+.topbar-end .tab-quiet {
+  margin-left: 0;
+}
+
+.btn-icon.is-active {
+  color: var(--accent);
+}
+
+/* Column header menu: the header is the control, the actions live in a menu */
+
+.grid-col {
+  position: relative;
+}
+
+.col-menu summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.col-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.col-menu-chevron {
+  color: var(--text-2);
+  transform: rotate(90deg);
+  opacity: 0;
+  transition: opacity var(--duration) ease-out;
+}
+
+.grid-col:hover .col-menu-chevron,
+.col-menu[open] .col-menu-chevron,
+.col-menu summary:focus-visible .col-menu-chevron {
+  opacity: 1;
+}
+
+.col-menu[open] .col-menu-chevron {
+  transform: rotate(-90deg);
+}
+
+.col-menu-list {
+  position: fixed;
+  z-index: 3;
+  display: grid;
+  min-width: 180px;
+  padding: var(--s-1);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.col-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 36px;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.col-menu-item:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+.col-menu-item:disabled {
+  color: var(--text-2);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.col-menu-danger {
+  color: var(--danger);
+}
+
+.col-menu-danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+}
+
+@media (hover: none) {
+  .col-menu-chevron {
+    opacity: 1;
+  }
+}
+
+/* Checkboxes stay out of the way until the pointer is on the row, the row is
+   checked, the checkbox has keyboard focus, or a selection is under way.
+   Touch devices have no hover, so they always show them. */
+
+.grid-check input {
+  opacity: 0;
+  transition: opacity var(--duration) ease-out;
+}
+
+.grid tr:hover .grid-check input,
+.grid-check input:checked,
+.grid-check input:focus-visible,
+.has-selection .grid-check input {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .grid-check input {
+    opacity: 1;
+  }
+}
+
+.topbar-end {
+  margin-left: auto;
+}
+
+.topbar-end .tab-quiet {
+  margin-left: 0;
+}
+
+.btn-icon.is-active {
+  color: var(--accent);
+}
+
+/* Column header tools (move left, move right, remove) show on hover or focus */
+
+.grid-col {
+  position: relative;
+  padding-right: calc(var(--s-2) + 96px);
+}
+
+.grid-col-rename {
+  gap: var(--s-1);
+  font-weight: 400;
+}
+
+.grid-col-rename .input {
+  width: 160px;
+  min-height: 36px;
+}
+
+.grid-col-rename .input-narrow {
+  width: 72px;
+}
+
+.grid-col-tools {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: inline-flex;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.grid-col-tools .btn-icon {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.grid-col:hover .grid-col-tools,
+.grid-col-tools:focus-within {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .grid-col-tools {
+    opacity: 1;
+  }
+}
+
+/* Oversikt: same grid, plain text cells */
+
+.grid-read td {
+  padding: var(--s-2);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+
+.grid-read td:nth-child(2) {
+  padding-left: 0;
+}
+
+.grid-read td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.grid-read td.tabular {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.grid-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.grid-link:hover {
+  text-decoration: underline;
+}
+
+.grid-read .thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.grid-read tr:hover td {
+  background: var(--surface);
+}
+
+/* Filter panel under the search field */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.filter {
+  position: relative;
+}
+
+.filter summary {
+  list-style: none;
+  min-height: 36px;
+  padding: 0 var(--s-2) 0 var(--s-3);
+  font-weight: 400;
+  gap: var(--s-1);
+}
+
+.filter summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter.is-active summary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.filter-chevron {
+  transform: rotate(90deg);
+  transition: transform var(--duration) ease-out;
+}
+
+.filter[open] .filter-chevron {
+  transform: rotate(-90deg);
+}
+
+.filter-menu {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  left: 0;
+  z-index: 3;
+  display: grid;
+  gap: var(--s-1);
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--s-2);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 32px;
+  padding: 0 var(--s-1);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.filter-option:hover {
+  background: var(--bg);
+}
+
+.filter-option input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.filter-clear {
+  min-height: 32px;
+  margin-top: var(--s-1);
+  font-weight: 400;
+}
+
+/* Search row: a compact field on the left, filters fill the rest of the line */
+
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--s-3) var(--s-4);
+}
+
+.search-block {
+  flex: 1 1 320px;
+  max-width: 440px;
+}
+
+.search-bar .filters {
+  flex: 1 1 320px;
+  min-height: var(--row-h);
+}
+
+.search-bar .filters .filter summary {
+  min-height: var(--row-h);
+}
+
+/* Sortable headers */
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sort-btn:hover {
+  color: var(--accent);
+}
+
+.sort-arrow {
+  color: var(--accent);
+}
+
+.grid-col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.col-menu summary {
+  padding: 2px;
+}
+
+/* Column resize handle at the right edge of a header */
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border-input);
+  opacity: 0;
+  transition: opacity var(--duration) ease-out;
+}
+
+.col-resizer:hover::after,
+.grid-col:hover .col-resizer::after {
+  opacity: 1;
+}
+
+/* A pinned width clips: read cells with an ellipsis, inputs by themselves */
+.grid-read td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* Suggestion-list fields reserve room for a dropdown indicator. In table cells
+   that space is only worth having while the cell is being edited. */
+.grid-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.grid-input:focus::-webkit-calendar-picker-indicator {
+  display: block;
+}

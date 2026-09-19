@@ -1,0 +1,49 @@
+:root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-2: #5f5f5c;
+  --border: #ddddd9;
+  --border-input: #777773;
+  --accent: #1f5c48;
+  --on-accent: #ffffff;
+  --warn: #7a4b00;
+  --warn-bg: #fff4dc;
+  --danger: #a32d2d;
+  --danger-bg: #fdecec;
+
+  --font: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --text-xs: 13px;
+  --text-sm: 15px;
+  --text-md: 17px;
+  --text-lg: 22px;
+  --text-xl: 28px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+
+  --radius: 4px;
+  --radius-lg: 8px;
+  --max-w: 720px; /* reading width for prose and forms; lists and tables use the full width */
+  --gutter: 16px;
+  --row-h: 44px;
+  --duration: 120ms;
+}
+
+@media (min-width: 600px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}

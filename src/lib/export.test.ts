@@ -1,0 +1,74 @@
+import { describe, expect, it } from 'vitest'
+import type { Item } from '../db/schema'
+import { defaultFieldSettings } from './fields'
+import { columnId } from './grid'
+import { exportFilename, toCsv } from './export'
+
+function item(name: string, specs: Item['specs'], note: string | null = null): Item {
+  return {
+    id: crypto.randomUUID(),
+    name,
+    category: 'Turutstyr',
+    specs,
+    locationId: null,
+    value: null,
+    purchaseDate: null,
+    receiptImage: null,
+    photo: null,
+    barcode: null,
+    serialNumber: null,
+    note,
+    warrantyDate: null,
+    createdAt: Date.UTC(2026, 8, 19, 12),
+    updatedAt: 0,
+  }
+}
+
+describe('toCsv', () => {
+  it('writes a BOM, semicolons, unit headers, comma decimals and quoting', () => {
+    const csv = toCsv(
+      [
+        item('Sovepose', [{ key: 'Komforttemperatur', value: -12.5, unit: '°C' }], 'Ligger; "trygt"'),
+        item('Kokeapparat', [{ key: 'Brensel', value: 'Gass', unit: null }]),
+      ],
+      [],
+      defaultFieldSettings,
+    )
+    const lines = csv.split('\r\n')
+    expect(lines[0]).toBe('﻿Kategori;Navn;Brensel;Komforttemperatur (°C);Notat;Opprettet')
+    expect(lines[1]).toBe('Turutstyr;Sovepose;;-12,5;"Ligger; ""trygt""";19.09.26')
+    expect(lines[2]).toBe('Turutstyr;Kokeapparat;Gass;;;19.09.26')
+    expect(lines[3]).toBe('')
+  })
+})
+
+describe('exportFilename', () => {
+  it('uses the ISO date', () => {
+    expect(exportFilename('csv', new Date(Date.UTC(2026, 8, 19, 12)))).toBe('ting-2026-09-19.csv')
+  })
+})
+
+describe('toCsv column order', () => {
+  it('follows the stored property order and skips empty properties', () => {
+    const csv = toCsv(
+      [item('Sovepose', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }, { key: 'Vekt', value: 900, unit: 'gram' }])],
+      [
+        { id: columnId({ key: 'Vekt', unit: 'gram' }), key: 'Vekt', unit: 'gram', createdAt: 1, order: 0 },
+        { id: columnId({ key: 'Farge', unit: null }), key: 'Farge', unit: null, createdAt: 2, order: 1 },
+        { id: columnId({ key: 'Komforttemperatur', unit: '°C' }), key: 'Komforttemperatur', unit: '°C', createdAt: 3, order: 2 },
+      ],
+      defaultFieldSettings,
+    )
+    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Navn;Vekt (gram);Komforttemperatur (°C);Notat;Opprettet')
+  })
+})
+
+describe('toCsv with renamed and hidden fields', () => {
+  it('uses the labels and skips a hidden category', () => {
+    const csv = toCsv([item('Sovepose', [])], [], {
+      category: { label: 'Type', order: 5, hidden: true },
+      name: { label: 'Ting', order: 0 },
+    })
+    expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Notat;Opprettet')
+  })
+})
