@@ -70,8 +70,6 @@ export const t = {
     removeSpec: 'Fjern spesifikasjon',
     choosePhoto: 'Velg bilde',
     removePhoto: 'Fjern bilde',
-    update: 'Oppdater',
-    later: 'Senere',
     yes: 'Ja',
     no: 'Nei',
   },
@@ -160,8 +158,7 @@ export const t = {
     notDates: (n: number, key: string) => (n === 1 ? `1 verdi i ${key} er ikke en dato.` : `${n} verdier i ${key} er ikke datoer.`),
   },
   notice: {
-    update: 'En ny versjon er klar.',
-    dismiss: 'Lukk',
+    update: 'Ny versjon klar. Trykk for å oppdatere.',
   },
   storage: {
     title: 'Lagring',

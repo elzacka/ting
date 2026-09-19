@@ -329,30 +329,6 @@
   background: var(--surface);
 }
 
-/* Notice */
-
-.notice {
-  max-width: var(--max-w);
-  display: flex;
-  gap: var(--s-3);
-  align-items: flex-start;
-  padding: var(--s-3);
-  border-radius: var(--radius-lg);
-  background: var(--warn-bg);
-  color: var(--warn);
-  font-size: var(--text-sm);
-}
-
-.notice p {
-  flex: 1;
-}
-
-.notice .btn {
-  border-color: var(--warn);
-  background: transparent;
-  color: var(--warn);
-}
-
 .confirm {
   max-width: var(--max-w);
   display: grid;

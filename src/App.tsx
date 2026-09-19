@@ -20,7 +20,7 @@ import { Home } from './components/Home'
 import { ItemList } from './components/ItemList'
 import { RegisterTable } from './components/RegisterTable'
 import { StoragePage } from './components/StoragePage'
-import { UpdateNotice } from './components/UpdateNotice'
+import { UpdateButton } from './components/UpdateButton'
 
 export function App() {
   const route = useRoute()
@@ -102,6 +102,7 @@ export function App() {
         )}
         {isTop && (
           <div className="row topbar-end">
+            <UpdateButton />
             {searchable && (
               <button
                 type="button"
@@ -138,7 +139,6 @@ export function App() {
       </header>
 
       <main className="stack">
-        <UpdateNotice />
         {items === undefined || properties === undefined || fields === undefined ? (
           <p className="hint">{t.list.loading}</p>
         ) : (
