@@ -7,7 +7,7 @@ Holder oversikt over det du eier, og hvor det er. En PWA som virker uten nett og
 - Oversikt: Smart søk og filtrering. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`. Filtrene under søkefeltet har en nedtrekksmeny per egenskap, med flervalg. Velg ting og last ned CSV eller skriv ut en rapport
 - Legg til og endre: Rediger mange ting samtidig i en tabell, med egenskaper som kolonner
 - Egen side for hver ting, med bilde og full spesifikasjonsliste
-- Lagring: Koble appen til en mappe på disk (Chrome og Edge), eller last ned og gjenopprett en kopi
+- Innstillinger: Koble appen til en mappe på disk (Chrome og Edge), eller last ned og gjenopprett en kopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
 
@@ -45,30 +45,20 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
 | Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
 | Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Åpning | Appen åpner alltid låst. «Lås appen» i topplinja sletter nøkkelen fra minnet, og appen låser seg selv etter ti minutter uten bruk. Bryteren «Redigering» ved siden av er noe annet: Slår du den av, kan du bare lese, ikke endre |
+| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet, og appen låser seg selv etter ti minutter uten bruk. Blyanten ved siden av er noe annet: Slår du den av, kan du bare lese, ikke endre |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
 Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
 
 ## Sikkerhet
 
-Alt du skriver inn behandles som tekst, aldri som kode eller instruksjoner. Det gjelder feltene, søk, filer du gjenoppretter og mapper appen leser.
+Alt du skriver inn behandles som tekst, aldri som kode. Appen laster ingenting fra andre steder og sender ingenting ut. Passordet lagres og logges aldri. Trusselmodellen og tiltakene, punkt for punkt mot OWASP Top 10, står i `SECURITY.md` (engelsk).
 
-| Risiko | Tiltak |
-|---|---|
-| Skript via feltinnhold | Appen setter aldri inn HTML fra tekst |
-| Formler i CSV | Tekst som begynner med `=`, `+`, `-` eller `@` får en apostrof foran, så regneark ikke kjører den |
-| Skadelige filer | Bare bildefiler tas inn som bilder. Filer og mapper valideres mot et fast format før noe lagres |
-| Innhold fra nettet | Appen laster ingenting fra andre steder og sender ingenting ut (Content Security Policy) |
-| Passord | Lagres og logges aldri. Nøkkelen slettes fra minnet når du låser |
+Appen bruker ingen KI.
 
-Trusselmodellen og sikkerhetsmodellen er beskrevet i `SECURITY.md` (engelsk).
+## Innstillinger
 
-Appen bruker ingen KI. Kommer det en gang en KI-funksjon, skal alt du har registrert fortsatt bare være data for den, aldri instruksjoner, og ingenting sendes ut av enheten uten at du velger det hver gang.
-
-## Lagring
-
-Alt lagres i nettleseren på enheten. Koble appen til en mappe under «Lagring», så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt. Safari kan ikke koble til mapper. Der bruker du «Last ned kopi». Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
+Alt lagres i nettleseren på enheten. Koble appen til en mappe under Innstillinger (ikonet lengst til høyre i topplinja), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt. Safari kan ikke koble til mapper. Der bruker du «Last ned kopi». Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
 
 ## Lisens
 

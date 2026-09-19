@@ -48,7 +48,7 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/filter.ts` | `parseNumber`, `specKeys` |
 | `src/lib/format.ts` | nb-NO numbers and dates, real minus sign, narrow no-break space before units |
 | `src/lib/strings.ts` | Every user-facing string. Nothing hardcoded in components |
-| `src/lib/route.ts` | Hash router: `#/` (home), `#/oversikt`, `#/registrer` (table), `#/lagring`, `#/ting/:id`, `#/ting/:id/rediger` |
+| `src/lib/route.ts` | Hash router: `#/` (home), `#/oversikt`, `#/registrer` (table), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
@@ -66,21 +66,7 @@ Changing anything here needs elzacka's confirmation first (global rule on auth, 
 
 ## Untrusted input
 
-Everything a user types, pastes, restores from a file or reads from a folder is data, never instructions or markup. The guards in place, keep them when changing these paths:
-
-| Path | Guard |
-|---|---|
-| Rendering | React text nodes only. No `dangerouslySetInnerHTML`, no HTML built from strings, no `new RegExp` from input |
-| CSV | `csvCell` prefixes formula-like text (`=`, `+`, `-`, `@`, tab) with an apostrophe; negative numbers stay numbers |
-| Photos | `asImage` allows image MIME types only, at the picker, in restored copies and in folder reads; a restored data URL must be `data:image/...` |
-| Folder files | `readPhoto` accepts only `<uuid>.<ext>`; a crafted `ting.json` cannot reference other paths |
-| Files and rows | Every document goes through Zod (`itemSchema`, `propertySchema`, `dataFileSchema`, `envelopeSchema`); unknown keys are dropped; KDF parameters in an envelope are bounded so a file cannot demand gigabytes before the passphrase is checked. One unreadable row is skipped, not fatal |
-| Routes and `?q=` | Ids are matched, never interpreted; the query is text in a controlled input |
-| localStorage | Parsed values are validated (widths: finite numbers within range) |
-| Passphrase | Never stored, never logged; lives in component state until the form closes; the key is zeroed on lock |
-| CSP | `default-src 'self'`, no inline scripts, no external origins |
-
-If a language model is ever added (phase 2 mentions receipt OCR and image recognition): field content, file content and model output are all untrusted. Send content to the model as delimited data with a fixed instruction, never concatenate it into the instruction. Model output only fills fields for the user to review; it never triggers an action, a write, a navigation or a file operation on its own. Nothing leaves the device without an explicit, per-use choice by the user, and the encrypted-at-rest promise in the README must be revisited first.
+Everything a user types, pastes, restores from a file or reads from a folder is data, never instructions or markup. The guards, path by path, are the A05 and A10 rows of `SECURITY.md`; keep them when changing those paths. The rule for a future language model is there too.
 
 ## Data model
 
@@ -102,4 +88,4 @@ Photos are stored as `Blob`, never base64.
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
 - Everything from outside (form input, storage) is validated with Zod before it becomes an `Item`
 - The lock is the passphrase: the app always opens locked, the key lives in memory until lock or reload. Decided by elzacka, 19 September 2026
-- Two header controls, never one: the Redigering switch (read-only mode, per device) and the «Lås appen» button (drops the key). One icon-only lock button was ambiguous. Decided by elzacka, 19 September 2026
+- Two header controls, never one: the Redigering switch (pencil, read-only mode, per device) and the Lås appen button (padlock, drops the key), plus the Innstillinger icon. Icon only with `aria-label` and `title`. Decided by elzacka, 19 September 2026
