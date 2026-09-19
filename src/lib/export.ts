@@ -6,8 +6,13 @@ import { parseNumber } from './filter'
 
 const dateFormat = new Intl.DateTimeFormat('nb-NO', { day: '2-digit', month: '2-digit', year: '2-digit' })
 
+// A cell that starts with = + - @ or a tab is read as a formula by Excel and
+// Numbers, so text like "=HYPERLINK(...)" typed into a field would run there.
+// Such text gets a leading apostrophe. Plain negative numbers are left alone.
 function csvCell(v: string): string {
-  return /[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+  const formulaLike = /^[=+\-@\t\r]/.test(v) && parseNumber(v) === null
+  const safe = formulaLike ? `'${v}` : v
+  return /[";\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
 }
 
 function cellValue(item: Item, col: Column): string {

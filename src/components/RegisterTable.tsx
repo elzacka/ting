@@ -38,6 +38,17 @@ function focusWithoutScroll(el: HTMLInputElement | null) {
   el?.focus({ preventScroll: true })
 }
 
+function parseOptions(raw: string): string[] {
+  return [
+    ...new Set(
+      raw
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
+  ]
+}
+
 function blankRow(category: string): NewRow {
   return { tempId: crypto.randomUUID(), name: '', category, prefilledCategory: category, note: '', cells: {} }
 }
@@ -55,7 +66,6 @@ type Props = {
   widths: Record<string, number>
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
-  locked: boolean
 }
 
 export function RegisterTable({
@@ -71,24 +81,28 @@ export function RegisterTable({
   widths,
   onWidth,
   onDirtyChange,
-  locked,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
   const [removingColumn, setRemovingColumn] = useState<ColumnDef | null>(null)
-  const [renaming, setRenaming] = useState<{ def: ColumnDef; key: string; unit: string; type: PropertyType } | null>(
-    null,
-  )
+  const [renaming, setRenaming] = useState<{
+    def: ColumnDef
+    key: string
+    unit: string
+    type: PropertyType
+    options: string
+  } | null>(null)
   // The open column menu is fixed to the window so the table's scroll box cannot clip it.
   const [menuPos, setMenuPos] = useState<{ id: string; top: number; left: number } | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [addingColumn, setAddingColumn] = useState(false)
-  const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType }>({
+  const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
     key: '',
     unit: '',
     type: 'text',
+    options: '',
   })
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -196,8 +210,16 @@ export function RegisterTable({
       return
     }
     setError(null)
-    await addProperty({ id: columnId(col), key, unit, type: columnDraft.type, createdAt: Date.now() })
-    setColumnDraft({ key: '', unit: '', type: 'text' })
+    const options = columnDraft.type === 'choice' ? parseOptions(columnDraft.options) : []
+    await addProperty({
+      id: columnId(col),
+      key,
+      unit,
+      type: columnDraft.type,
+      ...(options.length > 0 ? { options } : {}),
+      createdAt: Date.now(),
+    })
+    setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
     setAddingColumn(false)
     setStatus(t.table.columnAdded(key))
   }
@@ -243,7 +265,13 @@ export function RegisterTable({
     setError(null)
     await renameProperty(
       fromId,
-      { id: nextId, key, unit, type: renaming.type },
+      {
+        id: nextId,
+        key,
+        unit,
+        type: renaming.type,
+        options: renaming.type === 'choice' ? parseOptions(renaming.options) : [],
+      },
       (s) => columnId({ key: s.key, unit: s.unit }) === fromId,
     )
     // Unsaved edits in that column follow it to the new id.
@@ -378,7 +406,7 @@ export function RegisterTable({
     setRemovingColumn(null)
     setSelected(new Set())
     setAddingColumn(false)
-    setColumnDraft({ key: '', unit: '', type: 'text' })
+    setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
     setConfirmingDelete(false)
     setConfirmingDiscard(false)
     setError(null)
@@ -441,56 +469,52 @@ export function RegisterTable({
         </div>
       )}
 
-      {locked ? (
-        <p className="hint">{t.lock.lockedHint}</p>
-      ) : (
-        <div className="row toolbar">
+      <div className="row toolbar">
+        <button
+          type="button"
+          className="btn"
+          onClick={() =>
+            setNewRows((prev) => [
+              ...prev,
+              blankRow(
+                fields.category.hidden
+                  ? ''
+                  : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
+              ),
+            ])
+          }
+        >
+          <Icon name="add" size={20} />
+          {t.table.addRow}
+        </button>
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={addingColumn}
+          aria-controls="column-form"
+          onClick={() => setAddingColumn((v) => !v)}
+        >
+          <Icon name="add" size={20} />
+          {t.table.addColumn}
+        </button>
+        {fields.category.hidden && (
           <button
             type="button"
             className="btn"
-            onClick={() =>
-              setNewRows((prev) => [
-                ...prev,
-                blankRow(
-                  fields.category.hidden
-                    ? ''
-                    : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
-                ),
-              ])
-            }
+            onClick={() => void setFieldSettings({ ...fields, category: { ...fields.category, hidden: false } })}
           >
-            <Icon name="add" size={20} />
-            {t.table.addRow}
+            {t.table.showCategory(categoryLabel)}
           </button>
-          <button
-            type="button"
-            className="btn"
-            aria-expanded={addingColumn}
-            aria-controls="column-form"
-            onClick={() => setAddingColumn((v) => !v)}
-          >
-            <Icon name="add" size={20} />
-            {t.table.addColumn}
+        )}
+        {selected.size > 0 && !confirmingDelete && (
+          <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
+            <Icon name="delete" size={20} />
+            {t.table.deleteSelected(selected.size)}
           </button>
-          {fields.category.hidden && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => void setFieldSettings({ ...fields, category: { ...fields.category, hidden: false } })}
-            >
-              {t.table.showCategory(categoryLabel)}
-            </button>
-          )}
-          {selected.size > 0 && !confirmingDelete && (
-            <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
-              <Icon name="delete" size={20} />
-              {t.table.deleteSelected(selected.size)}
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
-      {addingColumn && !locked && (
+      {addingColumn && (
         <form
           id="column-form"
           className="stack-sm column-form"
@@ -526,6 +550,20 @@ export function RegisterTable({
                 ))}
               </select>
             </div>
+            {columnDraft.type === 'choice' && (
+              <div className="field">
+                <label htmlFor="col-options">
+                  {t.table.columnOptions} <span className="hint">({t.table.columnOptionsHint})</span>
+                </label>
+                <input
+                  id="col-options"
+                  className="input input-key"
+                  placeholder={t.table.columnOptionsExample}
+                  value={columnDraft.options}
+                  onChange={(e) => setColumnDraft({ ...columnDraft, options: e.target.value })}
+                />
+              </div>
+            )}
             {columnDraft.type === 'number' && (
               <div className="field">
                 <label htmlFor="col-unit">
@@ -628,10 +666,15 @@ export function RegisterTable({
           def.kind === 'prop' &&
           def.type === 'choice' && (
             <datalist key={def.id} id={`choice-${def.id}`}>
-              {distinct(items, (i) => {
-                const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                return spec ? String(spec.value) : ''
-              }).map((v) => (
+              {[
+                ...new Set([
+                  ...(def.property?.options ?? []),
+                  ...distinct(items, (i) => {
+                    const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+                    return spec ? String(spec.value) : ''
+                  }),
+                ]),
+              ].map((v) => (
                 <option key={v} value={v} />
               ))}
             </datalist>
@@ -699,6 +742,15 @@ export function RegisterTable({
                             ))}
                           </select>
                         )}
+                        {def.kind === 'prop' && renaming.type === 'choice' && (
+                          <input
+                            className="input"
+                            aria-label={t.table.columnOptions}
+                            placeholder={t.table.columnOptions}
+                            value={renaming.options}
+                            onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
+                          />
+                        )}
                         {def.kind === 'prop' && renaming.type === 'number' && (
                           <input
                             className="input input-narrow"
@@ -721,7 +773,7 @@ export function RegisterTable({
                           <Icon name="close" size={20} />
                         </button>
                       </form>
-                    ) : !locked ? (
+                    ) : (
                       <span className="grid-col-head">
                         <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
                         <details
@@ -754,6 +806,7 @@ export function RegisterTable({
                                     key: labelOf(def),
                                     unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
                                     type: def.kind === 'prop' ? def.type : 'text',
+                                    options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
                                   })
                                 }}
                               >
@@ -795,8 +848,6 @@ export function RegisterTable({
                             document.body,
                           )}
                       </span>
-                    ) : (
-                      <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
                     )}
                     <ColumnResizer id={def.id} label={labelOf(def)} onWidth={onWidth} />
                   </th>
@@ -807,7 +858,7 @@ export function RegisterTable({
               {visible.map((item) => (
                 <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
                   <td className="grid-check">
-                    {!editing && !locked && (
+                    {!editing && (
                       <input
                         type="checkbox"
                         aria-label={t.table.selectRow(item.name)}
@@ -821,7 +872,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input"
-                          readOnly={locked}
                           list="category-options"
                           aria-label={t.table.cell(item.name, categoryLabel)}
                           value={value(item, 'category')}
@@ -832,7 +882,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input"
-                          readOnly={locked}
                           list="name-options"
                           aria-label={t.table.cell(item.name, nameLabel)}
                           value={value(item, 'name')}
@@ -843,7 +892,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input num"
-                          readOnly={locked}
                           list={def.type === 'choice' ? `choice-${def.id}` : undefined}
                           aria-label={t.table.cell(item.name, def.col.key)}
                           value={cell(item, def.col)}
@@ -862,7 +910,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input"
-                          readOnly={locked}
                           list="category-options"
                           aria-label={t.table.cell(row.name, categoryLabel)}
                           value={row.category}
@@ -876,7 +923,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input"
-                          readOnly={locked}
                           list="name-options"
                           aria-label={t.table.cell(row.name, nameLabel)}
                           value={row.name}
@@ -890,7 +936,6 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input num"
-                          readOnly={locked}
                           list={def.type === 'choice' ? `choice-${def.id}` : undefined}
                           aria-label={t.table.cell(row.name, def.col.key)}
                           value={row.cells[def.id] ?? ''}

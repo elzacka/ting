@@ -72,3 +72,21 @@ describe('toCsv with renamed and hidden fields', () => {
     expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Notat;Opprettet')
   })
 })
+
+describe('toCsv formula guard', () => {
+  it('prefixes formula-like text with an apostrophe but leaves negative numbers', () => {
+    const csv = toCsv(
+      [
+        item('=HYPERLINK("http://x")', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }], '+1 and @x'),
+        item('Telt', [{ key: 'Brensel', value: '-DDE()', unit: null }]),
+      ],
+      [],
+      defaultFieldSettings,
+    )
+    const lines = csv.split('\r\n')
+    expect(lines[1]).toContain(`"'=HYPERLINK(""http://x"")"`)
+    expect(lines[1]).toContain(";-12;")
+    expect(lines[1]).toContain("'+1 and @x")
+    expect(lines[2]).toContain("'-DDE()")
+  })
+})

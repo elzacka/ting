@@ -4,6 +4,7 @@ import type { Item, ItemInput } from '../db/schema'
 import { parseNumber } from '../lib/filter'
 import { href, navigate } from '../lib/route'
 import type { FieldSettings } from '../lib/fields'
+import { asImage } from '../lib/backup'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
@@ -173,7 +174,7 @@ export function ItemForm({
             type="file"
             accept="image/*"
             className="visually-hidden"
-            onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+            onChange={(e) => setPhoto(asImage(e.target.files?.[0]))}
           />
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
             <Icon name="photoCamera" size={20} />

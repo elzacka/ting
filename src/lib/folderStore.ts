@@ -1,6 +1,18 @@
-import { db, deleteSetting, getSetting, localChangedAt, replaceAll, setSetting } from '../db/db'
+import { deleteSetting, getSetting, localChangedAt, readItems, readProperties, replaceAll, setSetting } from '../db/db'
 import type { Item, Property } from '../db/schema'
-import { dataFileName, fromStored, parseDataFile, photoDirName, photoFileName, toDataFile } from './backup'
+import {
+  dataFileName,
+  fromStored,
+  openEnvelope,
+  parseAnyFile,
+  photoDirName,
+  sealDataFile,
+  toDataFile,
+  type DataFile,
+  type Envelope,
+} from './backup'
+import { decryptBytes, encryptBytes, type OpenKey, type Vault } from './crypto'
+import { asImage } from './backup'
 
 // The File System Access API is not fully typed in lib.dom yet.
 type PermissionState = 'granted' | 'denied' | 'prompt'
@@ -52,77 +64,117 @@ async function readText(dir: DirHandle, name: string): Promise<string | null> {
   }
 }
 
-async function writeFile(dir: DirHandle, name: string, data: Blob | string): Promise<void> {
+async function writeFile(dir: DirHandle, name: string, data: Blob | Uint8Array | string): Promise<void> {
   const fh = await dir.getFileHandle(name, { create: true })
   const w = await fh.createWritable()
-  await w.write(data)
+  await w.write(data as FileSystemWriteChunkType)
   await w.close()
 }
 
-export async function readFolder(
-  dir: DirHandle,
-): Promise<{ exportedAt: number; items: Item[]; properties: Property[] } | null> {
-  const text = await readText(dir, dataFileName)
-  if (text === null) return null
-  const file = parseDataFile(text)
-  const photos = await dir.getDirectoryHandle(photoDirName, { create: true })
-  const items = await Promise.all(
-    file.items.map(async (s) => {
-      let photo: Blob | null = null
-      if (s.photoFile) {
-        try {
-          const fh = await photos.getFileHandle(s.photoFile.replace(`${photoDirName}/`, ''))
-          photo = await fh.getFile()
-        } catch {
-          photo = null
-        }
-      }
-      return fromStored(s, photo)
-    }),
-  )
-  return { exportedAt: file.exportedAt, items, properties: file.properties }
+// Photos are stored as bilder/<id>.bin: 12-byte nonce followed by the ciphertext.
+// Only names the app itself writes: <uuid>.<ext>. A crafted ting.json cannot
+// point at anything else in the folder.
+const photoName = /^[0-9a-f-]{36}\.(bin|jpg|jpeg|png|webp|heic|heif|gif|avif)$/i
+
+async function readPhoto(photos: DirHandle, stored: DataFile['items'][number], open: OpenKey): Promise<Blob | null> {
+  if (!stored.photoFile) return null
+  const name = stored.photoFile.replace(`${photoDirName}/`, '')
+  if (!photoName.test(name)) return null
+  try {
+    const file = await (await photos.getFileHandle(name)).getFile()
+    if (!name.endsWith('.bin')) return asImage(file) // written before encryption
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    const plain = await decryptBytes(open.key, bytes.slice(0, 12), bytes.slice(12))
+    return asImage(new Blob([plain as BlobPart], { type: stored.photoType ?? '' }))
+  } catch {
+    return null
+  }
 }
 
-// Writes ting.json and only the photos that are missing or changed in size,
-// and removes photo files for items that no longer exist.
-export async function writeFolder(dir: DirHandle, items: readonly Item[], properties: readonly Property[]): Promise<number> {
-  const exportedAt = Date.now()
-  await writeFile(dir, dataFileName, JSON.stringify(toDataFile(items, properties, exportedAt), null, 2))
+export type FolderRead =
+  | { kind: 'empty' }
+  | { kind: 'foreign'; envelope: Envelope }
+  | { kind: 'wrong-passphrase' }
+  | { kind: 'data'; exportedAt: number; items: Item[]; properties: Property[]; open: OpenKey; vault: Vault | null }
 
+// Reads the folder. A file sealed under another data key needs the passphrase
+// once; the key that opened it comes back so the caller can adopt it.
+export async function readFolder(dir: DirHandle, open: OpenKey, passphrase?: string): Promise<FolderRead> {
+  const text = await readText(dir, dataFileName)
+  if (text === null) return { kind: 'empty' }
+  const parsed = parseAnyFile(text)
+  let file: DataFile
+  let key = open
+  let vault: Vault | null = null
+  if (parsed.kind === 'sealed') {
+    const result = await openEnvelope(parsed.envelope, open, passphrase)
+    if (result === 'foreign') return { kind: 'foreign', envelope: parsed.envelope }
+    if (result === 'wrong-passphrase') return { kind: 'wrong-passphrase' }
+    file = result.file
+    key = result.open
+    vault = parsed.envelope.vault
+  } else {
+    file = parsed.file
+  }
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
-  const wanted = new Map<string, Blob>()
-  for (const item of items) {
-    const name = photoFileName(item)
-    if (name && item.photo) wanted.set(name.replace(`${photoDirName}/`, ''), item.photo)
+  const items = await Promise.all(file.items.map(async (s) => fromStored(s, await readPhoto(photos, s, key))))
+  return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, open: key, vault }
+}
+
+// Writes ting.json as an envelope and every photo as a sealed .bin file. Photos
+// are rewritten each time: a fresh nonce per write keeps the ciphertext unlinkable
+// to the previous one, and removed items lose their file.
+export async function writeFolder(
+  dir: DirHandle,
+  items: readonly Item[],
+  properties: readonly Property[],
+  open: OpenKey,
+  vault: Vault,
+): Promise<number> {
+  const exportedAt = Date.now()
+  const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
+
+  const file = toDataFile(items, properties, exportedAt)
+  const wanted = new Set<string>()
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    const stored = file.items[i]
+    if (!item || !stored) continue
+    if (!item.photo) {
+      stored.photoFile = null
+      continue
+    }
+    const name = `${item.id}.bin`
+    const { iv, data } = await encryptBytes(open.key, new Uint8Array(await item.photo.arrayBuffer()))
+    const bytes = new Uint8Array(iv.length + data.length)
+    bytes.set(iv)
+    bytes.set(data, iv.length)
+    await writeFile(photos, name, bytes)
+    stored.photoFile = `${photoDirName}/${name}`
+    stored.photoType = item.photo.type
+    wanted.add(name)
   }
-  const existing = new Map<string, number>()
   for await (const entry of photos.values()) {
-    if (entry.kind === 'file') existing.set(entry.name, (await (entry as FileSystemFileHandle).getFile()).size)
+    if (entry.kind === 'file' && !wanted.has(entry.name)) await photos.removeEntry(entry.name)
   }
-  for (const [name, blob] of wanted) {
-    if (existing.get(name) !== blob.size) await writeFile(photos, name, blob)
-  }
-  for (const name of existing.keys()) {
-    if (!wanted.has(name)) await photos.removeEntry(name)
-  }
+
+  await writeFile(dir, dataFileName, JSON.stringify(await sealDataFile(open, vault, file), null, 2))
   return exportedAt
 }
 
-export type SyncResult = 'loaded' | 'written'
+export type SyncResult = 'loaded' | 'written' | 'foreign'
 
 // Newer side wins: a file written after the last local edit is loaded,
 // otherwise the local copy is written out.
-export async function reconcile(dir: DirHandle): Promise<SyncResult> {
-  const [onDisk, changedAt, local, props] = await Promise.all([
-    readFolder(dir),
-    localChangedAt(),
-    db.items.toArray(),
-    db.properties.toArray(),
-  ])
-  if (onDisk && onDisk.exportedAt > changedAt) {
+export async function reconcile(dir: DirHandle, open: OpenKey, vault: Vault): Promise<SyncResult> {
+  const onDisk = await readFolder(dir, open)
+  if (onDisk.kind === 'foreign') return 'foreign'
+  const changedAt = await localChangedAt()
+  if (onDisk.kind === 'data' && onDisk.exportedAt > changedAt) {
     await replaceAll(onDisk.items, onDisk.properties)
     return 'loaded'
   }
-  await writeFolder(dir, local, props)
+  await writeFolder(dir, await readItems(), await readProperties(), open, vault)
   return 'written'
 }
+

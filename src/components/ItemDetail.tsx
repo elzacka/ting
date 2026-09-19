@@ -8,7 +8,7 @@ import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 
-export function ItemDetail({ item, fields, locked }: { item: Item; fields: FieldSettings; locked: boolean }) {
+export function ItemDetail({ item, fields }: { item: Item; fields: FieldSettings }) {
   const url = useObjectUrl(item.photo)
   const [confirming, setConfirming] = useState(false)
 
@@ -54,9 +54,7 @@ export function ItemDetail({ item, fields, locked }: { item: Item; fields: Field
         {item.updatedAt !== item.createdAt && ` · ${t.detail.updated} ${formatDate(item.updatedAt)}`}
       </p>
 
-      {locked ? (
-        <p className="hint">{t.lock.lockedElsewhere}</p>
-      ) : confirming ? (
+      {confirming ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-text">
           <p id="confirm-text">{t.confirm.delete(item.name)}</p>
           <div className="row">

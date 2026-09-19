@@ -35,9 +35,38 @@ npm run dev
 
 Hver push til `main` bygger og publiserer automatisk til GitHub Pages via `.github/workflows/deploy-pages.yml`. Første gang: Gå til Settings, Pages i repoet og velg «GitHub Actions» som kilde.
 
+## Kryptering
+
+Alt du registrerer krypteres på enheten med et passord du velger første gang du åpner appen.
+
+| Hva | Hvordan |
+|---|---|
+| Algoritme | AES-256-GCM, innebygd i nettleseren (WebCrypto) |
+| Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
+| Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
+| Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
+| Åpning | Appen åpner alltid låst. Låseknappen i topplinja sletter nøkkelen fra minnet |
+| Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
+
+Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
+
+## Sikkerhet
+
+Alt du skriver inn behandles som tekst, aldri som kode eller instruksjoner. Det gjelder feltene, søk, filer du gjenoppretter og mapper appen leser.
+
+| Risiko | Tiltak |
+|---|---|
+| Skript via feltinnhold | Appen setter aldri inn HTML fra tekst |
+| Formler i CSV | Tekst som begynner med `=`, `+`, `-` eller `@` får en apostrof foran, så regneark ikke kjører den |
+| Skadelige filer | Bare bildefiler tas inn som bilder. Filer og mapper valideres mot et fast format før noe lagres |
+| Innhold fra nettet | Appen laster ingenting fra andre steder og sender ingenting ut (Content Security Policy) |
+| Passord | Lagres og logges aldri. Nøkkelen slettes fra minnet når du låser |
+
+Appen bruker ingen KI. Kommer det en gang en KI-funksjon, skal alt du har registrert fortsatt bare være data for den, aldri instruksjoner, og ingenting sendes ut av enheten uten at du velger det hver gang.
+
 ## Lagring
 
-Alt lagres i nettleseren på enheten. Koble appen til en mappe under «Lagring», så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt. Safari kan ikke koble til mapper. Der bruker du «Last ned kopi».
+Alt lagres i nettleseren på enheten. Koble appen til en mappe under «Lagring», så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt. Safari kan ikke koble til mapper. Der bruker du «Last ned kopi». Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
 
 ## Lisens
 

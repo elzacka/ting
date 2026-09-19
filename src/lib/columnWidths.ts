@@ -29,10 +29,17 @@ export function tableWidth(defs: readonly ColumnDef[], widths: Widths, extra = 0
   return checkColumnWidth() + defs.reduce((sum, d) => sum + columnWidth(d, widths), 0) + extra
 }
 
+// Anything from localStorage is untrusted: keep only finite numbers in range.
 function read(): Widths {
   try {
     const raw = localStorage.getItem(storageKey)
-    return raw ? (JSON.parse(raw) as Widths) : {}
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+    if (typeof parsed !== 'object' || parsed === null) return {}
+    const out: Widths = {}
+    for (const [k, v] of Object.entries(parsed)) {
+      if (typeof v === 'number' && Number.isFinite(v)) out[k] = Math.min(2000, Math.max(minColumnWidth, v))
+    }
+    return out
   } catch {
     return {}
   }

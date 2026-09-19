@@ -411,6 +411,12 @@
   font-size: var(--text-sm);
 }
 
+/* Body cells are small by request; headers keep --text-sm */
+.grid td,
+.grid-input {
+  font-size: var(--text-cell);
+}
+
 .grid th,
 .grid td {
   padding: 2px 0;
@@ -466,7 +472,6 @@
   border: 1px solid transparent;
   border-radius: 0;
   background: transparent;
-  font-size: var(--text-sm);
 }
 
 .grid-input:hover {
@@ -922,7 +927,6 @@
 
 .grid-read td {
   padding: var(--s-2);
-  font-size: var(--text-sm);
   vertical-align: middle;
 }
 

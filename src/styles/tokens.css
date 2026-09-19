@@ -19,6 +19,7 @@
   --text-md: 17px;
   --text-lg: 22px;
   --text-xl: 28px;
+  --text-cell: 9px; /* table body text, 60 % of --text-sm, chosen by elzacka */
 
   --s-1: 4px;
   --s-2: 8px;

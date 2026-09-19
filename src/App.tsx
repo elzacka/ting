@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
-import { db } from './db/db'
+import { db, readFieldSettings, readItems, readProperties, readVault, sealPlaintextRows, writeVault } from './db/db'
 import type { Item, Property } from './db/schema'
-import { useLiveQuery } from './db/useLiveQuery'
+import { useSealedQuery } from './db/useSealedQuery'
 import { distinct } from './lib/filter'
 import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
-import { useLock } from './lib/useLock'
-import { fieldSettingsKey, readFieldSettings, type FieldSettings } from './lib/fields'
+import { initVault, lock, setupVault, unlock, useVault } from './lib/vault'
+import type { FieldSettings } from './lib/fields'
 import type { Filters } from './lib/filters'
 import { usePlainPaste } from './lib/plainPaste'
 import type { Sort } from './lib/sort'
@@ -18,18 +18,35 @@ import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
 import { Home } from './components/Home'
 import { ItemList } from './components/ItemList'
+import { LockScreen } from './components/LockScreen'
 import { RegisterTable } from './components/RegisterTable'
 import { StoragePage } from './components/StoragePage'
 import { UpdateButton } from './components/UpdateButton'
 
 export function App() {
   const route = useRoute()
-  const items = useLiveQuery(() => db.items.toArray(), [])
-  const properties = useLiveQuery(() => db.properties.toArray(), [])
-  const fields = useLiveQuery(async () => readFieldSettings((await db.settings.get(fieldSettingsKey))?.value), [])
+  const vault = useVault()
+  const unlocked = vault.status === 'open'
+  useEffect(() => {
+    void readVault().then(initVault)
+  }, [])
+  const items = useSealedQuery(() => db.items.toArray(), readItems, unlocked)
+  const properties = useSealedQuery(() => db.properties.toArray(), readProperties, unlocked)
+  const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, unlocked)
   const folder = useFolderSync()
   usePlainPaste()
-  const { locked, toggle: toggleLock } = useLock()
+
+  async function onSetup(passphrase: string) {
+    const v = await setupVault(passphrase)
+    await writeVault(v)
+    await sealPlaintextRows()
+  }
+
+  async function onUnlock(passphrase: string) {
+    const ok = await unlock(passphrase)
+    if (ok) await sealPlaintextRows()
+    return ok
+  }
   // One query for both top-level views, so a filter made in one carries into the other.
   // Mirrored into ?q= so a reload or a bookmark keeps it.
   const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
@@ -52,7 +69,7 @@ export function App() {
     if (searchOpen) closeSearch()
     else openSearch('')
   }, [searchOpen, closeSearch, openSearch])
-  useSearchShortcut(searchable, openSearch, toggleSearch)
+  useSearchShortcut(searchable && unlocked, openSearch, toggleSearch)
   useEffect(() => {
     const url = new URL(window.location.href)
     if (query.trim() === '') url.searchParams.delete('q')
@@ -103,7 +120,7 @@ export function App() {
         {isTop && (
           <div className="row topbar-end">
             <UpdateButton />
-            {searchable && (
+            {searchable && unlocked && (
               <button
                 type="button"
                 className={`btn btn-icon${query !== '' ? ' is-active' : ''}`}
@@ -115,31 +132,33 @@ export function App() {
                 <Icon name="search" />
               </button>
             )}
-            {route.view === 'register' && (
-              <button
-                type="button"
-                className={`btn btn-icon${locked ? ' is-active' : ''}`}
-                aria-label={locked ? t.lock.unlock : t.lock.lock}
-                aria-pressed={locked}
-                onClick={toggleLock}
-              >
-                <Icon name={locked ? 'lock' : 'lockOpen'} />
+            {unlocked && (
+              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={lock}>
+                <Icon name="lockOpen" />
               </button>
             )}
-            <a
-              className="tab tab-quiet"
-              href={href.storage}
-              aria-current={route.view === 'storage' ? 'page' : undefined}
-              onClick={guardNav}
-            >
-              {t.nav.storage}
-            </a>
+            {unlocked && (
+              <a
+                className="tab tab-quiet"
+                href={href.storage}
+                aria-current={route.view === 'storage' ? 'page' : undefined}
+                onClick={guardNav}
+              >
+                {t.nav.storage}
+              </a>
+            )}
           </div>
         )}
       </header>
 
       <main className="stack">
-        {items === undefined || properties === undefined || fields === undefined ? (
+        {vault.status === 'loading' ? (
+          <p className="hint">{t.list.loading}</p>
+        ) : vault.status === 'none' ? (
+          <LockScreen mode="setup" onSetup={onSetup} />
+        ) : vault.status === 'locked' ? (
+          <LockScreen mode="unlock" onUnlock={onUnlock} />
+        ) : items === undefined || properties === undefined || fields === undefined ? (
           <p className="hint">{t.list.loading}</p>
         ) : (
           <Screen
@@ -159,7 +178,6 @@ export function App() {
             onWidth={setWidth}
             onDirtyChange={onDirtyChange}
             folder={folder}
-            locked={locked}
           />
         )}
       </main>
@@ -184,7 +202,6 @@ type ScreenProps = {
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
   folder: ReturnType<typeof useFolderSync>
-  locked: boolean
 }
 
 function Screen({
@@ -204,7 +221,6 @@ function Screen({
   onWidth,
   onDirtyChange,
   folder,
-  locked,
 }: ScreenProps) {
   if (route.view === 'home') return <Home />
   const search = { query, onQueryChange, searchOpen, onSearchClose }
@@ -236,17 +252,16 @@ function Screen({
         widths={widths}
         onWidth={onWidth}
         onDirtyChange={onDirtyChange}
-        locked={locked}
       />
     )
   }
   if (route.view === 'storage') {
-    return <StoragePage items={items} properties={properties} folder={folder} locked={locked} />
+    return <StoragePage items={items} properties={properties} folder={folder} />
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
-  if (route.view === 'edit' && !locked) {
+  if (route.view === 'edit') {
     return <ItemForm key={item.id} item={item} fields={fields} categories={distinct(items, (i) => i.category)} />
   }
-  return <ItemDetail item={item} fields={fields} locked={locked} />
+  return <ItemDetail item={item} fields={fields} />
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { fromStored, parseDataFile, photoFileName, toDataFile } from './backup'
+import { createVault } from './crypto'
+import { fromStored, openEnvelope, parseAnyFile, parseDataFile, photoFileName, sealDataFile, toDataFile } from './backup'
 
 const item: Item = {
   id: '3f1c2c2e-6a0b-4d1e-9a3a-1f2e3d4c5b6a',
@@ -46,5 +47,29 @@ describe('data file', () => {
 
   it('gives items without a photo no file name', () => {
     expect(photoFileName({ ...item, photo: null })).toBeNull()
+  })
+})
+
+describe('envelope', () => {
+  it('seals a document, opens it with the same key, and needs the passphrase for a foreign key', async () => {
+    const fast = { m: 256, t: 1, p: 1 }
+    const a = await createVault('passord for enhet a', fast)
+    const b = await createVault('passord for enhet b', fast)
+    const file = toDataFile([{ ...item, photo: null }], [], 42)
+    const text = JSON.stringify(await sealDataFile(a.open, a.vault, file))
+    expect(text).not.toContain('Sovepose')
+    const parsed = parseAnyFile(text)
+    if (parsed.kind !== 'sealed') throw new Error('expected envelope')
+    const same = await openEnvelope(parsed.envelope, a.open)
+    expect(same !== 'foreign' && same !== 'wrong-passphrase' && same.file.items[0]?.name).toBe('Sovepose')
+    expect(await openEnvelope(parsed.envelope, b.open)).toBe('foreign')
+    expect(await openEnvelope(parsed.envelope, b.open, 'feil')).toBe('wrong-passphrase')
+    const opened = await openEnvelope(parsed.envelope, b.open, 'passord for enhet a')
+    expect(opened !== 'foreign' && opened !== 'wrong-passphrase' && opened.open.dekId).toBe(a.open.dekId)
+  })
+
+  it('still reads a plain document from before encryption', () => {
+    const plain = parseAnyFile('{"app":"ting","format":1,"exportedAt":1,"items":[]}')
+    expect(plain.kind).toBe('plain')
   })
 })
