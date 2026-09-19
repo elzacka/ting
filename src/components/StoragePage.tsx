@@ -26,6 +26,7 @@ export function StoragePage({ items, properties, folder }: Props) {
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [passMessage, setPassMessage] = useState<string | null>(null)
+  const [changingPass, setChangingPass] = useState(false)
 
   async function download() {
     const v = currentVault()
@@ -83,6 +84,7 @@ export function StoragePage({ items, properties, folder }: Props) {
     await writeVault(v)
     setOldPass('')
     setNewPass('')
+    setChangingPass(false)
     setPassMessage(t.vault.changed)
   }
 
@@ -256,40 +258,72 @@ export function StoragePage({ items, properties, folder }: Props) {
       <section className="stack-sm">
         <h2 className="section-label">{t.vault.changeTitle}</h2>
         <p className="hint">{t.vault.changeIntro}</p>
-        <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
-          <div className="field">
-            <label htmlFor="old-pass">{t.vault.current}</label>
-            <input
-              id="old-pass"
-              className="input"
-              type="password"
-              autoComplete="current-password"
-              value={oldPass}
-              onChange={(e) => setOldPass(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="new-pass">{t.vault.next}</label>
-            <input
-              id="new-pass"
-              className="input"
-              type="password"
-              autoComplete="new-password"
-              value={newPass}
-              onChange={(e) => setNewPass(e.target.value)}
-            />
-          </div>
-          {passMessage && (
-            <p className={passMessage === t.vault.changed ? 'hint' : 'error'} role="status">
-              {passMessage}
-            </p>
-          )}
-          <div>
-            <button type="submit" className="btn" disabled={oldPass === '' || newPass === ''}>
+        {!changingPass ? (
+          <div className="row">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setPassMessage(null)
+                setChangingPass(true)
+              }}
+            >
               {t.vault.change}
             </button>
+            {passMessage && (
+              <p className="hint" role="status">
+                {passMessage}
+              </p>
+            )}
           </div>
-        </form>
+        ) : (
+          <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
+            <div className="field">
+              <label htmlFor="old-pass">{t.vault.current}</label>
+              <input
+                id="old-pass"
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                value={oldPass}
+                onChange={(e) => setOldPass(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="new-pass">{t.vault.next}</label>
+              <input
+                id="new-pass"
+                className="input"
+                type="password"
+                autoComplete="new-password"
+                value={newPass}
+                onChange={(e) => setNewPass(e.target.value)}
+              />
+            </div>
+            {passMessage && (
+              <p className={passMessage === t.vault.changed ? 'hint' : 'error'} role="status">
+                {passMessage}
+              </p>
+            )}
+            <div className="row">
+              <button type="submit" className="btn" disabled={oldPass === '' || newPass === ''}>
+                {t.vault.change}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  setOldPass('')
+                  setNewPass('')
+                  setPassMessage(null)
+                  setChangingPass(false)
+                }}
+              >
+                {t.action.cancel}
+              </button>
+            </div>
+          </form>
+        )}
       </section>
     </div>
   )
