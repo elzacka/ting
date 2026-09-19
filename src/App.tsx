@@ -166,7 +166,7 @@ export function App() {
             )}
             {unlocked && (
               <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={() => lock()}>
-                <Icon name="lock" />
+                <Icon name="lockOpen" />
               </button>
             )}
             {unlocked && (
