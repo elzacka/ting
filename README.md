@@ -45,7 +45,7 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
 | Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
 | Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Åpning | Appen åpner alltid låst. Låseknappen i topplinja sletter nøkkelen fra minnet |
+| Åpning | Appen åpner alltid låst. Låseknappen i topplinja sletter nøkkelen fra minnet. Appen låser seg selv etter ti minutter uten bruk |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
 Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
@@ -61,6 +61,8 @@ Alt du skriver inn behandles som tekst, aldri som kode eller instruksjoner. Det 
 | Skadelige filer | Bare bildefiler tas inn som bilder. Filer og mapper valideres mot et fast format før noe lagres |
 | Innhold fra nettet | Appen laster ingenting fra andre steder og sender ingenting ut (Content Security Policy) |
 | Passord | Lagres og logges aldri. Nøkkelen slettes fra minnet når du låser |
+
+Trusselmodellen og sikkerhetsmodellen er beskrevet i `SECURITY.md` (engelsk).
 
 Appen bruker ingen KI. Kommer det en gang en KI-funksjon, skal alt du har registrert fortsatt bare være data for den, aldri instruksjoner, og ingenting sendes ut av enheten uten at du velger det hver gang.
 

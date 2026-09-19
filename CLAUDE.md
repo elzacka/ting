@@ -52,14 +52,16 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
-| `src/components/` | One file per screen or reusable piece. `RegisterTable` holds unsaved edits in memory until "Lagre"; `Report` is print-only |
+| `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible |
+| `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
+| `src/components/` | One file per screen or reusable piece. `RegisterTable` holds unsaved edits in memory until "Lagre"; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
 ## Encryption
 
 Everything stored is sealed: AES-256-GCM (WebCrypto) under a random data key (DEK); the DEK is wrapped by a key derived from the passphrase with Argon2id (`@noble/hashes`, m=64 MiB, t=3, p=1). `src/lib/crypto.ts` holds the primitives, `src/lib/vault.ts` the session key (memory only; the app opens locked, `lock()` zeroes the key). `src/db/db.ts` seals every row: items as one sealed JSON document plus sealed photo bytes, properties as sealed documents, field settings as a sealed setting. Only ids, the folder handle, `localChangedAt` and the vault (wrapped key, salt, parameters) are in the clear. Files on disk are envelopes (`src/lib/backup.ts`): vault in the clear, document sealed; photos in the folder are `bilder/<id>.bin` = 12-byte nonce + ciphertext. A file sealed on another device opens with the passphrase and its key is adopted, so devices converge on one DEK. Plain files and rows from before encryption still load; rows are sealed on the first unlock.
 
-Changing anything here needs elzacka's confirmation first (global rule on auth, crypto and access control).
+Changing anything here needs elzacka's confirmation first (global rule on auth, crypto and access control). Threat model and the OWASP Top 10:2025 mapping: `SECURITY.md`.
 
 ## Untrusted input
 
@@ -71,7 +73,7 @@ Everything a user types, pastes, restores from a file or reads from a folder is 
 | CSV | `csvCell` prefixes formula-like text (`=`, `+`, `-`, `@`, tab) with an apostrophe; negative numbers stay numbers |
 | Photos | `asImage` allows image MIME types only, at the picker, in restored copies and in folder reads; a restored data URL must be `data:image/...` |
 | Folder files | `readPhoto` accepts only `<uuid>.<ext>`; a crafted `ting.json` cannot reference other paths |
-| Files and rows | Every document goes through Zod (`itemSchema`, `propertySchema`, `dataFileSchema`, `envelopeSchema`); unknown keys are dropped |
+| Files and rows | Every document goes through Zod (`itemSchema`, `propertySchema`, `dataFileSchema`, `envelopeSchema`); unknown keys are dropped; KDF parameters in an envelope are bounded so a file cannot demand gigabytes before the passphrase is checked. One unreadable row is skipped, not fatal |
 | Routes and `?q=` | Ids are matched, never interpreted; the query is text in a controlled input |
 | localStorage | Parsed values are validated (widths: finite numbers within range) |
 | Passphrase | Never stored, never logged; lives in component state until the form closes; the key is zeroed on lock |
