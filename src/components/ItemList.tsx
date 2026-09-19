@@ -3,7 +3,7 @@ import type { Item, Property } from '../db/schema'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { specKeys } from '../lib/filter'
 import { applyFilters, type Filters } from '../lib/filters'
-import { formatBare, formatDate } from '../lib/format'
+import { formatBare } from '../lib/format'
 import { columnDefs, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { columnId, type Column } from '../lib/grid'
 import { href } from '../lib/route'
@@ -35,7 +35,6 @@ type Props = {
   onWidth: (id: string, w: number | null) => void
 }
 
-const createdWidth = 96
 
 function cellText(item: Item, col: Column): string {
   const id = columnId(col)
@@ -158,14 +157,13 @@ export function ItemList({
         <div className="table-wrap">
           <table
             className={`grid grid-read${hasSelection ? ' has-selection' : ''}`}
-            style={{ width: tableWidth(defs, widths, createdWidth) }}
+            style={{ width: tableWidth(defs, widths) }}
           >
             <colgroup>
               <col style={{ width: checkColumnWidth() }} />
               {defs.map((def) => (
                 <col key={def.id} style={{ width: columnWidth(def, widths) }} />
               ))}
-              <col style={{ width: createdWidth }} />
             </colgroup>
             <thead>
               <tr>
@@ -186,7 +184,6 @@ export function ItemList({
                     </th>
                   )
                 })}
-                <th scope="col">{t.detail.created}</th>
               </tr>
             </thead>
             <tbody>
@@ -263,7 +260,6 @@ function ReadRow({ item, defs, checked, onCheck }: RowProps) {
           </td>
         ),
       )}
-      <td className="tabular">{formatDate(item.createdAt)}</td>
     </tr>
   )
 }

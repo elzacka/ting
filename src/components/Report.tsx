@@ -40,7 +40,6 @@ export function Report({
               </th>
             ))}
             <th scope="col">{t.report.note}</th>
-            <th scope="col">{t.report.created}</th>
           </tr>
         </thead>
         <tbody>
@@ -57,7 +56,6 @@ export function Report({
                 )
               })}
               <td>{item.note ?? ''}</td>
-              <td className="num">{formatDate(item.createdAt)}</td>
             </tr>
           ))}
         </tbody>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { deleteItem } from '../db/db'
 import type { Item } from '../db/schema'
-import { formatDate, formatValue } from '../lib/format'
+import { formatValue } from '../lib/format'
 import { href, navigate } from '../lib/route'
 import type { FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
@@ -48,11 +48,6 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
           <p style={{ whiteSpace: 'pre-wrap' }}>{item.note}</p>
         </section>
       )}
-
-      <p className="hint num">
-        {t.detail.created} {formatDate(item.createdAt)}
-        {item.updatedAt !== item.createdAt && ` · ${t.detail.updated} ${formatDate(item.updatedAt)}`}
-      </p>
 
       {confirming ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-text">

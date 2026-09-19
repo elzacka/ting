@@ -83,7 +83,6 @@ export const t = {
     name: 'Navn',
     category: 'Kategori',
     note: 'Notat',
-    created: 'Opprettet',
   },
   action: {
     save: 'Lagre',
@@ -113,8 +112,6 @@ export const t = {
     specs: 'Spesifikasjoner',
     noSpecs: 'Ingen spesifikasjoner',
     note: 'Notat',
-    created: 'Opprettet',
-    updated: 'Oppdatert',
     notFound: 'Fant ikke denne tingen',
     photoAlt: (name: string) => `Bilde av ${name}`,
   },
