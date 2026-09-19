@@ -604,9 +604,11 @@
     font-size: 11pt;
   }
 
+  /* Only the report prints: everything that is not it, inside it, or on
+     the way down to it goes. main is itself a .stack, so a class-based
+     walk would hide the list's own wrapper and the report with it. */
   .page > *:not(main),
-  main > *:not(.stack),
-  .stack > *:not(.report) {
+  main *:not(.report, .report *, :has(.report)) {
     display: none !important;
   }
 
