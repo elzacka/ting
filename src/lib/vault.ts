@@ -7,7 +7,7 @@ import { createVault, rewrapVault, unlockVault, type OpenKey, type Vault } from 
 export type VaultState =
   | { status: 'loading' }
   | { status: 'none' }
-  | { status: 'locked'; vault: Vault }
+  | { status: 'locked'; vault: Vault; idle?: boolean }
   | { status: 'open'; vault: Vault; open: OpenKey }
 
 let state: VaultState = { status: 'loading' }
@@ -60,10 +60,10 @@ export async function unlock(passphrase: string): Promise<boolean> {
   return true
 }
 
-export function lock(): void {
+export function lock(reason?: 'idle'): void {
   if (state.status !== 'open') return
   state.open.dek.fill(0)
-  set({ status: 'locked', vault: state.vault })
+  set({ status: 'locked', vault: state.vault, idle: reason === 'idle' })
 }
 
 // Verifies the old passphrase, wraps the same data key under the new one.

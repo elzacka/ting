@@ -14,7 +14,7 @@ export function useAutoLock(enabled: boolean): void {
 
     function arm() {
       clearTimeout(timer)
-      timer = setTimeout(lock, autoLockMs)
+      timer = setTimeout(() => lock('idle'), autoLockMs)
     }
     function onActivity() {
       lastActivity = Date.now()
@@ -22,7 +22,7 @@ export function useAutoLock(enabled: boolean): void {
     }
     function onVisibility() {
       if (document.visibilityState !== 'visible') return
-      if (Date.now() - lastActivity >= autoLockMs) lock()
+      if (Date.now() - lastActivity >= autoLockMs) lock('idle')
       else arm()
     }
 

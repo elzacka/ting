@@ -14,6 +14,7 @@ export const t = {
     create: 'Krypter og fortsett',
     unlockTitle: 'Låst',
     unlockIntro: 'Skriv inn passordet for å åpne.',
+    autoLocked: 'Appen låste seg etter ti minutter uten bruk.',
     unlock: 'Åpne',
     wrong: 'Feil passord.',
     working: 'Åpner …',

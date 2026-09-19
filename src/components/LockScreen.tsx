@@ -4,7 +4,7 @@ import { Icon } from './Icons'
 
 type Props =
   | { mode: 'setup'; onSetup: (passphrase: string) => Promise<void> }
-  | { mode: 'unlock'; onUnlock: (passphrase: string) => Promise<boolean> }
+  | { mode: 'unlock'; onUnlock: (passphrase: string) => Promise<boolean>; idle: boolean | undefined }
 
 const minLength = 12
 
@@ -39,6 +39,7 @@ export function LockScreen(props: Props) {
       <div>
         <h1 className="title">{props.mode === 'setup' ? t.vault.setupTitle : t.vault.unlockTitle}</h1>
         <p className="hint">{props.mode === 'setup' ? t.vault.setupIntro : t.vault.unlockIntro}</p>
+        {props.mode === 'unlock' && props.idle && <p className="hint">{t.vault.autoLocked}</p>}
       </div>
       <div className="field">
         <label htmlFor="pass">{t.vault.password}</label>
