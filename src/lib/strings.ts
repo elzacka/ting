@@ -12,6 +12,8 @@ export const t = {
     setupIntro:
       'Passordet låser alt du registrerer, på enheten og i alle kopier. Det lagres ingen steder. Mister du det, er dataene tapt for godt.',
     password: 'Passord',
+    show: 'Vis passord',
+    hide: 'Skjul passord',
     repeat: 'Gjenta passordet',
     minLength: 'Passordet må ha minst 12 tegn. Bruk gjerne en setning.',
     mismatch: 'Passordene er ikke like.',

@@ -71,6 +71,21 @@
   justify-content: flex-end;
 }
 
+/* Password field with the reveal toggle inside its right edge */
+.input-reveal {
+  position: relative;
+}
+
+.input-reveal .input {
+  padding-right: var(--row-h);
+}
+
+.input-reveal .btn-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 /* Buttons */
 
 .btn {

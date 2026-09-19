@@ -14,6 +14,7 @@ export function LockScreen(props: Props) {
   const [repeat, setRepeat] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [show, setShow] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -43,16 +44,28 @@ export function LockScreen(props: Props) {
       </div>
       <div className="field">
         <label htmlFor="pass">{t.vault.password}</label>
-        <input
-          id="pass"
-          className="input"
-          type="password"
-          autoComplete={props.mode === 'setup' ? 'new-password' : 'current-password'}
-          value={pass}
-          onChange={(e) => setPass(e.target.value)}
-          aria-invalid={error !== null}
-          autoFocus
-        />
+        <div className="input-reveal">
+          <input
+            id="pass"
+            className="input"
+            type={show ? 'text' : 'password'}
+            autoComplete={props.mode === 'setup' ? 'new-password' : 'current-password'}
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            aria-invalid={error !== null}
+            autoFocus
+          />
+          <button
+            type="button"
+            className="btn btn-icon"
+            aria-label={show ? t.vault.hide : t.vault.show}
+            title={show ? t.vault.hide : t.vault.show}
+            aria-pressed={show}
+            onClick={() => setShow(!show)}
+          >
+            <Icon name={show ? 'visibilityOff' : 'visibility'} />
+          </button>
+        </div>
       </div>
       {props.mode === 'setup' && (
         <div className="field">
@@ -60,7 +73,7 @@ export function LockScreen(props: Props) {
           <input
             id="pass2"
             className="input"
-            type="password"
+            type={show ? 'text' : 'password'}
             autoComplete="new-password"
             value={repeat}
             onChange={(e) => setRepeat(e.target.value)}
