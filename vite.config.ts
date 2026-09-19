@@ -34,8 +34,8 @@ const securityHeaders = {
 
 // Published at elzacka.github.io/ting/, so production assets need the prefix.
 // The dev server stays at the root so localhost:5173 keeps working as before.
-export default defineConfig(({ command }) => {
-  const base = command === 'build' ? '/ting/' : '/'
+export default defineConfig(({ command, isPreview }) => {
+  const base = command === 'build' || isPreview ? '/ting/' : '/'
   return {
     base,
     plugins: [
