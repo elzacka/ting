@@ -68,6 +68,7 @@ Photos are stored as `Blob`, never base64.
 ## Conventions
 
 - Language in code, comments, commits: English. Language in UI: Norwegian (nb-NO), klarspråk, du-form
+- Norwegian text: always a capital letter after a colon, also when a fragment follows. Overrides the klarsprak-norsk skill on that point. Decided by elzacka, 19 September 2026
 - No emoji anywhere
 - Commit format `type: description` (feat, fix, docs, refactor, test, chore)
 - Commit only after the change has been run locally and verified by elzacka. Never push

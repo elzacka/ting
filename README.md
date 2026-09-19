@@ -4,10 +4,10 @@ Holder oversikt over det du eier, og hvor det er. En PWA som virker uten nett og
 
 ## MVP
 
-- Oversikt: søk som tåler skrivefeil, med operatorer som `komfort<0`, `-sommer` og `has:bilde`. Velg ting og last ned CSV eller skriv ut en rapport
-- Legg til og endre: rediger mange ting samtidig i en tabell, med egenskaper som kolonner
+- Oversikt: Smart søk og filtrering. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`. Filtrene under søkefeltet har en nedtrekksmeny per egenskap, med flervalg. Velg ting og last ned CSV eller skriv ut en rapport
+- Legg til og endre: Rediger mange ting samtidig i en tabell, med egenskaper som kolonner
 - Egen side for hver ting, med bilde og full spesifikasjonsliste
-- Lagring: koble appen til en mappe på disk (Chrome og Edge), eller last ned og gjenopprett en kopi
+- Lagring: Koble appen til en mappe på disk (Chrome og Edge), eller last ned og gjenopprett en kopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
 

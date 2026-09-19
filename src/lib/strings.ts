@@ -118,7 +118,7 @@ export const t = {
     columnUnitOptional: 'Valgfritt',
     columnUnitExample: 'For eksempel °C',
     columnHint:
-      'Nedtrekk: velg blant verdiene som finnes, eller skriv en ny. Tall: skriv bare tallet, 1250 og ikke 1250 gram; enheten gjelder hele kolonnen. Dato: skriv 19.09.26.',
+      'Nedtrekk: Velg blant verdiene som finnes, eller skriv en ny. Tall: Skriv bare tallet, 1250 og ikke 1250 gram. Enheten gjelder hele kolonnen. Dato: Skriv 19.09.26.',
     columnAdd: 'Legg til egenskap',
     unitOptions: ['kr', '°C', 'gram', 'kg', 'cm', 'mm', 'm', 'liter', 'ml', 'stk', 'år'],
     columnAdded: (key: string) => `Egenskapen «${key}» er lagt til.`,
