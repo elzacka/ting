@@ -92,6 +92,10 @@ export function App() {
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
     if (dirty.current && !window.confirm(t.confirm.unsaved)) e.preventDefault()
   }
+  function lockApp() {
+    if (dirty.current && !window.confirm(t.confirm.unsaved)) return
+    lock()
+  }
   function toggleEditing() {
     if (editing && dirty.current && !window.confirm(t.confirm.unsaved)) return
     writeEditing(!editing)
@@ -165,7 +169,7 @@ export function App() {
               </button>
             )}
             {unlocked && (
-              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={() => lock()}>
+              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={lockApp}>
                 <Icon name="lockOpen" />
               </button>
             )}

@@ -5,7 +5,7 @@ export const t = {
   lock: { lock: 'Lås appen' },
   editing: {
     label: 'Redigering',
-    off: 'Redigering er av. Trykk på blyanten i topplinja for å legge til eller endre.',
+    off: 'Redigering er av.',
   },
   vault: {
     setupTitle: 'Velg et passord',
@@ -192,7 +192,6 @@ export const t = {
   },
   storage: {
     title: 'Innstillinger',
-    intro: 'Alt lagres i nettleseren på denne enheten.',
     folderTitle: 'Mappe på disk',
     folderIntro:
       'Koble appen til en mappe. Appen lagrer ting.json og bildene der hver gang du lagrer. Kopier mappen når du vil ta vare på alt.',

@@ -91,7 +91,6 @@ export function StoragePage({ items, properties, folder }: Props) {
   return (
     <div className="stack narrow">
       <h1 className="title">{t.storage.title}</h1>
-      <p>{t.storage.intro}</p>
 
       <section className="stack-sm">
         <h2 className="section-label">{t.storage.folderTitle}</h2>
