@@ -628,7 +628,6 @@
   }
 
   .report-table .num {
-    text-align: right;
     white-space: nowrap;
   }
 
@@ -957,11 +956,8 @@
   padding-left: 0;
 }
 
-.grid-read td.num {
-  text-align: right;
-  white-space: nowrap;
-}
-
+/* Every column is left-aligned, whatever its type: the eye reads down one
+   edge, and text, numbers and dates sit under their own header. */
 .grid-read td.tabular {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

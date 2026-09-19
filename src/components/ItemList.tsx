@@ -258,7 +258,7 @@ function ReadRow({ item, defs, checked, onCheck }: RowProps) {
             </a>
           </td>
         ) : (
-          <td key={def.id} className="num">
+          <td key={def.id} className="tabular">
             {cellText(item, def.col)}
           </td>
         ),
