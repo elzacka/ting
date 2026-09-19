@@ -14,14 +14,13 @@ type Props = {
   items: Item[]
   properties: Property[]
   folder: ReturnType<typeof useFolderSync>
-  editing: boolean
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
 }
 
 type Pending = { items: Item[]; properties: Property[] }
 
-export function StoragePage({ items, properties, folder, editing, autoLock, onAutoLockChange }: Props) {
+export function StoragePage({ items, properties, folder, autoLock, onAutoLockChange }: Props) {
   const { status, connect, grant, adopt, disconnect } = folder
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Pending | null>(null)
@@ -103,7 +102,7 @@ export function StoragePage({ items, properties, folder, editing, autoLock, onAu
         <h2 className="section-label">{t.storage.folderTitle}</h2>
         {status.kind === 'unsupported' && <p>{t.storage.unsupported}</p>}
         {status.kind === 'checking' && <p className="hint">{t.storage.checking}</p>}
-        {status.kind === 'none' && editing && (
+        {status.kind === 'none' && (
           <div>
             <button type="button" className="btn btn-primary" onClick={connect}>
               {t.storage.choose}
@@ -114,11 +113,9 @@ export function StoragePage({ items, properties, folder, editing, autoLock, onAu
           <div className="stack-sm">
             <p>{t.storage.needsPermission(status.name)}</p>
             <div className="row">
-              {editing && (
-                <button type="button" className="btn btn-primary" onClick={grant}>
-                  {t.storage.grant}
-                </button>
-              )}
+              <button type="button" className="btn btn-primary" onClick={grant}>
+                {t.storage.grant}
+              </button>
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
               </button>
@@ -181,11 +178,9 @@ export function StoragePage({ items, properties, folder, editing, autoLock, onAu
               {t.storage.error(status.name, status.message)}
             </p>
             <div className="row">
-              {editing && (
-                <button type="button" className="btn btn-primary" onClick={connect}>
-                  {t.storage.choose}
-                </button>
-              )}
+              <button type="button" className="btn btn-primary" onClick={connect}>
+                {t.storage.choose}
+              </button>
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
               </button>
@@ -207,11 +202,9 @@ export function StoragePage({ items, properties, folder, editing, autoLock, onAu
             className="visually-hidden"
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
-          {editing && (
-            <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-              {t.storage.restore}
-            </button>
-          )}
+          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+            {t.storage.restore}
+          </button>
         </div>
         {foreignCopy && (
           <form className="stack-sm" onSubmit={openForeignCopy}>

@@ -166,7 +166,7 @@ export function App() {
                 <Icon name="search" />
               </button>
             )}
-            {unlocked && (route.view === 'register' || route.view === 'storage') && (
+            {unlocked && route.view === 'register' && (
               <button
                 type="button"
                 role="switch"
@@ -323,7 +323,6 @@ function Screen({
         items={items}
         properties={properties}
         folder={folder}
-        editing={editing}
         autoLock={autoLock}
         onAutoLockChange={onAutoLockChange}
       />
