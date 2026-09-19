@@ -78,7 +78,6 @@ export function LockScreen(props: Props) {
           {busy ? t.vault.working : props.mode === 'setup' ? t.vault.create : t.vault.unlock}
         </button>
       </div>
-      <p className="hint">{t.vault.tech}</p>
     </form>
   )
 }

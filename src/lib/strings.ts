@@ -10,7 +10,7 @@ export const t = {
   vault: {
     setupTitle: 'Velg et passord',
     setupIntro:
-      'Alt du registrerer krypteres med dette passordet, både på enheten og i alle kopier. Passordet lagres ingen steder. Mister du det, er dataene tapt for godt.',
+      'Passordet låser alt du registrerer, på enheten og i alle kopier. Det lagres ingen steder. Mister du det, er dataene tapt for godt.',
     password: 'Passord',
     repeat: 'Gjenta passordet',
     minLength: 'Passordet må ha minst 12 tegn. Bruk gjerne en setning.',
@@ -22,7 +22,6 @@ export const t = {
     unlock: 'Åpne',
     wrong: 'Feil passord.',
     working: 'Åpner …',
-    tech: 'Kryptert med AES-256-GCM. Nøkkelen utledes fra passordet med Argon2id. Ingenting sendes noe sted.',
     changeTitle: 'Passord',
     changeIntro: 'Dataene krypteres på nytt under det nye passordet. Kopier du har tatt tidligere, åpnes fortsatt med det gamle.',
     current: 'Nåværende passord',
