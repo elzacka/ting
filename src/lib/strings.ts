@@ -188,15 +188,4 @@ export const t = {
     restoreFailed: 'Filen ble ikke gjenkjent som en kopi fra Ting.',
     replace: 'Erstatt',
   },
-  install: {
-    title: 'Installer Ting som app. Den starter raskere og tar vare på dataene dine.',
-    install: 'Installer',
-    how: 'Se hvordan',
-    hide: 'Skjul',
-    stepsMac: ['Klikk på Del-ikonet i verktøylinjen i Safari.', 'Velg «Legg til i Dock».'],
-    stepsIos: (isIPad: boolean) => [
-      `Trykk på Del-ikonet ${isIPad ? 'øverst' : 'nederst'} i Safari.`,
-      'Velg «Legg til på Hjem-skjerm», og bekreft med «Legg til».',
-    ],
-  },
 } as const

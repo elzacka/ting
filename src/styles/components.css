@@ -680,30 +680,6 @@
   margin-left: auto;
 }
 
-/* Install notice: same shape as a notice, neutral colours */
-
-.notice-quiet {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-}
-
-.notice-quiet .btn {
-  border-color: var(--border-input);
-  color: var(--text);
-}
-
-.notice-quiet > .stack-sm {
-  flex: 1;
-}
-
-.install-steps {
-  margin: 0;
-  padding-left: var(--s-4);
-  font-size: var(--text-sm);
-  color: var(--text-2);
-}
-
 .empty a {
   color: var(--accent);
 }

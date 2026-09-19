@@ -6,3 +6,9 @@ dev-dist/
 .obsidian/
 .claude/settings.local.json
 dev_only/
+
+# User data never belongs in the repo
+ting.json
+bilder/
+ting-*.json
+ting-*.csv

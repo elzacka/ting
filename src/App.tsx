@@ -20,7 +20,6 @@ import { Home } from './components/Home'
 import { ItemList } from './components/ItemList'
 import { RegisterTable } from './components/RegisterTable'
 import { StoragePage } from './components/StoragePage'
-import { InstallNotice } from './components/InstallNotice'
 import { UpdateNotice } from './components/UpdateNotice'
 
 export function App() {
@@ -140,7 +139,6 @@ export function App() {
 
       <main className="stack">
         <UpdateNotice />
-        {isTop && <InstallNotice />}
         {items === undefined || properties === undefined || fields === undefined ? (
           <p className="hint">{t.list.loading}</p>
         ) : (
