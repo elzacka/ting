@@ -21,9 +21,11 @@ const item: Item = {
   updatedAt: 2,
 }
 
+const fields = { category: { label: 'Type', order: 3, hidden: true }, name: { label: null, order: -1 } }
+
 describe('data file', () => {
   it('round-trips an item through JSON, with dates as numbers and the photo as a file name', () => {
-    const file = toDataFile([item], [{ id: 'p1', key: 'Vekt', unit: 'gram', createdAt: 5 }], 123)
+    const file = toDataFile([item], [{ id: 'p1', key: 'Vekt', unit: 'gram', createdAt: 5 }], fields, 123)
     const text = JSON.stringify(file)
     const parsed = parseDataFile(text)
     expect(parsed.exportedAt).toBe(123)
@@ -34,6 +36,11 @@ describe('data file', () => {
     expect(stored.purchaseDate).toBe(Date.UTC(2024, 0, 15))
     const back = fromStored(stored, item.photo)
     expect(back).toEqual(item)
+    expect(parsed.fields).toEqual(fields)
+  })
+
+  it('loads files without field settings and leaves them undefined', () => {
+    expect(parseDataFile('{"app":"ting","format":1,"exportedAt":0,"items":[]}').fields).toBeUndefined()
   })
 
   it('loads files written before properties existed', () => {
@@ -55,7 +62,7 @@ describe('envelope', () => {
     const fast = { m: 256, t: 1, p: 1 }
     const a = await createVault('passord for enhet a', fast)
     const b = await createVault('passord for enhet b', fast)
-    const file = toDataFile([{ ...item, photo: null }], [], 42)
+    const file = toDataFile([{ ...item, photo: null }], [], fields, 42)
     const text = JSON.stringify(await sealDataFile(a.open, a.vault, file))
     expect(text).not.toContain('Sovepose')
     const parsed = parseAnyFile(text)
@@ -70,7 +77,7 @@ describe('envelope', () => {
 
   it('rejects an envelope whose key derivation would exhaust memory', async () => {
     const a = await createVault('passord for enhet a', { m: 256, t: 1, p: 1 })
-    const env = await sealDataFile(a.open, a.vault, toDataFile([], [], 1))
+    const env = await sealDataFile(a.open, a.vault, toDataFile([], [], fields, 1))
     const hostile = { ...env, vault: { ...env.vault, kdf: { ...env.vault.kdf, m: 4194304 } } }
     expect(() => parseAnyFile(JSON.stringify(hostile))).toThrow()
   })

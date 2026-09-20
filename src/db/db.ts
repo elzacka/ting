@@ -300,14 +300,16 @@ export async function removeProperty(id: string, matches: (spec: Item['specs'][n
 
 // Replaces everything with what a file or a folder holds. Does not touch
 // localChangedAt: loading is not a local edit.
-export async function replaceAll(items: Item[], properties: Property[]): Promise<void> {
+export async function replaceAll(items: Item[], properties: Property[], fields?: FieldSettings): Promise<void> {
   const itemRows = await Promise.all(items.map((i) => sealItem(itemSchema.parse(i))))
   const propRows = await Promise.all(properties.map((p) => sealProperty(propertySchema.parse(p))))
-  await db.transaction('rw', db.items, db.properties, async () => {
+  const fieldRow = fields ? await sealJson(currentKey().key, parseFieldSettings(fields)) : null
+  await db.transaction('rw', db.items, db.properties, db.settings, async () => {
     await db.items.clear()
     await db.items.bulkAdd(itemRows)
     await db.properties.clear()
     await db.properties.bulkAdd(propRows)
+    if (fieldRow) await db.settings.put({ key: fieldSettingsKey, sealed: fieldRow })
   })
 }
 

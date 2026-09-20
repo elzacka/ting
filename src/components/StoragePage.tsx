@@ -1,7 +1,8 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { replaceAll, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
-import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope } from '../lib/backup'
+import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
+import type { FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
 import { t } from '../lib/strings'
@@ -14,17 +15,16 @@ const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 type Props = {
   items: Item[]
   properties: Property[]
+  fields: FieldSettings
   folder: ReturnType<typeof useFolderSync>
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
 }
 
-type Pending = { items: Item[]; properties: Property[] }
-
-export function StoragePage({ items, properties, folder, autoLock, onAutoLockChange }: Props) {
+export function StoragePage({ items, properties, fields, folder, autoLock, onAutoLockChange }: Props) {
   const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
   const fileRef = useRef<HTMLInputElement>(null)
-  const [pending, setPending] = useState<Pending | null>(null)
+  const [pending, setPending] = useState<Loaded | null>(null)
   const [foreignCopy, setForeignCopy] = useState<Envelope | null>(null)
   const [copyPass, setCopyPass] = useState('')
   const [copyError, setCopyError] = useState<string | null>(null)
@@ -38,7 +38,7 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
   async function download() {
     const v = currentVault()
     if (!v) return
-    downloadText(exportFilename('json'), await toBackupJson(items, properties, currentKey(), v), 'application/json')
+    downloadText(exportFilename('json'), await toBackupJson(items, properties, fields, currentKey(), v), 'application/json')
   }
 
   async function onFile(file: File | undefined) {
@@ -77,7 +77,7 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
 
   async function restore() {
     if (!pending) return
-    await replaceAll(pending.items, pending.properties)
+    await replaceAll(pending.items, pending.properties, pending.fields)
     setMessage(t.storage.restoreDone(pending.items.length))
     setPending(null)
   }

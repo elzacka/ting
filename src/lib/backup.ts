@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { itemSchema, propertySchema, type Item, type Property } from '../db/schema'
 import { openJson, sealJson, unlockVault, type OpenKey, type Sealed, type Vault } from './crypto'
+import type { FieldSettings } from './fields'
 
 // One JSON document describes the whole catalogue. The folder store keeps
 // photos as files next to it; the download copy embeds them as data URLs.
@@ -20,6 +21,11 @@ const storedItemSchema = itemSchema.omit({ photo: true, receiptImage: true }).ex
   photoData: z.string().nullable().optional(),
 })
 
+const fieldSettingsSchema = z.object({
+  category: z.object({ label: z.string().nullable(), order: z.number(), hidden: z.boolean() }),
+  name: z.object({ label: z.string().nullable(), order: z.number() }),
+})
+
 export const dataFileSchema = z.object({
   app: z.literal('ting'),
   format: z.literal(fileFormat),
@@ -27,6 +33,10 @@ export const dataFileSchema = z.object({
   items: z.array(storedItemSchema),
   // Optional so files written before properties existed still load.
   properties: z.array(propertySchema).default([]),
+  // Labels, positions and the hidden flag of the two built-in columns.
+  // Optional: files from before 20 September 2026 have none and leave
+  // the device's own settings alone.
+  fields: fieldSettingsSchema.optional(),
 })
 
 export { storedItemSchema }
@@ -52,8 +62,13 @@ export function toStored(item: Item): StoredItem {
   }
 }
 
-export function toDataFile(items: readonly Item[], properties: readonly Property[], exportedAt = Date.now()): DataFile {
-  return { app: 'ting', format: fileFormat, exportedAt, items: items.map(toStored), properties: [...properties] }
+export function toDataFile(
+  items: readonly Item[],
+  properties: readonly Property[],
+  fields: FieldSettings,
+  exportedAt = Date.now(),
+): DataFile {
+  return { app: 'ting', format: fileFormat, exportedAt, items: items.map(toStored), properties: [...properties], fields }
 }
 
 export function fromStored(stored: StoredItem, photo: Blob | null): Item {
@@ -157,10 +172,11 @@ async function dataUrlToBlob(url: string): Promise<Blob | null> {
 export async function toBackupJson(
   items: readonly Item[],
   properties: readonly Property[],
+  fields: FieldSettings,
   open: OpenKey,
   vault: Vault,
 ): Promise<string> {
-  const file = toDataFile(items, properties)
+  const file = toDataFile(items, properties, fields)
   const withPhotos = await Promise.all(
     file.items.map(async (stored, i) => {
       const photo = items[i]?.photo ?? null
@@ -170,11 +186,13 @@ export async function toBackupJson(
   return JSON.stringify(await sealDataFile(open, vault, { ...file, items: withPhotos }), null, 2)
 }
 
-export async function itemsFromDataFile(file: DataFile): Promise<{ items: Item[]; properties: Property[] }> {
+export type Loaded = { items: Item[]; properties: Property[]; fields: FieldSettings | undefined }
+
+export async function itemsFromDataFile(file: DataFile): Promise<Loaded> {
   const items = await Promise.all(
     file.items.map(async (s) => fromStored(s, s.photoData ? await dataUrlToBlob(s.photoData) : null)),
   )
-  return { items, properties: file.properties }
+  return { items, properties: file.properties, fields: file.fields }
 }
 
 // Whether two item sets are the same things (by id), whatever their content.

@@ -328,6 +328,7 @@ function Screen({
       <StoragePage
         items={items}
         properties={properties}
+        fields={fields}
         folder={folder}
         autoLock={autoLock}
         onAutoLockChange={onAutoLockChange}

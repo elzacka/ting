@@ -1,5 +1,15 @@
-import { deleteSetting, getSetting, localChangedAt, readItems, readProperties, replaceAll, setSetting } from '../db/db'
+import {
+  deleteSetting,
+  getSetting,
+  localChangedAt,
+  readFieldSettings,
+  readItems,
+  readProperties,
+  replaceAll,
+  setSetting,
+} from '../db/db'
 import type { Item, Property } from '../db/schema'
+import type { FieldSettings } from './fields'
 import {
   dataFileName,
   fromStored,
@@ -95,7 +105,15 @@ export type FolderRead =
   | { kind: 'empty' }
   | { kind: 'foreign'; envelope: Envelope }
   | { kind: 'wrong-passphrase' }
-  | { kind: 'data'; exportedAt: number; items: Item[]; properties: Property[]; open: OpenKey; vault: Vault | null }
+  | {
+      kind: 'data'
+      exportedAt: number
+      items: Item[]
+      properties: Property[]
+      fields: FieldSettings | undefined
+      open: OpenKey
+      vault: Vault | null
+    }
 
 // Reads the folder. A file sealed under another data key needs the passphrase
 // once; the key that opened it comes back so the caller can adopt it. A photo
@@ -130,7 +148,7 @@ export async function readFolder(
       fromStored(s, (await readPhoto(photos, s, key)) ?? (s.photoFile ? (localPhotos.get(s.id) ?? null) : null)),
     ),
   )
-  return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, open: key, vault }
+  return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, fields: file.fields, open: key, vault }
 }
 
 // Writes ting.json as an envelope and every photo as a sealed .bin file. Photos
@@ -140,13 +158,14 @@ export async function writeFolder(
   dir: DirHandle,
   items: readonly Item[],
   properties: readonly Property[],
+  fields: FieldSettings,
   open: OpenKey,
   vault: Vault,
 ): Promise<number> {
   const exportedAt = Date.now()
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
 
-  const file = toDataFile(items, properties, exportedAt)
+  const file = toDataFile(items, properties, fields, exportedAt)
   const wanted = new Set<string>()
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
@@ -184,10 +203,10 @@ export async function reconcile(dir: DirHandle, open: OpenKey, vault: Vault): Pr
   if (onDisk.kind === 'foreign') return 'foreign'
   const changedAt = await localChangedAt()
   if (onDisk.kind === 'data' && onDisk.exportedAt > changedAt) {
-    await replaceAll(onDisk.items, onDisk.properties)
+    await replaceAll(onDisk.items, onDisk.properties, onDisk.fields)
     return 'loaded'
   }
-  await writeFolder(dir, local, await readProperties(), open, vault)
+  await writeFolder(dir, local, await readProperties(), await readFieldSettings(), open, vault)
   return 'written'
 }
 

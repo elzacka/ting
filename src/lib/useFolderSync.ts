@@ -1,6 +1,6 @@
 import { liveQuery } from 'dexie'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { db, readItems, readProperties, replaceAll, writeVault } from '../db/db'
+import { db, readFieldSettings, readItems, readProperties, replaceAll, writeVault } from '../db/db'
 import {
   folderSupported,
   forgetFolder,
@@ -55,7 +55,14 @@ export function useFolderSync() {
           try {
             const v = currentVault()
             if (!v) return
-            const at = await writeFolder(handle, await readItems(), await readProperties(), currentKey(), v)
+            const at = await writeFolder(
+              handle,
+              await readItems(),
+              await readProperties(),
+              await readFieldSettings(),
+              currentKey(),
+              v,
+            )
             setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
           } catch (err) {
             setStatus({ kind: 'error', name: handle.name, message: String(err) })
@@ -154,7 +161,7 @@ export function useFolderSync() {
       adoptVault(folder.vault, folder.open)
       await writeVault(folder.vault)
     }
-    await replaceAll(folder.items, folder.properties)
+    await replaceAll(folder.items, folder.properties, folder.fields)
     setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
     startWatching(handle)
   }, [startWatching])
@@ -165,7 +172,14 @@ export function useFolderSync() {
     if (!handle || !v) return
     conflictRef.current = null
     try {
-      const at = await writeFolder(handle, await readItems(), await readProperties(), currentKey(), v)
+      const at = await writeFolder(
+        handle,
+        await readItems(),
+        await readProperties(),
+        await readFieldSettings(),
+        currentKey(),
+        v,
+      )
       setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
       startWatching(handle)
     } catch (err) {
@@ -195,7 +209,7 @@ export function useFolderSync() {
       if (result.kind === 'data' && result.vault) {
         adoptVault(result.vault, result.open)
         await writeVault(result.vault)
-        await replaceAll(result.items, result.properties)
+        await replaceAll(result.items, result.properties, result.fields)
       }
       setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
       startWatching(handle)
