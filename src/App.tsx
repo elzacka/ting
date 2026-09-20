@@ -150,12 +150,14 @@ export function App() {
             </a>
             {unlocked && (
               <a
-                className="tab"
+                className={`btn btn-icon${route.view === 'list' ? ' is-active' : ''}`}
                 href={href.list}
+                aria-label={t.nav.list}
+                title={t.nav.list}
                 aria-current={route.view === 'list' ? 'page' : undefined}
                 onClick={guardNav}
               >
-                {t.nav.list}
+                <Icon name="inventory2" />
               </a>
             )}
           </nav>

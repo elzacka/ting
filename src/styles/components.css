@@ -27,11 +27,6 @@
   border-bottom: 1px solid var(--border);
 }
 
-.topbar .tab {
-  min-height: 56px;
-  margin-bottom: -1px;
-}
-
 /* Page-level blocks get more air than the fields inside them */
 .page > main {
   gap: var(--s-6);
@@ -376,25 +371,6 @@ section {
   font-size: var(--text-sm);
 }
 
-/* Top-level navigation */
-
-.tab {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--row-h);
-  padding: 0 var(--s-2);
-  color: var(--text-2);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-}
-
-.tab[aria-current='page'] {
-  color: var(--text);
-  border-bottom-color: var(--accent);
-}
-
 /* Report footer under the table, shaped like the save row in the edit table:
    the buttons, then the scope as a hint. The table's own bottom hairline is
    the divider. Wraps on a phone. */
@@ -409,8 +385,9 @@ section {
   margin-bottom: calc(var(--s-1) * -1);
 }
 
-.wordmark + .tab {
-  margin-left: var(--s-4);
+/* The Oversikt icon sits a step away from the wordmark */
+.wordmark + .btn-icon {
+  margin-left: var(--s-2);
 }
 
 /* Register table */
@@ -749,20 +726,9 @@ section {
   margin-bottom: var(--s-3);
 }
 
-.tab {
-  white-space: nowrap;
-}
-
 @media (max-width: 599px) {
   .topbar .row {
     gap: var(--s-1);
-  }
-  .wordmark + .tab {
-    margin-left: var(--s-2);
-  }
-  .tab {
-    padding: 0 var(--s-1);
-    font-size: var(--text-xs);
   }
 }
 
