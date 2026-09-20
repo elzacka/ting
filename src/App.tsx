@@ -25,9 +25,8 @@ import { useAutoLock } from './lib/useAutoLock'
 import { readAutoLock, writeAutoLock } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
-import { ItemList } from './components/ItemList'
 import { LockScreen } from './components/LockScreen'
-import { RegisterTable } from './components/RegisterTable'
+import { Overview } from './components/Overview'
 import { StoragePage } from './components/StoragePage'
 import { UpdateButton } from './components/UpdateButton'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -72,23 +71,12 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({})
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
-  // Session mode, never stored: every unlock starts read-only.
-  const [editing, setEditing] = useState(false)
-  // "Legg til ting" in read mode: editing opens with one new row ready
-  const [newRowRequested, setNewRowRequested] = useState(false)
-  const addItem = useCallback(() => {
-    setEditing(true)
-    setNewRowRequested(true)
-  }, [])
   // A "mangler" fact in the summary line runs its search
   const openQuery = useCallback((q: string) => {
     setFilters({})
     setQuery(q)
     setSearchOpen(true)
   }, [])
-  useEffect(() => {
-    if (!unlocked) setEditing(false)
-  }, [unlocked])
   const [autoLock, setAutoLock] = useState(readAutoLock)
   const toggleAutoLock = useCallback((on: boolean) => {
     writeAutoLock(on)
@@ -142,10 +130,6 @@ export function App() {
     if (dirty.current && !window.confirm(t.confirm.unsaved)) return
     lock()
   }
-  function toggleEditing() {
-    if (editing && dirty.current && !window.confirm(t.confirm.unsaved)) return
-    setEditing(!editing)
-  }
 
   return (
     <div className="page">
@@ -185,19 +169,6 @@ export function App() {
                 onClick={toggleSearch}
               >
                 <Icon name="search" />
-              </button>
-            )}
-            {unlocked && route.view === 'list' && (
-              <button
-                type="button"
-                role="switch"
-                aria-checked={editing}
-                className={`btn btn-icon${editing ? ' is-active' : ''}`}
-                aria-label={t.editing.label}
-                title={t.editing.label}
-                onClick={toggleEditing}
-              >
-                <Icon name={editing ? 'edit' : 'editOff'} />
               </button>
             )}
             {unlocked && (
@@ -249,13 +220,9 @@ export function App() {
               onWidth={setWidth}
               onDirtyChange={onDirtyChange}
               folder={folder}
-              editing={editing}
               autoLock={autoLock}
               onAutoLockChange={toggleAutoLock}
-              onAddItem={addItem}
               onOpenQuery={openQuery}
-              newRowRequested={newRowRequested}
-              onNewRowStarted={() => setNewRowRequested(false)}
             />
           )}
         </ErrorBoundary>
@@ -281,13 +248,9 @@ type ScreenProps = {
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
   folder: ReturnType<typeof useFolderSync>
-  editing: boolean
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
-  onAddItem: () => void
   onOpenQuery: (q: string) => void
-  newRowRequested: boolean
-  onNewRowStarted: () => void
 }
 
 function Screen({
@@ -307,19 +270,14 @@ function Screen({
   onWidth,
   onDirtyChange,
   folder,
-  editing,
   autoLock,
   onAutoLockChange,
-  onAddItem,
   onOpenQuery,
-  newRowRequested,
-  onNewRowStarted,
 }: ScreenProps) {
   const search = { query, onQueryChange, searchOpen, onSearchClose }
-  // One view: the pencil decides whether the table reads or edits.
   if (route.view === 'list') {
-    return editing ? (
-      <RegisterTable
+    return (
+      <Overview
         items={items}
         properties={properties}
         fields={fields}
@@ -331,22 +289,6 @@ function Screen({
         widths={widths}
         onWidth={onWidth}
         onDirtyChange={onDirtyChange}
-        newRowRequested={newRowRequested}
-        onNewRowStarted={onNewRowStarted}
-      />
-    ) : (
-      <ItemList
-        items={items}
-        properties={properties}
-        fields={fields}
-        {...search}
-        filters={filters}
-        onFiltersChange={onFiltersChange}
-        sort={sort}
-        onSortChange={onSortChange}
-        widths={widths}
-        onWidth={onWidth}
-        onAddItem={onAddItem}
         onOpenQuery={onOpenQuery}
       />
     )
@@ -365,5 +307,5 @@ function Screen({
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
-  return <ItemDetail item={item} editing={editing} />
+  return <ItemDetail item={item} />
 }

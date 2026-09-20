@@ -15,7 +15,6 @@ type Props = {
   widths: Record<string, number>
   sort: Sort | null
   onWidth: (id: string, w: number | null) => void
-  readOnly?: boolean
   hasSelection: boolean
   headerCheck: ReactNode
   label: (def: ColumnDef) => string
@@ -34,7 +33,6 @@ export function Grid({
   widths,
   sort,
   onWidth,
-  readOnly,
   hasSelection,
   headerCheck,
   label,
@@ -52,7 +50,7 @@ export function Grid({
   return (
     <div className="table-wrap">
       <table
-        className={`grid${readOnly ? ' grid-read' : ''}${hasSelection ? ' has-selection' : ''}`}
+        className={`grid${hasSelection ? ' has-selection' : ''}`}
         style={{ width: tableWidth(defs, widths) }}
         onPaste={onPaste}
       >

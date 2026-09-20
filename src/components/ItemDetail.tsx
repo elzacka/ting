@@ -9,7 +9,7 @@ import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 import { splitLinks } from '../lib/paste'
 
-export function ItemDetail({ item, editing }: { item: Item; editing: boolean }) {
+export function ItemDetail({ item }: { item: Item }) {
   const url = useObjectUrl(item.photo)
   const [confirming, setConfirming] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -61,7 +61,7 @@ export function ItemDetail({ item, editing }: { item: Item; editing: boolean }) 
             </button>
           </div>
         </div>
-      ) : editing ? (
+      ) : (
         <div className="row toolbar">
           <input
             ref={fileRef}
@@ -84,7 +84,7 @@ export function ItemDetail({ item, editing }: { item: Item; editing: boolean }) 
             {t.action.delete}
           </button>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }

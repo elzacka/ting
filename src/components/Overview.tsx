@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type ClipboardEvent } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
+import { downloadText, exportFilename, toCsv } from '../lib/export'
+import { formatDate, formatNumber } from '../lib/format'
+import { href } from '../lib/route'
+import { missing, totals } from '../lib/summary'
+import { useObjectUrl } from './useObjectUrl'
 import {
   addProperty,
   deleteItems,
@@ -70,9 +75,8 @@ type Props = {
   onDirtyChange: (dirty: boolean) => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
-  // Home asked for a new row: add one on mount and say so
-  newRowRequested: boolean
-  onNewRowStarted: () => void
+  // A "mangler" fact on the summary line runs its search
+  onOpenQuery: (query: string) => void
 }
 
 // Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
@@ -80,7 +84,7 @@ function choiceListId(columnId: string): string {
   return `choice-${encodeURIComponent(columnId)}`
 }
 
-export function RegisterTable({
+export function Overview({
   items,
   properties,
   fields,
@@ -95,8 +99,7 @@ export function RegisterTable({
   onDirtyChange,
   filters,
   onFiltersChange,
-  newRowRequested,
-  onNewRowStarted,
+  onOpenQuery,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
@@ -120,7 +123,6 @@ export function RegisterTable({
     type: 'text',
     options: '',
   })
-  const [status, setStatus] = useState<string | null>(null)
   // Only the row being touched carries inputs; every other row is text.
   const [active, setActive] = useState<{ row: string; col: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -188,7 +190,6 @@ export function RegisterTable({
   }
 
   function editItem(id: string, patch: RowEdit) {
-    setStatus(null)
     setEdits((prev) => {
       const cur = prev[id] ?? {}
       return { ...prev, [id]: { ...cur, ...patch, cells: { ...(cur.cells ?? {}), ...(patch.cells ?? {}) } } }
@@ -196,7 +197,6 @@ export function RegisterTable({
   }
 
   function editNew(tempId: string, patch: Partial<NewRow>) {
-    setStatus(null)
     setNewRows((prev) =>
       prev.map((r) => (r.tempId === tempId ? { ...r, ...patch, cells: { ...r.cells, ...(patch.cells ?? {}) } } : r)),
     )
@@ -215,7 +215,6 @@ export function RegisterTable({
     if (!block) return
     e.preventDefault()
     e.stopPropagation()
-    setStatus(null)
     const order = [...visible.map((i) => ({ kind: 'item' as const, id: i.id })), ...newRows.map((r) => ({ kind: 'new' as const, id: r.tempId }))]
     const startRow = order.findIndex((r) => r.id === rowId)
     const startCol = defs.findIndex((d) => d.id === colId)
@@ -255,11 +254,24 @@ export function RegisterTable({
     // inherited reads items and baseCells, which change together with items
   }, [items])
 
+  // Printing needs every row on the page, not the windowed ones. Cmd+P and the
+  // link both go through the same state; flushSync so the rows exist before
+  // the browser takes its snapshot.
+  const [printing, setPrinting] = useState(false)
   useEffect(() => {
-    if (!newRowRequested) return
-    addRow()
-    onNewRowStarted()
-  }, [newRowRequested, addRow, onNewRowStarted])
+    const before = () => flushSync(() => setPrinting(true))
+    const after = () => setPrinting(false)
+    window.addEventListener('beforeprint', before)
+    window.addEventListener('afterprint', after)
+    return () => {
+      window.removeEventListener('beforeprint', before)
+      window.removeEventListener('afterprint', after)
+    }
+  }, [])
+
+  const sums = useMemo(() => totals(items, properties), [items, properties])
+  const gaps = useMemo(() => missing(items, properties), [items, properties])
+  const narrowed = visible.length !== items.length
 
   // Adding or editing rows is one mode, selecting rows is another. Never both.
   const editing = newRows.length > 0 || dirtyIds.length > 0
@@ -292,7 +304,6 @@ export function RegisterTable({
     })
     setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
     setAddingColumn(false)
-    setStatus(t.table.columnAdded(key))
   }
 
   // Swaps a column with its neighbour and stores the whole order.
@@ -390,7 +401,6 @@ export function RegisterTable({
 
   async function save() {
     setError(null)
-    setStatus(null)
     const added = newRows.filter(touched)
     const missingName =
       added.filter((r) => r.name.trim() === '').length +
@@ -413,10 +423,7 @@ export function RegisterTable({
         return
       }
     }
-    if (added.length === 0 && dirtyIds.length === 0) {
-      setStatus(t.table.nothingToSave)
-      return
-    }
+    if (added.length === 0 && dirtyIds.length === 0) return
     setSaving(true)
     try {
       await saveBatch(
@@ -443,7 +450,7 @@ export function RegisterTable({
       setEdits({})
       setNewRows([])
       setSelected(new Set())
-      setStatus(t.table.saved)
+      setActive(null)
     } catch (err) {
       console.error(errorText(err))
       setError(t.error.saveFailed)
@@ -469,7 +476,6 @@ export function RegisterTable({
     setConfirmingDelete(false)
     setConfirmingDiscard(false)
     setError(null)
-    setStatus(null)
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
   }
 
@@ -516,6 +522,39 @@ export function RegisterTable({
 
   return (
     <div className="stack">
+      {items.length === 0 && newRows.length === 0 && <p className="hint">{t.list.empty}</p>}
+
+      {items.length > 0 && (
+        <p className="summary">
+          {/* What is on screen and the whole register; the gaps run their
+              search, and the two actions take what is on screen */}
+          <span>{narrowed ? t.summary.shown(visible.length, items.length) : t.summary.things(items.length)}</span>
+          {sums.map((x) => (
+            <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
+          ))}
+          {gaps.map((m) => (
+            <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
+              {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="summary-link"
+            onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
+          >
+            {t.report.csv}
+          </button>
+          <button type="button" className="summary-link" onClick={() => window.print()}>
+            {t.report.print}
+          </button>
+        </p>
+      )}
+
+      <div className="print-only">
+        <h1 className="title">{t.report.docTitle}</h1>
+        <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
+      </div>
+
       {searchOpen && (
         <div className="search-bar">
           <SearchField
@@ -723,6 +762,7 @@ export function RegisterTable({
           sort={sort}
           onWidth={onWidth}
           hasSelection={selected.size > 0}
+          allRows={printing}
           label={labelOf}
           onPaste={onPaste}
           headerCheck={
@@ -894,6 +934,13 @@ export function RegisterTable({
                 {defs.map((def) => {
                   const label = t.table.cell(item.name, labelOf(def))
                   const text = def.kind === 'name' ? value(item, 'name') : cell(item, def.col)
+                  if (active?.row !== item.id && def.kind === 'name') {
+                    return (
+                      <td key={def.id}>
+                        <NameCell item={item} name={text} />
+                      </td>
+                    )
+                  }
                   if (active?.row !== item.id) {
                     return (
                       <td key={def.id}>
@@ -970,7 +1017,21 @@ export function RegisterTable({
         />
       )}
 
-      {items.length > 0 && visible.length === 0 && newRows.length === 0 && <p className="hint">{t.list.noMatch}</p>}
+      {items.length > 0 && visible.length === 0 && newRows.length === 0 && (
+        <div className="empty">
+          <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              onQueryChange('')
+              onFiltersChange({})
+            }}
+          >
+            {t.search.showAll}
+          </button>
+        </div>
+      )}
 
       {error && (
         <p className="error" role="alert">
@@ -978,16 +1039,27 @@ export function RegisterTable({
         </p>
       )}
 
-      {(items.length > 0 || newRows.length > 0) && (
-        <div className="row">
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !editing}>
+      {editing && (
+        <div className="row save-bar">
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>
             {t.action.save}
           </button>
           <span className="hint" aria-live="polite">
-            {dirtyCount > 0 ? t.table.unsaved(dirtyCount) : status}
+            {t.table.unsaved(dirtyCount)}
           </span>
         </div>
       )}
     </div>
+  )
+}
+
+// The name is the way to the thing; the thumbnail rides along
+function NameCell({ item, name }: { item: Item; name: string }) {
+  const url = useObjectUrl(item.photo)
+  return (
+    <a className="grid-link" href={href.detail(item.id)}>
+      {url && <img className="thumb" src={url} alt="" />}
+      {name}
+    </a>
   )
 }

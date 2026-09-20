@@ -425,9 +425,11 @@ section {
   font-size: var(--text-cell);
 }
 
+/* A body row is exactly 48 px (the row window counts on it): a 44 px control,
+   2 px above, 1 px below and the 1 px hairline */
 .grid th,
 .grid td {
-  padding: 2px 0;
+  padding: 2px 0 1px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
@@ -961,47 +963,33 @@ section {
   }
 }
 
-/* Oversikt: same grid, plain text cells, same row height as the edit table
-   (44 px input plus 2 px cell padding above and below) */
-
-.grid-read td {
-  height: calc(var(--row-h) + 4px);
-  padding: var(--s-2);
-  vertical-align: middle;
-}
-
-.grid-read td:nth-child(2) {
-  padding-left: 0;
-}
-
-/* Every column is left-aligned, whatever its type: the eye reads down one
-   edge, and text, numbers and dates sit under their own header. */
-.grid-read td.tabular {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
+/* The name is a link with the same footprint as a cell, thumbnail beside it */
 .grid-link {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--s-2);
+  min-height: var(--row-h);
+  padding: var(--s-2);
   color: var(--text);
   text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .grid-link:hover {
   text-decoration: underline;
 }
 
-.grid-read .thumb {
+.grid td:nth-child(2) .grid-link {
+  margin-left: calc(var(--s-2) * -1);
+}
+
+.grid .thumb {
   width: 32px;
   height: 32px;
   border-radius: var(--radius);
   object-fit: cover;
-}
-
-.grid-read tr:hover td {
-  background: var(--surface);
 }
 
 /* Filter panel under the search field */
@@ -1189,13 +1177,6 @@ section {
   opacity: 1;
 }
 
-/* A pinned width clips: read cells with an ellipsis, inputs by themselves */
-.grid-read td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Suggestion-list fields reserve room for a dropdown indicator. In table cells
    that space is only worth having while the cell is being edited. */
 .grid-input::-webkit-calendar-picker-indicator {
@@ -1236,4 +1217,15 @@ section {
 .filter-count {
   margin-left: auto;
   padding-left: var(--s-3);
+}
+
+/* Lagre follows you: the change may be thousands of rows from the end */
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: var(--s-3) var(--gutter);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }

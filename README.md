@@ -4,7 +4,7 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 
 ## MVP
 
-- Ett skjermbilde: Øverst hvor mange ting du har, samlet pris og hva som mangler bilde eller pris. Under: Én tabell med egenskaper som kolonner. Smart søk og filtrering: Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Blyanten i topplinja gjør tabellen redigerbar: Legg til ting og egenskaper, endre mange ting samtidig. Velg ting og last ned CSV eller skriv ut en rapport
+- Ett skjermbilde: Øverst hvor mange ting du har, samlet pris og hva som mangler bilde eller pris. Under: Én tabell med egenskaper som kolonner. Smart søk og filtrering: Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig. Last ned CSV eller skriv ut det som vises
 - Egen side for hver ting, med bilde og alle egenskaper
 - Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 
@@ -48,7 +48,7 @@ Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjon
 | Telle forbruksvarer (gass, batterier) | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
 | Merke tilstand eller status | Valgliste «Status»: Ok, Skal repareres, Kast |
 | Vite hva alt er verdt | Tall «Kjøpesum» med enhet kr for det du betalte, fra kvitteringen. Skal forsikringen ha gjenanskaffelsesverdi, er det et annet tall: Tall «Verdi» i tillegg. Linja øverst i Oversikt viser summen av hver kr-kolonne |
-| Ha mange ting inn på én gang | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen (blyanten på) og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
+| Ha mange ting inn på én gang | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
 | Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
 
 Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
@@ -82,7 +82,7 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
 | Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
 | Passordet | Minst 12 tegn. Bruk gjerne en setning. Det låser alt du registrerer, på enheten og i alle kopier |
-| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet. Blyanten ved siden av er noe annet: Appen åpner låst for redigering, blyanten åpner for det til du låser igjen eller lukker appen |
+| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet |
 | Automatisk lås | Etter 10 minutter uten aktivitet, men ikke mens du har endringer som ikke er lagret. Kan slås av under Innstillinger |
 | Bytte passord | Under Innstillinger. Dataene krypteres på nytt. Kopier du tok før byttet, åpnes med det gamle passordet |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |

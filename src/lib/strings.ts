@@ -3,9 +3,6 @@ export const t = {
   appName: 'ting',
   nav: { home: 'Til forsiden', list: 'Oversikt', storage: 'Innstillinger', storageStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
-  editing: {
-    label: 'Redigering',
-  },
   vault: {
     setupTitle: 'Velg et passord',
     password: 'Passord',
@@ -131,7 +128,6 @@ export const t = {
       ['stk', 'stykk'],
       ['år', 'år'],
     ],
-    columnAdded: (key: string) => `Egenskapen «${key}» er lagt til.`,
     removeColumn: 'Fjern',
     removeColumnConfirm: (key: string, n: number) =>
       `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Fjern den fra alle? Du kan ikke angre.`,
@@ -149,8 +145,6 @@ export const t = {
     removeRow: 'Fjern rad',
     deleteSelected: (n: number) => `Slett valgte (${n})`,
     unsaved: (n: number) => (n === 1 ? '1 endring ikke lagret' : `${n} endringer ikke lagret`),
-    saved: 'Lagret',
-    nothingToSave: 'Ingen endringer',
     cell: (name: string, col: string) => `${col} for ${name === '' ? 'ny rad' : name}`,
   },
   error: {
