@@ -437,13 +437,14 @@ section {
   padding: 0 var(--gutter) 0 0;
 }
 
+/* Headers one step above the cells, not two (15 px until 20 September 2026) */
 .grid {
   table-layout: fixed;
   border-collapse: collapse;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 
-/* Body cells are small by request; headers keep --text-sm */
+/* Body cells are small by request */
 .grid td,
 .grid-input {
   font-size: var(--text-cell);
