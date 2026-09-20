@@ -67,7 +67,7 @@ export const t = {
     empty: 'Ingenting her ennå',
     noMatch: 'Ingen treff',
     loading: 'Laster…',
-    selectAll: 'Velg alle som vises',
+    selectAll: 'Velg alle tingene som vises',
     selectRow: (name: string) => `Velg ${name}`,
     clearSelection: 'Fjern valg',
   },
@@ -79,7 +79,7 @@ export const t = {
     scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting.' : `Rapporten tar med ${n} valgte ting.`),
     // Names what narrowed the view: the search term, the filters, or both
     scopeVisible: (n: number, query: string, filtered: boolean) => {
-      if (query === '' && !filtered) return 'Rapporten tar med alt du har registrert.'
+      if (query === '' && !filtered) return 'Rapporten tar med alle tingene dine.'
       const by = query !== '' ? (filtered ? `«${query}» og filtrene` : `«${query}»`) : 'filtrene'
       return `Rapporten tar med ${n === 1 ? '1 ting' : `${n} ting`} som treffer ${by}.`
     },

@@ -1,6 +1,6 @@
 # Ting
 
-Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Du slipper å registrere noe på nytt: Appen kan speile alt til en mappe på maskinen og lage en sikkerhetskopi du henter inn igjen, også etter at nettleserdata er slettet eller på en ny enhet.
+Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder og en rapport til forsikringen. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Du slipper å registrere noe på nytt: Appen kan speile alt til en mappe på maskinen og lage en sikkerhetskopi du henter inn igjen, også etter at nettleserdata er slettet eller på en ny enhet.
 
 ## MVP
 
