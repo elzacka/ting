@@ -42,7 +42,7 @@ Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjon
 
 | Vil du | Lag egenskapen |
 |---|---|
-| Vite hvor ting er (bod, hylle, boks) | Valgliste «Plassering» |
+| Vite hvor ting er | Valgliste «Plassering» med hele stien som verdi: «Loftsbod › Hylle 2 › Boks 4», «Leilighet › Soverom › Skap 1». `plassering:loftsbod` finner alt på loftet |
 | Hvem som eier hva | Valgliste «Eier»: Ett valg per person i husstanden, og «Felles» |
 | Hvem som har lånt noe | Tekst «Lånt til», tom når tingen er hjemme |
 | Telle forbruksvarer (gass, batterier) | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
