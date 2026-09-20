@@ -1,7 +1,7 @@
 // All user-facing text. Norwegian (nb-NO), klarspråk, du-form.
 export const t = {
   appName: 'ting',
-  nav: { home: 'Til forsiden', list: 'Oversikt', register: 'Legg til og endre', storage: 'Innstillinger', storageStalled: 'Innstillinger. Lagring til mappen har stoppet' },
+  nav: { home: 'Til forsiden', list: 'Oversikt', storage: 'Innstillinger', storageStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
   editing: {
     label: 'Redigering',

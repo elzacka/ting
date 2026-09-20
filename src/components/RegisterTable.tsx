@@ -15,6 +15,8 @@ import { columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } 
 import { parseDateInput } from '../lib/dates'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
+import { applyFilters, type Filters } from '../lib/filters'
+import { FilterPanel } from './FilterPanel'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -67,8 +69,13 @@ type Props = {
   widths: Record<string, number>
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
-  // Read-only: the table shows, nothing can be changed until the Redigering switch is on.
-  locked: boolean
+  filters: Filters
+  onFiltersChange: (f: Filters) => void
+}
+
+// Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
+function choiceListId(columnId: string): string {
+  return `choice-${encodeURIComponent(columnId)}`
 }
 
 export function RegisterTable({
@@ -84,7 +91,8 @@ export function RegisterTable({
   widths,
   onWidth,
   onDirtyChange,
-  locked,
+  filters,
+  onFiltersChange,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
@@ -126,10 +134,10 @@ export function RegisterTable({
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
   // Edited rows stay visible even when they stop matching the query.
   const visible = useMemo(() => {
-    const hits = searchItems(items, query)
+    const hits = applyFilters(searchItems(items, query), filters)
     const ids = new Set(hits.map((i) => i.id))
     return sortItems([...hits, ...items.filter((i) => !ids.has(i.id) && edits[i.id] !== undefined)], columns, sort)
-  }, [items, query, edits, columns, sort])
+  }, [items, query, filters, edits, columns, sort])
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -468,55 +476,60 @@ export function RegisterTable({
             onClose={onSearchClose}
             listTip={t.search.tipsTableText}
           />
+          <FilterPanel
+            items={items}
+            properties={properties}
+            fields={fields}
+            filters={filters}
+            onChange={onFiltersChange}
+          />
         </div>
       )}
 
-      {!locked && (
-        <div className="row toolbar">
+      <div className="row toolbar">
+        <button
+          type="button"
+          className="btn"
+          onClick={() =>
+            setNewRows((prev) => [
+              ...prev,
+              blankRow(
+                fields.category.hidden
+                  ? ''
+                  : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
+              ),
+            ])
+          }
+        >
+          <Icon name="add" size={20} />
+          {t.table.addRow}
+        </button>
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={addingColumn}
+          aria-controls="column-form"
+          onClick={() => setAddingColumn((v) => !v)}
+        >
+          <Icon name="add" size={20} />
+          {t.table.addColumn}
+        </button>
+        {fields.category.hidden && (
           <button
             type="button"
             className="btn"
-            onClick={() =>
-              setNewRows((prev) => [
-                ...prev,
-                blankRow(
-                  fields.category.hidden
-                    ? ''
-                    : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
-                ),
-              ])
-            }
+            onClick={() => void setFieldSettings({ ...fields, category: { ...fields.category, hidden: false } })}
           >
-            <Icon name="add" size={20} />
-            {t.table.addRow}
+            {t.table.showCategory(categoryLabel)}
           </button>
-          <button
-            type="button"
-            className="btn"
-            aria-expanded={addingColumn}
-            aria-controls="column-form"
-            onClick={() => setAddingColumn((v) => !v)}
-          >
-            <Icon name="add" size={20} />
-            {t.table.addColumn}
+        )}
+        {selected.size > 0 && !confirmingDelete && (
+          <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
+            <Icon name="delete" size={20} />
+            {t.table.deleteSelected(selected.size)}
           </button>
-          {fields.category.hidden && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => void setFieldSettings({ ...fields, category: { ...fields.category, hidden: false } })}
-            >
-              {t.table.showCategory(categoryLabel)}
-            </button>
-          )}
-          {selected.size > 0 && !confirmingDelete && (
-            <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
-              <Icon name="delete" size={20} />
-              {t.table.deleteSelected(selected.size)}
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {addingColumn && (
         <form
@@ -663,7 +676,7 @@ export function RegisterTable({
         (def) =>
           def.kind === 'prop' &&
           def.type === 'choice' && (
-            <datalist key={def.id} id={`choice-${def.id}`}>
+            <datalist key={def.id} id={choiceListId(def.id)}>
               {[
                 ...new Set([
                   ...(def.property?.options ?? []),
@@ -699,7 +712,7 @@ export function RegisterTable({
             <thead>
               <tr>
                 <th scope="col" className="grid-check">
-                  {allIds.length > 0 && !editing && !locked && (
+                  {allIds.length > 0 && !editing && (
                     <input
                       type="checkbox"
                       aria-label={t.table.selectAll}
@@ -771,25 +784,23 @@ export function RegisterTable({
                     ) : (
                       <span className="grid-col-head">
                         <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
-                        {!locked && (
-                          <details
-                            className="col-menu"
-                            onToggle={(e) => {
-                              const d = e.currentTarget
-                              if (!d.open) {
-                                setMenuPos((p) => (p?.id === def.id ? null : p))
-                                return
-                              }
-                              const r = d.querySelector('summary')?.getBoundingClientRect()
-                              if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
-                            }}
-                          >
-                            <summary aria-label={t.table.columnMenu(labelOf(def))}>
-                              <Icon name="chevronRight" size={14} className="col-menu-chevron" />
-                            </summary>
-                          </details>
-                        )}
-                        {!locked && menuPos?.id === def.id &&
+                        <details
+                          className="col-menu"
+                          onToggle={(e) => {
+                            const d = e.currentTarget
+                            if (!d.open) {
+                              setMenuPos((p) => (p?.id === def.id ? null : p))
+                              return
+                            }
+                            const r = d.querySelector('summary')?.getBoundingClientRect()
+                            if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
+                          }}
+                        >
+                          <summary aria-label={t.table.columnMenu(labelOf(def))}>
+                            <Icon name="chevronRight" size={14} className="col-menu-chevron" />
+                          </summary>
+                        </details>
+                        {menuPos?.id === def.id &&
                           createPortal(
                             <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
                               <button
@@ -855,7 +866,7 @@ export function RegisterTable({
               {visible.map((item) => (
                 <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
                   <td className="grid-check">
-                    {!editing && !locked && (
+                    {!editing && (
                       <input
                         type="checkbox"
                         aria-label={t.table.selectRow(item.name)}
@@ -870,7 +881,6 @@ export function RegisterTable({
                         <input
                           className="grid-input"
                           list="category-options"
-                          readOnly={locked}
                           aria-label={t.table.cell(item.name, categoryLabel)}
                           value={value(item, 'category')}
                           onChange={(e) => editItem(item.id, { category: e.target.value })}
@@ -881,7 +891,6 @@ export function RegisterTable({
                         <input
                           className="grid-input"
                           list="name-options"
-                          readOnly={locked}
                           aria-label={t.table.cell(item.name, nameLabel)}
                           value={value(item, 'name')}
                           onChange={(e) => editItem(item.id, { name: e.target.value })}
@@ -891,8 +900,7 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input num"
-                          list={def.type === 'choice' ? `choice-${def.id}` : undefined}
-                          readOnly={locked}
+                          list={def.type === 'choice' ? choiceListId(def.id) : undefined}
                           aria-label={t.table.cell(item.name, def.col.key)}
                           value={cell(item, def.col)}
                           onChange={(e) => editItem(item.id, { cells: { [def.id]: e.target.value } })}
@@ -936,7 +944,7 @@ export function RegisterTable({
                       <td key={def.id}>
                         <input
                           className="grid-input num"
-                          list={def.type === 'choice' ? `choice-${def.id}` : undefined}
+                          list={def.type === 'choice' ? choiceListId(def.id) : undefined}
                           aria-label={t.table.cell(row.name, def.col.key)}
                           value={row.cells[def.id] ?? ''}
                           onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
@@ -951,7 +959,6 @@ export function RegisterTable({
         </div>
       )}
 
-      {locked && items.length === 0 && <p className="hint">{t.list.empty}</p>}
       {items.length > 0 && visible.length === 0 && newRows.length === 0 && <p className="hint">{t.list.noMatch}</p>}
 
       {error && (
@@ -960,7 +967,7 @@ export function RegisterTable({
         </p>
       )}
 
-      {!locked && (items.length > 0 || newRows.length > 0) && (
+      {(items.length > 0 || newRows.length > 0) && (
         <div className="row">
           <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !editing}>
             {t.action.save}

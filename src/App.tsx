@@ -66,7 +66,7 @@ export function App() {
     writeAutoLock(on)
     setAutoLock(on)
   }, [])
-  const searchable = route.view === 'list' || route.view === 'register'
+  const searchable = route.view === 'list'
   const openSearch = useCallback((initial: string) => {
     setSearchOpen(true)
     if (initial !== '') setQuery(initial)
@@ -104,7 +104,7 @@ export function App() {
   const storageLabel = folderStalled ? t.nav.storageStalled : t.nav.storage
 
   // Locked: only the wordmark, whatever the route.
-  const isTop = !unlocked || route.view === 'list' || route.view === 'register' || route.view === 'storage'
+  const isTop = !unlocked || route.view === 'list' || route.view === 'storage'
 
   // The table holds unsaved edits in memory; leaving it drops them.
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
@@ -137,11 +137,6 @@ export function App() {
                 {t.nav.list}
               </a>
             )}
-            {unlocked && (
-              <a className="tab" href={href.register} aria-current={route.view === 'register' ? 'page' : undefined}>
-                {t.nav.register}
-              </a>
-            )}
           </nav>
         ) : (
           <nav className="row" aria-label={t.action.back}>
@@ -172,7 +167,7 @@ export function App() {
                 <Icon name="search" />
               </button>
             )}
-            {unlocked && route.view === 'register' && (
+            {unlocked && route.view === 'list' && (
               <button
                 type="button"
                 role="switch"
@@ -290,8 +285,23 @@ function Screen({
 }: ScreenProps) {
   if (!editing && route.view === 'edit') return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
+  // One view: the pencil decides whether the table reads or edits.
   if (route.view === 'list') {
-    return (
+    return editing ? (
+      <RegisterTable
+        items={items}
+        properties={properties}
+        fields={fields}
+        {...search}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        sort={sort}
+        onSortChange={onSortChange}
+        widths={widths}
+        onWidth={onWidth}
+        onDirtyChange={onDirtyChange}
+      />
+    ) : (
       <ItemList
         items={items}
         properties={properties}
@@ -303,23 +313,6 @@ function Screen({
         onSortChange={onSortChange}
         widths={widths}
         onWidth={onWidth}
-      />
-    )
-  }
-  if (route.view === 'register') {
-    return (
-      <RegisterTable
-        key={editing ? 'edit' : 'read'}
-        locked={!editing}
-        items={items}
-        properties={properties}
-        fields={fields}
-        {...search}
-        sort={sort}
-        onSortChange={onSortChange}
-        widths={widths}
-        onWidth={onWidth}
-        onDirtyChange={onDirtyChange}
       />
     )
   }

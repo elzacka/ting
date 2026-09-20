@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react'
 // Hash routing keeps browser back working and needs no server config.
 export type Route =
   | { view: 'list' }
-  | { view: 'register' }
   | { view: 'storage' }
   | { view: 'detail'; id: string }
   | { view: 'edit'; id: string }
 
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
-  if (parts[0] === 'oversikt') return { view: 'list' }
-  if (parts[0] === 'registrer') return { view: 'register' }
+  // 'registrer' was its own view until 20 September 2026; old links still land
+  if (parts[0] === 'oversikt' || parts[0] === 'registrer') return { view: 'list' }
   if (parts[0] === 'innstillinger') return { view: 'storage' }
   if (parts[0] === 'ting' && parts[1]) {
     return parts[2] === 'rediger' ? { view: 'edit', id: parts[1] } : { view: 'detail', id: parts[1] }
@@ -21,7 +20,6 @@ export function parseHash(hash: string): Route {
 
 export const href = {
   list: '#/oversikt',
-  register: '#/registrer',
   storage: '#/innstillinger',
   detail: (id: string) => `#/ting/${id}`,
   edit: (id: string) => `#/ting/${id}/rediger`,
