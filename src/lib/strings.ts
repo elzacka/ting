@@ -41,8 +41,8 @@ export const t = {
     clear: 'Tøm søk',
     tips: 'Søketips',
     tipsField: 'I søkefeltet',
-    tipsList: 'I oversikten',
-    tipsListText: 'Filtrene under søkefeltet snevrer inn oversikten. Huk av ting for å velge hva rapporten tar med. Skriver du én bokstav, vises alt som begynner på den.',
+    tipsList: 'I registeret',
+    tipsListText: 'Filtrene under søkefeltet snevrer inn registeret. Huk av ting for å velge hva rapporten tar med. Skriver du én bokstav, vises alt som begynner på den.',
     tipsTableText: 'Rader du har endret, blir stående til du lagrer, også når søket endres.',
     noMatch: (q: string) => `Fant ikke «${q}»`,
     showAll: 'Vis alle ting',
@@ -64,7 +64,7 @@ export const t = {
     clearAll: 'Fjern alle filtre',
   },
   list: {
-    empty: 'Ingenting her ennå',
+    empty: 'Registeret er tomt.',
     noMatch: 'Ingen treff',
     loading: 'Laster…',
     selectAll: 'Velg alle tingene som vises',
@@ -79,7 +79,7 @@ export const t = {
     scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting.' : `Rapporten tar med ${n} valgte ting.`),
     // Names what narrowed the view: the search term, the filters, or both
     scopeVisible: (n: number, query: string, filtered: boolean) => {
-      if (query === '' && !filtered) return 'Rapporten tar med alle tingene dine.'
+      if (query === '' && !filtered) return 'Rapporten tar med alt i registeret.'
       const by = query !== '' ? (filtered ? `«${query}» og filtrene` : `«${query}»`) : 'filtrene'
       return `Rapporten tar med ${n === 1 ? '1 ting' : `${n} ting`} som treffer ${by}.`
     },
