@@ -3,7 +3,7 @@ import { db, readFieldSettings, readItems, readProperties, readVault, sealPlaint
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
 import { distinct } from './lib/filter'
-import { href, navigate, useRoute, type Route } from './lib/route'
+import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { initVault, lock, setupVault, unlock, useVault } from './lib/vault'
@@ -16,7 +16,6 @@ import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
 import { readAutoLock, writeAutoLock } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
-import { Home } from './components/Home'
 import { ItemDetail } from './components/ItemDetail'
 import { ItemForm } from './components/ItemForm'
 import { ItemList } from './components/ItemList'
@@ -59,24 +58,17 @@ export function App() {
   const { widths, setWidth } = useColumnWidths()
   // Session mode, never stored: every unlock starts read-only.
   const [editing, setEditing] = useState(false)
-  // Home's "Legg til ting": the overview opens editing with one new row ready
+  // "Legg til ting" in read mode: editing opens with one new row ready
   const [newRowRequested, setNewRowRequested] = useState(false)
-  const addFromHome = useCallback(() => {
+  const addItem = useCallback(() => {
     setEditing(true)
     setNewRowRequested(true)
-    navigate(href.list)
   }, [])
-  const openFilter = useCallback((id: string, valueKey: string) => {
-    setQuery('')
-    setFilters({ [id]: [valueKey] })
-    setSearchOpen(true)
-    navigate(href.list)
-  }, [])
+  // A "mangler" fact in the summary line runs its search
   const openQuery = useCallback((q: string) => {
     setFilters({})
     setQuery(q)
     setSearchOpen(true)
-    navigate(href.list)
   }, [])
   useEffect(() => {
     if (!unlocked) setEditing(false)
@@ -124,7 +116,7 @@ export function App() {
   const storageLabel = folderStalled ? t.nav.storageStalled : t.nav.storage
 
   // Locked: only the wordmark, whatever the route.
-  const isTop = !unlocked || route.view === 'home' || route.view === 'list' || route.view === 'storage'
+  const isTop = !unlocked || route.view === 'list' || route.view === 'storage'
 
   // The table holds unsaved edits in memory; leaving it drops them.
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
@@ -144,22 +136,10 @@ export function App() {
       <header className="topbar">
         {isTop ? (
           <nav className="row" aria-label={t.nav.list}>
-            <a className="wordmark" href={href.home} onClick={guardNav} aria-label={t.nav.home}>
+            <a className="wordmark" href={href.list} onClick={guardNav} aria-label={t.nav.home}>
               <Logo />
               {t.appName}
             </a>
-            {unlocked && (
-              <a
-                className={`btn btn-icon${route.view === 'list' ? ' is-active' : ''}`}
-                href={href.list}
-                aria-label={t.nav.list}
-                title={t.nav.list}
-                aria-current={route.view === 'list' ? 'page' : undefined}
-                onClick={guardNav}
-              >
-                <Icon name="homeStorage" />
-              </a>
-            )}
           </nav>
         ) : (
           <nav className="row" aria-label={t.action.back}>
@@ -170,7 +150,7 @@ export function App() {
             >
               <Icon name="arrowBack" />
             </a>
-            <a className="wordmark" href={href.home} aria-label={t.nav.home}>
+            <a className="wordmark" href={href.list} aria-label={t.nav.home}>
               <Logo />
               {t.appName}
             </a>
@@ -256,9 +236,7 @@ export function App() {
               editing={editing}
               autoLock={autoLock}
               onAutoLockChange={toggleAutoLock}
-              folderStatus={folder.status}
-              onAddItem={addFromHome}
-              onOpenFilter={openFilter}
+              onAddItem={addItem}
               onOpenQuery={openQuery}
               newRowRequested={newRowRequested}
               onNewRowStarted={() => setNewRowRequested(false)}
@@ -290,9 +268,7 @@ type ScreenProps = {
   editing: boolean
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
-  folderStatus: ReturnType<typeof useFolderSync>['status']
   onAddItem: () => void
-  onOpenFilter: (id: string, valueKey: string) => void
   onOpenQuery: (q: string) => void
   newRowRequested: boolean
   onNewRowStarted: () => void
@@ -318,26 +294,11 @@ function Screen({
   editing,
   autoLock,
   onAutoLockChange,
-  folderStatus,
   onAddItem,
-  onOpenFilter,
   onOpenQuery,
   newRowRequested,
   onNewRowStarted,
 }: ScreenProps) {
-  if (route.view === 'home') {
-    return (
-      <Home
-        items={items}
-        properties={properties}
-        fields={fields}
-        folder={folderStatus}
-        onAddItem={onAddItem}
-        onOpenFilter={onOpenFilter}
-        onOpenQuery={onOpenQuery}
-      />
-    )
-  }
   if (!editing && route.view === 'edit') return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   // One view: the pencil decides whether the table reads or edits.
@@ -370,6 +331,8 @@ function Screen({
         onSortChange={onSortChange}
         widths={widths}
         onWidth={onWidth}
+        onAddItem={onAddItem}
+        onOpenQuery={onOpenQuery}
       />
     )
   }

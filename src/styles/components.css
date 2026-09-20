@@ -1168,70 +1168,34 @@ section {
   display: block;
 }
 
-/* Home: numbers first, then what they split into, then what is missing */
+/* One line about the whole register, above the table */
 
-.stats {
+.summary {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-4) var(--s-12);
-}
-
-.stat {
-  display: grid;
-  gap: 0;
-}
-
-.stat-value {
-  font-size: var(--text-xl);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-
-.facets {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--s-6) var(--s-12);
-  max-width: var(--max-w);
-}
-
-.facet li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 3ch;
-  gap: var(--s-3);
-  align-items: center;
-  min-height: 32px;
-  border-bottom: 1px solid var(--border);
+  gap: 0 var(--s-4);
   font-size: var(--text-sm);
+  color: var(--text-2);
 }
 
-.facet-narrow {
-  max-width: 320px;
-}
-
-.facet-narrow li {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-/* A row that filters the overview: text, not a button, underline on hover */
-.facet-link {
-  min-height: 32px;
+/* A fact you can act on: text that runs a search, underline on hover */
+.summary-link {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--text-2);
   font: inherit;
-  text-align: left;
   cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.facet-link:hover {
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.hint.stalled {
-  color: var(--warn);
+.summary-link:hover {
+  color: var(--text);
+}
+
+/* Count beside each filter value, pushed to the right edge of the menu */
+.filter-count {
+  margin-left: auto;
+  padding-left: var(--s-3);
 }

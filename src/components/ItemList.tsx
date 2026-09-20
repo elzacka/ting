@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import type { Item, Property } from '../db/schema'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { activeCount, applyFilters, type Filters } from '../lib/filters'
-import { formatBare } from '../lib/format'
+import { formatBare, formatNumber } from '../lib/format'
 import { columnDefs, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { columnId, type Column } from '../lib/grid'
 import { href } from '../lib/route'
 import { searchItems } from '../lib/search'
+import { missing, totals } from '../lib/summary'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { FilterPanel } from './FilterPanel'
@@ -32,6 +33,8 @@ type Props = {
   onSortChange: (s: Sort | null) => void
   widths: Record<string, number>
   onWidth: (id: string, w: number | null) => void
+  onAddItem: () => void
+  onOpenQuery: (query: string) => void
 }
 
 function cellText(item: Item, col: Column): string {
@@ -54,6 +57,8 @@ export function ItemList({
   onSortChange,
   widths,
   onWidth,
+  onAddItem,
+  onOpenQuery,
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
@@ -66,8 +71,25 @@ export function ItemList({
     [items, query, filters, columns, sort],
   )
 
+  const sums = useMemo(() => totals(items, properties), [items, properties])
+  const gaps = useMemo(() => missing(items, properties), [items, properties])
+
+  const addButton = (
+    <div>
+      <button type="button" className="btn btn-primary" onClick={onAddItem}>
+        <Icon name="add" size={20} />
+        {t.table.addRow}
+      </button>
+    </div>
+  )
+
   if (items.length === 0) {
-    return <p className="hint">{t.list.empty}</p>
+    return (
+      <div className="stack">
+        <p className="hint">{t.list.empty}</p>
+        {addButton}
+      </div>
+    )
   }
 
   const selectedVisible = visible.filter((i) => selected.has(i.id))
@@ -97,6 +119,21 @@ export function ItemList({
 
   return (
     <div className="stack">
+      {/* One line about the whole register; the gaps run their search */}
+      <p className="summary">
+        <span>{t.summary.things(items.length)}</span>
+        {sums.map((x) => (
+          <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
+        ))}
+        {gaps.map((m) => (
+          <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
+            {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+          </button>
+        ))}
+      </p>
+
+      {addButton}
+
       {searchOpen && (
         <div className="search-bar">
           <SearchField

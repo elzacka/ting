@@ -37,14 +37,12 @@ const paths = {
     'M200-160v-280h-80v-80h240v80h-80v280h-80Zm0-440v-200h80v200h-80Zm160 0v-80h80v-120h80v120h80v80H360Zm80 440v-360h80v360h-80Zm240 0v-120h-80v-80h240v80h-80v120h-80Zm0-280v-360h80v360h-80Z',
   autorenew:
     'M204-318q-22-38-33-78t-11-82q0-134 93-228t227-94h7l-64-64 56-56 160 160-160 160-56-56 64-64h-7q-100 0-170 70.5T240-478q0 26 6 51t18 49l-60 60ZM481-40 321-200l160-160 56 56-64 64h7q100 0 170-70.5T720-482q0-26-6-51t-18-49l60-60q22 38 33 78t11 82q0 134-93 228t-227 94h-7l64 64-56 56Z',
-  homeStorage:
-    'm200-120-80-480h720l-80 480H200Zm67-80h426l51-320H216l51 320Zm133-160h160q17 0 28.5-11.5T600-400q0-17-11.5-28.5T560-440H400q-17 0-28.5 11.5T360-400q0 17 11.5 28.5T400-360ZM240-640q-17 0-28.5-11.5T200-680q0-17 11.5-28.5T240-720h480q17 0 28.5 11.5T760-680q0 17-11.5 28.5T720-640H240Zm80-120q-17 0-28.5-11.5T280-800q0-17 11.5-28.5T320-840h320q17 0 28.5 11.5T680-800q0 17-11.5 28.5T640-760H320Z',
 } as const
 
 export type IconName = keyof typeof paths
 
 // Material Symbols paths use a 960 grid with a negative origin; the older Material Icons use 24.
-const symbolIcons: ReadonlySet<IconName> = new Set<IconName>(['autorenew', 'instantMix', 'homeStorage'])
+const symbolIcons: ReadonlySet<IconName> = new Set<IconName>(['autorenew', 'instantMix'])
 
 export function Icon({ name, size = 24, className }: IconProps & { name: IconName }) {
   return (

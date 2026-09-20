@@ -16,7 +16,7 @@ export function valueKey(v: string | number): string {
   return n === null ? String(v).trim().toLocaleLowerCase('nb') : String(n)
 }
 
-export type FilterValue = { key: string; label: string }
+export type FilterValue = { key: string; label: string; count: number }
 
 function labelFor(v: string | number, unit: string | null): string {
   if (isDateUnit(unit)) return formatStoredDate(v)
@@ -24,20 +24,24 @@ function labelFor(v: string | number, unit: string | null): string {
   return n === null ? String(v).trim() : new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2 }).format(n).replace('-', '−')
 }
 
-// Distinct values present for a column, numeric-aware sort.
+// Distinct values present for a column with how many things carry each,
+// numeric-aware sort.
 export function valuesFor(items: readonly Item[], col: Column | null): FilterValue[] {
   const seen = new Map<string, FilterValue>()
+  const add = (k: string, label: string) => {
+    const cur = seen.get(k)
+    if (cur) cur.count += 1
+    else seen.set(k, { key: k, label, count: 1 })
+  }
   for (const item of items) {
     if (col === null) {
-      const k = valueKey(item.category)
-      if (!seen.has(k)) seen.set(k, { key: k, label: item.category })
+      add(valueKey(item.category), item.category)
       continue
     }
     const id = columnId(col)
     for (const s of item.specs) {
       if (columnId({ key: s.key, unit: s.unit }) !== id) continue
-      const k = valueKey(s.value)
-      if (!seen.has(k)) seen.set(k, { key: k, label: labelFor(s.value, s.unit) })
+      add(valueKey(s.value), labelFor(s.value, s.unit))
     }
   }
   return [...seen.values()].sort((a, b) => collator.compare(a.label, b.label))

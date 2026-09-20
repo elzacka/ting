@@ -48,15 +48,15 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/filter.ts` | `parseNumber`, `specKeys` |
 | `src/lib/format.ts` | nb-NO numbers and dates, real minus sign, narrow no-break space before units |
 | `src/lib/strings.ts` | Every user-facing string. Nothing hardcoded in components |
-| `src/lib/route.ts` | Hash router: `#/` (home), `#/oversikt` (table; `#/registrer` is an alias), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
+| `src/lib/route.ts` | Hash router: `#/` and `#/oversikt` (the one main screen; `#/registrer` is an alias), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
 | `src/lib/prefs.ts` | Per-device flag in localStorage: the idle-lock setting (default on) |
 | `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table or the edit form has unsaved edits; can be turned off on Innstillinger |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
-| `src/lib/home.ts` | What the home page shows: totals per kr property, up to three breakdowns, what is missing. Pure and tested |
-| `src/components/` | One file per screen or reusable piece. `Home` is `#/`; Oversikt is `ItemList` (read) or `RegisterTable` (edit, holds unsaved edits in memory until "Lagre") depending on the Redigering switch; `Report` is print-only; `ErrorBoundary` wraps `main` |
+| `src/lib/summary.ts` | The line above the table: totals per kr property, what is missing (each a search). Pure and tested |
+| `src/components/` | One file per screen or reusable piece. The main screen is `ItemList` (read: summary line, Legg til ting, search, table, Rapport) or `RegisterTable` (edit, holds unsaved edits in memory until "Lagre") depending on the Redigering switch; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
 ## Encryption

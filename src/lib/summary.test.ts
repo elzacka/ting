@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item, Property } from '../db/schema'
-import { defaultFieldSettings } from './fields'
-import { facets, missing, totals } from './home'
+import { missing, totals } from './summary'
 
 function item(name: string, category: string, specs: Item['specs'], photo: Blob | null = null): Item {
   return {
@@ -39,25 +38,6 @@ describe('totals', () => {
   })
   it('is empty without a kr property', () => {
     expect(totals(items, [type])).toEqual([])
-  })
-})
-
-describe('facets', () => {
-  it('counts Kategori when it has more than one value, then Valgliste properties, most first', () => {
-    const f = facets(items, [pris, type, merke], defaultFieldSettings)
-    expect(f.map((x) => x.label)).toEqual(['Kategori', 'Type'])
-    expect(f[0]?.values).toEqual([
-      { key: 'turutstyr', label: 'Turutstyr', count: 2 },
-      { key: 'klær', label: 'Klær', count: 1 },
-    ])
-    expect(f[1]?.values).toEqual([
-      { key: 'sovepose', label: 'Sovepose', count: 2 },
-      { key: 'jakke', label: 'Jakke', count: 1 },
-    ])
-  })
-  it('skips Kategori when every thing shares it', () => {
-    const same = items.map((i) => ({ ...i, category: 'Turutstyr' }))
-    expect(facets(same, [type], defaultFieldSettings).map((x) => x.label)).toEqual(['Type'])
   })
 })
 

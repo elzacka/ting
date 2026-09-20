@@ -72,17 +72,12 @@ export const t = {
     selectRow: (name: string) => `Velg ${name}`,
     clearSelection: 'Fjern valg',
   },
-  home: {
-    things: 'ting',
-    total: (key: string) => `Samlet ${key.toLocaleLowerCase('nb')}`,
-    more: (n: number) => (n === 1 ? '1 til' : `${n} til`),
-    missingTitle: 'Mangler',
-    missingPhoto: (n: number) => (n === 1 ? '1 ting mangler bilde' : `${n} ting mangler bilde`),
+  summary: {
+    things: (n: number) => (n === 1 ? '1 ting' : `${n} ting`),
+    total: (key: string, amount: string) => `Samlet ${key.toLocaleLowerCase('nb')} ${amount}`,
+    missingPhoto: (n: number) => (n === 1 ? '1 mangler bilde' : `${n} mangler bilde`),
     missingValue: (n: number, key: string) =>
-      n === 1 ? `1 ting mangler ${key.toLocaleLowerCase('nb')}` : `${n} ting mangler ${key.toLocaleLowerCase('nb')}`,
-    storageNone: 'Lagres bare i nettleseren.',
-    storageStalled: 'Lagring til mappen har stoppet.',
-    storageLink: 'Innstillinger',
+      n === 1 ? `1 mangler ${key.toLocaleLowerCase('nb')}` : `${n} mangler ${key.toLocaleLowerCase('nb')}`,
   },
   report: {
     title: 'Rapport',

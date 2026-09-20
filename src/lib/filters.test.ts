@@ -36,10 +36,10 @@ const items = [
 describe('valuesFor', () => {
   it('lists distinct values, merging text case and number forms, sorted numerically', () => {
     expect(valuesFor(items, komfort)).toEqual([
-      { key: '-12', label: '−12' },
-      { key: '5', label: '5' },
+      { key: '-12', label: '−12', count: 1 },
+      { key: '5', label: '5', count: 2 },
     ])
-    expect(valuesFor(items, brensel)).toEqual([{ key: 'gass', label: 'Gass' }])
+    expect(valuesFor(items, brensel)).toEqual([{ key: 'gass', label: 'Gass', count: 2 }])
     expect(valuesFor(items, null).map((v) => v.label)).toEqual(['Kjøkken', 'Turutstyr'])
   })
 })

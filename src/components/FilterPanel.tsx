@@ -78,9 +78,8 @@ export function FilterPanel({ items, properties, fields, filters, onChange }: Pr
                     checked={chosen.includes(v.key)}
                     onChange={(e) => toggle(def.id, v.key, e.target.checked)}
                   />
-                  <span className="num">
-                    {v.label}
-                  </span>
+                  <span className="num">{v.label}</span>
+                  <span className="hint num filter-count">{v.count}</span>
                 </label>
               ))}
               {chosen.length > 0 && (
