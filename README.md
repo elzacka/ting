@@ -1,6 +1,6 @@
 # Ting
 
-Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing.
+Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Dataene er dine: Appen kan skrive alt til en mappe på maskinen og lage en sikkerhetskopi du kan hente inn igjen, også på en annen enhet.
 
 ## MVP
 
@@ -21,6 +21,17 @@ Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett 
 | Android | Åpne adressen i Chrome. Trykk på «Installer» i varselet, eller velg «Installer app» i menyen |
 
 En installert app får eget vindu og ikon, starter uten adressefelt og tar vare på dataene.
+
+## Dataene dine
+
+Alt ligger kryptert i nettleseren på enheten. En nettleser kan likevel rydde bort lokale data, og en enhet kan bli borte. Derfor kan du ta vare på alt på to måter, begge under Innstillinger:
+
+| Måte | Slik | Passer når |
+|---|---|---|
+| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Nyeste versjon vinner | Du vil ha alt speilet til disk uten å tenke på det |
+| Sikkerhetskopi | Last ned én fil med alle ting og bilder. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | Ekstra sikkerhet, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
+
+Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn. Det eneste du ikke må miste, er passordet.
 
 ## Kjør lokalt
 
@@ -73,16 +84,14 @@ Hver egenskap er en kolonne i tabellen og en linje på tingens side.
 
 ## Innstillinger
 
-Ikonet lengst til høyre i topplinja. Alt lagres i nettleseren på enheten; her kan du i tillegg:
+Ikonet lengst til høyre i topplinja.
 
 | Valg | Slik |
 |---|---|
-| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt |
-| Sikkerhetskopi | Én fil med alle ting og bilder. Passer som ekstra sikkerhet, eller for å flytte alt til en annen enhet. Safari kan ikke koble til mapper; der er kopien veien |
-| Lås | Slå den automatiske låsen av eller på |
+| Mappe på maskinen | Koble til eller fra. Se «Dataene dine» over |
+| Sikkerhetskopi | Last ned eller gjenopprett. Se «Dataene dine» over |
+| Automatisk lås | Slå den av eller på |
 | Passord | Bytt passord |
-
-Mappen og kopiene er kryptert og åpnes med passordet ditt, også på en annen enhet.
 
 ## Lisens
 
