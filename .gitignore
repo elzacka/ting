@@ -1,10 +1,20 @@
 node_modules/
 dist/
 dev-dist/
+coverage/
 *.log
+*.tsbuildinfo
 .DS_Store
+.env
+.env.*
+
+# Tool and editor state, never the app
+.claude/
 .obsidian/
-.claude/settings.local.json
+.vscode/
+.idea/
+
+# Plan and design notes, private
 dev_only/
 
 # User data never belongs in the repo
