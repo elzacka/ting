@@ -29,7 +29,7 @@ export const t = {
     change: 'Endre passord',
     changed: 'Passordet er endret.',
     folderForeign: (name: string) =>
-      `Mappen «${name}» er kryptert med et annet passord. Skriv det inn for å åpne den. Etterpå gjelder det passordet for appen også.`,
+      `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
     copyForeign: 'Kopien er kryptert med et annet passord. Skriv det inn for å lese den.',
   },
