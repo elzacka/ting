@@ -47,6 +47,7 @@ Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjon
 | Hvem som har lånt noe | Tekst «Lånt til», tom når tingen er hjemme |
 | Telle forbruksvarer (gass, batterier) | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
 | Merke tilstand eller status | Valgliste «Status»: Ok, Skal repareres, Kast |
+| Vite hva alt er verdt | Tall «Kjøpesum» med enhet kr for det du betalte, fra kvitteringen. Skal forsikringen ha gjenanskaffelsesverdi, er det et annet tall: Tall «Verdi» i tillegg. Linja øverst i Oversikt viser summen av hver kr-kolonne |
 | Ha mange ting inn på én gang | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen (blyanten på) og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
 | Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
 
