@@ -605,10 +605,10 @@ export function RegisterTable({
                 void save()
               }}
             >
-              {t.action.yes}
+              {t.action.save}
             </button>
             <button type="button" className="btn" onClick={reset}>
-              {t.action.no}
+              {t.confirm.discard}
             </button>
           </div>
         </div>

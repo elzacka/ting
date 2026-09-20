@@ -11,6 +11,8 @@ import { changePassphrase, currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
+// Norwegian writes the time with a full stop: kl. 19.51
+const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
 
 type Props = {
   items: Item[]
@@ -164,7 +166,7 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
             <p>
               {t.storage.connected(status.name)}{' '}
               <span className="meta num">
-                {status.lastWrittenAt ? t.storage.lastWritten(timeFormat.format(status.lastWrittenAt)) : t.storage.loaded}
+                {status.lastWrittenAt ? t.storage.lastWritten(formatTime(status.lastWrittenAt)) : t.storage.loaded}
               </span>
             </p>
             <div>
@@ -195,7 +197,7 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
         {status.kind === 'error' && (
           <div className="stack-sm">
             <p className="error" role="alert">
-              {t.storage.error(status.name, status.message)}
+              {t.storage.error(status.name)}
             </p>
             <div className="row">
               <button type="button" className="btn btn-primary" onClick={connect}>

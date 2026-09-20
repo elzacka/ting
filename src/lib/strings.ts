@@ -5,7 +5,7 @@ export const t = {
   lock: { lock: 'Lås appen' },
   editing: {
     label: 'Redigering',
-    off: 'Redigering er av.',
+    off: 'Redigering er av. Slå den på med blyanten øverst.',
   },
   vault: {
     setupTitle: 'Velg et passord',
@@ -29,7 +29,7 @@ export const t = {
     change: 'Endre passord',
     changed: 'Passordet er endret.',
     folderForeign: (name: string) =>
-      `Mappen «${name}» er kryptert med et annet passord. Skriv det inn for å åpne den. Etterpå bruker appen og mappen samme nøkkel.`,
+      `Mappen «${name}» er kryptert med et annet passord. Skriv det inn for å åpne den. Etterpå gjelder det passordet for appen også.`,
     folderOpen: 'Åpne mappen',
     copyForeign: 'Kopien er kryptert med et annet passord. Skriv det inn for å lese den.',
   },
@@ -61,7 +61,7 @@ export const t = {
   filters: {
     noValues: 'Ingen verdier ennå',
     clearOne: 'Fjern filteret',
-    clearAll: 'Nullstill filtre',
+    clearAll: 'Fjern alle filtre',
   },
   list: {
     empty: 'Ingenting her ennå',
@@ -94,8 +94,6 @@ export const t = {
     removeSpec: 'Fjern egenskap',
     choosePhoto: 'Velg bilde',
     removePhoto: 'Fjern bilde',
-    yes: 'Ja',
-    no: 'Nei',
   },
   form: {
     name: 'Navn',
@@ -119,7 +117,8 @@ export const t = {
     delete: (name: string) => `Slett «${name}»? Dette kan ikke angres.`,
     deleteMany: (n: number) => (n === 1 ? 'Slett 1 ting? Dette kan ikke angres.' : `Slett ${n} ting? Dette kan ikke angres.`),
     unsaved: 'Du har endringer som ikke er lagret. Forlat siden likevel?',
-    saveOrDiscard: 'Vil du lagre?',
+    saveOrDiscard: 'Du har endringer som ikke er lagret.',
+    discard: 'Forkast endringene',
   },
   table: {
     selectAll: 'Velg alle',
@@ -150,9 +149,9 @@ export const t = {
     renameColumn: 'Endre',
     showCategory: (label: string) => `Vis ${label} igjen`,
     hideCategoryConfirm: (label: string) =>
-      `Skjul «${label}»? Verdiene blir liggende, og kolonnen kan hentes fram igjen.`,
+      `Skjul «${label}»? Verdiene blir liggende, og du kan hente kolonnen fram igjen.`,
     hideCategoryAction: 'Skjul',
-    nameCannotGo: 'Navn kan ikke fjernes. Det er slik du finner tingen igjen.',
+    nameCannotGo: 'Du kan ikke fjerne Navn. Det er slik du finner tingen igjen.',
     renameSave: 'Lagre navn',
     renameCancel: 'Avbryt',
     moveLeft: 'Flytt til venstre',
@@ -167,7 +166,7 @@ export const t = {
   error: {
     nameMissing: 'Navn mangler. Skriv inn et navn.',
     specIncomplete: 'Hver egenskap trenger både navn og verdi.',
-    saveFailed: 'Kunne ikke lagre. Prøv igjen.',
+    saveFailed: 'Kunne ikke lagre. Prøv på nytt.',
     crashed: 'Noe gikk galt. Dataene dine er trygge. Last siden på nytt for å fortsette.',
     reload: 'Last på nytt',
     rowsMissingName: (n: number) => (n === 1 ? '1 rad mangler navn.' : `${n} rader mangler navn.`),
@@ -186,18 +185,18 @@ export const t = {
     folderWhat: 'Automatisk: Appen krypterer dataene og synkroniserer dem med mappen hver gang du lagrer. Tar du med mappen til en annen maskin, får du tilgang til alt i appen der.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
-    checking: 'Sjekker mappen',
-    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Fram til da lagres alt bare i nettleseren.`,
+    checking: 'Sjekker mappen…',
+    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Fram til da lagrer appen bare i nettleseren.`,
     grant: 'Gi tilgang',
-    connected: (name: string) => `Lagres i mappen «${name}».`,
-    lastWritten: (time: string) => `Sist skrevet ${time}.`,
+    connected: (name: string) => `Appen lagrer i mappen «${name}».`,
+    lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
     loaded: 'Lastet fra mappen.',
     disconnect: 'Koble fra',
     conflict: (name: string, folderCount: number, folderDate: string, localCount: number) =>
       `Mappen «${name}» inneholder ${folderCount === 1 ? '1 ting' : `${folderCount} ting`} fra ${folderDate}. I nettleseren ligger ${localCount === 1 ? '1 ting' : `${localCount} ting`}. Velg hva du vil beholde.`,
     useFolder: 'Bruk mappen',
     useLocal: 'Skriv over mappen',
-    error: (name: string, message: string) => `Kunne ikke skrive til «${name}». ${message}`,
+    error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
     copyTitle: 'Sikkerhetskopi',
     copyWhat: 'Manuelt: Én kryptert fil med alt du har lagt inn. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
     download: 'Last ned sikkerhetskopi',

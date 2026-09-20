@@ -16,6 +16,7 @@ import {
 import type { FolderRead } from './folderStore'
 import { sameItemSet } from './backup'
 import { adoptVault, currentKey, currentVault, useVault } from './vault'
+import { errorText } from './errors'
 
 type Handle = Awaited<ReturnType<typeof pickFolder>>
 
@@ -27,7 +28,7 @@ export type FolderStatus =
   | { kind: 'needs-passphrase'; name: string; wrong: boolean }
   | { kind: 'connected'; name: string; lastWrittenAt: number | null }
   | { kind: 'conflict'; name: string; folderCount: number; folderAt: number; localCount: number }
-  | { kind: 'error'; name: string; message: string }
+  | { kind: 'error'; name: string }
 
 const writeDelayMs = 500
 
@@ -38,6 +39,12 @@ export function useFolderSync() {
   const handleRef = useRef<Handle | null>(null)
   const conflictRef = useRef<Extract<FolderRead, { kind: 'data' }> | null>(null)
   const unsubscribe = useRef<() => void>(() => {})
+
+  // What went wrong is logged; the screen says what to do.
+  const fail = useCallback((name: string, err: unknown) => {
+    console.error(errorText(err))
+    setStatus({ kind: 'error', name })
+  }, [])
 
   const startWatching = useCallback((handle: Handle) => {
     unsubscribe.current()
@@ -65,17 +72,17 @@ export function useFolderSync() {
             )
             setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
           } catch (err) {
-            setStatus({ kind: 'error', name: handle.name, message: String(err) })
+            fail(handle.name, err)
           }
         }, writeDelayMs)
       },
-      error: (err: unknown) => setStatus({ kind: 'error', name: handle.name, message: String(err) }),
+      error: (err: unknown) => fail(handle.name, err),
     })
     unsubscribe.current = () => {
       clearTimeout(timer)
       sub.unsubscribe()
     }
-  }, [])
+  }, [fail])
 
   const activate = useCallback(
     async (handle: Handle) => {
@@ -91,10 +98,10 @@ export function useFolderSync() {
         setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: result === 'written' ? Date.now() : null })
         startWatching(handle)
       } catch (err) {
-        setStatus({ kind: 'error', name: handle.name, message: String(err) })
+        fail(handle.name, err)
       }
     },
-    [startWatching],
+    [fail, startWatching],
   )
 
   useEffect(() => {
@@ -148,20 +155,23 @@ export function useFolderSync() {
       await activate(handle)
     } catch (err) {
       if ((err as { name?: string }).name === 'AbortError') return
-      setStatus({ kind: 'error', name: '', message: String(err) })
+      fail('', err)
     }
-  }, [activate, differs])
+  }, [activate, differs, fail])
 
   const useFolderSide = useCallback(async () => {
     const handle = handleRef.current
     const folder = conflictRef.current
     if (!handle || !folder) return
     conflictRef.current = null
+    // Read under the old key before adopting: the settings row must be sealed
+    // again under the new one, or it cannot be opened at the next unlock.
+    const fields = folder.fields ?? (await readFieldSettings())
     if (folder.vault && folder.open !== currentKey()) {
       adoptVault(folder.vault, folder.open)
       await writeVault(folder.vault)
     }
-    await replaceAll(folder.items, folder.properties, folder.fields)
+    await replaceAll(folder.items, folder.properties, fields)
     setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
     startWatching(handle)
   }, [startWatching])
@@ -183,9 +193,9 @@ export function useFolderSync() {
       setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
       startWatching(handle)
     } catch (err) {
-      setStatus({ kind: 'error', name: handle.name, message: String(err) })
+      fail(handle.name, err)
     }
-  }, [startWatching])
+  }, [fail, startWatching])
 
   const grant = useCallback(async () => {
     const handle = handleRef.current
@@ -207,9 +217,10 @@ export function useFolderSync() {
       }
       if (await differs(handle, result)) return
       if (result.kind === 'data' && result.vault) {
+        const fields = result.fields ?? (await readFieldSettings())
         adoptVault(result.vault, result.open)
         await writeVault(result.vault)
-        await replaceAll(result.items, result.properties, result.fields)
+        await replaceAll(result.items, result.properties, fields)
       }
       setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
       startWatching(handle)

@@ -286,10 +286,10 @@ export function ItemForm({
           <p id="form-discard">{t.confirm.saveOrDiscard}</p>
           <div className="row">
             <button type="button" className="btn btn-primary" autoFocus onClick={() => void onSubmit()}>
-              {t.action.yes}
+              {t.action.save}
             </button>
             <a className="btn" href={href.detail(item.id)}>
-              {t.action.no}
+              {t.confirm.discard}
             </a>
           </div>
         </div>
