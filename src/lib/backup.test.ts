@@ -8,15 +8,7 @@ const item: Item = {
   name: 'Sovepose',
   category: 'Turutstyr',
   specs: [{ key: 'Komforttemperatur', value: -12, unit: '°C' }],
-  locationId: null,
-  value: 2500,
-  purchaseDate: new Date(Date.UTC(2024, 0, 15)),
-  receiptImage: null,
   photo: new Blob(['x'], { type: 'image/jpeg' }),
-  barcode: null,
-  serialNumber: null,
-  note: null,
-  warrantyDate: null,
   createdAt: 1,
   updatedAt: 2,
 }
@@ -24,7 +16,7 @@ const item: Item = {
 const fields = { category: { label: 'Type', order: 3, hidden: true }, name: { label: null, order: -1 } }
 
 describe('data file', () => {
-  it('round-trips an item through JSON, with dates as numbers and the photo as a file name', () => {
+  it('round-trips an item through JSON, with the photo as a file name', () => {
     const file = toDataFile([item], [{ id: 'p1', key: 'Vekt', unit: 'gram', createdAt: 5 }], fields, 123)
     const text = JSON.stringify(file)
     const parsed = parseDataFile(text)
@@ -33,10 +25,16 @@ describe('data file', () => {
     const stored = parsed.items[0]
     if (!stored) throw new Error('missing')
     expect(stored.photoFile).toBe('bilder/3f1c2c2e-6a0b-4d1e-9a3a-1f2e3d4c5b6a.jpg')
-    expect(stored.purchaseDate).toBe(Date.UTC(2024, 0, 15))
     const back = fromStored(stored, item.photo)
     expect(back).toEqual(item)
     expect(parsed.fields).toEqual(fields)
+  })
+
+  it('turns a legacy note into the property Notat, unless the thing has one', () => {
+    const stored = { ...toDataFile([item], [], fields, 1).items[0]!, note: 'Ligger i boden' }
+    expect(fromStored(stored, null).specs.at(-1)).toEqual({ key: 'Notat', value: 'Ligger i boden', unit: null })
+    const withNotat = { ...stored, specs: [{ key: 'notat', value: 'Finnes', unit: null }] }
+    expect(fromStored(withNotat, null).specs).toHaveLength(1)
   })
 
   it('loads files without field settings and leaves them undefined', () => {

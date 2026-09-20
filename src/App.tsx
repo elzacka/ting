@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react
 import { db, readFieldSettings, readItems, readProperties, readVault, sealPlaintextRows, writeVault } from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
-import { distinct } from './lib/filter'
 import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
@@ -17,7 +16,6 @@ import { useAutoLock } from './lib/useAutoLock'
 import { readAutoLock, writeAutoLock } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
 import { ItemDetail } from './components/ItemDetail'
-import { ItemForm } from './components/ItemForm'
 import { ItemList } from './components/ItemList'
 import { LockScreen } from './components/LockScreen'
 import { RegisterTable } from './components/RegisterTable'
@@ -147,7 +145,7 @@ export function App() {
           <nav className="row" aria-label={t.action.back}>
             <a
               className="btn btn-icon"
-              href={route.view === 'edit' ? href.detail(route.id) : href.list}
+              href={href.list}
               aria-label={t.action.back}
             >
               <Icon name="arrowBack" />
@@ -301,7 +299,6 @@ function Screen({
   newRowRequested,
   onNewRowStarted,
 }: ScreenProps) {
-  if (!editing && route.view === 'edit') return <p className="hint">{t.editing.off}</p>
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   // One view: the pencil decides whether the table reads or edits.
   if (route.view === 'list') {
@@ -352,16 +349,5 @@ function Screen({
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
-  if (route.view === 'edit') {
-    return (
-      <ItemForm
-        key={item.id}
-        item={item}
-        fields={fields}
-        categories={distinct(items, (i) => i.category)}
-        onDirtyChange={onDirtyChange}
-      />
-    )
-  }
   return <ItemDetail item={item} fields={fields} editing={editing} />
 }

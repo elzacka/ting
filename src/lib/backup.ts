@@ -13,12 +13,14 @@ export const fileFormat = 1
 export const dataFileName = 'ting.json'
 export const photoDirName = 'bilder'
 
-const storedItemSchema = itemSchema.omit({ photo: true, receiptImage: true }).extend({
-  purchaseDate: z.number().nullable(),
-  warrantyDate: z.number().nullable(),
+// Files and rows from before 21 September 2026 carry a note field and a few
+// fields nothing ever wrote; the note becomes the property Notat on load,
+// the rest is dropped.
+const storedItemSchema = itemSchema.omit({ photo: true }).extend({
   photoFile: z.string().nullable(),
   photoType: z.string().nullable().optional(),
   photoData: z.string().nullable().optional(),
+  note: z.string().nullable().optional(),
 })
 
 const fieldSettingsSchema = z.object({
@@ -53,13 +55,17 @@ export function photoFileName(item: Item): string | null {
 }
 
 export function toStored(item: Item): StoredItem {
-  const { photo: _photo, receiptImage: _receipt, ...rest } = item
-  return {
-    ...rest,
-    purchaseDate: item.purchaseDate ? item.purchaseDate.getTime() : null,
-    warrantyDate: item.warrantyDate ? item.warrantyDate.getTime() : null,
-    photoFile: photoFileName(item),
-  }
+  const { photo: _photo, ...rest } = item
+  return { ...rest, photoFile: photoFileName(item) }
+}
+
+export const noteKey = 'Notat'
+
+// A legacy note becomes the property Notat, unless the thing already has one.
+export function noteAsSpec(specs: Item['specs'], note: string | null | undefined): Item['specs'] {
+  const text = note?.trim() ?? ''
+  if (text === '' || specs.some((s) => s.key.toLocaleLowerCase('nb') === noteKey.toLocaleLowerCase('nb'))) return specs
+  return [...specs, { key: noteKey, value: text, unit: null }]
 }
 
 export function toDataFile(
@@ -72,14 +78,8 @@ export function toDataFile(
 }
 
 export function fromStored(stored: StoredItem, photo: Blob | null): Item {
-  const { photoFile: _file, photoData: _data, ...rest } = stored
-  return itemSchema.parse({
-    ...rest,
-    purchaseDate: stored.purchaseDate === null ? null : new Date(stored.purchaseDate),
-    warrantyDate: stored.warrantyDate === null ? null : new Date(stored.warrantyDate),
-    photo,
-    receiptImage: null,
-  })
+  const { photoFile: _file, photoData: _data, photoType: _type, note, ...rest } = stored
+  return itemSchema.parse({ ...rest, specs: noteAsSpec(rest.specs, note), photo })
 }
 
 const sealedSchema = z.object({ iv: z.string(), data: z.string() })

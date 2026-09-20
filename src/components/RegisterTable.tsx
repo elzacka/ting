@@ -29,13 +29,12 @@ import { ColumnResizer } from './ColumnResizer'
 import { ariaSort, SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 
-type RowEdit = { name?: string; category?: string; note?: string; cells?: Record<string, string> }
+type RowEdit = { name?: string; category?: string; cells?: Record<string, string> }
 type NewRow = {
   tempId: string
   name: string
   category: string
   prefilledCategory: string
-  note: string
   cells: Record<string, string>
 }
 
@@ -56,7 +55,7 @@ function parseOptions(raw: string): string[] {
 }
 
 function blankRow(category: string): NewRow {
-  return { tempId: crypto.randomUUID(), name: '', category, prefilledCategory: category, note: '', cells: {} }
+  return { tempId: crypto.randomUUID(), name: '', category, prefilledCategory: category, cells: {} }
 }
 
 type Props = {
@@ -158,7 +157,6 @@ export function RegisterTable({
     const base = baseCells.get(id) ?? {}
     if (e.name !== undefined && e.name !== item.name) return true
     if (e.category !== undefined && e.category !== item.category) return true
-    if (e.note !== undefined && e.note !== (item.note ?? '')) return true
     return Object.entries(e.cells ?? {}).some(([col, v]) => v !== (base[col] ?? ''))
   })
   // A new row counts once anything is typed into it, including a category the user chose themselves.
@@ -178,10 +176,10 @@ export function RegisterTable({
 
   useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
-  function value(item: Item, field: 'name' | 'category' | 'note'): string {
+  function value(item: Item, field: 'name' | 'category'): string {
     const e = edits[item.id]
     if (e && e[field] !== undefined) return e[field]
-    return field === 'note' ? (item.note ?? '') : item[field]
+    return item[field]
   }
 
   function cell(item: Item, col: Column): string {
@@ -450,7 +448,6 @@ export function RegisterTable({
                 {
                   name: value(item, 'name'),
                   category: value(item, 'category'),
-                  note: value(item, 'note'),
                   cells,
                   photo: item.photo,
                 },

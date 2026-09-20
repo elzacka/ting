@@ -4,21 +4,13 @@ import { defaultFieldSettings } from './fields'
 import { columnId } from './grid'
 import { exportFilename, toCsv } from './export'
 
-function item(name: string, specs: Item['specs'], note: string | null = null): Item {
+function item(name: string, specs: Item['specs']): Item {
   return {
     id: crypto.randomUUID(),
     name,
     category: 'Turutstyr',
     specs,
-    locationId: null,
-    value: null,
-    purchaseDate: null,
-    receiptImage: null,
     photo: null,
-    barcode: null,
-    serialNumber: null,
-    note,
-    warrantyDate: null,
     createdAt: Date.UTC(2026, 8, 19, 12),
     updatedAt: 0,
   }
@@ -28,7 +20,7 @@ describe('toCsv', () => {
   it('writes a BOM, semicolons, unit headers, comma decimals and quoting', () => {
     const csv = toCsv(
       [
-        item('Sovepose', [{ key: 'Komforttemperatur', value: -12.5, unit: '°C' }], 'Ligger; "trygt"'),
+        item('Sovepose', [{ key: 'Komforttemperatur', value: -12.5, unit: '°C' }, { key: 'Notat', value: 'Ligger; "trygt"', unit: null }]),
         item('Kokeapparat', [{ key: 'Brensel', value: 'Gass', unit: null }]),
       ],
       [],
@@ -59,7 +51,7 @@ describe('toCsv column order', () => {
       ],
       defaultFieldSettings,
     )
-    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Navn;Vekt (gram);Komforttemperatur (°C);Notat;Opprettet')
+    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Navn;Vekt (gram);Komforttemperatur (°C);Opprettet')
   })
 })
 
@@ -69,7 +61,7 @@ describe('toCsv with renamed and hidden fields', () => {
       category: { label: 'Type', order: 5, hidden: true },
       name: { label: 'Ting', order: 0 },
     })
-    expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Notat;Opprettet')
+    expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Opprettet')
   })
 })
 
@@ -77,7 +69,7 @@ describe('toCsv formula guard', () => {
   it('prefixes formula-like text with an apostrophe but leaves negative numbers', () => {
     const csv = toCsv(
       [
-        item('=HYPERLINK("http://x")', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }], '+1 and @x'),
+        item('=HYPERLINK("http://x")', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }, { key: 'Notat', value: '+1 and @x', unit: null }]),
         item('Telt', [{ key: 'Brensel', value: '-DDE()', unit: null }]),
       ],
       [],

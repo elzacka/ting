@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
-import { fromStored, storedItemSchema, toStored } from '../lib/backup'
+import { fromStored, noteAsSpec, storedItemSchema, toStored } from '../lib/backup'
 import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type Sealed, type Vault } from '../lib/crypto'
 import { fieldSettingsKey, readFieldSettings as parseFieldSettings, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { errorText } from '../lib/errors'
@@ -140,13 +140,6 @@ export async function addItem(input: ItemInput): Promise<string> {
   const item = itemSchema.parse({
     ...input,
     id: crypto.randomUUID(),
-    locationId: null,
-    value: null,
-    purchaseDate: null,
-    receiptImage: null,
-    barcode: null,
-    serialNumber: null,
-    warrantyDate: null,
     createdAt: now,
     updatedAt: now,
   })
@@ -187,13 +180,6 @@ export async function saveBatch(added: ItemInput[], edited: { id: string; input:
         itemSchema.parse({
           ...input,
           id: crypto.randomUUID(),
-          locationId: null,
-          value: null,
-          purchaseDate: null,
-          receiptImage: null,
-          barcode: null,
-          serialNumber: null,
-          warrantyDate: null,
           createdAt: now,
           updatedAt: now,
         }),
@@ -379,7 +365,8 @@ export async function sealPlaintextRows(): Promise<number> {
   const itemRows: SealedItemRow[] = []
   for (const r of rawItems) {
     if (r.sealed) continue
-    itemRows.push(await sealItem(itemSchema.parse(r)))
+    const legacy = r as PlainItemRow & { note?: string | null }
+    itemRows.push(await sealItem(itemSchema.parse({ ...legacy, specs: noteAsSpec(legacy.specs, legacy.note) })))
   }
   const propRows: SealedPropertyRow[] = []
   for (const r of rawProps) {

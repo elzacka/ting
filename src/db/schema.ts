@@ -6,20 +6,14 @@ export const specSchema = z.object({
   unit: z.string().trim().nullable(),
 })
 
+// A thing is a name, a category, its properties as specs, and maybe a photo.
+// Everything else it can carry is a property; a note is the property Notat.
 export const itemSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
   category: z.string().trim(),
   specs: z.array(specSchema),
-  locationId: z.string().nullable(),
-  value: z.number().nullable(),
-  purchaseDate: z.date().nullable(),
-  receiptImage: z.instanceof(Blob).nullable(),
   photo: z.instanceof(Blob).nullable(),
-  barcode: z.string().nullable(),
-  serialNumber: z.string().nullable(),
-  note: z.string().nullable(),
-  warrantyDate: z.date().nullable(),
   createdAt: z.number(),
   updatedAt: z.number(),
 })
@@ -33,7 +27,6 @@ export const itemInputSchema = itemSchema.pick({
   category: true,
   specs: true,
   photo: true,
-  note: true,
 })
 
 export type ItemInput = z.infer<typeof itemInputSchema>

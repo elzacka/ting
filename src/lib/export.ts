@@ -42,12 +42,11 @@ export function toCsv(items: readonly Item[], properties: readonly Property[], f
           : d.col.key,
   )
   const rows = [
-    [...header, 'Notat', 'Opprettet'],
+    [...header, 'Opprettet'],
     ...items.map((item) => [
       ...defs.map((d) =>
         d.kind === 'category' ? item.category : d.kind === 'name' ? item.name : cellValue(item, d.col),
       ),
-      item.note ?? '',
       dateFormat.format(new Date(item.createdAt)),
     ]),
   ]

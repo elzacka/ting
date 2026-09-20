@@ -2,21 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
 import { parseQuery, searchItems } from './search'
 
-function item(name: string, specs: Item['specs'], note: string | null = null, photo: Blob | null = null): Item {
+function item(name: string, specs: Item['specs'], photo: Blob | null = null): Item {
   return {
     id: crypto.randomUUID(),
     name,
     category: 'Turutstyr',
     specs,
-    locationId: null,
-    value: null,
-    purchaseDate: null,
-    receiptImage: null,
     photo,
-    barcode: null,
-    serialNumber: null,
-    note,
-    warrantyDate: null,
     createdAt: 0,
     updatedAt: 0,
   }
@@ -24,8 +16,8 @@ function item(name: string, specs: Item['specs'], note: string | null = null, ph
 
 const items = [
   item('Sovepose vinter', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }, { key: 'Vekt', value: 1250, unit: 'gram' }]),
-  item('Sovepose sommer', [{ key: 'Komforttemperatur', value: 5, unit: '°C' }], null, new Blob(['x'])),
-  item('Kokeapparat', [{ key: 'Brensel', value: 'Gass', unit: null }], 'Ligger i loftsboden'),
+  item('Sovepose sommer', [{ key: 'Komforttemperatur', value: 5, unit: '°C' }], new Blob(['x'])),
+  item('Kokeapparat', [{ key: 'Brensel', value: 'Gass', unit: null }, { key: 'Notat', value: 'Ligger i loftsboden', unit: null }]),
   item('Liggeunderlag', [{ key: 'R-verdi', value: 4.2, unit: null }]),
 ]
 
@@ -78,7 +70,7 @@ describe('searchItems', () => {
     expect(names('sovepose vekt>1000')).toEqual(['Sovepose vinter'])
   })
 
-  it('supports has: for photo, note and spec keys', () => {
+  it('supports has: for photo and spec keys, Notat among them', () => {
     expect(names('has:bilde')).toEqual(['Sovepose sommer'])
     expect(names('has:notat')).toEqual(['Kokeapparat'])
     expect(names('has:r-verdi')).toEqual(['Liggeunderlag'])
@@ -105,7 +97,7 @@ describe('searchItems', () => {
     const ranked = [
       item('Telt', []),
       item('Teltstang', []),
-      item('Presenning', [], 'Brukes som telt'),
+      item('Presenning', [{ key: 'Notat', value: 'Brukes som telt', unit: null }]),
       item('Tlt', []),
     ]
     expect(searchItems(ranked, 'telt').map((i) => i.name)).toEqual(['Telt', 'Teltstang', 'Presenning', 'Tlt'])

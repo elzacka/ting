@@ -5,7 +5,6 @@ export type Route =
   | { view: 'list' }
   | { view: 'storage' }
   | { view: 'detail'; id: string }
-  | { view: 'edit'; id: string }
 
 export function parseHash(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean)
@@ -13,7 +12,7 @@ export function parseHash(hash: string): Route {
   if (parts[0] === 'oversikt' || parts[0] === 'registrer') return { view: 'list' }
   if (parts[0] === 'innstillinger') return { view: 'storage' }
   if (parts[0] === 'ting' && parts[1]) {
-    return parts[2] === 'rediger' ? { view: 'edit', id: parts[1] } : { view: 'detail', id: parts[1] }
+    return { view: 'detail', id: parts[1] }
   }
   return { view: 'list' }
 }
@@ -22,7 +21,6 @@ export const href = {
   list: '#/oversikt',
   storage: '#/innstillinger',
   detail: (id: string) => `#/ting/${id}`,
-  edit: (id: string) => `#/ting/${id}/rediger`,
 }
 
 export function navigate(to: string): void {

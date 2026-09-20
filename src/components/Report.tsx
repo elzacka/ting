@@ -39,7 +39,6 @@ export function Report({
                 )}
               </th>
             ))}
-            <th scope="col">{t.report.note}</th>
           </tr>
         </thead>
         <tbody>
@@ -55,7 +54,6 @@ export function Report({
                   </td>
                 )
               })}
-              <td>{item.note ?? ''}</td>
             </tr>
           ))}
         </tbody>

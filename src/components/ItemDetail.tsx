@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { deleteItem } from '../db/db'
+import { useRef, useState } from 'react'
+import { deleteItem, updateItem } from '../db/db'
+import { asImage } from '../lib/backup'
 import type { Item } from '../db/schema'
 import { formatValue } from '../lib/format'
 import { href, navigate } from '../lib/route'
@@ -12,10 +13,17 @@ import { splitLinks } from '../lib/paste'
 export function ItemDetail({ item, fields, editing }: { item: Item; fields: FieldSettings; editing: boolean }) {
   const url = useObjectUrl(item.photo)
   const [confirming, setConfirming] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function onDelete() {
     await deleteItem(item.id)
     navigate(href.list)
+  }
+
+  // The photo is the one thing the table cannot hold, so it is set here.
+  async function setPhoto(photo: Blob | null) {
+    await updateItem(item.id, { name: item.name, category: item.category, specs: item.specs, photo })
+    if (fileRef.current) fileRef.current.value = ''
   }
 
   return (
@@ -45,15 +53,6 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
         )}
       </section>
 
-      {item.note && (
-        <section className="stack-sm">
-          <h2 className="section-label">{t.detail.note}</h2>
-          <p style={{ whiteSpace: 'pre-wrap' }}>
-            <Linked text={item.note} />
-          </p>
-        </section>
-      )}
-
       {confirming ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-text">
           <p id="confirm-text">{t.confirm.delete(item.name)}</p>
@@ -67,11 +66,23 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
           </div>
         </div>
       ) : editing ? (
-        <div className="row">
-          <a className="btn" href={href.edit(item.id)}>
-            <Icon name="edit" size={20} />
-            {t.action.edit}
-          </a>
+        <div className="row toolbar">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="visually-hidden"
+            onChange={(e) => void setPhoto(asImage(e.target.files?.[0]))}
+          />
+          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+            <Icon name="photoCamera" size={20} />
+            {item.photo ? t.action.changePhoto : t.action.choosePhoto}
+          </button>
+          {item.photo && (
+            <button type="button" className="btn" onClick={() => void setPhoto(null)}>
+              {t.action.removePhoto}
+            </button>
+          )}
           <button type="button" className="btn btn-danger" onClick={() => setConfirming(true)}>
             <Icon name="delete" size={20} />
             {t.action.delete}
