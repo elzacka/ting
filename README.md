@@ -1,13 +1,13 @@
 # Ting
 
-Holder oversikt over det du eier, og hvor det er. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing.
+Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing.
 
 ## MVP
 
 - Oversikt: Smart søk og filtrering. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`. Filtrene under søkefeltet har en nedtrekksmeny per egenskap, med flervalg. Velg ting og last ned CSV eller skriv ut en rapport
 - Legg til og endre: Rediger mange ting samtidig i en tabell, med egenskaper som kolonner
-- Egen side for hver ting, med bilde og full spesifikasjonsliste
-- Innstillinger: Koble appen til en mappe på disk (Chrome og Edge), eller last ned og gjenopprett en kopi
+- Egen side for hver ting, med bilde og alle egenskaper
+- Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
 
@@ -48,7 +48,7 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
 | Passordet | Minst 12 tegn. Bruk gjerne en setning. Det låser alt du registrerer, på enheten og i alle kopier |
 | Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet. Blyanten ved siden av er noe annet: Appen åpner låst for redigering, blyanten åpner for det til du låser igjen eller lukker appen |
-| Automatisk lås | Etter ti minutter uten bruk, men ikke mens du har endringer som ikke er lagret. Kan slås av under Innstillinger |
+| Automatisk lås | Etter 10 minutter uten aktivitet, men ikke mens du har endringer som ikke er lagret. Kan slås av under Innstillinger |
 | Bytte passord | Under Innstillinger. Dataene krypteres på nytt. Kopier du tok før byttet, åpnes med det gamle passordet |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
@@ -67,7 +67,7 @@ Hver egenskap er en kolonne i tabellen og en linje på tingens side.
 | Felttype | Slik |
 |---|---|
 | Tekst | Fritekst |
-| Liste | Velg blant verdiene som finnes, eller skriv en ny. Valgene du oppgir når du lager egenskapen, skilles med komma; verdier som allerede er brukt, kommer i tillegg |
+| Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene du oppgir når du lager egenskapen, skilles med komma; verdier som allerede er brukt, kommer i tillegg |
 | Tall | Skriv bare tallet, `1250` og ikke `1250 gram`. Enheten gjelder hele kolonnen |
 | Dato | Skriv `19.09.26` |
 
@@ -77,8 +77,8 @@ Ikonet lengst til høyre i topplinja. Alt lagres i nettleseren på enheten; her 
 
 | Valg | Slik |
 |---|---|
-| Mappe på disk | Koble appen til en mappe (Chrome og Edge), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt |
-| Kopi | Én fil med alle ting og bilder. Passer som ekstra sikkerhet, eller for å flytte alt til en annen enhet. Safari kan ikke koble til mapper; der er kopien veien |
+| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge), så skriver appen `ting.json` og bildene dit hver gang du lagrer. Kopier mappen når du vil ta vare på alt |
+| Sikkerhetskopi | Én fil med alle ting og bilder. Passer som ekstra sikkerhet, eller for å flytte alt til en annen enhet. Safari kan ikke koble til mapper; der er kopien veien |
 | Lås | Slå den automatiske låsen av eller på |
 | Passord | Bytt passord |
 

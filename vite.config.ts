@@ -50,7 +50,7 @@ export default defineConfig(({ command, isPreview }) => {
           id: base,
           name: 'Ting',
           short_name: 'Ting',
-          description: 'Oversikt over det du eier, og hvor det er',
+          description: 'Hold oversikt over det du eier, og hvor du har det',
           lang: 'nb',
           dir: 'ltr',
           start_url: base,
