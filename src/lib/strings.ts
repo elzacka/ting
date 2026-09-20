@@ -58,7 +58,6 @@ export const t = {
       ['has:bilde', 'Har bilde. Også has:notat'],
       ['has:vekt', 'Har en verdi i Vekt'],
     ],
-    keysLabel: 'Egenskaper du kan søke på',
   },
   filters: {
     noValues: 'Ingen verdier ennå',

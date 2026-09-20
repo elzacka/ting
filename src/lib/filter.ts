@@ -10,18 +10,6 @@ export function parseNumber(raw: string | number): number | null {
   return Number(cleaned)
 }
 
-// Distinct spec keys across all items, first spelling wins, sorted.
-export function specKeys(items: readonly Item[]): string[] {
-  const seen = new Map<string, string>()
-  for (const item of items) {
-    for (const s of item.specs) {
-      const k = s.key.toLocaleLowerCase('nb')
-      if (!seen.has(k)) seen.set(k, s.key)
-    }
-  }
-  return [...seen.values()].sort(collator.compare)
-}
-
 // Distinct values of a text field, first spelling wins, sorted.
 export function distinct(items: readonly Item[], pick: (item: Item) => string): string[] {
   const seen = new Map<string, string>()

@@ -7,11 +7,10 @@ type Props = {
   value: string
   onChange: (q: string) => void
   onClose: () => void
-  keys: readonly string[]
   listTip?: string
 }
 
-export function SearchField({ value, onChange, onClose, keys, listTip }: Props) {
+export function SearchField({ value, onChange, onClose, listTip }: Props) {
   const ref = useRef<HTMLInputElement>(null)
   const finePointer = window.matchMedia('(pointer: fine)').matches
 
@@ -64,11 +63,6 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
               </div>
             ))}
           </div>
-          {keys.length > 0 && (
-            <p className="hint">
-              {t.search.keysLabel}: {keys.join(', ')}
-            </p>
-          )}
           {listTip && <p className="hint">{listTip}</p>}
         </div>
       </details>

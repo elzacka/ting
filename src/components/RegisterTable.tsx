@@ -10,7 +10,7 @@ import {
   setFieldSettings,
 } from '../db/db'
 import type { Item, Property, PropertyType } from '../db/schema'
-import { distinct, parseNumber, specKeys } from '../lib/filter'
+import { distinct, parseNumber } from '../lib/filter'
 import { columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
@@ -122,7 +122,6 @@ export function RegisterTable({
   }
 
   const baseCells = useMemo(() => new Map(items.map((i) => [i.id, cellsFrom(i)])), [items])
-  const keys = useMemo(() => specKeys(items), [items])
   const categories = useMemo(() => distinct(items, (i) => i.category), [items])
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
   // Edited rows stay visible even when they stop matching the query.
@@ -467,7 +466,6 @@ export function RegisterTable({
             value={query}
             onChange={onQueryChange}
             onClose={onSearchClose}
-            keys={keys}
             listTip={t.search.tipsTableText}
           />
         </div>

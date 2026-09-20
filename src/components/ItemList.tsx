@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Item, Property } from '../db/schema'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
-import { specKeys } from '../lib/filter'
 import { activeCount, applyFilters, type Filters } from '../lib/filters'
 import { formatBare } from '../lib/format'
 import { columnDefs, type ColumnDef, type FieldSettings } from '../lib/fields'
@@ -58,7 +57,6 @@ export function ItemList({
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
-  const keys = useMemo(() => specKeys(items), [items])
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const categoryLabel = fields.category.label ?? t.table.category
   const nameLabel = fields.name.label ?? t.table.name
@@ -105,7 +103,6 @@ export function ItemList({
             value={query}
             onChange={onQueryChange}
             onClose={onSearchClose}
-            keys={keys}
           />
           <FilterPanel
             items={items}
