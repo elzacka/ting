@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ClipboardEvent } from 'react'
 import { createPortal } from 'react-dom'
 import {
   addProperty,
@@ -19,6 +19,7 @@ import { applyFilters, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
 import { SpacerRow } from './ItemList'
 import { rowHeight, useRowWindow } from '../lib/useRowWindow'
+import { parseBlock } from '../lib/paste'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -201,6 +202,46 @@ export function RegisterTable({
     setNewRows((prev) =>
       prev.map((r) => (r.tempId === tempId ? { ...r, ...patch, cells: { ...r.cells, ...(patch.cells ?? {}) } } : r)),
     )
+  }
+
+  // A block from a spreadsheet fills right and down from the cell it lands in,
+  // by position: the first pasted column goes into the column pasted into, and
+  // so on. Rows past the last one become new rows. One value pastes as usual.
+  function onPaste(e: ClipboardEvent<HTMLTableElement>) {
+    const el = e.target
+    if (!(el instanceof HTMLInputElement)) return
+    const rowId = el.dataset['row']
+    const colId = el.dataset['col']
+    if (!rowId || !colId) return
+    const block = parseBlock(e.clipboardData.getData('text/plain'))
+    if (!block) return
+    e.preventDefault()
+    e.stopPropagation()
+    setStatus(null)
+    const order = [...visible.map((i) => ({ kind: 'item' as const, id: i.id })), ...newRows.map((r) => ({ kind: 'new' as const, id: r.tempId }))]
+    const startRow = order.findIndex((r) => r.id === rowId)
+    const startCol = defs.findIndex((d) => d.id === colId)
+    if (startRow < 0 || startCol < 0) return
+    const extra: NewRow[] = []
+    block.forEach((line, i) => {
+      const cells: Record<string, string> = {}
+      const patch: RowEdit = { cells }
+      line.forEach((value, j) => {
+        const def = defs[startCol + j]
+        if (!def) return
+        if (def.kind === 'category') patch.category = value
+        else if (def.kind === 'name') patch.name = value
+        else cells[def.id] = value
+      })
+      const target = order[startRow + i]
+      if (target?.kind === 'item') editItem(target.id, patch)
+      else if (target?.kind === 'new') editNew(target.id, patch)
+      else {
+        const row = blankRow(fields.category.hidden ? '' : (extra[extra.length - 1]?.category ?? items[items.length - 1]?.category ?? ''))
+        extra.push({ ...row, category: patch.category ?? row.category, name: patch.name ?? row.name, cells })
+      }
+    })
+    if (extra.length > 0) setNewRows((prev) => [...prev, ...extra])
   }
 
   function toggle(id: string, on: boolean) {
@@ -716,6 +757,7 @@ export function RegisterTable({
           <table
             className={`grid${selected.size > 0 ? ' has-selection' : ''}`}
             style={{ width: tableWidth(defs, widths) }}
+            onPaste={onPaste}
           >
             <colgroup>
               <col style={{ width: checkColumnWidth() }} />
@@ -929,6 +971,8 @@ export function RegisterTable({
                           aria-label={label}
                           value={text}
                           ref={focus}
+                          data-row={item.id}
+                          data-col={def.id}
                           onChange={(e) =>
                             editItem(
                               item.id,
@@ -958,6 +1002,8 @@ export function RegisterTable({
                           aria-label={t.table.cell(row.name, categoryLabel)}
                           value={row.category}
                           onChange={(e) => editNew(row.tempId, { category: e.target.value })}
+                          data-row={row.tempId}
+                          data-col={def.id}
                           ref={
                             row.tempId === lastNewId && defs[0]?.kind === 'category' ? focusWithoutScroll : undefined
                           }
@@ -971,6 +1017,8 @@ export function RegisterTable({
                           aria-label={t.table.cell(row.name, nameLabel)}
                           value={row.name}
                           onChange={(e) => editNew(row.tempId, { name: e.target.value })}
+                          data-row={row.tempId}
+                          data-col={def.id}
                           ref={
                             row.tempId === lastNewId && defs[0]?.kind !== 'category' ? focusWithoutScroll : undefined
                           }
@@ -984,6 +1032,8 @@ export function RegisterTable({
                           aria-label={t.table.cell(row.name, def.col.key)}
                           value={row.cells[def.id] ?? ''}
                           onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
+                          data-row={row.tempId}
+                          data-col={def.id}
                         />
                       </td>
                     ),

@@ -7,6 +7,7 @@ import type { FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
+import { splitLinks } from '../lib/paste'
 
 export function ItemDetail({ item, fields, editing }: { item: Item; fields: FieldSettings; editing: boolean }) {
   const url = useObjectUrl(item.photo)
@@ -35,7 +36,9 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
             {item.specs.map((s, i) => (
               <div key={i}>
                 <dt>{s.key}</dt>
-                <dd>{formatValue(s)}</dd>
+                <dd>
+                  <Linked text={formatValue(s)} />
+                </dd>
               </div>
             ))}
           </dl>
@@ -45,7 +48,9 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
       {item.note && (
         <section className="stack-sm">
           <h2 className="section-label">{t.detail.note}</h2>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{item.note}</p>
+          <p style={{ whiteSpace: 'pre-wrap' }}>
+            <Linked text={item.note} />
+          </p>
         </section>
       )}
 
@@ -74,5 +79,22 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
         </div>
       ) : null}
     </div>
+  )
+}
+
+// http(s) addresses in text open in a new tab; the text itself stays text.
+function Linked({ text }: { text: string }) {
+  return (
+    <>
+      {splitLinks(text).map((part, i) =>
+        part.href ? (
+          <a key={i} href={part.href} target="_blank" rel="noopener noreferrer">
+            {part.text}
+          </a>
+        ) : (
+          <span key={i}>{part.text}</span>
+        ),
+      )}
+    </>
   )
 }

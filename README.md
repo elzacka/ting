@@ -36,6 +36,22 @@ Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der 
 
 Velg en tom mappe: Appen rydder selv i undermappen `bilder`. Deler flere enheter én mappe, bruk den fra én enhet om gangen; den nyeste lagringen vinner, ingenting flettes.
 
+## Slik gjør du det i Ting
+
+Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjoner. Alt dette er en egenskap:
+
+| Vil du | Lag egenskapen |
+|---|---|
+| Vite hvor ting er (bod, hylle, boks) | Valgliste «Plassering» |
+| Hvem som eier hva | Valgliste «Eier»: Ett valg per person i husstanden, og «Felles» |
+| Hvem som har lånt noe | Tekst «Lånt til», tom når tingen er hjemme |
+| Telle forbruksvarer (gass, batterier) | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
+| Merke tilstand eller status | Valgliste «Status»: Ok, Skal repareres, Kast |
+| Ha mange ting inn på én gang | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen (blyanten på) og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
+| Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
+
+Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
+
 ## Rapport
 
 Under Oversikt lager du en liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen. Rapporten er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.

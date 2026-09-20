@@ -57,6 +57,7 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
 | `src/lib/summary.ts` | The line above the table: totals per kr property, what is missing (each a search). Pure and tested |
 | `src/lib/useRowWindow.ts` | Both tables render only the rows on screen (48 px rows, page scroll, spacer rows keep the height) |
+| `src/lib/paste.ts` | `parseBlock`: a spreadsheet block (tabs, newlines) for the edit table, filling right and down from the cell it lands in; `splitLinks`: http(s) addresses in text, for the detail page. Tested |
 | `src/components/` | One file per screen or reusable piece. The main screen is `ItemList` (read: summary line, Legg til ting, search, table, Rapport) or `RegisterTable` (edit, holds unsaved edits in memory until "Lagre") depending on the Redigering switch; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 

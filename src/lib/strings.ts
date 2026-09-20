@@ -74,7 +74,7 @@ export const t = {
   },
   summary: {
     things: (n: number) => (n === 1 ? '1 ting' : `${n} ting`),
-    total: (key: string, amount: string) => `Samlet ${key.toLocaleLowerCase('nb')} ${amount}`,
+    total: (key: string, amount: string) => `${key} i alt ${amount}`,
     missingPhoto: (n: number) => (n === 1 ? '1 mangler bilde' : `${n} mangler bilde`),
     missingValue: (n: number, key: string) =>
       n === 1 ? `1 mangler ${key.toLocaleLowerCase('nb')}` : `${n} mangler ${key.toLocaleLowerCase('nb')}`,
