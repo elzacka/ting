@@ -682,8 +682,8 @@ export function RegisterTable({
         ))}
       </datalist>
       <datalist id="unit-options">
-        {t.table.unitOptions.map((u) => (
-          <option key={u} value={u} />
+        {t.table.unitOptions.map(([symbol, word]) => (
+          <option key={symbol} value={symbol} label={word} />
         ))}
       </datalist>
       {defs.map(
