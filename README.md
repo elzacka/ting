@@ -4,8 +4,8 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 
 ## MVP
 
-- Oversikt: Smart søk og filtrering. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`. Filtrene under søkefeltet har en nedtrekksmeny per egenskap, med flervalg. Velg ting og last ned CSV eller skriv ut en rapport
-- Legg til og endre: Rediger mange ting samtidig i en tabell, med egenskaper som kolonner
+- Hjem: Hvor mange ting du har, samlet pris, fordeling per valgliste, hva som mangler bilde eller pris, og hvor dataene er lagret. Hver rad åpner Oversikt med det utvalget
+- Oversikt: Én tabell med egenskaper som kolonner. Smart søk og filtrering: Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`. Blyanten i topplinja gjør tabellen redigerbar: Legg til ting og egenskaper, endre mange ting samtidig. Velg ting og last ned CSV eller skriv ut en rapport
 - Egen side for hver ting, med bilde og alle egenskaper
 - Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 

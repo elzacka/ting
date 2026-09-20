@@ -48,14 +48,15 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/filter.ts` | `parseNumber`, `specKeys` |
 | `src/lib/format.ts` | nb-NO numbers and dates, real minus sign, narrow no-break space before units |
 | `src/lib/strings.ts` | Every user-facing string. Nothing hardcoded in components |
-| `src/lib/route.ts` | Hash router: `#/` and `#/oversikt` (list), `#/registrer` (table), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
+| `src/lib/route.ts` | Hash router: `#/` (home), `#/oversikt` (table; `#/registrer` is an alias), `#/innstillinger`, `#/ting/:id`, `#/ting/:id/rediger` |
 | `src/lib/backup.ts` | `ting.json` format (format 1). Folder copy keeps photos as files in `bilder/`; download copy embeds them as data URLs. Tested |
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
 | `src/lib/prefs.ts` | Per-device flag in localStorage: the idle-lock setting (default on) |
 | `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table or the edit form has unsaved edits; can be turned off on Innstillinger |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
-| `src/components/` | One file per screen or reusable piece. `RegisterTable` holds unsaved edits in memory until "Lagre"; `Report` is print-only; `ErrorBoundary` wraps `main` |
+| `src/lib/home.ts` | What the home page shows: totals per kr property, up to three breakdowns, what is missing. Pure and tested |
+| `src/components/` | One file per screen or reusable piece. `Home` is `#/`; Oversikt is `ItemList` (read) or `RegisterTable` (edit, holds unsaved edits in memory until "Lagre") depending on the Redigering switch; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
 ## Encryption
@@ -88,4 +89,4 @@ Photos are stored as `Blob`, never base64.
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
 - Everything from outside (form input, storage) is validated with Zod before it becomes an `Item`
 - The lock is the passphrase: the app always opens locked, the key lives in memory until lock or reload. Decided by elzacka, 19 September 2026
-- Two header controls, never one: the Redigering switch (pencil, shown on Legg til og endre only; every unlock starts read-only, the pencil opens editing of items and properties for the session, `locked` on RegisterTable renders the table without controls; Innstillinger is never gated by it) and the Lås appen button (padlock, drops the key), plus the Innstillinger icon. Icon only with `aria-label` and `title`. Decided by elzacka, 19 September 2026
+- Two header controls, never one: the Redigering switch (pencil, shown on Oversikt only; every unlock starts read-only, the pencil flips Oversikt between the read table and the edit table for the session; Innstillinger is never gated by it) and the Lås appen button (padlock, drops the key), plus the Innstillinger icon. Icon only with `aria-label` and `title`. Decided by elzacka, 19 September 2026
