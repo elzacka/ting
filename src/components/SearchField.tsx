@@ -16,8 +16,8 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
   const finePointer = window.matchMedia('(pointer: fine)').matches
 
   return (
-    <div className="stack-sm search-block">
-      <div className="search">
+    <>
+      <div className="search search-block">
         <Icon name="search" size={20} className="icon-lead" />
         <label htmlFor="search" className="visually-hidden">
           {t.search.label}
@@ -56,18 +56,14 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
           <Icon name="chevronRight" size={14} className="tips-chevron" />
         </summary>
         <div className="tips-body">
-          <table className="tips-table">
-            <tbody>
-              {t.search.tipRows.map(([example, meaning]) => (
-                <tr key={example}>
-                  <td>
-                    <code className="mono">{example}</code>
-                  </td>
-                  <td>{meaning}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="tips-grid">
+            {t.search.tipRows.map(([example, meaning]) => (
+              <div className="tips-row" key={example}>
+                <code className="mono">{example}</code>
+                <span>{meaning}</span>
+              </div>
+            ))}
+          </div>
           {keys.length > 0 && (
             <p className="hint">
               {t.search.keysLabel}: {keys.join(', ')}
@@ -76,6 +72,6 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
           {listTip && <p className="hint">{listTip}</p>}
         </div>
       </details>
-    </div>
+    </>
   )
 }
