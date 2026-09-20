@@ -37,7 +37,7 @@ export const t = {
     label: 'Søk',
     open: 'Søk og filtrer',
     close: 'Lukk søk',
-    placeholder: 'Søk etter navn eller egenskap',
+    placeholder: 'Søk på navn eller egenskap',
     clear: 'Tøm søk',
     tips: 'Søketips',
     tipsTableText: 'Rader du har endret, blir stående til du lagrer, også når søket endres.',
