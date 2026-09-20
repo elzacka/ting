@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   addProperty,
@@ -71,6 +71,9 @@ type Props = {
   onDirtyChange: (dirty: boolean) => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
+  // Home asked for a new row: add one on mount and say so
+  newRowRequested: boolean
+  onNewRowStarted: () => void
 }
 
 // Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
@@ -93,6 +96,8 @@ export function RegisterTable({
   onDirtyChange,
   filters,
   onFiltersChange,
+  newRowRequested,
+  onNewRowStarted,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
@@ -200,6 +205,22 @@ export function RegisterTable({
       return next
     })
   }
+
+  // New rows inherit the last category
+  const addRow = useCallback(() => {
+    setNewRows((prev) => [
+      ...prev,
+      blankRow(
+        fields.category.hidden ? '' : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
+      ),
+    ])
+  }, [fields.category.hidden, items])
+
+  useEffect(() => {
+    if (!newRowRequested) return
+    addRow()
+    onNewRowStarted()
+  }, [newRowRequested, addRow, onNewRowStarted])
 
   // Adding or editing rows is one mode, selecting rows is another. Never both.
   const editing = newRows.length > 0 || dirtyIds.length > 0
@@ -487,20 +508,7 @@ export function RegisterTable({
       )}
 
       <div className="row toolbar">
-        <button
-          type="button"
-          className="btn"
-          onClick={() =>
-            setNewRows((prev) => [
-              ...prev,
-              blankRow(
-                fields.category.hidden
-                  ? ''
-                  : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
-              ),
-            ])
-          }
-        >
+        <button type="button" className="btn" onClick={addRow}>
           <Icon name="add" size={20} />
           {t.table.addRow}
         </button>

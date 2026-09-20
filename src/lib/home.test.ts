@@ -1,0 +1,75 @@
+import { describe, expect, it } from 'vitest'
+import type { Item, Property } from '../db/schema'
+import { defaultFieldSettings } from './fields'
+import { facets, missing, totals } from './home'
+
+function item(name: string, category: string, specs: Item['specs'], photo: Blob | null = null): Item {
+  return {
+    id: crypto.randomUUID(),
+    name,
+    category,
+    specs,
+    locationId: null,
+    value: null,
+    purchaseDate: null,
+    receiptImage: null,
+    photo,
+    barcode: null,
+    serialNumber: null,
+    note: null,
+    warrantyDate: null,
+    createdAt: 0,
+    updatedAt: 0,
+  }
+}
+
+const pris: Property = { id: '["pris","kr"]', key: 'Pris', unit: 'kr', createdAt: 1, type: 'number' }
+const type: Property = { id: '["type",""]', key: 'Type', unit: '', createdAt: 2, type: 'choice', options: [] }
+const merke: Property = { id: '["merke",""]', key: 'Merke', unit: '', createdAt: 3, type: 'text' }
+
+const items = [
+  item('A', 'Turutstyr', [{ key: 'Pris', value: 1000, unit: 'kr' }, { key: 'Type', value: 'Sovepose', unit: '' }]),
+  item('B', 'Turutstyr', [{ key: 'Pris', value: '2 500', unit: 'kr' }, { key: 'Type', value: 'sovepose', unit: '' }], new Blob([''], { type: 'image/png' })),
+  item('C', 'Klær', [{ key: 'Type', value: 'Jakke', unit: '' }, { key: 'Merke', value: 'Bergans', unit: '' }]),
+]
+
+describe('totals', () => {
+  it('sums every number property in kr, reading nb-NO numbers', () => {
+    expect(totals(items, [pris, type, merke])).toEqual([{ key: 'Pris', unit: 'kr', sum: 3500 }])
+  })
+  it('is empty without a kr property', () => {
+    expect(totals(items, [type])).toEqual([])
+  })
+})
+
+describe('facets', () => {
+  it('counts Kategori when it has more than one value, then Valgliste properties, most first', () => {
+    const f = facets(items, [pris, type, merke], defaultFieldSettings)
+    expect(f.map((x) => x.label)).toEqual(['Kategori', 'Type'])
+    expect(f[0]?.values).toEqual([
+      { key: 'turutstyr', label: 'Turutstyr', count: 2 },
+      { key: 'klær', label: 'Klær', count: 1 },
+    ])
+    expect(f[1]?.values).toEqual([
+      { key: 'sovepose', label: 'Sovepose', count: 2 },
+      { key: 'jakke', label: 'Jakke', count: 1 },
+    ])
+  })
+  it('skips Kategori when every thing shares it', () => {
+    const same = items.map((i) => ({ ...i, category: 'Turutstyr' }))
+    expect(facets(same, [type], defaultFieldSettings).map((x) => x.label)).toEqual(['Type'])
+  })
+})
+
+describe('missing', () => {
+  it('counts things without a photo and without a kr value, each as a search', () => {
+    expect(missing(items, [pris, type])).toEqual([
+      { what: 'photo', key: 'bilde', count: 2, query: '-has:bilde' },
+      { what: 'value', key: 'Pris', count: 1, query: '-has:pris' },
+    ])
+  })
+  it('quotes a property name with a space', () => {
+    const p: Property = { id: '["ny pris","kr"]', key: 'Ny pris', unit: 'kr', createdAt: 1, type: 'number' }
+    expect(missing(items, [p])[1]?.query).toBe('-has:"ny pris"')
+  })
+})

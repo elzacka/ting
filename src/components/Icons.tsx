@@ -59,3 +59,15 @@ export function Icon({ name, size = 24, className }: IconProps & { name: IconNam
     </svg>
   )
 }
+
+// The app icon's glyph (Material Symbols "inventory"), for the header wordmark.
+export function Logo({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 -960 960 960" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M620-163 450-333l56-56 114 114 226-226 56 56-282 282Zm220-397h-80v-200h-80v120H280v-120h-80v560h240v80H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q40 0 71.5 22.5T594-840h166q33 0 56.5 23.5T840-760v200ZM508.5-771.5Q520-783 520-800t-11.5-28.5Q497-840 480-840t-28.5 11.5Q440-817 440-800t11.5 28.5Q463-760 480-760t28.5-11.5Z"
+      />
+    </svg>
+  )
+}

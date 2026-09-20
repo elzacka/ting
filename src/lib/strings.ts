@@ -72,6 +72,18 @@ export const t = {
     selectRow: (name: string) => `Velg ${name}`,
     clearSelection: 'Fjern valg',
   },
+  home: {
+    things: 'ting',
+    total: (key: string) => `Samlet ${key.toLocaleLowerCase('nb')}`,
+    more: (n: number) => (n === 1 ? '1 til' : `${n} til`),
+    missingTitle: 'Mangler',
+    missingPhoto: (n: number) => (n === 1 ? '1 ting mangler bilde' : `${n} ting mangler bilde`),
+    missingValue: (n: number, key: string) =>
+      n === 1 ? `1 ting mangler ${key.toLocaleLowerCase('nb')}` : `${n} ting mangler ${key.toLocaleLowerCase('nb')}`,
+    storageNone: 'Lagres bare i nettleseren.',
+    storageStalled: 'Lagring til mappen har stoppet.',
+    storageLink: 'Innstillinger',
+  },
   report: {
     title: 'Rapport',
     purpose: 'En liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen.',

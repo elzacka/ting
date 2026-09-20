@@ -9,7 +9,11 @@ const dateFormat = new Intl.DateTimeFormat('nb-NO', { day: '2-digit', month: '2-
 export function formatBare(spec: Spec): string {
   if (isDateUnit(spec.unit)) return formatStoredDate(spec.value)
   const n = parseNumber(spec.value)
-  return n === null ? String(spec.value) : numberFormat.format(n).replace('-', '−')
+  return n === null ? String(spec.value) : formatNumber(n)
+}
+
+export function formatNumber(n: number): string {
+  return numberFormat.format(n).replace('-', '−')
 }
 
 // Value with its unit after a narrow no-break space. A date column shows no unit.
