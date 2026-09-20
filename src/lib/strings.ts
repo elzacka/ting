@@ -41,8 +41,8 @@ export const t = {
     clear: 'Tøm søk',
     tips: 'Søketips',
     tipsField: 'I søkefeltet',
-    tipsList: 'I lista',
-    tipsListText: 'Filtrene under søkefeltet snevrer inn lista. Huk av ting for å velge hva rapporten tar med. Skriver du én bokstav, vises alt som begynner på den.',
+    tipsList: 'I oversikten',
+    tipsListText: 'Filtrene under søkefeltet snevrer inn oversikten. Huk av ting for å velge hva rapporten tar med. Skriver du én bokstav, vises alt som begynner på den.',
     tipsTableText: 'Rader du har endret, blir stående til du lagrer, også når søket endres.',
     noMatch: (q: string) => `Fant ikke «${q}»`,
     showAll: 'Vis alle ting',
@@ -67,7 +67,7 @@ export const t = {
     empty: 'Ingenting her ennå',
     noMatch: 'Ingen treff',
     loading: 'Laster…',
-    selectAll: 'Velg alle i lista',
+    selectAll: 'Velg alle som vises',
     selectRow: (name: string) => `Velg ${name}`,
     clearSelection: 'Fjern valg',
   },
@@ -77,7 +77,11 @@ export const t = {
     csv: 'Last ned CSV',
     print: 'Skriv ut eller lagre som PDF',
     scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting' : `Rapporten tar med ${n} valgte ting`),
-    scopeVisible: (n: number) => (n === 1 ? 'Rapporten tar med 1 ting i lista' : `Rapporten tar med alle ${n} ting i lista`),
+    // Narrowed by a search or a filter: say so; otherwise it is simply everything
+    scopeVisible: (n: number, narrowed: boolean) => {
+      const count = n === 1 ? '1 ting' : `alle ${n} ting`
+      return narrowed ? `Rapporten tar med ${count} som vises` : `Rapporten tar med ${count}`
+    },
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
     name: 'Navn',
