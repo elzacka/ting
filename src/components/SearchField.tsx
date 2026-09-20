@@ -8,7 +8,7 @@ type Props = {
   onChange: (q: string) => void
   onClose: () => void
   keys: readonly string[]
-  listTip: string
+  listTip?: string
 }
 
 export function SearchField({ value, onChange, onClose, keys, listTip }: Props) {
@@ -56,7 +56,6 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
           <Icon name="chevronRight" size={14} className="tips-chevron" />
         </summary>
         <div className="tips-body">
-          <p className="section-label">{t.search.tipsField}</p>
           <table className="tips-table">
             <tbody>
               {t.search.tipRows.map(([example, meaning]) => (
@@ -74,8 +73,7 @@ export function SearchField({ value, onChange, onClose, keys, listTip }: Props) 
               {t.search.keysLabel}: {keys.join(', ')}
             </p>
           )}
-          <p className="section-label">{t.search.tipsList}</p>
-          <p className="hint">{listTip}</p>
+          {listTip && <p className="hint">{listTip}</p>}
         </div>
       </details>
     </div>

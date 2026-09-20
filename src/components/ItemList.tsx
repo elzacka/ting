@@ -106,7 +106,6 @@ export function ItemList({
             onChange={onQueryChange}
             onClose={onSearchClose}
             keys={keys}
-            listTip={t.search.tipsListText}
           />
           <FilterPanel
             items={items}

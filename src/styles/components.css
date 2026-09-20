@@ -697,16 +697,6 @@ section {
   color: var(--text);
 }
 
-.tips .section-label {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--text);
-}
-
-.tips .section-label:not(:first-child) {
-  margin-top: var(--s-2);
-}
-
 .empty a {
   color: var(--accent);
 }
