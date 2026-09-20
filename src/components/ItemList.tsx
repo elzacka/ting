@@ -14,11 +14,9 @@ import { FilterPanel } from './FilterPanel'
 import { Icon } from './Icons'
 import { Report } from './Report'
 import { SearchField } from './SearchField'
-import { checkColumnWidth, columnWidth, tableWidth } from '../lib/columnWidths'
-import { ColumnResizer } from './ColumnResizer'
-import { ariaSort, SortHeader } from './SortHeader'
+import { SortHeader } from './SortHeader'
+import { Grid } from './Grid'
 import { useObjectUrl } from './useObjectUrl'
-import { rowHeight, useRowWindow } from '../lib/useRowWindow'
 
 type Props = {
   items: Item[]
@@ -66,13 +64,13 @@ export function ItemList({
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const categoryLabel = fields.category.label ?? t.table.category
   const nameLabel = fields.name.label ?? t.table.name
+  const labelOf = (def: ColumnDef) => (def.kind === 'category' ? categoryLabel : def.kind === 'name' ? nameLabel : def.col.key)
   const columns = useMemo(() => defs.flatMap((d) => (d.kind === 'prop' ? [d.col] : [])), [defs])
   const visible = useMemo(
     () => sortItems(applyFilters(searchItems(items, query), filters), columns, sort),
     [items, query, filters, columns, sort],
   )
 
-  const { ref: bodyRef, window: win } = useRowWindow(visible.length, rowHeight)
   const sums = useMemo(() => totals(items, properties), [items, properties])
   const gaps = useMemo(() => missing(items, properties), [items, properties])
 
@@ -170,53 +168,38 @@ export function ItemList({
       )}
 
       {visible.length > 0 && (
-        <div className="table-wrap">
-          <table
-            className={`grid grid-read${hasSelection ? ' has-selection' : ''}`}
-            style={{ width: tableWidth(defs, widths) }}
-          >
-            <colgroup>
-              <col style={{ width: checkColumnWidth() }} />
-              {defs.map((def) => (
-                <col key={def.id} style={{ width: columnWidth(def, widths) }} />
-              ))}
-            </colgroup>
-            <thead>
-              <tr>
-                <th scope="col" className="grid-check">
-                  <input
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    onChange={(e) => toggleAll(e.target.checked)}
-                    aria-label={t.list.selectAll}
-                  />
-                </th>
-                {defs.map((def) => {
-                  const label = def.kind === 'category' ? categoryLabel : def.kind === 'name' ? nameLabel : def.col.key
-                  return (
-                    <th scope="col" key={def.id} className="grid-col" aria-sort={ariaSort(def, sort)}>
-                      <SortHeader def={def} label={label} sort={sort} onSort={onSortChange} />
-                      <ColumnResizer id={def.id} label={label} onWidth={onWidth} />
-                    </th>
-                  )
-                })}
-              </tr>
-            </thead>
-            <tbody ref={bodyRef}>
-              {win.topPad > 0 && <SpacerRow height={win.topPad} span={defs.length + 1} />}
-              {visible.slice(win.start, win.end).map((item) => (
-                <ReadRow
-                  key={item.id}
-                  item={item}
-                  defs={defs}
-                  checked={selected.has(item.id)}
-                  onCheck={(on) => toggle(item.id, on)}
-                />
-              ))}
-              {win.bottomPad > 0 && <SpacerRow height={win.bottomPad} span={defs.length + 1} />}
-            </tbody>
-          </table>
-        </div>
+        <Grid
+          defs={defs}
+          widths={widths}
+          sort={sort}
+          onWidth={onWidth}
+          readOnly
+          hasSelection={hasSelection}
+          label={labelOf}
+          headerCheck={
+            <input
+              type="checkbox"
+              checked={allVisibleSelected}
+              onChange={(e) => toggleAll(e.target.checked)}
+              aria-label={t.list.selectAll}
+            />
+          }
+          header={(def) => <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />}
+          rowCount={visible.length}
+          row={(i) => {
+            const item = visible[i]
+            if (!item) return null
+            return (
+              <ReadRow
+                key={item.id}
+                item={item}
+                defs={defs}
+                checked={selected.has(item.id)}
+                onCheck={(on) => toggle(item.id, on)}
+              />
+            )
+          }}
+        />
       )}
 
       {visible.length > 0 && (
@@ -261,15 +244,6 @@ export function ItemList({
 
       <Report items={reportItems} properties={properties} fields={fields} />
     </div>
-  )
-}
-
-// Stands in for the rows above and below the window so the page keeps its height
-export function SpacerRow({ height, span }: { height: number; span: number }) {
-  return (
-    <tr className="grid-spacer" style={{ height }} aria-hidden="true">
-      <td colSpan={span} />
-    </tr>
   )
 }
 

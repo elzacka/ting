@@ -17,16 +17,13 @@ import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
 import { applyFilters, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
-import { SpacerRow } from './ItemList'
-import { rowHeight, useRowWindow } from '../lib/useRowWindow'
+import { Grid } from './Grid'
 import { parseBlock } from '../lib/paste'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { SearchField } from './SearchField'
-import { checkColumnWidth, columnWidth, tableWidth } from '../lib/columnWidths'
-import { ColumnResizer } from './ColumnResizer'
-import { ariaSort, SortHeader } from './SortHeader'
+import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 
 type RowEdit = { name?: string; category?: string; cells?: Record<string, string> }
@@ -147,8 +144,6 @@ export function RegisterTable({
     const ids = new Set(hits.map((i) => i.id))
     return sortItems([...hits, ...items.filter((i) => !ids.has(i.id) && edits[i.id] !== undefined)], columns, sort)
   }, [items, query, filters, edits, columns, sort])
-
-  const { ref: bodyRef, window: win } = useRowWindow(visible.length, rowHeight)
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -750,243 +745,240 @@ export function RegisterTable({
       </datalist>
 
       {hasRows && (
-        <div className="table-wrap">
-          <table
-            className={`grid${selected.size > 0 ? ' has-selection' : ''}`}
-            style={{ width: tableWidth(defs, widths) }}
-            onPaste={onPaste}
-          >
-            <colgroup>
-              <col style={{ width: checkColumnWidth() }} />
-              {defs.map((def) => (
-                <col key={def.id} style={{ width: columnWidth(def, widths) }} />
-              ))}
-            </colgroup>
-            <thead>
-              <tr>
-                <th scope="col" className="grid-check">
-                  {allIds.length > 0 && !editing && (
+        <Grid
+          defs={defs}
+          widths={widths}
+          sort={sort}
+          onWidth={onWidth}
+          hasSelection={selected.size > 0}
+          label={labelOf}
+          onPaste={onPaste}
+          headerCheck={
+            <>
+              {allIds.length > 0 && !editing && (
+                <input
+                  type="checkbox"
+                  aria-label={t.table.selectAll}
+                  checked={allSelected}
+                  onChange={(e) => setSelected(e.target.checked ? new Set(allIds) : new Set())}
+                />
+              )}
+            </>
+          }
+          header={(def, index) => (
+            <>
+              {renaming && renaming.def.id === def.id ? (
+                <form
+                  className="row grid-col-rename"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    void commitRename()
+                  }}
+                >
+                  <input
+                    className="input"
+                    aria-label={t.table.columnKey}
+                    value={renaming.key}
+                    onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
+                    autoFocus
+                  />
+                  {def.kind === 'prop' && (
+                    <select
+                      className="select input-narrow"
+                      aria-label={t.table.columnType}
+                      value={renaming.type}
+                      onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
+                    >
+                      {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
+                        <option key={ty} value={ty}>
+                          {t.table.types[ty]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {def.kind === 'prop' && renaming.type === 'choice' && (
                     <input
-                      type="checkbox"
-                      aria-label={t.table.selectAll}
-                      checked={allSelected}
-                      onChange={(e) => setSelected(e.target.checked ? new Set(allIds) : new Set())}
+                      className="input"
+                      aria-label={t.table.columnOptions}
+                      value={renaming.options}
+                      onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
                     />
                   )}
-                </th>
-                {defs.map((def, index) => (
-                  <th scope="col" key={def.id} className="grid-col" aria-sort={ariaSort(def, sort)}>
-                    {renaming && renaming.def.id === def.id ? (
-                      <form
-                        className="row grid-col-rename"
-                        onSubmit={(e) => {
-                          e.preventDefault()
-                          void commitRename()
-                        }}
-                      >
-                        <input
-                          className="input"
-                          aria-label={t.table.columnKey}
-                          value={renaming.key}
-                          onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
-                          autoFocus
-                        />
-                        {def.kind === 'prop' && (
-                          <select
-                            className="select input-narrow"
-                            aria-label={t.table.columnType}
-                            value={renaming.type}
-                            onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
-                          >
-                            {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
-                              <option key={ty} value={ty}>
-                                {t.table.types[ty]}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        {def.kind === 'prop' && renaming.type === 'choice' && (
-                          <input
-                            className="input"
-                            aria-label={t.table.columnOptions}
-                            value={renaming.options}
-                            onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
-                          />
-                        )}
-                        {def.kind === 'prop' && renaming.type === 'number' && (
-                          <input
-                            className="input input-narrow"
-                            list="unit-options"
-                            aria-label={t.table.columnUnit}
-                            value={renaming.unit}
-                            onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
-                          />
-                        )}
-                        <button type="submit" className="btn btn-icon" aria-label={t.table.renameSave}>
-                          <Icon name="check" size={20} />
+                  {def.kind === 'prop' && renaming.type === 'number' && (
+                    <input
+                      className="input input-narrow"
+                      list="unit-options"
+                      aria-label={t.table.columnUnit}
+                      value={renaming.unit}
+                      onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
+                    />
+                  )}
+                  <button type="submit" className="btn btn-icon" aria-label={t.table.renameSave}>
+                    <Icon name="check" size={20} />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-icon"
+                    aria-label={t.table.renameCancel}
+                    onClick={() => setRenaming(null)}
+                  >
+                    <Icon name="close" size={20} />
+                  </button>
+                </form>
+              ) : (
+                <span className="grid-col-head">
+                  <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
+                  <details
+                    className="col-menu"
+                    onToggle={(e) => {
+                      const d = e.currentTarget
+                      if (!d.open) {
+                        setMenuPos((p) => (p?.id === def.id ? null : p))
+                        return
+                      }
+                      const r = d.querySelector('summary')?.getBoundingClientRect()
+                      if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
+                    }}
+                  >
+                    <summary aria-label={t.table.columnMenu(labelOf(def))}>
+                      <Icon name="chevronRight" size={14} className="col-menu-chevron" />
+                    </summary>
+                  </details>
+                  {menuPos?.id === def.id &&
+                    createPortal(
+                      <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
+                        <button
+                          type="button"
+                          className="col-menu-item"
+                          role="menuitem"
+                          onClick={() => {
+                            closeMenu()
+                            setRenaming({
+                              def,
+                              key: labelOf(def),
+                              unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
+                              type: def.kind === 'prop' ? def.type : 'text',
+                              options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
+                            })
+                          }}
+                        >
+                          <Icon name="edit" size={16} />
+                          {t.table.renameColumn}
                         </button>
                         <button
                           type="button"
-                          className="btn btn-icon"
-                          aria-label={t.table.renameCancel}
-                          onClick={() => setRenaming(null)}
+                          className="col-menu-item"
+                          role="menuitem"
+                          disabled={index === 0}
+                          onClick={() => void moveColumn(def, -1)}
                         >
-                          <Icon name="close" size={20} />
+                          <Icon name="chevronLeft" size={16} />
+                          {t.table.moveLeft}
                         </button>
-                      </form>
-                    ) : (
-                      <span className="grid-col-head">
-                        <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
-                        <details
-                          className="col-menu"
-                          onToggle={(e) => {
-                            const d = e.currentTarget
-                            if (!d.open) {
-                              setMenuPos((p) => (p?.id === def.id ? null : p))
-                              return
-                            }
-                            const r = d.querySelector('summary')?.getBoundingClientRect()
-                            if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
-                          }}
+                        <button
+                          type="button"
+                          className="col-menu-item"
+                          role="menuitem"
+                          disabled={index === defs.length - 1}
+                          onClick={() => void moveColumn(def, 1)}
                         >
-                          <summary aria-label={t.table.columnMenu(labelOf(def))}>
-                            <Icon name="chevronRight" size={14} className="col-menu-chevron" />
-                          </summary>
-                        </details>
-                        {menuPos?.id === def.id &&
-                          createPortal(
-                            <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
-                              <button
-                                type="button"
-                                className="col-menu-item"
-                                role="menuitem"
-                                onClick={() => {
-                                  closeMenu()
-                                  setRenaming({
-                                    def,
-                                    key: labelOf(def),
-                                    unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
-                                    type: def.kind === 'prop' ? def.type : 'text',
-                                    options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
-                                  })
-                                }}
-                              >
-                                <Icon name="edit" size={16} />
-                                {t.table.renameColumn}
-                              </button>
-                              <button
-                                type="button"
-                                className="col-menu-item"
-                                role="menuitem"
-                                disabled={index === 0}
-                                onClick={() => void moveColumn(def, -1)}
-                              >
-                                <Icon name="chevronLeft" size={16} />
-                                {t.table.moveLeft}
-                              </button>
-                              <button
-                                type="button"
-                                className="col-menu-item"
-                                role="menuitem"
-                                disabled={index === defs.length - 1}
-                                onClick={() => void moveColumn(def, 1)}
-                              >
-                                <Icon name="chevronRight" size={16} />
-                                {t.table.moveRight}
-                              </button>
-                              {def.kind !== 'name' && (
-                                <button
-                                  type="button"
-                                  className="col-menu-item col-menu-danger"
-                                  role="menuitem"
-                                  onClick={() => void requestRemoveColumn(def)}
-                                >
-                                  <Icon name={def.kind === 'category' ? 'close' : 'delete'} size={16} />
-                                  {def.kind === 'category' ? t.table.hideColumn : t.table.removeColumn}
-                                </button>
-                              )}
-                            </div>,
-                            document.body,
-                          )}
-                      </span>
-                    )}
-                    <ColumnResizer id={def.id} label={labelOf(def)} onWidth={onWidth} />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody ref={bodyRef}>
-              {win.topPad > 0 && <SpacerRow height={win.topPad} span={defs.length + 1} />}
-              {visible.slice(win.start, win.end).map((item) => (
-                <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
-                  <td className="grid-check">
-                    {!editing && (
-                      <input
-                        type="checkbox"
-                        aria-label={t.table.selectRow(item.name)}
-                        checked={selected.has(item.id)}
-                        onChange={(e) => toggle(item.id, e.target.checked)}
-                      />
-                    )}
-                  </td>
-                  {defs.map((def) => {
-                    const label = t.table.cell(item.name, labelOf(def))
-                    const text =
-                      def.kind === 'category'
-                        ? value(item, 'category')
-                        : def.kind === 'name'
-                          ? value(item, 'name')
-                          : cell(item, def.col)
-                    if (active?.row !== item.id) {
-                      return (
-                        <td key={def.id}>
+                          <Icon name="chevronRight" size={16} />
+                          {t.table.moveRight}
+                        </button>
+                        {def.kind !== 'name' && (
                           <button
                             type="button"
-                            className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
-                            aria-label={label}
-                            onFocus={() => setActive({ row: item.id, col: def.id })}
+                            className="col-menu-item col-menu-danger"
+                            role="menuitem"
+                            onClick={() => void requestRemoveColumn(def)}
                           >
-                            {text}
+                            <Icon name={def.kind === 'category' ? 'close' : 'delete'} size={16} />
+                            {def.kind === 'category' ? t.table.hideColumn : t.table.removeColumn}
                           </button>
-                        </td>
-                      )
-                    }
-                    const focus = active.col === def.id ? focusWithoutScroll : undefined
+                        )}
+                      </div>,
+                      document.body,
+                    )}
+                </span>
+              )}
+            </>
+          )}
+          rowCount={visible.length}
+          row={(i) => {
+            const item = visible[i]
+            if (!item) return null
+            return (
+              <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
+                <td className="grid-check">
+                  {!editing && (
+                    <input
+                      type="checkbox"
+                      aria-label={t.table.selectRow(item.name)}
+                      checked={selected.has(item.id)}
+                      onChange={(e) => toggle(item.id, e.target.checked)}
+                    />
+                  )}
+                </td>
+                {defs.map((def) => {
+                  const label = t.table.cell(item.name, labelOf(def))
+                  const text =
+                    def.kind === 'category'
+                      ? value(item, 'category')
+                      : def.kind === 'name'
+                        ? value(item, 'name')
+                        : cell(item, def.col)
+                  if (active?.row !== item.id) {
                     return (
                       <td key={def.id}>
-                        <input
-                          className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
-                          list={
-                            def.kind === 'category'
-                              ? 'category-options'
-                              : def.kind === 'name'
-                                ? 'name-options'
-                                : def.type === 'choice'
-                                  ? choiceListId(def.id)
-                                  : undefined
-                          }
+                        <button
+                          type="button"
+                          className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
                           aria-label={label}
-                          value={text}
-                          ref={focus}
-                          data-row={item.id}
-                          data-col={def.id}
-                          onChange={(e) =>
-                            editItem(
-                              item.id,
-                              def.kind === 'category'
-                                ? { category: e.target.value }
-                                : def.kind === 'name'
-                                  ? { name: e.target.value }
-                                  : { cells: { [def.id]: e.target.value } },
-                            )
-                          }
-                        />
+                          onFocus={() => setActive({ row: item.id, col: def.id })}
+                        >
+                          {text}
+                        </button>
                       </td>
                     )
-                  })}
-                </tr>
-              ))}
-              {win.bottomPad > 0 && <SpacerRow height={win.bottomPad} span={defs.length + 1} />}
+                  }
+                  const focus = active.col === def.id ? focusWithoutScroll : undefined
+                  return (
+                    <td key={def.id}>
+                      <input
+                        className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
+                        list={
+                          def.kind === 'category'
+                            ? 'category-options'
+                            : def.kind === 'name'
+                              ? 'name-options'
+                              : def.type === 'choice'
+                                ? choiceListId(def.id)
+                                : undefined
+                        }
+                        aria-label={label}
+                        value={text}
+                        ref={focus}
+                        data-row={item.id}
+                        data-col={def.id}
+                        onChange={(e) =>
+                          editItem(
+                            item.id,
+                            def.kind === 'category'
+                              ? { category: e.target.value }
+                              : def.kind === 'name'
+                                ? { name: e.target.value }
+                                : { cells: { [def.id]: e.target.value } },
+                          )
+                        }
+                      />
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          }}
+          tail={
+            <>
               {newRows.map((row) => (
                 <tr key={row.tempId} className="is-new">
                   <td className="grid-check" />
@@ -1037,9 +1029,9 @@ export function RegisterTable({
                   )}
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </>
+          }
+        />
       )}
 
       {items.length > 0 && visible.length === 0 && newRows.length === 0 && <p className="hint">{t.list.noMatch}</p>}
