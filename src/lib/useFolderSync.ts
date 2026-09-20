@@ -13,6 +13,8 @@ import {
   savedFolder,
   writeFolder,
 } from './folderStore'
+import type { FolderRead } from './folderStore'
+import { sameItemSet } from './backup'
 import { adoptVault, currentKey, currentVault, useVault } from './vault'
 
 type Handle = Awaited<ReturnType<typeof pickFolder>>
@@ -24,6 +26,7 @@ export type FolderStatus =
   | { kind: 'needs-permission'; name: string }
   | { kind: 'needs-passphrase'; name: string; wrong: boolean }
   | { kind: 'connected'; name: string; lastWrittenAt: number | null }
+  | { kind: 'conflict'; name: string; folderCount: number; folderAt: number; localCount: number }
   | { kind: 'error'; name: string; message: string }
 
 const writeDelayMs = 500
@@ -33,6 +36,7 @@ export function useFolderSync() {
   const unlocked = vault.status === 'open'
   const [status, setStatus] = useState<FolderStatus>(folderSupported ? { kind: 'checking' } : { kind: 'unsupported' })
   const handleRef = useRef<Handle | null>(null)
+  const conflictRef = useRef<Extract<FolderRead, { kind: 'data' }> | null>(null)
   const unsubscribe = useRef<() => void>(() => {})
 
   const startWatching = useCallback((handle: Handle) => {
@@ -108,16 +112,66 @@ export function useFolderSync() {
     }
   }, [activate, unlocked])
 
+  // Both sides hold items and they are not the same set: neither may silently
+  // replace the other, so the user picks. Same set means the folder is this
+  // data's own mirror and newest-wins is right.
+  const differs = useCallback(async (handle: Handle, folder: FolderRead): Promise<boolean> => {
+    if (folder.kind !== 'data' || folder.items.length === 0) return false
+    const local = await readItems()
+    if (local.length === 0) return false
+    if (sameItemSet(local, folder.items)) return false
+    conflictRef.current = folder
+    setStatus({
+      kind: 'conflict',
+      name: handle.name,
+      folderCount: folder.items.length,
+      folderAt: folder.exportedAt,
+      localCount: local.length,
+    })
+    return true
+  }, [])
+
   // Must run from a click: the browser shows its picker or permission prompt.
   const connect = useCallback(async () => {
     try {
       const handle = await pickFolder()
+      handleRef.current = handle
+      const folder = await readFolder(handle, currentKey(), undefined, localPhotoMap(await readItems()))
+      if (await differs(handle, folder)) return
       await activate(handle)
     } catch (err) {
       if ((err as { name?: string }).name === 'AbortError') return
       setStatus({ kind: 'error', name: '', message: String(err) })
     }
-  }, [activate])
+  }, [activate, differs])
+
+  const useFolderSide = useCallback(async () => {
+    const handle = handleRef.current
+    const folder = conflictRef.current
+    if (!handle || !folder) return
+    conflictRef.current = null
+    if (folder.vault && folder.open !== currentKey()) {
+      adoptVault(folder.vault, folder.open)
+      await writeVault(folder.vault)
+    }
+    await replaceAll(folder.items, folder.properties)
+    setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
+    startWatching(handle)
+  }, [startWatching])
+
+  const useLocalSide = useCallback(async () => {
+    const handle = handleRef.current
+    const v = currentVault()
+    if (!handle || !v) return
+    conflictRef.current = null
+    try {
+      const at = await writeFolder(handle, await readItems(), await readProperties(), currentKey(), v)
+      setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
+      startWatching(handle)
+    } catch (err) {
+      setStatus({ kind: 'error', name: handle.name, message: String(err) })
+    }
+  }, [startWatching])
 
   const grant = useCallback(async () => {
     const handle = handleRef.current
@@ -137,6 +191,7 @@ export function useFolderSync() {
         setStatus({ kind: 'needs-passphrase', name: handle.name, wrong: true })
         return
       }
+      if (await differs(handle, result)) return
       if (result.kind === 'data' && result.vault) {
         adoptVault(result.vault, result.open)
         await writeVault(result.vault)
@@ -145,15 +200,16 @@ export function useFolderSync() {
       setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
       startWatching(handle)
     },
-    [startWatching],
+    [differs, startWatching],
   )
 
   const disconnect = useCallback(async () => {
     unsubscribe.current()
     handleRef.current = null
+    conflictRef.current = null
     await forgetFolder()
     setStatus({ kind: 'none' })
   }, [])
 
-  return { status, connect, grant, adopt, disconnect }
+  return { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide }
 }

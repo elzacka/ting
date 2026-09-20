@@ -97,6 +97,12 @@ export function App() {
   // Paused while something is unsaved: a lock would drop it. Decided by elzacka.
   useAutoLock(unlocked && autoLock && !unsaved)
 
+  // The folder is not being written: permission gone, a write failed, or a
+  // choice is waiting on Innstillinger. Said on the icon, since that is the
+  // only place the header can say it.
+  const folderStalled = ['needs-permission', 'needs-passphrase', 'conflict', 'error'].includes(folder.status.kind)
+  const storageLabel = folderStalled ? t.nav.storageStalled : t.nav.storage
+
   // Locked: only the wordmark, whatever the route.
   const isTop = !unlocked || route.view === 'list' || route.view === 'register' || route.view === 'storage'
 
@@ -186,10 +192,10 @@ export function App() {
             )}
             {unlocked && (
               <a
-                className={`btn btn-icon${route.view === 'storage' ? ' is-active' : ''}`}
+                className={`btn btn-icon${route.view === 'storage' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
                 href={href.storage}
-                aria-label={t.nav.storage}
-                title={t.nav.storage}
+                aria-label={storageLabel}
+                title={storageLabel}
                 aria-current={route.view === 'storage' ? 'page' : undefined}
                 onClick={guardNav}
               >

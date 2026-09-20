@@ -28,7 +28,7 @@ Alt ligger kryptert i nettleseren på enheten. Sletter du nettleserdata, rydder 
 
 | Måte | Slik | Passer når |
 |---|---|---|
-| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Nyeste versjon vinner | Du vil ha alt speilet til disk uten å tenke på det |
+| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde. Stopper lagringen til mappen, blir Innstillinger-ikonet brunt | Du vil ha alt speilet til disk uten å tenke på det |
 | Sikkerhetskopi | Last ned én fil med alle ting og bilder. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | Ekstra sikkerhet, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
 
 Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn. Det eneste du ikke må miste, er passordet.

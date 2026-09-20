@@ -3,6 +3,7 @@ import { replaceAll, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope } from '../lib/backup'
 import { downloadText, exportFilename } from '../lib/export'
+import { formatDate } from '../lib/format'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
@@ -21,7 +22,7 @@ type Props = {
 type Pending = { items: Item[]; properties: Property[] }
 
 export function StoragePage({ items, properties, folder, autoLock, onAutoLockChange }: Props) {
-  const { status, connect, grant, adopt, disconnect } = folder
+  const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Pending | null>(null)
   const [foreignCopy, setForeignCopy] = useState<Envelope | null>(null)
@@ -169,6 +170,24 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
             <div>
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
+              </button>
+            </div>
+          </div>
+        )}
+        {status.kind === 'conflict' && (
+          <div className="confirm" role="alertdialog" aria-labelledby="folder-conflict">
+            <p id="folder-conflict">
+              {t.storage.conflict(status.name, status.folderCount, formatDate(status.folderAt), status.localCount)}
+            </p>
+            <div className="row toolbar">
+              <button type="button" className="btn" onClick={() => void useFolderSide()}>
+                {t.storage.useFolder}
+              </button>
+              <button type="button" className="btn" onClick={() => void useLocalSide()}>
+                {t.storage.useLocal}
+              </button>
+              <button type="button" className="btn" onClick={disconnect}>
+                {t.action.cancel}
               </button>
             </div>
           </div>

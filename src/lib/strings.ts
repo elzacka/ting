@@ -1,7 +1,7 @@
 // All user-facing text. Norwegian (nb-NO), klarspråk, du-form.
 export const t = {
   appName: 'ting',
-  nav: { home: 'Til forsiden', list: 'Oversikt', register: 'Legg til og endre', storage: 'Innstillinger' },
+  nav: { home: 'Til forsiden', list: 'Oversikt', register: 'Legg til og endre', storage: 'Innstillinger', storageStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
   editing: {
     label: 'Redigering',
@@ -191,6 +191,10 @@ export const t = {
     lastWritten: (time: string) => `Sist skrevet ${time}.`,
     loaded: 'Lastet fra mappen.',
     disconnect: 'Koble fra',
+    conflict: (name: string, folderCount: number, folderDate: string, localCount: number) =>
+      `Mappen «${name}» inneholder ${folderCount === 1 ? '1 ting' : `${folderCount} ting`} fra ${folderDate}. I nettleseren ligger ${localCount === 1 ? '1 ting' : `${localCount} ting`}. Velg hva du vil beholde.`,
+    useFolder: 'Bruk mappen',
+    useLocal: 'Skriv over mappen',
     error: (name: string, message: string) => `Kunne ikke skrive til «${name}». ${message}`,
     copyTitle: 'Sikkerhetskopi',
     copyWhat: 'Én fil med alle ting, egenskaper og bilder, kryptert med passordet ditt. Gjenoppretting erstatter alt som ligger her.',

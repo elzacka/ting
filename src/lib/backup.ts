@@ -176,3 +176,11 @@ export async function itemsFromDataFile(file: DataFile): Promise<{ items: Item[]
   )
   return { items, properties: file.properties }
 }
+
+// Whether two item sets are the same things (by id), whatever their content.
+// Same things: one side is the other's mirror and newest-wins is safe.
+export function sameItemSet(a: readonly { id: string }[], b: readonly { id: string }[]): boolean {
+  if (a.length !== b.length) return false
+  const ids = new Set(b.map((i) => i.id))
+  return a.every((i) => ids.has(i.id))
+}

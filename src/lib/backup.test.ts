@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
 import { createVault } from './crypto'
-import { fromStored, openEnvelope, parseAnyFile, parseDataFile, photoFileName, sealDataFile, toDataFile } from './backup'
+import { fromStored, openEnvelope, parseAnyFile, parseDataFile, photoFileName, sameItemSet, sealDataFile, toDataFile } from './backup'
 
 const item: Item = {
   id: '3f1c2c2e-6a0b-4d1e-9a3a-1f2e3d4c5b6a',
@@ -78,5 +78,19 @@ describe('envelope', () => {
   it('still reads a plain document from before encryption', () => {
     const plain = parseAnyFile('{"app":"ting","format":1,"exportedAt":1,"items":[]}')
     expect(plain.kind).toBe('plain')
+  })
+})
+
+describe('sameItemSet', () => {
+  const a = [{ id: '1' }, { id: '2' }]
+  it('is true for the same ids in any order', () => {
+    expect(sameItemSet(a, [{ id: '2' }, { id: '1' }])).toBe(true)
+  })
+  it('is false when one side has an item the other lacks', () => {
+    expect(sameItemSet(a, [{ id: '1' }, { id: '3' }])).toBe(false)
+    expect(sameItemSet(a, [{ id: '1' }])).toBe(false)
+  })
+  it('is true for two empty sets', () => {
+    expect(sameItemSet([], [])).toBe(true)
   })
 })
