@@ -119,24 +119,6 @@ export function ItemList({
         </div>
       )}
 
-      <div className="row list-head">
-        <span className="count" aria-live="polite">
-          {selectedVisible.length > 0
-            ? t.list.selectedCount(selectedVisible.length, visible.length)
-            : t.list.count(visible.length)}
-        </span>
-        {hasSelection && (
-          <button
-            type="button"
-            className="btn btn-icon"
-            aria-label={t.list.clearSelection}
-            onClick={() => setSelected(new Set())}
-          >
-            <Icon name="close" size={20} />
-          </button>
-        )}
-      </div>
-
       {visible.length === 0 && (
         <div className="empty">
           <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
@@ -202,12 +184,7 @@ export function ItemList({
       )}
 
       {visible.length > 0 && (
-        <div className="stack-sm export">
-          <p className="hint">
-            {selectedVisible.length > 0
-              ? t.report.scopeSelected(reportItems.length)
-              : t.report.scopeVisible(reportItems.length)}
-          </p>
+        <div className="export">
           <div className="row toolbar">
             <button
               type="button"
@@ -221,6 +198,23 @@ export function ItemList({
             <button type="button" className="btn" onClick={() => window.print()}>
               {t.report.print}
             </button>
+          </div>
+          <div className="row">
+            <span className="hint" aria-live="polite">
+              {selectedVisible.length > 0
+                ? t.report.scopeSelected(reportItems.length)
+                : t.report.scopeVisible(reportItems.length)}
+            </span>
+            {hasSelection && (
+              <button
+                type="button"
+                className="btn btn-icon"
+                aria-label={t.list.clearSelection}
+                onClick={() => setSelected(new Set())}
+              >
+                <Icon name="close" size={20} />
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -167,6 +167,11 @@
   color: var(--text-2);
 }
 
+/* Secondary text inside a sentence: grey, same size as the sentence */
+.meta {
+  color: var(--text-2);
+}
+
 .input,
 .select,
 .textarea {
@@ -259,16 +264,6 @@
 
 /* List */
 
-.count {
-  font-size: var(--text-xs);
-  color: var(--text-2);
-}
-
-.list-head {
-  justify-content: space-between;
-  min-height: var(--row-h);
-}
-
 .empty {
   display: grid;
   gap: var(--s-4);
@@ -322,16 +317,16 @@
   overflow-wrap: anywhere;
 }
 
+/* A section's text sits one step under its label, level with rows and inputs */
+section {
+  font-size: var(--text-sm);
+}
+
 /* One step above the labels and rows it heads; the title is one step above it */
 .section-label {
   font-size: var(--text-md);
   font-weight: 600;
   line-height: 1.3;
-}
-
-.tips .section-label {
-  font-size: var(--text-xs);
-  color: var(--text-2);
 }
 
 /* Form: spec rows */
@@ -392,9 +387,14 @@
   border-bottom-color: var(--accent);
 }
 
+/* Report footer under the table, shaped like the save row in the edit table:
+   the buttons, then the scope as a hint. The table's own bottom hairline is
+   the divider. Wraps on a phone. */
 .export {
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
 }
 
 .section-label {
@@ -557,10 +557,6 @@
   vertical-align: top;
 }
 
-.tips .hint {
-  margin-top: var(--s-2);
-}
-
 /* Frozen: the checkbox column and the first data column, whichever it is */
 
 .grid th:nth-child(1),
@@ -687,11 +683,27 @@
   pointer-events: none;
 }
 
+/* Plain text, one size, grey: help, not content. Examples stay dark. */
 .tips-body {
   display: grid;
   gap: var(--s-2);
   max-width: 64ch;
-  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.tips-body code {
+  color: var(--text);
+}
+
+.tips .section-label {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text);
+}
+
+.tips .section-label:not(:first-child) {
+  margin-top: var(--s-2);
 }
 
 .empty a {
@@ -725,11 +737,10 @@
   transform: rotate(-90deg);
 }
 
+/* Air below so the table header does not read as a third tips heading */
 .tips[open] .tips-body {
-  padding: var(--s-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  padding-top: var(--s-2);
+  margin-bottom: var(--s-3);
 }
 
 .tab {
@@ -935,9 +946,11 @@
   }
 }
 
-/* Oversikt: same grid, plain text cells */
+/* Oversikt: same grid, plain text cells, same row height as the edit table
+   (44 px input plus 2 px cell padding above and below) */
 
 .grid-read td {
+  height: calc(var(--row-h) + 4px);
   padding: var(--s-2);
   vertical-align: middle;
 }

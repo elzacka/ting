@@ -161,7 +161,7 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
           <div className="stack-sm">
             <p>
               {t.storage.connected(status.name)}{' '}
-              <span className="hint num">
+              <span className="meta num">
                 {status.lastWrittenAt ? t.storage.lastWritten(timeFormat.format(status.lastWrittenAt)) : t.storage.loaded}
               </span>
             </p>
