@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { flushSync } from 'react-dom'
 import type { Item, Property } from '../db/schema'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
-import { activeCount, applyFilters, type Filters } from '../lib/filters'
-import { formatBare, formatNumber } from '../lib/format'
+import { applyFilters, type Filters } from '../lib/filters'
+import { formatBare, formatDate, formatNumber } from '../lib/format'
 import { columnDefs, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { columnId, type Column } from '../lib/grid'
 import { href } from '../lib/route'
@@ -12,7 +13,6 @@ import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { FilterPanel } from './FilterPanel'
 import { Icon } from './Icons'
-import { Report } from './Report'
 import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { Grid } from './Grid'
@@ -59,7 +59,20 @@ export function ItemList({
   onAddItem,
   onOpenQuery,
 }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  // Printing needs every row on the page, not the windowed ones. Cmd+P and the
+  // link both go through the same state; flushSync so the rows exist before
+  // the browser takes its snapshot.
+  const [printing, setPrinting] = useState(false)
+  useEffect(() => {
+    const before = () => flushSync(() => setPrinting(true))
+    const after = () => setPrinting(false)
+    window.addEventListener('beforeprint', before)
+    window.addEventListener('afterprint', after)
+    return () => {
+      window.removeEventListener('beforeprint', before)
+      window.removeEventListener('afterprint', after)
+    }
+  }, [])
 
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const categoryLabel = fields.category.label ?? t.table.category
@@ -92,36 +105,14 @@ export function ItemList({
     )
   }
 
-  const selectedVisible = visible.filter((i) => selected.has(i.id))
-  const reportItems = selectedVisible.length > 0 ? selectedVisible : visible
-  const allVisibleSelected = visible.length > 0 && visible.every((i) => selected.has(i.id))
-  const hasSelection = selected.size > 0
-
-  function toggle(id: string, on: boolean) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (on) next.add(id)
-      else next.delete(id)
-      return next
-    })
-  }
-
-  function toggleAll(on: boolean) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      for (const i of visible) {
-        if (on) next.add(i.id)
-        else next.delete(i.id)
-      }
-      return next
-    })
-  }
+  const narrowed = visible.length !== items.length
 
   return (
     <div className="stack">
-      {/* One line about the whole register; the gaps run their search */}
+      {/* One line about what is on screen and the whole register; the gaps run
+          their search, and the two actions take what is on screen */}
       <p className="summary">
-        <span>{t.summary.things(items.length)}</span>
+        <span>{narrowed ? t.summary.shown(visible.length, items.length) : t.summary.things(items.length)}</span>
         {sums.map((x) => (
           <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
         ))}
@@ -130,7 +121,22 @@ export function ItemList({
             {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
           </button>
         ))}
+        <button
+          type="button"
+          className="summary-link"
+          onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
+        >
+          {t.report.csv}
+        </button>
+        <button type="button" className="summary-link" onClick={() => window.print()}>
+          {t.report.print}
+        </button>
       </p>
+
+      <div className="print-only">
+        <h1 className="title">{t.report.docTitle}</h1>
+        <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
+      </div>
 
       {addButton}
 
@@ -174,93 +180,30 @@ export function ItemList({
           sort={sort}
           onWidth={onWidth}
           readOnly
-          hasSelection={hasSelection}
+          hasSelection={false}
+          allRows={printing}
           label={labelOf}
-          headerCheck={
-            <input
-              type="checkbox"
-              checked={allVisibleSelected}
-              onChange={(e) => toggleAll(e.target.checked)}
-              aria-label={t.list.selectAll}
-            />
-          }
+          headerCheck={null}
           header={(def) => <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />}
           rowCount={visible.length}
           row={(i) => {
             const item = visible[i]
             if (!item) return null
-            return (
-              <ReadRow
-                key={item.id}
-                item={item}
-                defs={defs}
-                checked={selected.has(item.id)}
-                onCheck={(on) => toggle(item.id, on)}
-              />
-            )
+            return <ReadRow key={item.id} item={item} defs={defs} />
           }}
         />
       )}
 
-      {visible.length > 0 && (
-        <section className="stack-sm">
-          <h2 className="section-label">{t.report.title}</h2>
-          <p className="hint">{t.report.purpose}</p>
-          <div className="export">
-            <div className="row toolbar">
-              <button
-                type="button"
-                className="btn"
-                onClick={() =>
-                  downloadText(exportFilename('csv'), toCsv(reportItems, properties, fields), 'text/csv;charset=utf-8')
-                }
-              >
-                {t.report.csv}
-              </button>
-              <button type="button" className="btn" onClick={() => window.print()}>
-                {t.report.print}
-              </button>
-            </div>
-            <div className="row">
-              <span className="hint" aria-live="polite">
-                {selectedVisible.length > 0
-                  ? t.report.scopeSelected(reportItems.length)
-                  : t.report.scopeVisible(reportItems.length, query.trim(), activeCount(filters) > 0)}
-              </span>
-              {hasSelection && (
-                <button
-                  type="button"
-                  className="btn btn-icon"
-                  aria-label={t.list.clearSelection}
-                  onClick={() => setSelected(new Set())}
-                >
-                  <Icon name="close" size={20} />
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
 
-      <Report items={reportItems} properties={properties} fields={fields} />
     </div>
   )
 }
 
-type RowProps = { item: Item; defs: ColumnDef[]; checked: boolean; onCheck: (on: boolean) => void }
-
-function ReadRow({ item, defs, checked, onCheck }: RowProps) {
+function ReadRow({ item, defs }: { item: Item; defs: ColumnDef[] }) {
   const url = useObjectUrl(item.photo)
   return (
     <tr>
-      <td className="grid-check">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onCheck(e.target.checked)}
-          aria-label={t.list.selectRow(item.name)}
-        />
-      </td>
+      <td className="grid-check" />
       {defs.map((def) =>
         def.kind === 'category' ? (
           <td key={def.id}>{item.category}</td>

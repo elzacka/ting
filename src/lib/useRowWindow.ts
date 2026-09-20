@@ -10,7 +10,12 @@ const overscan = 12
 // Both tables: a 44 px control plus 2 px cell padding above and below
 export const rowHeight = 48
 
-export function useRowWindow(count: number, rowHeight: number): { ref: RefObject<HTMLTableSectionElement | null>; window: RowWindow } {
+// `all` renders every row: printing needs the whole table on the page.
+export function useRowWindow(
+  count: number,
+  rowHeight: number,
+  all = false,
+): { ref: RefObject<HTMLTableSectionElement | null>; window: RowWindow } {
   const ref = useRef<HTMLTableSectionElement | null>(null)
   const [range, setRange] = useState<[number, number]>([0, Math.min(count, overscan * 2)])
 
@@ -39,6 +44,6 @@ export function useRowWindow(count: number, rowHeight: number): { ref: RefObject
     }
   }, [count, rowHeight])
 
-  const [start, end] = [Math.min(range[0], count), Math.min(range[1], count)]
+  const [start, end] = all ? [0, count] : [Math.min(range[0], count), Math.min(range[1], count)]
   return { ref, window: { start, end, topPad: start * rowHeight, bottomPad: (count - end) * rowHeight } }
 }

@@ -25,6 +25,8 @@ type Props = {
   // Rows after the windowed ones, always rendered: new rows being typed
   tail?: ReactNode
   onPaste?: (e: ClipboardEvent<HTMLTableElement>) => void
+  // Every row, not only the ones on screen: while printing
+  allRows?: boolean
 }
 
 export function Grid({
@@ -41,8 +43,9 @@ export function Grid({
   row,
   tail,
   onPaste,
+  allRows,
 }: Props) {
-  const { ref: bodyRef, window: win } = useRowWindow(rowCount, rowHeight)
+  const { ref: bodyRef, window: win } = useRowWindow(rowCount, rowHeight, allRows)
   const span = defs.length + 1
   const indexes: number[] = []
   for (let i = win.start; i < win.end; i++) indexes.push(i)

@@ -371,16 +371,6 @@ section {
   font-size: var(--text-sm);
 }
 
-/* Report footer under the table, shaped like the save row in the edit table:
-   the buttons, then the scope as a hint. The table's own bottom hairline is
-   the divider. Wraps on a phone. */
-.export {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-2) var(--s-4);
-}
-
 .section-label {
   margin-bottom: calc(var(--s-1) * -1);
 }
@@ -630,9 +620,9 @@ section {
   padding-right: var(--s-3);
 }
 
-/* Report: print only */
+/* Print: the table that is on screen, every row, with a title and the date */
 
-.report {
+.print-only {
   display: none;
 }
 
@@ -646,12 +636,18 @@ section {
     font-size: 11pt;
   }
 
-  /* Only the report prints: everything that is not it, inside it, or on
-     the way down to it goes. main is itself a .stack, so a class-based
-     walk would hide the list's own wrapper and the report with it. */
-  .page > *:not(main),
-  main *:not(.report, .report *, :has(.report)) {
+  .topbar,
+  .summary,
+  .search-bar,
+  .btn,
+  .col-resizer,
+  .grid-check {
     display: none !important;
+  }
+
+  .print-only {
+    display: block;
+    margin-bottom: 6mm;
   }
 
   .page {
@@ -659,35 +655,43 @@ section {
     padding: 0;
   }
 
-  .report {
-    display: block;
+  .table-wrap {
+    overflow: visible;
+    margin: 0;
+    padding: 0;
   }
 
-  .report-table {
-    width: 100%;
-    margin-top: 8mm;
-    border-collapse: collapse;
+  .grid {
+    width: 100% !important;
+    table-layout: auto;
     font-size: 10pt;
   }
 
-  .report-table th,
-  .report-table td {
-    padding: 2mm 3mm 2mm 0;
-    border-bottom: 1px solid #ccc;
-    text-align: left;
-    vertical-align: top;
+  .grid col {
+    width: auto !important;
   }
 
-  .report-table th {
+  .grid th,
+  .grid td {
+    position: static;
+    padding: 2mm 3mm 2mm 0;
+    font-size: 10pt;
+    border-bottom: 1px solid #ccc;
+    white-space: normal;
+    box-shadow: none;
+  }
+
+  .grid th {
     border-bottom: 1px solid #000;
   }
 
-  .report-table .num {
-    white-space: nowrap;
+  .grid tr {
+    break-inside: avoid;
   }
 
-  .report-table tr {
-    break-inside: avoid;
+  .grid-link {
+    color: #000;
+    text-decoration: none;
   }
 }
 

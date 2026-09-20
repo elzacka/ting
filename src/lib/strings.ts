@@ -67,33 +67,20 @@ export const t = {
     empty: 'Registeret er tomt.',
     noMatch: 'Ingen treff',
     loading: 'Laster…',
-    selectAll: 'Velg alle tingene som vises',
-    selectRow: (name: string) => `Velg ${name}`,
-    clearSelection: 'Fjern valg',
   },
   summary: {
     things: (n: number) => (n === 1 ? '1 ting' : `${n} ting`),
+    shown: (n: number, total: number) => `${n} av ${total} ting`,
     total: (key: string, amount: string) => `${key} i alt ${amount}`,
     missingPhoto: (n: number) => (n === 1 ? '1 mangler bilde' : `${n} mangler bilde`),
     missingValue: (n: number, key: string) =>
       n === 1 ? `1 mangler ${key.toLocaleLowerCase('nb')}` : `${n} mangler ${key.toLocaleLowerCase('nb')}`,
   },
   report: {
-    title: 'Rapport',
-    purpose: 'En liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen.',
     csv: 'Last ned CSV',
-    print: 'Skriv ut eller lagre som PDF',
-    scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting.' : `Rapporten tar med ${n} valgte ting.`),
-    // Names what narrowed the view: the search term, the filters, or both
-    scopeVisible: (n: number, query: string, filtered: boolean) => {
-      if (query === '' && !filtered) return 'Rapporten tar med alt i registeret.'
-      const by = query !== '' ? (filtered ? `«${query}» og filtrene` : `«${query}»`) : 'filtrene'
-      return `Rapporten tar med ${n === 1 ? '1 ting' : `${n} ting`} som treffer ${by}.`
-    },
+    print: 'Skriv ut',
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
-    name: 'Navn',
-    category: 'Kategori',
   },
   action: {
     save: 'Lagre',
