@@ -205,7 +205,7 @@ export function ItemList({
               <span className="hint" aria-live="polite">
                 {selectedVisible.length > 0
                   ? t.report.scopeSelected(reportItems.length)
-                  : t.report.scopeVisible(reportItems.length, query.trim() !== '' || activeCount(filters) > 0)}
+                  : t.report.scopeVisible(reportItems.length, query.trim(), activeCount(filters) > 0)}
               </span>
               {hasSelection && (
                 <button

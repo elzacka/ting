@@ -76,11 +76,12 @@ export const t = {
     purpose: 'En liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen.',
     csv: 'Last ned CSV',
     print: 'Skriv ut eller lagre som PDF',
-    scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting' : `Rapporten tar med ${n} valgte ting`),
-    // Narrowed by a search or a filter: say so; otherwise it is simply everything
-    scopeVisible: (n: number, narrowed: boolean) => {
-      const count = n === 1 ? '1 ting' : `alle ${n} ting`
-      return narrowed ? `Rapporten tar med ${count} som vises` : `Rapporten tar med ${count}`
+    scopeSelected: (n: number) => (n === 1 ? 'Rapporten tar med 1 valgt ting.' : `Rapporten tar med ${n} valgte ting.`),
+    // Names what narrowed the view: the search term, the filters, or both
+    scopeVisible: (n: number, query: string, filtered: boolean) => {
+      if (query === '' && !filtered) return 'Rapporten tar med alt du har registrert.'
+      const by = query !== '' ? (filtered ? `«${query}» og filtrene` : `«${query}»`) : 'filtrene'
+      return `Rapporten tar med ${n === 1 ? '1 ting' : `${n} ting`} som treffer ${by}.`
     },
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
