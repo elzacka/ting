@@ -4,7 +4,7 @@ Project rules for Ting. Global rules in `~/.claude/CLAUDE.md` apply on top.
 
 ## What this is
 
-Offline-first PWA that keeps track of what a household owns and where it is. MVP is limited to outdoor gear (Turutstyr) with fast spec search. Plan and design system live in `dev_only/` (gitignored).
+Offline-first PWA that keeps track of what a household owns and where it is: one table of things with user-defined properties as columns, fast spec search, encrypted at rest. Plan and design system live in `dev_only/` (gitignored).
 
 ## Version
 
@@ -41,11 +41,11 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 |---|---|
 | `src/db/schema.ts` | Zod schemas and types. Field names are English; the plan's Norwegian names map 1:1 |
 | `src/db/db.ts` | Dexie instance, `addItem`, `updateItem`, `deleteItem` |
-| `src/db/useLiveQuery.ts` | Subscription hook over Dexie `liveQuery` |
+| `src/db/useSealedQuery.ts` | Subscription hook over Dexie `liveQuery`: watches sealed rows, reads the decrypted view |
 | `src/lib/search.ts` | Query parser and matcher: fuzzy words, phrases, negation, `key<value`, `has:`. Pure and tested |
 | `src/lib/grid.ts` | Items to table columns and cells and back. Pure and tested |
 | `src/lib/export.ts` | CSV (`;`, BOM, comma decimals) and download helper. Tested |
-| `src/lib/filter.ts` | `parseNumber`, `specKeys` |
+| `src/lib/filter.ts` | `parseNumber`, `distinct` |
 | `src/lib/format.ts` | nb-NO numbers and dates, real minus sign, narrow no-break space before units |
 | `src/lib/strings.ts` | Every user-facing string. Nothing hardcoded in components |
 | `src/lib/route.ts` | Hash router: `#/` and `#/oversikt` (the one main screen; `#/registrer` is an alias), `#/innstillinger`, `#/ting/:id` |
@@ -53,17 +53,17 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/folderStore.ts` | File System Access: pick folder, permissions, read, write, reconcile (newer side wins) |
 | `src/lib/useFolderSync.ts` | Keeps the folder in sync after every change, debounced 500 ms. Skips the first emission after reconcile |
 | `src/lib/prefs.ts` | Per-device flag in localStorage: the idle-lock setting (default on) |
-| `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table or the edit form has unsaved edits; can be turned off on Innstillinger |
+| `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table has unsaved edits; can be turned off on Innstillinger |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
 | `src/lib/summary.ts` | The line above the table: totals per kr property, what is missing (each a search). Pure and tested |
 | `src/lib/useRowWindow.ts` | Both tables render only the rows on screen (48 px rows, page scroll, spacer rows keep the height) |
 | `src/lib/paste.ts` | `parseBlock`: a spreadsheet block (tabs, newlines) for the table, filling right and down from the cell it lands in; `splitLinks`: http(s) addresses in text, for the detail page. Tested |
-| `src/components/` | One file per screen or reusable piece. `Overview` is the main screen: summary line with CSV and print, toolbar, search and filters, the table (a name is a link; any other cell turns its row into inputs; unsaved edits stay in memory until "Lagre", which sticks to the bottom while there is something to save). `Grid` is the table skeleton (widths, header cells with resize, windowed body). `ItemDetail` shows a thing, sets its photo and deletes it (there is no edit form: every other field is a column). `ErrorBoundary` wraps `main` |
+| `src/components/` | One file per screen or reusable piece. `Overview` is the main screen: summary line with CSV and print, toolbar, search and filters, the table (a name is a link; any other cell turns its row into inputs; unsaved edits stay in memory until "Lagre", which sticks to the bottom while there is something to save). `Grid` is the table skeleton (widths, header cells with resize, windowed body). `ItemDetail` shows a thing, sets its photo and deletes it (every other field is a column in the table). `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
 ## Encryption
 
-Everything stored is sealed: AES-256-GCM (WebCrypto) under a random data key (DEK); the DEK is wrapped by a key derived from the passphrase with Argon2id (`@noble/hashes`, m=64 MiB, t=3, p=1). `src/lib/crypto.ts` holds the primitives, `src/lib/vault.ts` the session key (memory only; the app opens locked, `lock()` zeroes the key). `src/db/db.ts` seals every row: items as one sealed JSON document plus sealed photo bytes, properties as sealed documents, field settings as a sealed setting. Only ids, the folder handle, `localChangedAt` and the vault (wrapped key, salt, parameters) are in the clear. Files on disk are envelopes (`src/lib/backup.ts`): vault in the clear, document sealed; photos in the folder are `bilder/<id>.bin` = 12-byte nonce + ciphertext. A file sealed on another device opens with the passphrase and its key is adopted, so devices converge on one DEK. Plain files and rows from before encryption still load; rows are sealed on the first unlock.
+Everything stored is sealed: AES-256-GCM (WebCrypto) under a random data key (DEK); the DEK is wrapped by a key derived from the passphrase with Argon2id (`@noble/hashes`, m=64 MiB, t=3, p=1). `src/lib/crypto.ts` holds the primitives, `src/lib/vault.ts` the session key (memory only; the app opens locked, `lock()` zeroes the key). `src/db/db.ts` seals every row: items as one sealed JSON document plus sealed photo bytes, properties as sealed documents, field settings as a sealed setting. Only ids, the folder handle, `localChangedAt` and the vault (wrapped key, salt, parameters) are in the clear. Files on disk are envelopes (`src/lib/backup.ts`): vault in the clear, document sealed; photos in the folder are `bilder/<id>.bin` = 12-byte nonce + ciphertext. A file sealed on another device opens with the passphrase and its key is adopted, so devices converge on one DEK. Plain (unsealed) files and rows still load; rows are sealed on the first unlock.
 
 Changing anything here needs elzacka's confirmation first (global rule on auth, crypto and access control). Threat model and the OWASP Top 10:2025 mapping: `SECURITY.md`.
 
@@ -73,7 +73,7 @@ Everything a user types, pastes, restores from a file or reads from a folder is 
 
 ## Data model
 
-Dexie version 4: tables `items` (`id` only), `settings` (`key`) and `properties` (`id` only). Content indexes were dropped with encryption. Decrypted shapes: `Item` (id, name, specs, photo, createdAt, updatedAt; the fields `category`, `note`, `locationId`, `value`, `purchaseDate`, `receiptImage`, `barcode`, `serialNumber` and `warrantyDate` were dropped 21 September 2026; a legacy `category` becomes the property Kategori and a legacy `note` the property Notat on load, and `ensureCategoryProperty` creates the Kategori property row, a Valgliste at order -2, on unlock if things carry one), `Property` (column definitions: `id` = key+unit, `key`, `unit`, `createdAt`, optional `order`, `type`: text, choice, number, date, and `options` for choice columns). A date property carries the internal unit marker `dato` so its specs format as dates; the UI shows the type, never that marker. Units are not shown in table headers or filter labels (elzacka, 19 September 2026); they appear on the detail page, in the print report and in CSV. Missing `type` on old rows means text, or date if the marker is set. Column order comes from `columnDefs` in `src/lib/fields.ts`, which places Navn among the properties. Navn's label and position live in `settings` under key `fields`. Navn cannot be removed: it is the identity of an item everywhere. The same order and labels apply in the table, filters, print and CSV. `createdAt` and `updatedAt` are kept in the data and in CSV but not shown anywhere in the app or the print report (elzacka, 19 September 2026). A property exists independently of item values; removing one strips the matching spec from every item. Adding non-indexed fields needs no version bump. Changing indexes or renaming fields does: add `db.version(5)` with an `upgrade`, never edit an existing version.
+Dexie version 4: tables `items` (`id` only), `settings` (`key`) and `properties` (`id` only). No content indexes: they would leak content. Decrypted shapes: `Item` (id, name, specs, photo, createdAt, updatedAt; rows and files may also carry `category` or `note`, which become the properties Kategori and Notat on load, and `ensureCategoryProperty` creates the Kategori property row, a Valgliste at order -2, on unlock if things carry one and it is missing), `Property` (column definitions: `id` = key+unit, `key`, `unit`, `createdAt`, optional `order`, `type`: text, choice, number, date, and `options` for choice columns). A date property carries the internal unit marker `dato` so its specs format as dates; the UI shows the type, never that marker. Units are not shown in table headers or filter labels (elzacka, 19 September 2026); they appear on the detail page, in the print report and in CSV. Missing `type` on old rows means text, or date if the marker is set. Column order comes from `columnDefs` in `src/lib/fields.ts`, which places Navn among the properties. Navn's label and position live in `settings` under key `fields`. Navn cannot be removed: it is the identity of an item everywhere. The same order and labels apply in the table, filters, print and CSV. `createdAt` and `updatedAt` are kept in the data and in CSV but not shown anywhere in the app or the print report (elzacka, 19 September 2026). A property exists independently of item values; removing one strips the matching spec from every item. Adding non-indexed fields needs no version bump. Changing indexes or renaming fields does: add `db.version(5)` with an `upgrade`, never edit an existing version.
 
 Every mutation in `db.ts` bumps `localChangedAt`; loading from a file or folder does not. That is what `reconcile` compares against the folder's `exportedAt`.
 
@@ -81,7 +81,7 @@ Every mutation in `db.ts` bumps `localChangedAt`; loading from a file or folder 
 
 Photos are stored as `Blob`, never base64.
 
-Kategori is a property like any other (a Valgliste, first column by default), not a built-in field; the only built-in is Navn. Its cells offer the values already in the column through `<datalist>`. Decided 21 September 2026, replacing the free-text built-in of 19 September.
+Kategori is a property like any other (a Valgliste, first column by default), not a built-in field; the only built-in is Navn. Its cells offer the values already in the column through `<datalist>`. Decided by elzacka, 21 September 2026.
 
 ## Conventions
 
@@ -93,4 +93,4 @@ Kategori is a property like any other (a Valgliste, first column by default), no
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
 - Everything from outside (form input, storage) is validated with Zod before it becomes an `Item`
 - The lock is the passphrase: the app always opens locked, the key lives in memory until lock or reload. Decided by elzacka, 19 September 2026
-- Header controls: search, the Lås appen button (padlock, drops the key) and the Innstillinger icon. Icon only with `aria-label` and `title`. No edit mode: the table edits in place, and nothing is stored before "Lagre" (the Redigering switch was removed 21 September 2026)
+- Header controls: search, the Lås appen button (padlock, drops the key) and the Innstillinger icon. Icon only with `aria-label` and `title`. No edit mode: the table edits in place, and nothing is stored before "Lagre". Decided by elzacka, 21 September 2026

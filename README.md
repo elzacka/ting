@@ -2,10 +2,10 @@
 
 Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder og en rapport til forsikringen. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Du slipper å registrere noe på nytt: Appen kan speile alt til en mappe på maskinen og lage en sikkerhetskopi du henter inn igjen, også etter at nettleserdata er slettet eller på en ny enhet.
 
-## MVP
+## Det appen gjør
 
-- Ett skjermbilde: Øverst hvor mange ting du har, samlet pris og hva som mangler bilde eller pris. Under: Én tabell med egenskaper som kolonner. Smart søk og filtrering: Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig. Last ned CSV eller skriv ut det som vises
-- Egen side for hver ting, med bilde og alle egenskaper
+- Ett skjermbilde: Øverst én linje med hvor mange ting du har, summen av hver kr-kolonne og hva som mangler verdi. Under: Én tabell med egenskaper som kolonner. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp nederst når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig, lim inn fra et regneark
+- Egen side for hver ting med alle egenskaper. Her legger du til bilde
 - Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
@@ -55,7 +55,7 @@ Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
 
 ## Rapport
 
-Under Oversikt lager du en liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen. Rapporten er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
+«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen; utskriften får tittel og dato og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
 
 ## Kjør lokalt
 
@@ -97,7 +97,7 @@ Appen bruker ingen KI.
 
 ## Egenskaper
 
-Hver egenskap er en kolonne i tabellen og en linje på tingens side.
+Hver egenskap er en kolonne i tabellen og en linje på tingens side. Navn er den eneste faste kolonnen; Kategori og Notat er egenskaper som alle andre, og Kategori står først. Kolonnemenyen (pilen ved navnet) endrer, flytter og fjerner en egenskap.
 
 | Felttype | Slik |
 |---|---|
