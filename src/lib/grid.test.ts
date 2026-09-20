@@ -6,7 +6,6 @@ function item(name: string, specs: Item['specs']): Item {
   return {
     id: crypto.randomUUID(),
     name,
-    category: 'Turutstyr',
     specs,
     photo: null,
     createdAt: 0,

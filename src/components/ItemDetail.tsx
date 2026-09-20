@@ -4,13 +4,12 @@ import { asImage } from '../lib/backup'
 import type { Item } from '../db/schema'
 import { formatValue } from '../lib/format'
 import { href, navigate } from '../lib/route'
-import type { FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 import { splitLinks } from '../lib/paste'
 
-export function ItemDetail({ item, fields, editing }: { item: Item; fields: FieldSettings; editing: boolean }) {
+export function ItemDetail({ item, editing }: { item: Item; editing: boolean }) {
   const url = useObjectUrl(item.photo)
   const [confirming, setConfirming] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -22,16 +21,13 @@ export function ItemDetail({ item, fields, editing }: { item: Item; fields: Fiel
 
   // The photo is the one thing the table cannot hold, so it is set here.
   async function setPhoto(photo: Blob | null) {
-    await updateItem(item.id, { name: item.name, category: item.category, specs: item.specs, photo })
+    await updateItem(item.id, { name: item.name, specs: item.specs, photo })
     if (fileRef.current) fileRef.current.value = ''
   }
 
   return (
     <div className="stack narrow">
-      <div>
-        <h1 className="title">{item.name}</h1>
-        {!fields.category.hidden && item.category !== '' && <p className="hint">{item.category}</p>}
-      </div>
+      <h1 className="title">{item.name}</h1>
 
       {url && <img className="photo" src={url} alt={t.detail.photoAlt(item.name)} />}
 

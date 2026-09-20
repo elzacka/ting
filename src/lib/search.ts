@@ -8,7 +8,7 @@ import { parseNumber } from './filter'
 //   -sommer             exclude
 //   komfort<0           spec compare: < > <= >= = :   (key is a prefix, ":" is contains)
 //   has:bilde has:vekt (any property key prefix, so has:notat too)
-//   kategori:tur         category contains (or = for exact)
+//   kategori:tur         the property Kategori contains (or = for exact)
 //   kjøpsdato<01.01.26   date columns (unit "dato") compare as dates
 //   "r-verdi">=4        quote a key that contains an operator character
 
@@ -106,7 +106,7 @@ function tolerance(word: string): number {
 type Index = { name: string; text: string; tokens: string[] }
 
 function indexOf(item: Item): Index {
-  const parts = [item.name, item.category, ...item.specs.flatMap((s) => [s.key, String(s.value), s.unit ?? ''])]
+  const parts = [item.name, ...item.specs.flatMap((s) => [s.key, String(s.value), s.unit ?? ''])]
   const text = norm(parts.join(' '))
   const tokens = text.split(/[\s,.;:()/]+/).filter(Boolean)
   return { name: norm(item.name), text, tokens }
@@ -125,11 +125,6 @@ function wordScore(word: string, idx: Index): Score {
 }
 
 function specHit(item: Item, key: string, op: Op, value: string): boolean {
-  // "kategori:tur" and "kat=turutstyr" address the category field, not a spec.
-  if ('kategori'.startsWith(key) && key.length >= 3) {
-    const cat = norm(item.category)
-    return op === '=' ? cat === value : op === ':' ? cat.includes(value) : false
-  }
   const wanted = parseNumber(value)
   return item.specs.some((s) => {
     if (!norm(s.key).startsWith(key)) return false

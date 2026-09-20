@@ -2,38 +2,45 @@ import type { Item, Property, PropertyType } from '../db/schema'
 import { dateUnit, isDateUnit } from './dates'
 import { columnId, columnsFrom, type Column } from './grid'
 
-// Display settings for the two built-in fields. They can be renamed and moved
-// like properties; Kategori can also be hidden. Navn cannot: it is the identity
-// of a thing in every view.
+// Display settings for the one built-in field. Navn can be renamed and moved
+// like a property but never removed: it is the identity of a thing in every
+// view. Kategori was a built-in until 21 September 2026; it is a property.
 export type FieldSettings = {
-  category: { label: string | null; order: number; hidden: boolean }
   name: { label: string | null; order: number }
 }
 
 export const fieldSettingsKey = 'fields'
 
 export const defaultFieldSettings: FieldSettings = {
-  category: { label: null, order: -2, hidden: false },
   name: { label: null, order: -1 },
 }
 
+// The property Kategori: first column, a Valgliste, created when things carry
+// one from before it was a property.
+export const categoryKey = 'Kategori'
+export const categoryColumnId = columnId({ key: categoryKey, unit: '' })
+export const categoryProperty = (): Property => ({
+  id: categoryColumnId,
+  key: categoryKey,
+  unit: '',
+  createdAt: Date.now(),
+  order: -2,
+  type: 'choice',
+  options: [],
+})
+
 export function readFieldSettings(raw: unknown): FieldSettings {
   const r = (raw ?? {}) as Partial<FieldSettings>
-  return {
-    category: { ...defaultFieldSettings.category, ...(r.category ?? {}) },
-    name: { ...defaultFieldSettings.name, ...(r.name ?? {}) },
-  }
+  return { name: { ...defaultFieldSettings.name, ...(r.name ?? {}) } }
 }
 
 export type ColumnDef =
-  | { kind: 'category'; id: 'category'; order: number }
   | { kind: 'name'; id: 'name'; order: number }
   | { kind: 'prop'; id: string; order: number; col: Column; property: Property | null; type: PropertyType }
 
-// Every visible column in display order: built-in fields and properties interleaved.
+// Every visible column in display order: Navn and the properties interleaved.
 export function columnDefs(fields: FieldSettings, properties: readonly Property[], items: readonly Item[]): ColumnDef[] {
   const defs: ColumnDef[] = []
-  if (!fields.category.hidden) defs.push({ kind: 'category', id: 'category', order: fields.category.order })
   defs.push({ kind: 'name', id: 'name', order: fields.name.order })
   const stored = new Set<string>()
   for (const p of properties) {

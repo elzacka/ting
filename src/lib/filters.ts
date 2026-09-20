@@ -26,19 +26,15 @@ function labelFor(v: string | number, unit: string | null): string {
 
 // Distinct values present for a column with how many things carry each,
 // numeric-aware sort.
-export function valuesFor(items: readonly Item[], col: Column | null): FilterValue[] {
+export function valuesFor(items: readonly Item[], col: Column): FilterValue[] {
   const seen = new Map<string, FilterValue>()
   const add = (k: string, label: string) => {
     const cur = seen.get(k)
     if (cur) cur.count += 1
     else seen.set(k, { key: k, label, count: 1 })
   }
+  const id = columnId(col)
   for (const item of items) {
-    if (col === null) {
-      add(valueKey(item.category), item.category)
-      continue
-    }
-    const id = columnId(col)
     for (const s of item.specs) {
       if (columnId({ key: s.key, unit: s.unit }) !== id) continue
       add(valueKey(s.value), labelFor(s.value, s.unit))
@@ -48,7 +44,6 @@ export function valuesFor(items: readonly Item[], col: Column | null): FilterVal
 }
 
 export function itemValueKeys(item: Item, filterId: string): string[] {
-  if (filterId === categoryFilterId) return [valueKey(item.category)]
   return item.specs.filter((s) => columnId({ key: s.key, unit: s.unit }) === filterId).map((s) => valueKey(s.value))
 }
 

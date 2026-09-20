@@ -75,9 +75,8 @@ export function ItemList({
   }, [])
 
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
-  const categoryLabel = fields.category.label ?? t.table.category
   const nameLabel = fields.name.label ?? t.table.name
-  const labelOf = (def: ColumnDef) => (def.kind === 'category' ? categoryLabel : def.kind === 'name' ? nameLabel : def.col.key)
+  const labelOf = (def: ColumnDef) => (def.kind === 'name' ? nameLabel : def.col.key)
   const columns = useMemo(() => defs.flatMap((d) => (d.kind === 'prop' ? [d.col] : [])), [defs])
   const visible = useMemo(
     () => sortItems(applyFilters(searchItems(items, query), filters), columns, sort),
@@ -205,9 +204,7 @@ function ReadRow({ item, defs }: { item: Item; defs: ColumnDef[] }) {
     <tr>
       <td className="grid-check" />
       {defs.map((def) =>
-        def.kind === 'category' ? (
-          <td key={def.id}>{item.category}</td>
-        ) : def.kind === 'name' ? (
+        def.kind === 'name' ? (
           <td key={def.id}>
             <a className="grid-link" href={href.detail(item.id)}>
               {url && <img className="thumb" src={url} alt="" />}

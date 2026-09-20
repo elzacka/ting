@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Item, Property } from '../db/schema'
-import { activeCount, categoryFilterId, valuesFor, type Filters } from '../lib/filters'
+import { activeCount, valuesFor, type Filters } from '../lib/filters'
 import { columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -33,16 +33,6 @@ export function FilterPanel({ items, properties, fields, filters, onChange }: Pr
   }, [])
 
   const defs: Def[] = columnDefs(fields, properties, items).flatMap((d) => {
-    if (d.kind === 'category') {
-      return [
-        {
-          id: categoryFilterId,
-          label: fields.category.label ?? t.table.category,
-          unit: null,
-          values: valuesFor(items, null),
-        },
-      ]
-    }
     if (d.kind === 'name') return []
     return [{ id: d.id, label: d.col.key, unit: d.col.unit, values: valuesFor(items, d.col) }]
   })

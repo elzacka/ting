@@ -1,8 +1,16 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
-import { fromStored, noteAsSpec, storedItemSchema, toStored } from '../lib/backup'
+import { fromStored, legacyAsSpecs, storedItemSchema, toStored } from '../lib/backup'
+import { columnId } from '../lib/grid'
 import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type Sealed, type Vault } from '../lib/crypto'
-import { fieldSettingsKey, readFieldSettings as parseFieldSettings, type ColumnDef, type FieldSettings } from '../lib/fields'
+import {
+  categoryColumnId,
+  categoryProperty,
+  fieldSettingsKey,
+  readFieldSettings as parseFieldSettings,
+  type ColumnDef,
+  type FieldSettings,
+} from '../lib/fields'
 import { errorText } from '../lib/errors'
 import { currentKey, subscribeVault, vaultState } from '../lib/vault'
 
@@ -224,11 +232,10 @@ export async function setFieldSettings(fields: FieldSettings): Promise<void> {
 // Writes the full column order in one go: built-in fields and properties.
 // Property columns without a definition get one.
 export async function setColumnOrder(defs: readonly ColumnDef[], fields: FieldSettings): Promise<void> {
-  const next: FieldSettings = { category: { ...fields.category }, name: { ...fields.name } }
+  const next: FieldSettings = { name: { ...fields.name } }
   const props: Property[] = []
   defs.forEach((d, i) => {
-    if (d.kind === 'category') next.category.order = i
-    else if (d.kind === 'name') next.name.order = i
+    if (d.kind === 'name') next.name.order = i
     else
       props.push({
         id: d.id,
@@ -350,6 +357,17 @@ export function writeVault(vault: Vault): Promise<void> {
   return setSetting(vaultKey, vault)
 }
 
+// Kategori was a built-in field until 21 September 2026. Things from before
+// carry it as a Kategori spec once opened; the property row that makes it a
+// Valgliste in the first column is created here, once, if it is missing.
+export async function ensureCategoryProperty(): Promise<void> {
+  const rows = await db.properties.toArray()
+  if (rows.some((r) => r.id === categoryColumnId)) return
+  const items = await readItems()
+  if (!items.some((i) => i.specs.some((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId))) return
+  await addProperty(categoryProperty())
+}
+
 // --- one-time migration of data written before encryption ------------------
 
 type PlainItemRow = Item & { sealed?: undefined }
@@ -365,8 +383,8 @@ export async function sealPlaintextRows(): Promise<number> {
   const itemRows: SealedItemRow[] = []
   for (const r of rawItems) {
     if (r.sealed) continue
-    const legacy = r as PlainItemRow & { note?: string | null }
-    itemRows.push(await sealItem(itemSchema.parse({ ...legacy, specs: noteAsSpec(legacy.specs, legacy.note) })))
+    const legacy = r as PlainItemRow & { note?: string | null; category?: string }
+    itemRows.push(await sealItem(itemSchema.parse({ ...legacy, specs: legacyAsSpecs(legacy.specs, legacy) })))
   }
   const propRows: SealedPropertyRow[] = []
   for (const r of rawProps) {

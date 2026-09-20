@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { defaultFieldSettings } from './fields'
+import { categoryProperty, defaultFieldSettings } from './fields'
 import { columnId } from './grid'
 import { exportFilename, toCsv } from './export'
 
@@ -8,8 +8,7 @@ function item(name: string, specs: Item['specs']): Item {
   return {
     id: crypto.randomUUID(),
     name,
-    category: 'Turutstyr',
-    specs,
+    specs: [{ key: 'Kategori', value: 'Turutstyr', unit: null }, ...specs],
     photo: null,
     createdAt: Date.UTC(2026, 8, 19, 12),
     updatedAt: 0,
@@ -23,7 +22,7 @@ describe('toCsv', () => {
         item('Sovepose', [{ key: 'Komforttemperatur', value: -12.5, unit: '°C' }, { key: 'Notat', value: 'Ligger; "trygt"', unit: null }]),
         item('Kokeapparat', [{ key: 'Brensel', value: 'Gass', unit: null }]),
       ],
-      [],
+      [categoryProperty()],
       defaultFieldSettings,
     )
     const lines = csv.split('\r\n')
@@ -45,6 +44,7 @@ describe('toCsv column order', () => {
     const csv = toCsv(
       [item('Sovepose', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }, { key: 'Vekt', value: 900, unit: 'gram' }])],
       [
+        categoryProperty(),
         { id: columnId({ key: 'Vekt', unit: 'gram' }), key: 'Vekt', unit: 'gram', createdAt: 1, order: 0 },
         { id: columnId({ key: 'Farge', unit: null }), key: 'Farge', unit: null, createdAt: 2, order: 1 },
         { id: columnId({ key: 'Komforttemperatur', unit: '°C' }), key: 'Komforttemperatur', unit: '°C', createdAt: 3, order: 2 },
@@ -56,12 +56,9 @@ describe('toCsv column order', () => {
 })
 
 describe('toCsv with renamed and hidden fields', () => {
-  it('uses the labels and skips a hidden category', () => {
-    const csv = toCsv([item('Sovepose', [])], [], {
-      category: { label: 'Type', order: 5, hidden: true },
-      name: { label: 'Ting', order: 0 },
-    })
-    expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Opprettet')
+  it('uses the label for Navn', () => {
+    const csv = toCsv([item('Sovepose', [])], [categoryProperty()], { name: { label: 'Ting', order: 0 } })
+    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Ting;Opprettet')
   })
 })
 
@@ -72,7 +69,7 @@ describe('toCsv formula guard', () => {
         item('=HYPERLINK("http://x")', [{ key: 'Komforttemperatur', value: -12, unit: '°C' }, { key: 'Notat', value: '+1 and @x', unit: null }]),
         item('Telt', [{ key: 'Brensel', value: '-DDE()', unit: null }]),
       ],
-      [],
+      [categoryProperty()],
       defaultFieldSettings,
     )
     const lines = csv.split('\r\n')

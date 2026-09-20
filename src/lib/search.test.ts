@@ -6,7 +6,6 @@ function item(name: string, specs: Item['specs'], photo: Blob | null = null): It
   return {
     id: crypto.randomUUID(),
     name,
-    category: 'Turutstyr',
     specs,
     photo,
     createdAt: 0,

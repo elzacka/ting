@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
-import { db, readFieldSettings, readItems, readProperties, readVault, sealPlaintextRows, writeVault } from './db/db'
+import {
+  db,
+  ensureCategoryProperty,
+  readFieldSettings,
+  readItems,
+  readProperties,
+  readVault,
+  sealPlaintextRows,
+  writeVault,
+} from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
 import { href, useRoute, type Route } from './lib/route'
@@ -41,13 +50,20 @@ export function App() {
   async function onSetup(passphrase: string) {
     const v = await setupVault(passphrase)
     await writeVault(v)
-    await sealPlaintextRows()
+    await migrate()
   }
 
   async function onUnlock(passphrase: string) {
     const ok = await unlock(passphrase)
-    if (ok) await sealPlaintextRows()
+    if (ok) await migrate()
     return ok
+  }
+
+  // Data written by earlier versions is brought forward on every unlock: rows
+  // from before encryption get sealed, a legacy Kategori gets its property.
+  async function migrate() {
+    await sealPlaintextRows()
+    await ensureCategoryProperty()
   }
   // One query for both top-level views, so a filter made in one carries into the other.
   // Mirrored into ?q= so a reload or a bookmark keeps it.
@@ -349,5 +365,5 @@ function Screen({
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
-  return <ItemDetail item={item} fields={fields} editing={editing} />
+  return <ItemDetail item={item} editing={editing} />
 }

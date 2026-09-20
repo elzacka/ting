@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { columnDefs, defaultFieldSettings, readFieldSettings } from './fields'
+import { categoryProperty, columnDefs, defaultFieldSettings, readFieldSettings } from './fields'
 import { columnId } from './grid'
 
 function item(name: string, specs: Item['specs']): Item {
   return {
     id: crypto.randomUUID(),
     name,
-    category: 'Turutstyr',
     specs,
     photo: null,
     createdAt: 0,
@@ -22,9 +21,9 @@ const props = [
 ]
 
 describe('columnDefs', () => {
-  it('puts built-in fields first by default, then properties by order, then item-only columns', () => {
-    expect(columnDefs(defaultFieldSettings, props, items).map((d) => d.id)).toEqual([
-      'category',
+  it('puts Kategori and Navn first by default, then properties by order, then item-only columns', () => {
+    expect(columnDefs(defaultFieldSettings, [categoryProperty(), ...props], items).map((d) => d.id)).toEqual([
+      categoryProperty().id,
       'name',
       columnId({ key: 'R-verdi', unit: null }),
       columnId({ key: 'Brensel', unit: null }),
@@ -32,11 +31,9 @@ describe('columnDefs', () => {
     ])
   })
 
-  it('lets built-in fields sit anywhere and drops a hidden category', () => {
-    const fields = { category: { label: null, order: 9, hidden: false }, name: { label: null, order: 0.5 } }
-    expect(columnDefs(fields, props, items).map((d) => d.kind)).toEqual(['prop', 'name', 'prop', 'category', 'prop'])
-    const hidden = { ...fields, category: { ...fields.category, hidden: true } }
-    expect(columnDefs(hidden, props, items).some((d) => d.kind === 'category')).toBe(false)
+  it('lets Navn sit anywhere', () => {
+    const fields = { name: { label: null, order: 0.5 } }
+    expect(columnDefs(fields, props, items).map((d) => d.kind)).toEqual(['prop', 'name', 'prop', 'prop'])
   })
 })
 

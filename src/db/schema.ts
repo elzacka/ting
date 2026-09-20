@@ -6,12 +6,11 @@ export const specSchema = z.object({
   unit: z.string().trim().nullable(),
 })
 
-// A thing is a name, a category, its properties as specs, and maybe a photo.
-// Everything else it can carry is a property; a note is the property Notat.
+// A thing is a name, its properties as specs, and maybe a photo. Everything
+// else it can carry is a property: Kategori and Notat among them.
 export const itemSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
-  category: z.string().trim(),
   specs: z.array(specSchema),
   photo: z.instanceof(Blob).nullable(),
   createdAt: z.number(),
@@ -24,7 +23,6 @@ export type Item = z.infer<typeof itemSchema>
 // What the form produces. Everything else is filled in by the db layer.
 export const itemInputSchema = itemSchema.pick({
   name: true,
-  category: true,
   specs: true,
   photo: true,
 })

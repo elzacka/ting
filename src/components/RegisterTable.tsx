@@ -11,7 +11,7 @@ import {
 } from '../db/db'
 import type { Item, Property, PropertyType } from '../db/schema'
 import { distinct, parseNumber } from '../lib/filter'
-import { columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } from '../lib/fields'
+import { categoryColumnId, columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
@@ -26,13 +26,13 @@ import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 
-type RowEdit = { name?: string; category?: string; cells?: Record<string, string> }
+type RowEdit = { name?: string; cells?: Record<string, string> }
 type NewRow = {
   tempId: string
   name: string
-  category: string
-  prefilledCategory: string
   cells: Record<string, string>
+  // What the row started with (an inherited Kategori): typing that is not an edit
+  prefilled: Record<string, string>
 }
 
 // Focusing a cell inside the sticky name column must not scroll the table sideways.
@@ -51,8 +51,8 @@ function parseOptions(raw: string): string[] {
   ]
 }
 
-function blankRow(category: string): NewRow {
-  return { tempId: crypto.randomUUID(), name: '', category, prefilledCategory: category, cells: {} }
+function blankRow(prefilled: Record<string, string>): NewRow {
+  return { tempId: crypto.randomUUID(), name: '', cells: { ...prefilled }, prefilled }
 }
 
 type Props = {
@@ -128,15 +128,13 @@ export function RegisterTable({
 
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const columns = useMemo(() => propColumns(defs), [defs])
-  const categoryLabel = fields.category.label ?? t.table.category
   const nameLabel = fields.name.label ?? t.table.name
 
   function labelOf(def: ColumnDef): string {
-    return def.kind === 'category' ? categoryLabel : def.kind === 'name' ? nameLabel : def.col.key
+    return def.kind === 'name' ? nameLabel : def.col.key
   }
 
   const baseCells = useMemo(() => new Map(items.map((i) => [i.id, cellsFrom(i)])), [items])
-  const categories = useMemo(() => distinct(items, (i) => i.category), [items])
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
   // Edited rows stay visible even when they stop matching the query.
   const visible = useMemo(() => {
@@ -151,12 +149,11 @@ export function RegisterTable({
     if (!item || !e) return false
     const base = baseCells.get(id) ?? {}
     if (e.name !== undefined && e.name !== item.name) return true
-    if (e.category !== undefined && e.category !== item.category) return true
     return Object.entries(e.cells ?? {}).some(([col, v]) => v !== (base[col] ?? ''))
   })
-  // A new row counts once anything is typed into it, including a category the user chose themselves.
+  // A new row counts once anything is typed into it beyond what it inherited.
   const touched = (r: NewRow) =>
-    r.name.trim() !== '' || r.category !== r.prefilledCategory || Object.values(r.cells).some((v) => v.trim() !== '')
+    r.name.trim() !== '' || Object.entries(r.cells).some(([id, v]) => v.trim() !== '' && v !== (r.prefilled[id] ?? ''))
   const dirtyCount = dirtyIds.length + newRows.filter(touched).length
 
   useEffect(() => {
@@ -171,10 +168,18 @@ export function RegisterTable({
 
   useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
-  function value(item: Item, field: 'name' | 'category'): string {
+  function value(item: Item, field: 'name'): string {
     const e = edits[item.id]
     if (e && e[field] !== undefined) return e[field]
     return item[field]
+  }
+
+  // New rows inherit the Kategori of the row above, or of the last thing
+  function inherited(prev?: NewRow): Record<string, string> {
+    const fromPrev = prev?.cells[categoryColumnId]
+    const fromLast = items.length > 0 ? (baseCells.get(items[items.length - 1]!.id)?.[categoryColumnId] ?? '') : ''
+    const value = fromPrev ?? fromLast
+    return value === '' ? {} : { [categoryColumnId]: value }
   }
 
   function cell(item: Item, col: Column): string {
@@ -222,16 +227,15 @@ export function RegisterTable({
       line.forEach((value, j) => {
         const def = defs[startCol + j]
         if (!def) return
-        if (def.kind === 'category') patch.category = value
-        else if (def.kind === 'name') patch.name = value
+        if (def.kind === 'name') patch.name = value
         else cells[def.id] = value
       })
       const target = order[startRow + i]
       if (target?.kind === 'item') editItem(target.id, patch)
       else if (target?.kind === 'new') editNew(target.id, patch)
       else {
-        const row = blankRow(fields.category.hidden ? '' : (extra[extra.length - 1]?.category ?? items[items.length - 1]?.category ?? ''))
-        extra.push({ ...row, category: patch.category ?? row.category, name: patch.name ?? row.name, cells })
+        const row = blankRow(inherited(extra[extra.length - 1]))
+        extra.push({ ...row, name: patch.name ?? row.name, cells: { ...row.cells, ...cells } })
       }
     })
     if (extra.length > 0) setNewRows((prev) => [...prev, ...extra])
@@ -246,15 +250,10 @@ export function RegisterTable({
     })
   }
 
-  // New rows inherit the last category
   const addRow = useCallback(() => {
-    setNewRows((prev) => [
-      ...prev,
-      blankRow(
-        fields.category.hidden ? '' : (prev[prev.length - 1]?.category ?? items[items.length - 1]?.category ?? ''),
-      ),
-    ])
-  }, [fields.category.hidden, items])
+    setNewRows((prev) => [...prev, blankRow(inherited(prev[prev.length - 1]))])
+    // inherited reads items and baseCells, which change together with items
+  }, [items])
 
   useEffect(() => {
     if (!newRowRequested) return
@@ -374,9 +373,7 @@ export function RegisterTable({
   }
 
   async function doRemoveColumn(def: ColumnDef) {
-    if (def.kind === 'category') {
-      await setFieldSettings({ ...fields, category: { ...fields.category, hidden: true } })
-    } else if (def.kind === 'prop') {
+    if (def.kind === 'prop') {
       const id = def.id
       await removeProperty(id, (s) => columnId({ key: s.key, unit: s.unit }) === id)
       const drop = (cells: Record<string, string>) => {
@@ -400,14 +397,6 @@ export function RegisterTable({
       dirtyIds.filter((id) => (edits[id]?.name ?? 'x').trim() === '').length
     if (missingName > 0) {
       setError(t.error.rowsMissingName(missingName))
-      return
-    }
-    const missingCategory = fields.category.hidden
-      ? 0
-      : added.filter((r) => r.category.trim() === '').length +
-        dirtyIds.filter((id) => (edits[id]?.category ?? 'x').trim() === '').length
-    if (missingCategory > 0) {
-      setError(t.error.rowsMissingCategory(missingCategory))
       return
     }
     for (const def of defs) {
@@ -442,7 +431,6 @@ export function RegisterTable({
               input: inputFrom(
                 {
                   name: value(item, 'name'),
-                  category: value(item, 'category'),
                   cells,
                   photo: item.photo,
                 },
@@ -561,15 +549,6 @@ export function RegisterTable({
           <Icon name="add" size={20} />
           {t.table.addColumn}
         </button>
-        {fields.category.hidden && (
-          <button
-            type="button"
-            className="btn"
-            onClick={() => void setFieldSettings({ ...fields, category: { ...fields.category, hidden: false } })}
-          >
-            {t.table.showCategory(categoryLabel)}
-          </button>
-        )}
         {selected.size > 0 && !confirmingDelete && (
           <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
             <Icon name="delete" size={20} />
@@ -675,9 +654,7 @@ export function RegisterTable({
       {removingColumn && (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-column">
           <p id="confirm-column">
-            {removingColumn.kind === 'prop'
-              ? t.table.removeColumnConfirm(removingColumn.col.key, usedBy(removingColumn.col))
-              : t.table.hideCategoryConfirm(categoryLabel)}
+            {removingColumn.kind === 'prop' && t.table.removeColumnConfirm(removingColumn.col.key, usedBy(removingColumn.col))}
           </p>
           <div className="row">
             <button
@@ -686,7 +663,7 @@ export function RegisterTable({
               autoFocus
               onClick={() => void doRemoveColumn(removingColumn)}
             >
-              {removingColumn.kind === 'prop' ? t.table.removeColumnAction : t.table.hideCategoryAction}
+              {t.table.removeColumnAction}
             </button>
             <button type="button" className="btn" onClick={() => setRemovingColumn(null)}>
               {t.action.cancel}
@@ -709,11 +686,6 @@ export function RegisterTable({
         </div>
       )}
 
-      <datalist id="category-options">
-        {categories.map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
       <datalist id="unit-options">
         {t.table.unitOptions.map(([symbol, word]) => (
           <option key={symbol} value={symbol} label={word} />
@@ -892,8 +864,8 @@ export function RegisterTable({
                             role="menuitem"
                             onClick={() => void requestRemoveColumn(def)}
                           >
-                            <Icon name={def.kind === 'category' ? 'close' : 'delete'} size={16} />
-                            {def.kind === 'category' ? t.table.hideColumn : t.table.removeColumn}
+                            <Icon name="delete" size={16} />
+                            {t.table.removeColumn}
                           </button>
                         )}
                       </div>,
@@ -921,12 +893,7 @@ export function RegisterTable({
                 </td>
                 {defs.map((def) => {
                   const label = t.table.cell(item.name, labelOf(def))
-                  const text =
-                    def.kind === 'category'
-                      ? value(item, 'category')
-                      : def.kind === 'name'
-                        ? value(item, 'name')
-                        : cell(item, def.col)
+                  const text = def.kind === 'name' ? value(item, 'name') : cell(item, def.col)
                   if (active?.row !== item.id) {
                     return (
                       <td key={def.id}>
@@ -946,29 +913,14 @@ export function RegisterTable({
                     <td key={def.id}>
                       <input
                         className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
-                        list={
-                          def.kind === 'category'
-                            ? 'category-options'
-                            : def.kind === 'name'
-                              ? 'name-options'
-                              : def.type === 'choice'
-                                ? choiceListId(def.id)
-                                : undefined
-                        }
+                        list={def.kind === 'name' ? 'name-options' : def.type === 'choice' ? choiceListId(def.id) : undefined}
                         aria-label={label}
                         value={text}
                         ref={focus}
                         data-row={item.id}
                         data-col={def.id}
                         onChange={(e) =>
-                          editItem(
-                            item.id,
-                            def.kind === 'category'
-                              ? { category: e.target.value }
-                              : def.kind === 'name'
-                                ? { name: e.target.value }
-                                : { cells: { [def.id]: e.target.value } },
-                          )
+                          editItem(item.id, def.kind === 'name' ? { name: e.target.value } : { cells: { [def.id]: e.target.value } })
                         }
                       />
                     </td>
@@ -983,22 +935,7 @@ export function RegisterTable({
                 <tr key={row.tempId} className="is-new">
                   <td className="grid-check" />
                   {defs.map((def) =>
-                    def.kind === 'category' ? (
-                      <td key={def.id}>
-                        <input
-                          className="grid-input"
-                          list="category-options"
-                          aria-label={t.table.cell(row.name, categoryLabel)}
-                          value={row.category}
-                          onChange={(e) => editNew(row.tempId, { category: e.target.value })}
-                          data-row={row.tempId}
-                          data-col={def.id}
-                          ref={
-                            row.tempId === lastNewId && defs[0]?.kind === 'category' ? focusWithoutScroll : undefined
-                          }
-                        />
-                      </td>
-                    ) : def.kind === 'name' ? (
+                    def.kind === 'name' ? (
                       <td key={def.id}>
                         <input
                           className="grid-input"
@@ -1008,9 +945,7 @@ export function RegisterTable({
                           onChange={(e) => editNew(row.tempId, { name: e.target.value })}
                           data-row={row.tempId}
                           data-col={def.id}
-                          ref={
-                            row.tempId === lastNewId && defs[0]?.kind !== 'category' ? focusWithoutScroll : undefined
-                          }
+                          ref={row.tempId === lastNewId && defs[0]?.kind === 'name' ? focusWithoutScroll : undefined}
                         />
                       </td>
                     ) : (
@@ -1023,6 +958,7 @@ export function RegisterTable({
                           onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
                           data-row={row.tempId}
                           data-col={def.id}
+                          ref={row.tempId === lastNewId && defs[0]?.id === def.id ? focusWithoutScroll : undefined}
                         />
                       </td>
                     ),

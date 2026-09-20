@@ -33,11 +33,9 @@ export function exportColumns(items: readonly Item[], properties: readonly Prope
 export function toCsv(items: readonly Item[], properties: readonly Property[], fields: FieldSettings): string {
   const defs = exportColumns(items, properties, fields)
   const header = defs.map((d) =>
-    d.kind === 'category'
-      ? (fields.category.label ?? 'Kategori')
-      : d.kind === 'name'
-        ? (fields.name.label ?? 'Navn')
-        : d.col.unit && !isDateUnit(d.col.unit)
+    d.kind === 'name'
+      ? (fields.name.label ?? 'Navn')
+      : d.col.unit && !isDateUnit(d.col.unit)
           ? `${d.col.key} (${d.col.unit})`
           : d.col.key,
   )
@@ -45,7 +43,7 @@ export function toCsv(items: readonly Item[], properties: readonly Property[], f
     [...header, 'Opprettet'],
     ...items.map((item) => [
       ...defs.map((d) =>
-        d.kind === 'category' ? item.category : d.kind === 'name' ? item.name : cellValue(item, d.col),
+        d.kind === 'name' ? item.name : cellValue(item, d.col),
       ),
       dateFormat.format(new Date(item.createdAt)),
     ]),

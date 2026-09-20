@@ -10,7 +10,6 @@ const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 // Sort key for a column: numbers by value, dates by ISO text, everything else by text.
 // null means the item has no value for the column and goes last either way.
 function keyFor(item: Item, id: string, columns: readonly Column[]): number | string | null {
-  if (id === 'category') return item.category === '' ? null : item.category
   if (id === 'name') return item.name
   const col = columns.find((c) => columnId(c) === id)
   if (!col) return null

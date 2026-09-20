@@ -7,8 +7,7 @@ function item(name: string, category: string, specs: Item['specs']): Item {
   return {
     id: crypto.randomUUID(),
     name,
-    category,
-    specs,
+    specs: [{ key: 'Kategori', value: category, unit: null }, ...specs],
     photo: null,
     createdAt: 0,
     updatedAt: 0,

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { itemSchema, propertySchema, type Item, type Property } from '../db/schema'
 import { openJson, sealJson, unlockVault, type OpenKey, type Sealed, type Vault } from './crypto'
-import type { FieldSettings } from './fields'
+import { categoryKey, type FieldSettings } from './fields'
 
 // One JSON document describes the whole catalogue. The folder store keeps
 // photos as files next to it; the download copy embeds them as data URLs.
@@ -21,10 +21,10 @@ const storedItemSchema = itemSchema.omit({ photo: true }).extend({
   photoType: z.string().nullable().optional(),
   photoData: z.string().nullable().optional(),
   note: z.string().nullable().optional(),
+  category: z.string().optional(),
 })
 
 const fieldSettingsSchema = z.object({
-  category: z.object({ label: z.string().nullable(), order: z.number(), hidden: z.boolean() }),
   name: z.object({ label: z.string().nullable(), order: z.number() }),
 })
 
@@ -61,11 +61,19 @@ export function toStored(item: Item): StoredItem {
 
 export const noteKey = 'Notat'
 
-// A legacy note becomes the property Notat, unless the thing already has one.
-export function noteAsSpec(specs: Item['specs'], note: string | null | undefined): Item['specs'] {
-  const text = note?.trim() ?? ''
-  if (text === '' || specs.some((s) => s.key.toLocaleLowerCase('nb') === noteKey.toLocaleLowerCase('nb'))) return specs
-  return [...specs, { key: noteKey, value: text, unit: null }]
+// Legacy built-in fields become properties on load, unless the thing already
+// has one of that name: note is Notat (last), category is Kategori (first).
+export function legacyAsSpecs(
+  specs: Item['specs'],
+  legacy: { note?: string | null | undefined; category?: string | undefined },
+): Item['specs'] {
+  const has = (key: string) => specs.some((s) => s.key.toLocaleLowerCase('nb') === key.toLocaleLowerCase('nb'))
+  let out = specs
+  const category = legacy.category?.trim() ?? ''
+  if (category !== '' && !has(categoryKey)) out = [{ key: categoryKey, value: category, unit: null }, ...out]
+  const note = legacy.note?.trim() ?? ''
+  if (note !== '' && !has(noteKey)) out = [...out, { key: noteKey, value: note, unit: null }]
+  return out
 }
 
 export function toDataFile(
@@ -78,8 +86,8 @@ export function toDataFile(
 }
 
 export function fromStored(stored: StoredItem, photo: Blob | null): Item {
-  const { photoFile: _file, photoData: _data, photoType: _type, note, ...rest } = stored
-  return itemSchema.parse({ ...rest, specs: noteAsSpec(rest.specs, note), photo })
+  const { photoFile: _file, photoData: _data, photoType: _type, note, category, ...rest } = stored
+  return itemSchema.parse({ ...rest, specs: legacyAsSpecs(rest.specs, { note, category }), photo })
 }
 
 const sealedSchema = z.object({ iv: z.string(), data: z.string() })

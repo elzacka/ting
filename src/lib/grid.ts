@@ -47,12 +47,11 @@ export function specsFrom(cells: Record<string, string>, columns: readonly Colum
 }
 
 export function inputFrom(
-  row: { name: string; category: string; cells: Record<string, string>; photo: Blob | null },
+  row: { name: string; cells: Record<string, string>; photo: Blob | null },
   columns: readonly Column[],
 ): ItemInput {
   return {
     name: row.name.trim(),
-    category: row.category.trim(),
     photo: row.photo,
     specs: specsFrom(row.cells, columns),
   }

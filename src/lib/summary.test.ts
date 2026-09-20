@@ -6,8 +6,7 @@ function item(name: string, category: string, specs: Item['specs'], photo: Blob 
   return {
     id: crypto.randomUUID(),
     name,
-    category,
-    specs,
+    specs: [{ key: 'Kategori', value: category, unit: null }, ...specs],
     photo,
     createdAt: 0,
     updatedAt: 0,
