@@ -28,12 +28,18 @@ Alt ligger kryptert i nettleseren på enheten. Sletter du nettleserdata, rydder 
 
 | Måte | Slik | Passer når |
 |---|---|---|
-| Mappe på maskinen | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde. Stopper lagringen til mappen, blir Innstillinger-ikonet brunt | Du vil ha alt speilet til disk uten å tenke på det |
-| Sikkerhetskopi | Last ned én fil med alle ting og bilder. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | Ekstra sikkerhet, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
+| Mappe på maskinen, automatisk | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde. Stopper lagringen til mappen, blir Innstillinger-ikonet brunt | Du vil ha en oppdatert kopi utenfor nettleseren uten å tenke på det |
+| Sikkerhetskopi, manuelt | Last ned én fil med alt. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | En kopi å legge et trygt sted, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
+
+Begge tar med alle ting, egenskaper, bilder og kolonneinnstillinger.
 
 Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn. Det eneste du ikke må miste, er passordet.
 
 Velg en tom mappe: Appen rydder selv i undermappen `bilder`. Deler flere enheter én mappe, bruk den fra én enhet om gangen; den nyeste lagringen vinner, ingenting flettes.
+
+## Rapport
+
+Under Oversikt lager du en liste over det du eier, til forsikringen eller for å dele: Som regneark (CSV) eller som utskrift og PDF. Huk av ting for å ta med bare noen. Rapporten er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
 
 ## Kjør lokalt
 

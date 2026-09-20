@@ -22,7 +22,7 @@ export function Report({
 
   return (
     <section className="report" aria-hidden="true">
-      <h1 className="title">{t.report.title}</h1>
+      <h1 className="title">{t.report.docTitle}</h1>
       <p className="hint">{t.report.subtitle(today, items.length)}</p>
       <table className="report-table">
         <thead>
