@@ -157,7 +157,7 @@ export function App() {
                 aria-current={route.view === 'list' ? 'page' : undefined}
                 onClick={guardNav}
               >
-                <Icon name="inventory2" />
+                <Icon name="homeStorage" />
               </a>
             )}
           </nav>
