@@ -18,6 +18,7 @@ import { checkColumnWidth, columnWidth, tableWidth } from '../lib/columnWidths'
 import { ColumnResizer } from './ColumnResizer'
 import { ariaSort, SortHeader } from './SortHeader'
 import { useObjectUrl } from './useObjectUrl'
+import { rowHeight, useRowWindow } from '../lib/useRowWindow'
 
 type Props = {
   items: Item[]
@@ -71,6 +72,7 @@ export function ItemList({
     [items, query, filters, columns, sort],
   )
 
+  const { ref: bodyRef, window: win } = useRowWindow(visible.length, rowHeight)
   const sums = useMemo(() => totals(items, properties), [items, properties])
   const gaps = useMemo(() => missing(items, properties), [items, properties])
 
@@ -200,8 +202,9 @@ export function ItemList({
                 })}
               </tr>
             </thead>
-            <tbody>
-              {visible.map((item) => (
+            <tbody ref={bodyRef}>
+              {win.topPad > 0 && <SpacerRow height={win.topPad} span={defs.length + 1} />}
+              {visible.slice(win.start, win.end).map((item) => (
                 <ReadRow
                   key={item.id}
                   item={item}
@@ -210,6 +213,7 @@ export function ItemList({
                   onCheck={(on) => toggle(item.id, on)}
                 />
               ))}
+              {win.bottomPad > 0 && <SpacerRow height={win.bottomPad} span={defs.length + 1} />}
             </tbody>
           </table>
         </div>
@@ -257,6 +261,15 @@ export function ItemList({
 
       <Report items={reportItems} properties={properties} fields={fields} />
     </div>
+  )
+}
+
+// Stands in for the rows above and below the window so the page keeps its height
+export function SpacerRow({ height, span }: { height: number; span: number }) {
+  return (
+    <tr className="grid-spacer" style={{ height }} aria-hidden="true">
+      <td colSpan={span} />
+    </tr>
   )
 }
 

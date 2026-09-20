@@ -508,6 +508,40 @@ section {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
+/* A cell that is not being edited: text with the input's footprint, so the
+   row does not move when it turns into inputs */
+.grid-cell {
+  display: block;
+  width: 100%;
+  min-height: var(--row-h);
+  padding: var(--s-2);
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-cell);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.grid-cell:hover {
+  background: var(--surface);
+}
+
+.grid td:nth-child(2) .grid-cell {
+  width: calc(100% + var(--s-2));
+  margin-left: calc(var(--s-2) * -1);
+}
+
+/* Rows above and below the window: height only, no line */
+.grid-spacer td {
+  padding: 0;
+  border: 0;
+}
+
 /* First text column sits flush with the page content edge. The input keeps its
    inner padding (so the caret and text clear the focus border) and is shifted
    left by the same amount instead. */

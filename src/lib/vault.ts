@@ -23,13 +23,13 @@ export function vaultState(): VaultState {
 }
 
 export function useVault(): VaultState {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l)
-      return () => listeners.delete(l)
-    },
-    () => state,
-  )
+  return useSyncExternalStore(subscribeVault, () => state)
+}
+
+// Anything that holds plaintext in memory listens here and drops it on lock.
+export function subscribeVault(l: () => void): () => void {
+  listeners.add(l)
+  return () => listeners.delete(l)
 }
 
 // The key for reads and writes. Throws when locked: callers only run unlocked.

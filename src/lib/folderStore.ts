@@ -101,6 +101,24 @@ async function readPhoto(photos: DirHandle, stored: DataFile['items'][number], o
   }
 }
 
+// A restore from a backup file can bring photos the folder never saw under
+// ids whose files are newer than the restored items: the next write takes
+// them all, once.
+let writeAllPhotos = false
+export function requestFullPhotoWrite(): void {
+  writeAllPhotos = true
+}
+
+// True when the file is missing or older than the item's last change.
+async function writtenSince(dir: DirHandle, name: string, changedAt: number): Promise<boolean> {
+  try {
+    const file = await (await dir.getFileHandle(name)).getFile()
+    return file.lastModified < changedAt
+  } catch {
+    return true
+  }
+}
+
 export type FolderRead =
   | { kind: 'empty' }
   | { kind: 'foreign'; envelope: Envelope }
@@ -151,9 +169,10 @@ export async function readFolder(
   return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, fields: file.fields, open: key, vault }
 }
 
-// Writes ting.json as an envelope and every photo as a sealed .bin file. Photos
-// are rewritten each time: a fresh nonce per write keeps the ciphertext unlinkable
-// to the previous one, and removed items lose their file.
+// Writes ting.json as an envelope and photos as sealed .bin files. A photo is
+// written when its item changed after the file on disk was last written, and
+// gets a fresh nonce each time; unchanged photos are left alone, so a save
+// costs what changed, not the whole folder. Removed items lose their file.
 export async function writeFolder(
   dir: DirHandle,
   items: readonly Item[],
@@ -167,6 +186,8 @@ export async function writeFolder(
 
   const file = toDataFile(items, properties, fields, exportedAt)
   const wanted = new Set<string>()
+  const all = writeAllPhotos
+  writeAllPhotos = false
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
     const stored = file.items[i]
@@ -176,11 +197,13 @@ export async function writeFolder(
       continue
     }
     const name = `${item.id}.bin`
-    const { iv, data } = await encryptBytes(open.key, new Uint8Array(await item.photo.arrayBuffer()))
-    const bytes = new Uint8Array(iv.length + data.length)
-    bytes.set(iv)
-    bytes.set(data, iv.length)
-    await writeFile(photos, name, bytes)
+    if (all || (await writtenSince(photos, name, item.updatedAt))) {
+      const { iv, data } = await encryptBytes(open.key, new Uint8Array(await item.photo.arrayBuffer()))
+      const bytes = new Uint8Array(iv.length + data.length)
+      bytes.set(iv)
+      bytes.set(data, iv.length)
+      await writeFile(photos, name, bytes)
+    }
     stored.photoFile = `${photoDirName}/${name}`
     stored.photoType = item.photo.type
     wanted.add(name)

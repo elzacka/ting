@@ -9,6 +9,7 @@ import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
+import { requestFullPhotoWrite } from '../lib/folderStore'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 // Norwegian writes the time with a full stop: kl. 19.51
@@ -79,6 +80,7 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
 
   async function restore() {
     if (!pending) return
+    requestFullPhotoWrite()
     await replaceAll(pending.items, pending.properties, pending.fields)
     setMessage(t.storage.restoreDone(pending.items.length))
     setPending(null)

@@ -48,6 +48,10 @@ describe('missing', () => {
       { what: 'value', key: 'Pris', count: 1, query: '-has:pris' },
     ])
   })
+  it('says nothing about photos while no thing has one', () => {
+    const none = items.map((i) => ({ ...i, photo: null }))
+    expect(missing(none, [pris]).map((m) => m.what)).toEqual(['value'])
+  })
   it('quotes a property name with a space', () => {
     const p: Property = { id: '["ny pris","kr"]', key: 'Ny pris', unit: 'kr', createdAt: 1, type: 'number' }
     expect(missing(items, [p])[1]?.query).toBe('-has:"ny pris"')

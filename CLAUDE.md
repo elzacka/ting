@@ -56,6 +56,7 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/useAutoLock.ts` | Locks after 10 minutes without pointer or key input; re-checks when the tab becomes visible. Paused while the table or the edit form has unsaved edits; can be turned off on Innstillinger |
 | `src/lib/errors.ts` | `errorText`: what gets logged about an error (name and message, never the object) |
 | `src/lib/summary.ts` | The line above the table: totals per kr property, what is missing (each a search). Pure and tested |
+| `src/lib/useRowWindow.ts` | Both tables render only the rows on screen (48 px rows, page scroll, spacer rows keep the height) |
 | `src/components/` | One file per screen or reusable piece. The main screen is `ItemList` (read: summary line, Legg til ting, search, table, Rapport) or `RegisterTable` (edit, holds unsaved edits in memory until "Lagre") depending on the Redigering switch; `Report` is print-only; `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
@@ -74,6 +75,8 @@ Everything a user types, pastes, restores from a file or reads from a folder is 
 Dexie version 4: tables `items` (`id` only), `settings` (`key`) and `properties` (`id` only). Content indexes were dropped with encryption. Decrypted shapes: `Item`, `Property` (column definitions: `id` = key+unit, `key`, `unit`, `createdAt`, optional `order`, `type`: text, choice, number, date, and `options` for choice columns). A date property carries the internal unit marker `dato` so its specs format as dates; the UI shows the type, never that marker. Units are not shown in table headers or filter labels (elzacka, 19 September 2026); they appear on the detail page, in the print report and in CSV. Missing `type` on old rows means text, or date if the marker is set. Column order comes from `columnDefs` in `src/lib/fields.ts`, which interleaves the built-in fields (Kategori, Navn) with properties. Built-in field labels, positions and the hidden flag for Kategori live in `settings` under key `fields`. Navn cannot be hidden: it is the identity of an item everywhere. The same order and labels apply in the edit table, Oversikt, filters, report and CSV. `createdAt` and `updatedAt` are kept in the data and in CSV but not shown anywhere in the app or the print report (elzacka, 19 September 2026). A property exists independently of item values; removing one strips the matching spec from every item. Adding non-indexed fields needs no version bump. Changing indexes or renaming fields does: add `db.version(5)` with an `upgrade`, never edit an existing version.
 
 Every mutation in `db.ts` bumps `localChangedAt`; loading from a file or folder does not. That is what `reconcile` compares against the folder's `exportedAt`.
+
+`readItems` keeps opened items in memory keyed by id and the nonces of their sealed parts, so a change re-opens only the rows whose seal changed; the cache empties on lock. The items query watches primary keys, not rows. The folder write skips a photo whose file is newer than the item's `updatedAt`; a restore from a backup file asks for one full photo write. In the edit table only the row being touched has inputs.
 
 Photos are stored as `Blob`, never base64.
 

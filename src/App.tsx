@@ -32,7 +32,9 @@ export function App() {
   useEffect(() => {
     void readVault().then(initVault)
   }, [])
-  const items = useSealedQuery(() => db.items.toArray(), readItems, unlocked)
+  // Watching keys, not rows: a change anywhere in the table re-runs the read,
+  // and the read opens only rows whose seal changed.
+  const items = useSealedQuery(() => db.items.toCollection().primaryKeys(), readItems, unlocked)
   const properties = useSealedQuery(() => db.properties.toArray(), readProperties, unlocked)
   const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, unlocked)
   const folder = useFolderSync()

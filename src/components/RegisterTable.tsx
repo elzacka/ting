@@ -17,6 +17,8 @@ import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
 import { applyFilters, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
+import { SpacerRow } from './ItemList'
+import { rowHeight, useRowWindow } from '../lib/useRowWindow'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -122,6 +124,8 @@ export function RegisterTable({
     options: '',
   })
   const [status, setStatus] = useState<string | null>(null)
+  // Only the row being touched carries inputs; every other row is text.
+  const [active, setActive] = useState<{ row: string; col: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -143,6 +147,8 @@ export function RegisterTable({
     const ids = new Set(hits.map((i) => i.id))
     return sortItems([...hits, ...items.filter((i) => !ids.has(i.id) && edits[i.id] !== undefined)], columns, sort)
   }, [items, query, filters, edits, columns, sort])
+
+  const { ref: bodyRef, window: win } = useRowWindow(visible.length, rowHeight)
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -870,8 +876,9 @@ export function RegisterTable({
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {visible.map((item) => (
+            <tbody ref={bodyRef}>
+              {win.topPad > 0 && <SpacerRow height={win.topPad} span={defs.length + 1} />}
+              {visible.slice(win.start, win.end).map((item) => (
                 <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
                   <td className="grid-check">
                     {!editing && (
@@ -883,41 +890,62 @@ export function RegisterTable({
                       />
                     )}
                   </td>
-                  {defs.map((def) =>
-                    def.kind === 'category' ? (
+                  {defs.map((def) => {
+                    const label = t.table.cell(item.name, labelOf(def))
+                    const text =
+                      def.kind === 'category'
+                        ? value(item, 'category')
+                        : def.kind === 'name'
+                          ? value(item, 'name')
+                          : cell(item, def.col)
+                    if (active?.row !== item.id) {
+                      return (
+                        <td key={def.id}>
+                          <button
+                            type="button"
+                            className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
+                            aria-label={label}
+                            onFocus={() => setActive({ row: item.id, col: def.id })}
+                          >
+                            {text}
+                          </button>
+                        </td>
+                      )
+                    }
+                    const focus = active.col === def.id ? focusWithoutScroll : undefined
+                    return (
                       <td key={def.id}>
                         <input
-                          className="grid-input"
-                          list="category-options"
-                          aria-label={t.table.cell(item.name, categoryLabel)}
-                          value={value(item, 'category')}
-                          onChange={(e) => editItem(item.id, { category: e.target.value })}
+                          className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
+                          list={
+                            def.kind === 'category'
+                              ? 'category-options'
+                              : def.kind === 'name'
+                                ? 'name-options'
+                                : def.type === 'choice'
+                                  ? choiceListId(def.id)
+                                  : undefined
+                          }
+                          aria-label={label}
+                          value={text}
+                          ref={focus}
+                          onChange={(e) =>
+                            editItem(
+                              item.id,
+                              def.kind === 'category'
+                                ? { category: e.target.value }
+                                : def.kind === 'name'
+                                  ? { name: e.target.value }
+                                  : { cells: { [def.id]: e.target.value } },
+                            )
+                          }
                         />
                       </td>
-                    ) : def.kind === 'name' ? (
-                      <td key={def.id}>
-                        <input
-                          className="grid-input"
-                          list="name-options"
-                          aria-label={t.table.cell(item.name, nameLabel)}
-                          value={value(item, 'name')}
-                          onChange={(e) => editItem(item.id, { name: e.target.value })}
-                        />
-                      </td>
-                    ) : (
-                      <td key={def.id}>
-                        <input
-                          className="grid-input num"
-                          list={def.type === 'choice' ? choiceListId(def.id) : undefined}
-                          aria-label={t.table.cell(item.name, def.col.key)}
-                          value={cell(item, def.col)}
-                          onChange={(e) => editItem(item.id, { cells: { [def.id]: e.target.value } })}
-                        />
-                      </td>
-                    ),
-                  )}
+                    )
+                  })}
                 </tr>
               ))}
+              {win.bottomPad > 0 && <SpacerRow height={win.bottomPad} span={defs.length + 1} />}
               {newRows.map((row) => (
                 <tr key={row.tempId} className="is-new">
                   <td className="grid-check" />

@@ -4,7 +4,7 @@ import { fromStored, storedItemSchema, toStored } from '../lib/backup'
 import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type Sealed, type Vault } from '../lib/crypto'
 import { fieldSettingsKey, readFieldSettings as parseFieldSettings, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { errorText } from '../lib/errors'
-import { currentKey } from '../lib/vault'
+import { currentKey, subscribeVault, vaultState } from '../lib/vault'
 
 // Every record is stored sealed under the session key: an item is one sealed
 // JSON document plus its photo as separately sealed bytes, a property is one
@@ -98,8 +98,29 @@ async function openAll<R extends { id: string }, T>(rows: R[], open: (row: R) =>
   return out
 }
 
+// Opened items are kept by id and by the nonces of their sealed parts: a
+// fresh seal means a fresh nonce, so an unchanged row costs nothing to read
+// again. The cache belongs to one data key; another key empties it.
+const opened = new Map<string, { dekId: string; iv: string; photoIv: string | null; item: Item }>()
+subscribeVault(() => {
+  if (vaultState().status !== 'open') opened.clear()
+})
+
+async function openItemCached(row: SealedItemRow): Promise<Item> {
+  const { dekId } = currentKey()
+  const photoIv = row.photo?.iv ?? null
+  const hit = opened.get(row.id)
+  if (hit && hit.dekId === dekId && hit.iv === row.sealed.iv && hit.photoIv === photoIv) return hit.item
+  const item = await openItem(row)
+  opened.set(row.id, { dekId, iv: row.sealed.iv, photoIv, item })
+  return item
+}
+
 export async function readItems(): Promise<Item[]> {
-  return openAll(await db.items.toArray(), openItem)
+  const rows = await db.items.toArray()
+  const keep = new Set(rows.map((r) => r.id))
+  for (const id of opened.keys()) if (!keep.has(id)) opened.delete(id)
+  return openAll(rows, openItemCached)
 }
 
 export async function readProperties(): Promise<Property[]> {

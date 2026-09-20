@@ -36,11 +36,12 @@ function queryKey(key: string): string {
 }
 
 // Things without a photo, and without a value in each kr property. Each row
-// is a search the overview can run.
+// is a search the overview can run. The photo gap is only a gap once photos
+// are in use at all: nothing nags about a habit that has not started.
 export function missing(items: readonly Item[], properties: readonly Property[]): Missing[] {
   const out: Missing[] = []
   const noPhoto = items.filter((i) => i.photo === null).length
-  if (noPhoto > 0) out.push({ what: 'photo', key: 'bilde', count: noPhoto, query: '-has:bilde' })
+  if (noPhoto > 0 && noPhoto < items.length) out.push({ what: 'photo', key: 'bilde', count: noPhoto, query: '-has:bilde' })
   for (const p of properties) {
     if (!isMoney(p.unit)) continue
     const n = items.filter((i) => !i.specs.some((s) => columnId({ key: s.key, unit: s.unit }) === p.id)).length
