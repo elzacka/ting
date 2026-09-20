@@ -98,8 +98,16 @@ export type FolderRead =
   | { kind: 'data'; exportedAt: number; items: Item[]; properties: Property[]; open: OpenKey; vault: Vault | null }
 
 // Reads the folder. A file sealed under another data key needs the passphrase
-// once; the key that opened it comes back so the caller can adopt it.
-export async function readFolder(dir: DirHandle, open: OpenKey, passphrase?: string): Promise<FolderRead> {
+// once; the key that opened it comes back so the caller can adopt it. A photo
+// the file points at but the folder cannot deliver (sync lag, a stray delete)
+// falls back to the copy the browser already holds for that item, so loading
+// never drops a photo the user still has.
+export async function readFolder(
+  dir: DirHandle,
+  open: OpenKey,
+  passphrase?: string,
+  localPhotos: ReadonlyMap<string, Blob> = new Map(),
+): Promise<FolderRead> {
   const text = await readText(dir, dataFileName)
   if (text === null) return { kind: 'empty' }
   const parsed = parseAnyFile(text)
@@ -117,7 +125,11 @@ export async function readFolder(dir: DirHandle, open: OpenKey, passphrase?: str
     file = parsed.file
   }
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
-  const items = await Promise.all(file.items.map(async (s) => fromStored(s, await readPhoto(photos, s, key))))
+  const items = await Promise.all(
+    file.items.map(async (s) =>
+      fromStored(s, (await readPhoto(photos, s, key)) ?? (s.photoFile ? (localPhotos.get(s.id) ?? null) : null)),
+    ),
+  )
   return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, open: key, vault }
 }
 
@@ -167,14 +179,21 @@ export type SyncResult = 'loaded' | 'written' | 'foreign'
 // Newer side wins: a file written after the last local edit is loaded,
 // otherwise the local copy is written out.
 export async function reconcile(dir: DirHandle, open: OpenKey, vault: Vault): Promise<SyncResult> {
-  const onDisk = await readFolder(dir, open)
+  const local = await readItems()
+  const onDisk = await readFolder(dir, open, undefined, localPhotoMap(local))
   if (onDisk.kind === 'foreign') return 'foreign'
   const changedAt = await localChangedAt()
   if (onDisk.kind === 'data' && onDisk.exportedAt > changedAt) {
     await replaceAll(onDisk.items, onDisk.properties)
     return 'loaded'
   }
-  await writeFolder(dir, await readItems(), await readProperties(), open, vault)
+  await writeFolder(dir, local, await readProperties(), open, vault)
   return 'written'
+}
+
+export function localPhotoMap(items: readonly Item[]): Map<string, Blob> {
+  const map = new Map<string, Blob>()
+  for (const item of items) if (item.photo) map.set(item.id, item.photo)
+  return map
 }
 

@@ -4,6 +4,7 @@ import { db, readItems, readProperties, replaceAll, writeVault } from '../db/db'
 import {
   folderSupported,
   forgetFolder,
+  localPhotoMap,
   pickFolder,
   queryPermission,
   readFolder,
@@ -131,7 +132,7 @@ export function useFolderSync() {
     async (passphrase: string) => {
       const handle = handleRef.current
       if (!handle) return
-      const result = await readFolder(handle, currentKey(), passphrase)
+      const result = await readFolder(handle, currentKey(), passphrase, localPhotoMap(await readItems()))
       if (result.kind === 'wrong-passphrase' || result.kind === 'foreign') {
         setStatus({ kind: 'needs-passphrase', name: handle.name, wrong: true })
         return

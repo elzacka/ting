@@ -1,6 +1,6 @@
 # Ting
 
-Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Dataene er dine: Appen kan skrive alt til en mappe på maskinen og lage en sikkerhetskopi du kan hente inn igjen, også på en annen enhet.
+Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Du slipper å registrere noe på nytt: Appen kan speile alt til en mappe på maskinen og lage en sikkerhetskopi du henter inn igjen, også etter at nettleserdata er slettet eller på en ny enhet.
 
 ## MVP
 
@@ -22,9 +22,9 @@ Hold oversikt over det du eier, og hvor du har det. En PWA som virker uten nett 
 
 En installert app får eget vindu og ikon, starter uten adressefelt og tar vare på dataene.
 
-## Dataene dine
+## Ta vare på alt
 
-Alt ligger kryptert i nettleseren på enheten. En nettleser kan likevel rydde bort lokale data, og en enhet kan bli borte. Derfor kan du ta vare på alt på to måter, begge under Innstillinger:
+Alt ligger kryptert i nettleseren på enheten. Sletter du nettleserdata, rydder Safari bort en app du ikke har brukt på en stund, eller mister du enheten, er det borte derfra. Derfor kan du ta vare på alt på to måter, begge under Innstillinger:
 
 | Måte | Slik | Passer når |
 |---|---|---|
@@ -32,6 +32,8 @@ Alt ligger kryptert i nettleseren på enheten. En nettleser kan likevel rydde bo
 | Sikkerhetskopi | Last ned én fil med alle ting og bilder. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | Ekstra sikkerhet, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
 
 Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn. Det eneste du ikke må miste, er passordet.
+
+Velg en tom mappe: Appen rydder selv i undermappen `bilder`. Deler flere enheter én mappe, bruk den fra én enhet om gangen; den nyeste lagringen vinner, ingenting flettes.
 
 ## Kjør lokalt
 
@@ -88,8 +90,8 @@ Ikonet lengst til høyre i topplinja.
 
 | Valg | Slik |
 |---|---|
-| Mappe på maskinen | Koble til eller fra. Se «Dataene dine» over |
-| Sikkerhetskopi | Last ned eller gjenopprett. Se «Dataene dine» over |
+| Mappe på maskinen | Koble til eller fra. Se «Ta vare på alt» over |
+| Sikkerhetskopi | Last ned eller gjenopprett. Se «Ta vare på alt» over |
 | Automatisk lås | Slå den av eller på |
 | Passord | Bytt passord |
 

@@ -181,6 +181,7 @@ export const t = {
   storage: {
     title: 'Innstillinger',
     folderTitle: 'Mappe på maskinen',
+    folderWhat: 'Appen skriver alle ting, egenskaper og bilder til mappen hver gang du lagrer, kryptert. Åpner du appen på en annen maskin med samme mappe, leses de inn igjen.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
     checking: 'Sjekker mappen',
@@ -192,6 +193,7 @@ export const t = {
     disconnect: 'Koble fra',
     error: (name: string, message: string) => `Kunne ikke skrive til «${name}». ${message}`,
     copyTitle: 'Sikkerhetskopi',
+    copyWhat: 'Én fil med alle ting, egenskaper og bilder, kryptert med passordet ditt. Gjenoppretting erstatter alt som ligger her.',
     download: 'Last ned sikkerhetskopi',
     restore: 'Gjenopprett fra sikkerhetskopi',
     restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra filen? Dette kan ikke angres.`,

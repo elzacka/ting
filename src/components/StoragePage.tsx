@@ -100,6 +100,7 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
 
       <section className="stack-sm">
         <h2 className="section-label">{t.storage.folderTitle}</h2>
+        <p className="hint">{t.storage.folderWhat}</p>
         {status.kind === 'unsupported' && <p>{t.storage.unsupported}</p>}
         {status.kind === 'checking' && <p className="hint">{t.storage.checking}</p>}
         {status.kind === 'none' && (
@@ -191,6 +192,7 @@ export function StoragePage({ items, properties, folder, autoLock, onAutoLockCha
 
       <section className="stack-sm">
         <h2 className="section-label">{t.storage.copyTitle}</h2>
+        <p className="hint">{t.storage.copyWhat}</p>
         <div className="row toolbar">
           <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
             {t.storage.download}
