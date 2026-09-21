@@ -22,8 +22,11 @@ import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
+import { useNarrow } from './lib/useNarrow'
 import { readAutoLock, writeAutoLock } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
+import { AddItem } from './components/AddItem'
+import { ItemList } from './components/ItemList'
 import { ItemDetail } from './components/ItemDetail'
 import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
@@ -33,6 +36,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
   const route = useRoute()
+  const narrow = useNarrow()
   const vault = useVault()
   const unlocked = vault.status === 'open'
   useEffect(() => {
@@ -208,6 +212,7 @@ export function App() {
               properties={properties}
               fields={fields}
               route={route}
+              narrow={narrow}
               query={query}
               onQueryChange={setQuery}
               searchOpen={searchOpen}
@@ -236,6 +241,7 @@ type ScreenProps = {
   properties: Property[]
   fields: FieldSettings
   route: Route
+  narrow: boolean
   query: string
   onQueryChange: (q: string) => void
   searchOpen: boolean
@@ -258,6 +264,7 @@ function Screen({
   properties,
   fields,
   route,
+  narrow,
   query,
   onQueryChange,
   searchOpen,
@@ -275,6 +282,9 @@ function Screen({
   onOpenQuery,
 }: ScreenProps) {
   const search = { query, onQueryChange, searchOpen, onSearchClose }
+  if (route.view === 'list' && narrow) {
+    return <ItemList items={items} properties={properties} fields={fields} {...search} />
+  }
   if (route.view === 'list') {
     return (
       <Overview
@@ -305,7 +315,10 @@ function Screen({
       />
     )
   }
+  if (route.view === 'add') {
+    return <AddItem items={items} properties={properties} fields={fields} onDirtyChange={onDirtyChange} />
+  }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>
-  return <ItemDetail item={item} />
+  return <ItemDetail item={item} items={items} properties={properties} fields={fields} />
 }

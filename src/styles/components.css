@@ -192,6 +192,17 @@
   resize: vertical;
 }
 
+/* iOS Safari zooms the page into a field whose text is under 16 px and stays
+   zoomed. On touch screens every field is 16 px, table cells included. */
+@media (hover: none) {
+  .input,
+  .select,
+  .textarea,
+  .grid-input {
+    font-size: 16px;
+  }
+}
+
 .input:focus-visible,
 .select:focus-visible,
 .textarea:focus-visible {
@@ -275,6 +286,64 @@
   color: var(--text-2);
 }
 
+/* Phone list: one thing per row, the name and what the Valgliste columns say */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.list-row {
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-link {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 100%;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.list .thumb {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.list .thumb-empty {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.list-text {
+  display: grid;
+  min-width: 0;
+}
+
+.list-name,
+.list-meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.list-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.list-meta {
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
 /* Detail */
 
 .title {
@@ -318,6 +387,40 @@
 .specs dd {
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+
+/* Every row on the detail page can be edited where it stands. The pencil shows
+   on hover or focus where there is a pointer, always on a touch screen. */
+.spec-row-edit {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.spec-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.specs dd.spec-row-edit {
+  padding: 0;
+  min-height: var(--row-h);
+}
+
+.spec-edit {
+  margin-left: auto;
+  opacity: 0;
+}
+
+.spec-row-edit:hover .spec-edit,
+.spec-edit:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .spec-edit {
+    opacity: 1;
+  }
 }
 
 /* A section's text sits one step under its label, level with rows and inputs */

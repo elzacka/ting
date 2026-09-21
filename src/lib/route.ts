@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 export type Route =
   | { view: 'list' }
   | { view: 'storage' }
+  | { view: 'add' }
   | { view: 'detail'; id: string }
 
 export function parseHash(hash: string): Route {
@@ -11,6 +12,7 @@ export function parseHash(hash: string): Route {
   // 'registrer' was its own view until 20 September 2026; old links still land
   if (parts[0] === 'oversikt' || parts[0] === 'registrer') return { view: 'list' }
   if (parts[0] === 'innstillinger') return { view: 'storage' }
+  if (parts[0] === 'ting' && parts[1] === 'ny') return { view: 'add' }
   if (parts[0] === 'ting' && parts[1]) {
     return { view: 'detail', id: parts[1] }
   }
@@ -20,6 +22,7 @@ export function parseHash(hash: string): Route {
 export const href = {
   list: '#/oversikt',
   storage: '#/innstillinger',
+  add: '#/ting/ny',
   detail: (id: string) => `#/ting/${id}`,
 }
 

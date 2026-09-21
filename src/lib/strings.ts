@@ -69,7 +69,7 @@ export const t = {
   summary: {
     things: (n: number) => (n === 1 ? '1 ting' : `${n} ting`),
     shown: (n: number, total: number) => `${n} av ${total} ting`,
-    total: (key: string, amount: string) => `${key} i alt ${amount}`,
+    total: (key: string, amount: string) => `${key} totalt ${amount}`,
     missingPhoto: (n: number) => (n === 1 ? '1 mangler bilde' : `${n} mangler bilde`),
     missingValue: (n: number, key: string) =>
       n === 1 ? `1 mangler ${key.toLocaleLowerCase('nb')}` : `${n} mangler ${key.toLocaleLowerCase('nb')}`,
@@ -88,12 +88,21 @@ export const t = {
     choosePhoto: 'Velg bilde',
     changePhoto: 'Bytt bilde',
     removePhoto: 'Fjern bilde',
+    takePhoto: 'Ta bilde',
+    retakePhoto: 'Ta nytt bilde',
+  },
+  add: {
+    title: 'Ny ting',
+    photoAlt: 'Bildet du tok',
+    saved: (name: string) => `«${name}» er lagret.`,
+    missingName: 'Tingen må ha et navn.',
   },
   detail: {
     specs: 'Egenskaper',
     noSpecs: 'Ingen egenskaper',
     notFound: 'Fant ikke denne tingen',
     photoAlt: (name: string) => `Bilde av ${name}`,
+    edit: (label: string) => `Endre ${label.toLocaleLowerCase('nb')}`,
   },
   confirm: {
     delete: (name: string) => `Slett «${name}»? Du kan ikke angre.`,

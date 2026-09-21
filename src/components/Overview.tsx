@@ -36,7 +36,7 @@ type NewRow = {
   tempId: string
   name: string
   cells: Record<string, string>
-  // What the row started with (an inherited Kategori): typing that is not an edit
+  // What the row started with (inherited values): typing the same is not an edit
   prefilled: Record<string, string>
 }
 
@@ -192,11 +192,22 @@ export function Overview({
     return item[field]
   }
 
-  // New rows inherit the Kategori of the row above, or of the last thing
+  // A new row inherits what describes the batch from the row above: every
+  // Valgliste and date value (a shop and a purchase date carry down a
+  // receipt, a location carries down a shelf). Prices, texts and numbers are
+  // the row's own. The first row inherits only the Kategori of the newest thing.
   function inherited(prev?: NewRow): Record<string, string> {
-    const fromPrev = prev?.cells[categoryColumnId]
-    const fromLast = items.length > 0 ? (baseCells.get(items[items.length - 1]!.id)?.[categoryColumnId] ?? '') : ''
-    const value = fromPrev ?? fromLast
+    if (prev) {
+      const cells: Record<string, string> = {}
+      for (const def of defs) {
+        if (def.kind !== 'prop' || (def.type !== 'choice' && def.type !== 'date')) continue
+        const v = prev.cells[def.id] ?? ''
+        if (v.trim() !== '') cells[def.id] = v
+      }
+      return cells
+    }
+    const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
+    const value = newest ? (baseCells.get(newest.id)?.[categoryColumnId] ?? '') : ''
     return value === '' ? {} : { [categoryColumnId]: value }
   }
 
@@ -267,8 +278,8 @@ export function Overview({
 
   const addRow = useCallback(() => {
     setNewRows((prev) => [...prev, blankRow(inherited(prev[prev.length - 1]))])
-    // inherited reads items and baseCells, which change together with items
-  }, [items])
+    // inherited reads items, baseCells and defs; baseCells changes together with items
+  }, [items, defs])
 
   // Printing needs every row on the page, not the windowed ones. Cmd+P and the
   // link both go through the same state; flushSync so the rows exist before

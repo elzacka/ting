@@ -11,12 +11,12 @@ const overscan = 12
 export const rowHeight = 48
 
 // `all` renders every row: printing needs the whole table on the page.
-export function useRowWindow(
+export function useRowWindow<E extends HTMLElement = HTMLTableSectionElement>(
   count: number,
   rowHeight: number,
   all = false,
-): { ref: RefObject<HTMLTableSectionElement | null>; window: RowWindow } {
-  const ref = useRef<HTMLTableSectionElement | null>(null)
+): { ref: RefObject<E | null>; window: RowWindow } {
+  const ref = useRef<E | null>(null)
   const [range, setRange] = useState<[number, number]>([0, Math.min(count, overscan * 2)])
 
   useEffect(() => {
