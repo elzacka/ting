@@ -5,7 +5,8 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 ## Det appen gjør
 
 - Ett skjermbilde: Øverst én linje med hvor mange ting du har, summen av hver kr-kolonne og hva som mangler verdi. Under: Én tabell med egenskaper som kolonner. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp nederst når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig, lim inn fra et regneark
-- Egen side for hver ting med alle egenskaper. Her legger du til bilde
+- Egen side for hver ting med alle egenskaper. Her legger du til bilde og retter enkeltverdier
+- På mobil: Søk, en liste over ting med kategori og plassering, og «Legg til ting» som tar bilde og lagrer én ting om gangen. Kolonner, summer og rapporter hører til på en større skjerm
 - Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
@@ -49,6 +50,9 @@ Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjon
 | Merke tilstand eller status | Valgliste «Status»: Ok, Skal repareres, Kast |
 | Vite hva alt er verdt | Tall «Kjøpesum» med enhet kr for det du betalte, fra kvitteringen. Skal forsikringen ha gjenanskaffelsesverdi, er det et annet tall: Tall «Verdi» i tillegg. Linja øverst i Oversikt viser summen av hver kr-kolonne |
 | Legge til mange ting samtidig | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
+| Registrere det som ligger på kjøpet eller i hylla | Legg til ting rad for rad: Valglister og datoer arver verdien fra raden over, så butikk, dato og plassering skriver du én gang. Pris og tekst er radens egne |
+| Registrere med mobilen, med tingen i hånden | «Legg til ting» på mobilen åpner én ting om gangen: Ta bilde, skriv navnet, lagre. Kategori og plassering står igjen til neste ting. Resten fyller du inn på tingens side eller i tabellen etterpå; «mangler»-lenkene øverst i tabellen finner det som gjenstår |
+| Rette en verdi uten å gå til tabellen | Åpne tingen og trykk på blyanten ved verdien. Enter eller et trykk utenfor lagrer, Escape angrer |
 | Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
 
 Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
