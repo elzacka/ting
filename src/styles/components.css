@@ -525,24 +525,22 @@ section {
   overflow: hidden;
 }
 
-/* The text sits as far from the left edge as the last icon's glyph sits
-   from the right: the button's own inset plus the same outer gap */
+/* The actions at the right edge, and under them, flush with the last
+   glyph, what is on screen in the same small grey as the table's foot row */
 .overview-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-2) var(--s-4);
-  padding: var(--s-1) var(--s-1) var(--s-1) calc(var(--s-1) + (var(--row-h) - 24px) / 2);
+  display: grid;
+  justify-items: end;
+  padding: var(--s-1) var(--s-1) var(--s-2);
 }
 
-/* One step under the column headers, grey: the table is the subject */
-.summary {
-  font-size: var(--text-2xs);
+.overview-head .summary {
+  justify-content: flex-end;
+  padding-right: calc((var(--row-h) - 24px) / 2);
+  font-size: var(--text-cell);
 }
 
 .summary strong {
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-2);
 }
 

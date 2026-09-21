@@ -574,29 +574,6 @@ export function Overview({
     <div className="stack">
       <div className="table-card">
         <div className="overview-head">
-          <p className="summary">
-            {/* What is on screen and the whole register; the gaps run their search */}
-            <strong>
-              {items.length === 0
-                ? t.list.empty
-                : narrowed
-                  ? t.summary.shown(visible.length, items.length)
-                  : t.summary.things(items.length)}
-            </strong>
-            {sums.map((x) => (
-              <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
-            ))}
-            {gaps.map((m) => (
-              <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
-                {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-              </button>
-            ))}
-            {empty > 0 && (
-              <button type="button" className="summary-link" onClick={() => setShowEmpty((v) => !v)}>
-                {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
-              </button>
-            )}
-          </p>
           {/* Every action on the register, header style: add, add a column, and
               the two reports, which take what is on screen */}
           <div className="row">
@@ -645,6 +622,29 @@ export function Overview({
               </button>
             )}
           </div>
+          <p className="summary">
+            {/* What is on screen and the whole register; the gaps run their search */}
+            <strong>
+              {items.length === 0
+                ? t.list.empty
+                : narrowed
+                  ? t.summary.shown(visible.length, items.length)
+                  : t.summary.things(items.length)}
+            </strong>
+            {sums.map((x) => (
+              <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
+            ))}
+            {gaps.map((m) => (
+              <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
+                {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+              </button>
+            ))}
+            {empty > 0 && (
+              <button type="button" className="summary-link" onClick={() => setShowEmpty((v) => !v)}>
+                {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
+              </button>
+            )}
+          </p>
         </div>
 
         {(printPick || searchOpen || addingColumn) && (

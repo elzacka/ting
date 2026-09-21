@@ -15,7 +15,6 @@
 
   --font: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
-  --text-2xs: 12px; /* the register's head line, one step under the column headers */
   --text-xs: 13px;
   --text-sm: 15px;
   --text-md: 17px;

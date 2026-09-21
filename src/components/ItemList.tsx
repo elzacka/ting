@@ -38,14 +38,14 @@ export function ItemList({ items, properties, fields, query, onQueryChange, sear
     <div className="stack">
       <div className="table-card">
       <div className="overview-head">
+        <a className="btn btn-icon" href={href.add} aria-label={t.table.addRow} title={t.table.addRow}>
+          <Icon name="add" />
+        </a>
         <p className="summary">
           <strong>
             {items.length === 0 ? t.list.empty : query.trim() === '' ? t.summary.things(items.length) : t.summary.shown(hits.length, items.length)}
           </strong>
         </p>
-        <a className="btn btn-icon" href={href.add} aria-label={t.table.addRow} title={t.table.addRow}>
-          <Icon name="add" />
-        </a>
       </div>
       {searchOpen && (
         <div className="controls">
