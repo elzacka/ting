@@ -2,7 +2,7 @@
 
 Threat model and security model for Ting, mapped to the OWASP Top 10:2025.
 Current as of 2026-09-21, for version 0.1.0. Norwegian user-facing text about
-the same topics is in `README.md`.
+the same topics is in `BRUKERVEILEDNING.md` under Personvern.
 
 ## What Ting is
 
@@ -89,7 +89,8 @@ to the model as delimited data with a fixed instruction, never concatenated
 into the instruction. Model output only fills fields for the user to review; it
 never triggers an action, a write, a navigation or a file operation. Nothing
 leaves the device without an explicit, per-use choice by the user, and the
-encrypted-at-rest promise in the README must be revisited first.
+encrypted-at-rest promise in `BRUKERVEILEDNING.md` and `README.md` must be
+revisited first.
 
 ## Reporting
 

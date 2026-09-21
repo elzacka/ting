@@ -98,8 +98,19 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Mappe på maskinen | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer |
 | Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi». Hent den inn igjen med «Gjenopprett» |
 
-Begge er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det
-inn.
+Begge tar med alle ting, egenskaper, bilder og kolonneinnstillinger, er
+kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn.
+
+<details>
+<summary>Mer om mappen</summary>
+
+- Velg en tom mappe. Appen rydder selv i undermappen `bilder`.
+- Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde.
+- Deler flere enheter én mappe, bruk den fra én enhet om gangen. Den nyeste
+  lagringen vinner; ingenting flettes.
+- Stopper lagringen til mappen, blir Innstillinger-ikonet brunt.
+
+</details>
 
 ---
 
@@ -224,8 +235,13 @@ sikkerhetskopi flytter den.
 | Dato | Skriv `19.09.26` |
 
 Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
-Kolonner som er tomme for alt som vises, er skjult; «Vis n tomme kolonner»
-henter dem fram. Navn står alltid først.
+Fjerner du en egenskap, forsvinner verdien fra alle ting. Kolonner som er tomme
+for alt som vises, er skjult; «Vis n tomme kolonner» henter dem fram. Navn står
+alltid først og blir stående når tabellen ruller sidelengs. Kategori, Notat og
+Strekkode er egenskaper som alle andre.
+
+Filtrene under søkefeltet viser bare verdier som finnes i det som vises, med
+antall, så et valg i Kategori snevrer inn de andre. Datoer filtreres per år.
 
 <details>
 <summary>Egenskaper for det Ting ikke har egne funksjoner for</summary>
@@ -269,13 +285,17 @@ Ikonet lengst til høyre i topplinja.
 
 ## Personvern
 
-Alt du registrerer krypteres på enheten med passordet ditt (AES-256, nøkkel fra
-Argon2id). Appen har ingen server, ingen konto og ingen sporing, og laster
-ingenting fra andre steder.
+Appen har ingen server, ingen konto og ingen sporing, laster ingenting fra andre
+steder og bruker ingen KI.
 
-Én ting forlater enheten, og bare når du trykker på «Slå opp på nett»: Sifrene
-i strekkoden går til Open Library, Open Products Facts eller Open Food Facts,
-som da ser koden og IP-adressen din. Ingenting annet sendes noen gang.
+| Hva | Hvordan |
+|---|---|
+| Kryptering | AES-256-GCM i nettleseren (WebCrypto). Nøkkelen utledes fra passordet med Argon2id. Passordet lagres ingen steder |
+| Kryptert | Alle ting, egenskaper, innstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
+| Ukryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
+| Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
+| Lås | Appen åpner alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen |
+| Ut av enheten | Bare sifrene i en strekkode, bare når du trykker på «Slå opp på nett», til Open Library, Open Products Facts eller Open Food Facts. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
 
-CSV og utskrift er ukryptert, fordi de skal leses. Resten, også `ting.json` og
-bildene i mappen, er kryptert. Detaljene står i `README.md` og `SECURITY.md`.
+Alt du skriver inn, skanner eller får tilbake fra et oppslag behandles som
+tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

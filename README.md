@@ -1,69 +1,26 @@
 # Ting
 
-Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder og en rapport til forsikringen. En PWA som virker uten nett og lagrer alt lokalt i nettleseren. Ingen konto, ingen sky, ingen sporing. Du slipper å registrere noe på nytt: Appen kan speile alt til en mappe på maskinen og lage en sikkerhetskopi du henter inn igjen, også etter at nettleserdata er slettet eller på en ny enhet.
+Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder og en rapport til forsikringen. En PWA som virker uten nett og lagrer alt kryptert i nettleseren. Ingen konto, ingen sky, ingen sporing, ingen KI.
+
+**Appen:** https://elzacka.github.io/ting/
+
+| Dokument | For |
+|---|---|
+| [BRUKERVEILEDNING.md](BRUKERVEILEDNING.md) | Deg som bruker appen: Fra første gang til rapporten, søk, egenskaper, innstillinger, personvern og hva du gjør når noe går galt |
+| [SECURITY.md](SECURITY.md) | Trusselmodellen og tiltakene, punkt for punkt mot OWASP Top 10 (engelsk) |
+| [CLAUDE.md](CLAUDE.md) | Deg som endrer koden: Struktur, datamodell, kryptering og konvensjoner (engelsk) |
 
 ## Det appen gjør
 
-- Ett skjermbilde: Øverst én linje med hvor mange ting du har, summen av hver kr-kolonne og hva som mangler verdi. Under: Én tabell med egenskaper som kolonner. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp nederst når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig, lim inn fra et regneark
-- Egen side for hver ting med alle egenskaper. Her legger du til bilde og retter enkeltverdier
-- På mobil: Søk, en liste over ting med kategori og plassering, og «Legg til ting» som tar bilde og lagrer én ting om gangen. Strekkoden på tingen kan skannes eller skrives inn, og for bøker og varer kan navnet hentes fra et åpent oppslagsverk. Kolonner, summer og rapporter hører til på en større skjerm
-- Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
-
-**Appen ligger her:** https://elzacka.github.io/ting/
-
-**Brukerveiledning:** [BRUKERVEILEDNING.md](BRUKERVEILEDNING.md), fra første gang til rapporten.
-
-## Installer som app
-
-| Enhet | Slik |
+| | |
 |---|---|
-| Mac eller PC med Chrome eller Edge | Åpne adressen over. Klikk på installeringsikonet til høyre i adressefeltet, eller på «Installer» i varselet i appen |
-| Mac med Safari | Åpne adressen. Klikk på Del-ikonet i verktøylinjen og velg «Legg til i Dock» |
-| iPhone eller iPad | Åpne adressen i Safari. Trykk på Del-ikonet og velg «Legg til på Hjem-skjerm» |
-| Android | Åpne adressen i Chrome. Trykk på «Installer» i varselet, eller velg «Installer app» i menyen |
+| Én tabell | Egenskaper som kolonner, du bestemmer hvilke. Rediger i cellene, lim inn fra et regneark, søk med operatorer, filtrer med antall |
+| Én side per ting | Bilde og alle verdier, hver av dem redigerbar der den står |
+| Mobil | Søk og liste, og «Legg til ting» med kamera, strekkode og oppslag av navn for bøker og varer, én ting om gangen |
+| Rapport | Utskrift eller PDF med valgte kolonner, eller CSV |
+| Ta vare på alt | Mappe på maskinen som holdes oppdatert (Chrome og Edge), eller en kryptert sikkerhetskopi |
 
-En installert app får eget vindu og ikon, starter uten adressefelt og tar vare på dataene.
-
-## Ta vare på alt
-
-Alt ligger kryptert i nettleseren på enheten. Sletter du nettleserdata, rydder Safari bort en app du ikke har brukt på en stund, eller mister du enheten, er det borte derfra. Derfor kan du ta vare på alt på to måter, begge under Innstillinger:
-
-| Måte | Slik | Passer når |
-|---|---|---|
-| Mappe på maskinen, automatisk | Koble appen til en mappe (Chrome og Edge). Appen skriver `ting.json` og bildene dit hver gang du lagrer, og leser dem inn igjen når du åpner appen. Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde. Stopper lagringen til mappen, blir Innstillinger-ikonet brunt | Du vil ha en oppdatert kopi utenfor nettleseren uten å tenke på det |
-| Sikkerhetskopi, manuelt | Last ned én fil med alt. Hent den inn igjen med «Gjenopprett fra sikkerhetskopi» | En kopi å legge et trygt sted, flytting til en annen enhet, eller Safari, som ikke kan koble til mapper |
-
-Begge tar med alle ting, egenskaper, bilder og kolonneinnstillinger.
-
-Mappen og kopiene er kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn. Det eneste du ikke må miste, er passordet.
-
-Velg en tom mappe: Appen rydder selv i undermappen `bilder`. Deler flere enheter én mappe, bruk den fra én enhet om gangen; den nyeste lagringen vinner, ingenting flettes.
-
-## Slik gjør du det i Ting
-
-Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjoner. Alt dette er en egenskap:
-
-| Vil du | Lag egenskapen |
-|---|---|
-| Vite hvor ting er | Valgliste «Plassering» med hele stien som verdi: «Loftsbod › Hylle 2 › Boks 4», «Leilighet › Soverom › Skap 1». `plassering:loftsbod` finner alt på loftet |
-| Hvem som eier hva | Valgliste «Eier»: Ett valg per person i husstanden, og «Felles» |
-| Hvem som har lånt noe | Tekst «Lånt til», tom når tingen er hjemme |
-| Telle forbruksvarer (gass, batterier) | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
-| Merke tilstand eller status | Valgliste «Status»: Ok, Skal repareres, Kast |
-| Vite hva alt er verdt | Tall «Kjøpesum» med enhet kr for det du betalte, fra kvitteringen. Skal forsikringen ha gjenanskaffelsesverdi, er det et annet tall: Tall «Verdi» i tillegg. Linja øverst i Oversikt viser summen av hver kr-kolonne |
-| Legge til mange ting samtidig | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
-| Registrere det som ligger på kjøpet eller i hylla | Legg til ting rad for rad: Valglister og datoer arver verdien fra raden over, så butikk, dato og plassering skriver du én gang. Pris og tekst er radens egne |
-| Registrere med mobilen, med tingen i hånden | «Legg til ting» på mobilen åpner én ting om gangen: Ta bilde, skriv navnet, lagre. Kategori og plassering står igjen til neste ting. Resten fyller du inn på tingens side eller i tabellen etterpå; «mangler»-lenkene øverst i tabellen finner det som gjenstår |
-| Ta vare på strekkoden | «Skann strekkode» leser koden fra et bilde av etiketten (EAN, UPC, ISBN, ITF, Code 128, QR og flere) og legger den i egenskapen Strekkode, som lages første gang. Nettlesere uten leser (Safari og alt på iPhone) tar tallene under streken skrevet inn. Serienummer og etiketter er tekst som alt annet |
-| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i Strekkode-feltet: «Slå opp på nett». Bøker slås opp i Open Library, varer i Open Products Facts og Open Food Facts. Bare sifrene sendes, bare når du trykker, og du retter navnet før du lagrer. Turutstyr og elektronikk finnes sjelden der; boka og matvaren finnes som regel |
-| Rette en verdi uten å gå til tabellen | Åpne tingen og trykk på blyanten ved verdien. Enter eller et trykk utenfor lagrer, Escape angrer |
-| Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
-
-Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
-
-## Rapport
-
-«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen. «Skriv ut» spør først hvilke kolonner som skal med: Bare Navn er valgt fra start, «Velg alle» og «Fjern alle» gjør resten; utskriften får tittel, dato og sidetall og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
+Alt er kryptert på enheten med et passord du velger. Det eneste som noen gang forlater enheten, er sifrene i en strekkode når du selv trykker på «Slå opp på nett». Detaljene står i brukerveiledningen under [Personvern](BRUKERVEILEDNING.md#personvern).
 
 ## Kjør lokalt
 
@@ -74,56 +31,16 @@ npm run dev
 
 Åpne `http://localhost:5173`. Også her kan du installere appen fra adressefeltet i Chrome.
 
+| Kommando | Gjør |
+|---|---|
+| `npm run dev` | Utviklingsserver på 5173 |
+| `npm run build` | Typesjekk og produksjonsbygg til `dist/` |
+| `npm run preview` | Serverer `dist/` |
+| `npm test` | Enhetstester |
+
 ## Publisering
 
-Hver push til `main` bygger og publiserer automatisk til GitHub Pages via `.github/workflows/deploy-pages.yml`. Første gang: Gå til Settings, Pages i repoet og velg «GitHub Actions» som kilde.
-
-## Kryptering
-
-Alt du registrerer krypteres på enheten med et passord du velger første gang du åpner appen.
-
-| Hva | Hvordan |
-|---|---|
-| Algoritme | AES-256-GCM, innebygd i nettleseren (WebCrypto) |
-| Nøkkel | Utledes fra passordet med Argon2id (64 MiB, 3 runder). Passordet lagres ingen steder |
-| Hva som er kryptert | Alle ting, egenskaper, feltinnstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
-| Hva som ikke er kryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
-| Passordet | Minst 12 tegn. Bruk gjerne en setning. Det låser alt du registrerer, på enheten og i alle kopier |
-| Åpning | Appen åpner alltid låst. Hengelåsen i topplinja sletter nøkkelen fra minnet |
-| Automatisk lås | Etter 10 minutter uten aktivitet, men ikke mens du har endringer som ikke er lagret. Kan slås av under Innstillinger |
-| Bytte passord | Under Innstillinger. Dataene krypteres på nytt. Kopier du tok før byttet, åpnes med det gamle passordet |
-| Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
-
-Ingenting sendes noe sted, med ett unntak du styrer selv: «Slå opp på nett» sender sifrene i en strekkode til Open Library, Open Products Facts eller Open Food Facts, og de ser da koden og IP-adressen din. Ingenting annet forlater enheten. Appen har ingen server, ingen konto og ingen sporing.
-
-## Sikkerhet
-
-Alt du skriver inn, skanner eller får tilbake fra et oppslag behandles som tekst, aldri som kode. Appen laster ingenting fra andre steder og sender bare det oppslaget du selv ber om. Passordet lagres og logges aldri. Trusselmodellen og tiltakene, punkt for punkt mot OWASP Top 10, står i `SECURITY.md` (engelsk).
-
-Appen bruker ingen KI.
-
-## Egenskaper
-
-Hver egenskap er en kolonne i tabellen og en linje på tingens side. Navn står alltid først og blir stående når tabellen ruller sidelengs; Kategori og Notat er egenskaper som alle andre. Kolonnemenyen (pilen ved navnet) endrer, flytter og fjerner en egenskap. Kolonner som er tomme for alt som vises, er skjult; «Vis n tomme kolonner» henter dem fram. Filtrene viser bare verdier som finnes i det som vises, med antall, så et valg i Kategori snevrer inn de andre; datoer filtreres per år.
-
-| Felttype | Slik |
-|---|---|
-| Tekst | Fritekst |
-| Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene du oppgir når du lager egenskapen, skilles med komma; verdier som allerede er brukt, kommer i tillegg |
-| Tall | Skriv bare tallet, `1250` og ikke `1250 gram`. Enheten gjelder hele kolonnen |
-| Dato | Skriv `19.09.26` |
-
-## Innstillinger
-
-Ikonet lengst til høyre i topplinja.
-
-| Valg | Slik |
-|---|---|
-| Mappe på maskinen | Koble til eller fra. Se «Ta vare på alt» over |
-| Sikkerhetskopi | Last ned eller gjenopprett. Se «Ta vare på alt» over |
-| Automatisk lås | Slå den av eller på |
-| Passord | Bytt passord |
+Hver push til `main` bygger og publiserer automatisk til GitHub Pages via `.github/workflows/deploy-pages.yml`. Første gang: Gå til Settings, Pages i repoet og velg «GitHub Actions» som kilde. `.github/workflows/ci.yml` kjører tester og bygg på pull requests.
 
 ## Lisens
 
