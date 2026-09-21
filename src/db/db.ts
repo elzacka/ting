@@ -229,14 +229,12 @@ export async function setFieldSettings(fields: FieldSettings): Promise<void> {
   })
 }
 
-// Writes the full column order in one go: built-in fields and properties.
-// Property columns without a definition get one.
-export async function setColumnOrder(defs: readonly ColumnDef[], fields: FieldSettings): Promise<void> {
-  const next: FieldSettings = { name: { ...fields.name } }
+// Writes the full column order in one go. Navn is not in the order: it is
+// always first. Property columns without a definition get one.
+export async function setColumnOrder(defs: readonly ColumnDef[]): Promise<void> {
   const props: Property[] = []
   defs.forEach((d, i) => {
-    if (d.kind === 'name') next.name.order = i
-    else
+    if (d.kind !== 'name')
       props.push({
         id: d.id,
         key: d.col.key,
@@ -248,10 +246,8 @@ export async function setColumnOrder(defs: readonly ColumnDef[], fields: FieldSe
       })
   })
   const rows = await Promise.all(props.map((p) => sealProperty(propertySchema.parse(p))))
-  const sealedFields = await sealJson(currentKey().key, next)
   await db.transaction('rw', db.properties, db.settings, async () => {
     await db.properties.bulkPut(rows)
-    await db.settings.put({ key: fieldSettingsKey, sealed: sealedFields })
     await touch()
   })
 }

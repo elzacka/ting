@@ -25,7 +25,7 @@ const storedItemSchema = itemSchema.omit({ photo: true }).extend({
 })
 
 const fieldSettingsSchema = z.object({
-  name: z.object({ label: z.string().nullable(), order: z.number() }),
+  name: z.object({ label: z.string().nullable() }),
 })
 
 export const dataFileSchema = z.object({

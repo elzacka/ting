@@ -1229,3 +1229,9 @@ section {
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
+
+/* Type-to-narrow box at the top of a long filter menu */
+.filter-narrow {
+  min-height: 36px;
+  margin-bottom: var(--s-1);
+}

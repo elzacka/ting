@@ -21,25 +21,25 @@ const props = [
 ]
 
 describe('columnDefs', () => {
-  it('puts Kategori and Navn first by default, then properties by order, then item-only columns', () => {
+  it('puts Navn first, then Kategori and the properties by order, then item-only columns', () => {
     expect(columnDefs(defaultFieldSettings, [categoryProperty(), ...props], items).map((d) => d.id)).toEqual([
-      categoryProperty().id,
       'name',
+      categoryProperty().id,
       columnId({ key: 'R-verdi', unit: null }),
       columnId({ key: 'Brensel', unit: null }),
       columnId({ key: 'Vekt', unit: 'kg' }),
     ])
   })
 
-  it('lets Navn sit anywhere', () => {
-    const fields = { name: { label: null, order: 0.5 } }
-    expect(columnDefs(fields, props, items).map((d) => d.kind)).toEqual(['prop', 'name', 'prop', 'prop'])
+  it('keeps Navn first whatever the property orders say', () => {
+    const early = props.map((p) => ({ ...p, order: -100 }))
+    expect(columnDefs(defaultFieldSettings, early, items).map((d) => d.kind)).toEqual(['name', 'prop', 'prop', 'prop'])
   })
 })
 
 describe('readFieldSettings', () => {
   it('fills in defaults for missing or partial settings', () => {
     expect(readFieldSettings(undefined)).toEqual(defaultFieldSettings)
-    expect(readFieldSettings({ name: { label: 'Ting' } }).name).toEqual({ label: 'Ting', order: -1 })
+    expect(readFieldSettings({ name: { label: 'Ting' } }).name).toEqual({ label: 'Ting' })
   })
 })

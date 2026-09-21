@@ -56,7 +56,8 @@ export const t = {
     ],
   },
   filters: {
-    noValues: 'Ingen verdier ennå',
+    showAll: (n: number) => `Vis alle ${n}`,
+    narrow: (label: string) => `Søk i ${label.toLocaleLowerCase('nb')}`,
     clearOne: 'Fjern filteret',
     clearAll: 'Fjern alle filtre',
   },
@@ -129,6 +130,8 @@ export const t = {
       ['år', 'år'],
     ],
     removeColumn: 'Fjern',
+    showEmpty: (n: number) => (n === 1 ? 'Vis 1 tom kolonne' : `Vis ${n} tomme kolonner`),
+    hideEmpty: 'Skjul tomme kolonner',
     removeColumnConfirm: (key: string, n: number) =>
       `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Fjern den fra alle? Du kan ikke angre.`,
     removeColumnAction: 'Fjern',

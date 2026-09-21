@@ -2,17 +2,17 @@ import type { Item, Property, PropertyType } from '../db/schema'
 import { dateUnit, isDateUnit } from './dates'
 import { columnId, columnsFrom, type Column } from './grid'
 
-// Display settings for the one built-in field. Navn can be renamed and moved
-// like a property but never removed: it is the identity of a thing in every
-// view. Kategori was a built-in until 21 September 2026; it is a property.
+// Display settings for the one built-in field. Navn can be renamed but never
+// moved or removed: it is the identity of a thing, always the first column,
+// frozen when the table scrolls sideways.
 export type FieldSettings = {
-  name: { label: string | null; order: number }
+  name: { label: string | null }
 }
 
 export const fieldSettingsKey = 'fields'
 
 export const defaultFieldSettings: FieldSettings = {
-  name: { label: null, order: -1 },
+  name: { label: null },
 }
 
 // The property Kategori: first column, a Valgliste, created when things carry
@@ -31,17 +31,17 @@ export const categoryProperty = (): Property => ({
 
 export function readFieldSettings(raw: unknown): FieldSettings {
   const r = (raw ?? {}) as Partial<FieldSettings>
-  return { name: { ...defaultFieldSettings.name, ...(r.name ?? {}) } }
+  return { name: { label: r.name?.label ?? null } }
 }
 
 export type ColumnDef =
   | { kind: 'name'; id: 'name'; order: number }
   | { kind: 'prop'; id: string; order: number; col: Column; property: Property | null; type: PropertyType }
 
-// Every visible column in display order: Navn and the properties interleaved.
-export function columnDefs(fields: FieldSettings, properties: readonly Property[], items: readonly Item[]): ColumnDef[] {
+// Every column in display order: Navn first, then the properties by their order.
+export function columnDefs(_fields: FieldSettings, properties: readonly Property[], items: readonly Item[]): ColumnDef[] {
   const defs: ColumnDef[] = []
-  defs.push({ kind: 'name', id: 'name', order: fields.name.order })
+  defs.push({ kind: 'name', id: 'name', order: Number.MIN_SAFE_INTEGER })
   const stored = new Set<string>()
   for (const p of properties) {
     stored.add(p.id)

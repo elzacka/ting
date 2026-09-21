@@ -12,7 +12,7 @@ const item: Item = {
   updatedAt: 2,
 }
 
-const fields = { name: { label: null, order: -1 } }
+const fields = { name: { label: null } }
 
 describe('data file', () => {
   it('round-trips an item through JSON, with the photo as a file name', () => {

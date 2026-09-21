@@ -1,5 +1,5 @@
 import type { Item } from '../db/schema'
-import { formatStoredDate, isDateUnit } from './dates'
+import { isDateUnit } from './dates'
 import { parseNumber } from './filter'
 import { columnId, type Column } from './grid'
 
@@ -18,8 +18,13 @@ export function valueKey(v: string | number): string {
 
 export type FilterValue = { key: string; label: string; count: number }
 
+// A date column facets by year: a menu of every single day is no menu
+function yearOf(v: string | number): string {
+  return String(v).slice(0, 4)
+}
+
 function labelFor(v: string | number, unit: string | null): string {
-  if (isDateUnit(unit)) return formatStoredDate(v)
+  if (isDateUnit(unit)) return yearOf(v)
   const n = parseNumber(v)
   return n === null ? String(v).trim() : new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2 }).format(n).replace('-', '−')
 }
@@ -37,14 +42,22 @@ export function valuesFor(items: readonly Item[], col: Column): FilterValue[] {
   for (const item of items) {
     for (const s of item.specs) {
       if (columnId({ key: s.key, unit: s.unit }) !== id) continue
-      add(valueKey(s.value), labelFor(s.value, s.unit))
+      add(isDateUnit(s.unit) ? yearOf(s.value) : valueKey(s.value), labelFor(s.value, s.unit))
     }
   }
   return [...seen.values()].sort((a, b) => collator.compare(a.label, b.label))
 }
 
 export function itemValueKeys(item: Item, filterId: string): string[] {
-  return item.specs.filter((s) => columnId({ key: s.key, unit: s.unit }) === filterId).map((s) => valueKey(s.value))
+  return item.specs
+    .filter((s) => columnId({ key: s.key, unit: s.unit }) === filterId)
+    .map((s) => (isDateUnit(s.unit) ? yearOf(s.value) : valueKey(s.value)))
+}
+
+// The rows every filter but one leaves: what that one filter's menu counts.
+export function withoutFilter(items: readonly Item[], filters: Filters, id: string): Item[] {
+  const { [id]: _own, ...rest } = filters
+  return applyFilters(items, rest)
 }
 
 export function applyFilters(items: readonly Item[], filters: Filters): Item[] {

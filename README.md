@@ -97,7 +97,7 @@ Appen bruker ingen KI.
 
 ## Egenskaper
 
-Hver egenskap er en kolonne i tabellen og en linje på tingens side. Navn er den eneste faste kolonnen; Kategori og Notat er egenskaper som alle andre, og Kategori står først. Kolonnemenyen (pilen ved navnet) endrer, flytter og fjerner en egenskap.
+Hver egenskap er en kolonne i tabellen og en linje på tingens side. Navn står alltid først og blir stående når tabellen ruller sidelengs; Kategori og Notat er egenskaper som alle andre. Kolonnemenyen (pilen ved navnet) endrer, flytter og fjerner en egenskap. Kolonner som er tomme for alt som vises, er skjult; «Vis n tomme kolonner» henter dem fram. Filtrene viser bare verdier som finnes i det som vises, med antall, så et valg i Kategori snevrer inn de andre; datoer filtreres per år.
 
 | Felttype | Slik |
 |---|---|

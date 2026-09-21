@@ -117,6 +117,8 @@ export function Overview({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [addingColumn, setAddingColumn] = useState(false)
+  // Columns empty for every row on screen are hidden; this shows them anyway
+  const [showEmpty, setShowEmpty] = useState(false)
   const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
     key: '',
     unit: '',
@@ -139,11 +141,25 @@ export function Overview({
   const baseCells = useMemo(() => new Map(items.map((i) => [i.id, cellsFrom(i)])), [items])
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
   // Edited rows stay visible even when they stop matching the query.
+  const searched = useMemo(() => searchItems(items, query), [items, query])
   const visible = useMemo(() => {
-    const hits = applyFilters(searchItems(items, query), filters)
+    const hits = applyFilters(searched, filters)
     const ids = new Set(hits.map((i) => i.id))
     return sortItems([...hits, ...items.filter((i) => !ids.has(i.id) && edits[i.id] !== undefined)], columns, sort)
-  }, [items, query, filters, edits, columns, sort])
+  }, [items, searched, filters, edits, columns, sort])
+
+  // A column earns its place by holding a value for a row on screen (or a
+  // new row, or an active filter). Navn always. Everything else is noise for
+  // the view at hand: a sleeping-bag column in a list of books.
+  const { shown, empty } = useMemo(() => {
+    const used = new Set<string>()
+    for (const item of visible) for (const s of item.specs) used.add(columnId({ key: s.key, unit: s.unit }))
+    for (const row of newRows) for (const [id, v] of Object.entries(row.cells)) if (v.trim() !== '') used.add(id)
+    for (const [id, values] of Object.entries(filters)) if (values.length > 0) used.add(id)
+    const inUse = (d: ColumnDef) => d.kind === 'name' || used.has(d.id)
+    const empty = items.length === 0 ? 0 : defs.filter((d) => !inUse(d)).length
+    return { shown: showEmpty || items.length === 0 ? defs : defs.filter(inUse), empty }
+  }, [defs, visible, newRows, filters, showEmpty, items.length])
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -217,14 +233,14 @@ export function Overview({
     e.stopPropagation()
     const order = [...visible.map((i) => ({ kind: 'item' as const, id: i.id })), ...newRows.map((r) => ({ kind: 'new' as const, id: r.tempId }))]
     const startRow = order.findIndex((r) => r.id === rowId)
-    const startCol = defs.findIndex((d) => d.id === colId)
+    const startCol = shown.findIndex((d) => d.id === colId)
     if (startRow < 0 || startCol < 0) return
     const extra: NewRow[] = []
     block.forEach((line, i) => {
       const cells: Record<string, string> = {}
       const patch: RowEdit = { cells }
       line.forEach((value, j) => {
-        const def = defs[startCol + j]
+        const def = shown[startCol + j]
         if (!def) return
         if (def.kind === 'name') patch.name = value
         else cells[def.id] = value
@@ -323,7 +339,7 @@ export function Overview({
     if (!a || !b) return
     list[i] = b
     list[j] = a
-    await setColumnOrder(list, fields)
+    await setColumnOrder(list)
   }
 
   async function commitRename() {
@@ -565,6 +581,7 @@ export function Overview({
           />
           <FilterPanel
             items={items}
+            searched={searched}
             properties={properties}
             fields={fields}
             filters={filters}
@@ -588,6 +605,11 @@ export function Overview({
           <Icon name="add" size={20} />
           {t.table.addColumn}
         </button>
+        {empty > 0 && (
+          <button type="button" className="btn" onClick={() => setShowEmpty((v) => !v)}>
+            {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
+          </button>
+        )}
         {selected.size > 0 && !confirmingDelete && (
           <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
             <Icon name="delete" size={20} />
@@ -757,7 +779,7 @@ export function Overview({
 
       {hasRows && (
         <Grid
-          defs={defs}
+          defs={shown}
           widths={widths}
           sort={sort}
           onWidth={onWidth}
@@ -881,7 +903,7 @@ export function Overview({
                           type="button"
                           className="col-menu-item"
                           role="menuitem"
-                          disabled={index === 0}
+                          disabled={index <= 1}
                           onClick={() => void moveColumn(def, -1)}
                         >
                           <Icon name="chevronLeft" size={16} />
@@ -891,7 +913,7 @@ export function Overview({
                           type="button"
                           className="col-menu-item"
                           role="menuitem"
-                          disabled={index === defs.length - 1}
+                          disabled={index === shown.length - 1}
                           onClick={() => void moveColumn(def, 1)}
                         >
                           <Icon name="chevronRight" size={16} />
@@ -931,7 +953,7 @@ export function Overview({
                     />
                   )}
                 </td>
-                {defs.map((def) => {
+                {shown.map((def) => {
                   const label = t.table.cell(item.name, labelOf(def))
                   const text = def.kind === 'name' ? value(item, 'name') : cell(item, def.col)
                   if (active?.row !== item.id && def.kind === 'name') {
@@ -981,7 +1003,7 @@ export function Overview({
               {newRows.map((row) => (
                 <tr key={row.tempId} className="is-new">
                   <td className="grid-check" />
-                  {defs.map((def) =>
+                  {shown.map((def) =>
                     def.kind === 'name' ? (
                       <td key={def.id}>
                         <input
@@ -992,7 +1014,7 @@ export function Overview({
                           onChange={(e) => editNew(row.tempId, { name: e.target.value })}
                           data-row={row.tempId}
                           data-col={def.id}
-                          ref={row.tempId === lastNewId && defs[0]?.kind === 'name' ? focusWithoutScroll : undefined}
+                          ref={row.tempId === lastNewId && shown[0]?.kind === 'name' ? focusWithoutScroll : undefined}
                         />
                       </td>
                     ) : (
@@ -1005,7 +1027,7 @@ export function Overview({
                           onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
                           data-row={row.tempId}
                           data-col={def.id}
-                          ref={row.tempId === lastNewId && defs[0]?.id === def.id ? focusWithoutScroll : undefined}
+                          ref={row.tempId === lastNewId && shown[0]?.id === def.id ? focusWithoutScroll : undefined}
                         />
                       </td>
                     ),

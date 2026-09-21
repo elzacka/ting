@@ -26,9 +26,9 @@ describe('toCsv', () => {
       defaultFieldSettings,
     )
     const lines = csv.split('\r\n')
-    expect(lines[0]).toBe('﻿Kategori;Navn;Brensel;Komforttemperatur (°C);Notat;Opprettet')
-    expect(lines[1]).toBe('Turutstyr;Sovepose;;-12,5;"Ligger; ""trygt""";19.09.26')
-    expect(lines[2]).toBe('Turutstyr;Kokeapparat;Gass;;;19.09.26')
+    expect(lines[0]).toBe('﻿Navn;Kategori;Brensel;Komforttemperatur (°C);Notat;Opprettet')
+    expect(lines[1]).toBe('Sovepose;Turutstyr;;-12,5;"Ligger; ""trygt""";19.09.26')
+    expect(lines[2]).toBe('Kokeapparat;Turutstyr;Gass;;;19.09.26')
     expect(lines[3]).toBe('')
   })
 })
@@ -51,14 +51,14 @@ describe('toCsv column order', () => {
       ],
       defaultFieldSettings,
     )
-    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Navn;Vekt (gram);Komforttemperatur (°C);Opprettet')
+    expect(csv.split('\r\n')[0]).toBe('\ufeffNavn;Kategori;Vekt (gram);Komforttemperatur (°C);Opprettet')
   })
 })
 
 describe('toCsv with renamed and hidden fields', () => {
   it('uses the label for Navn', () => {
-    const csv = toCsv([item('Sovepose', [])], [categoryProperty()], { name: { label: 'Ting', order: 0 } })
-    expect(csv.split('\r\n')[0]).toBe('\ufeffKategori;Ting;Opprettet')
+    const csv = toCsv([item('Sovepose', [])], [categoryProperty()], { name: { label: 'Ting' } })
+    expect(csv.split('\r\n')[0]).toBe('\ufeffTing;Kategori;Opprettet')
   })
 })
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { applyFilters, valuesFor } from './filters'
+import { applyFilters, valuesFor, withoutFilter } from './filters'
 import { categoryColumnId } from './fields'
 import { columnId } from './grid'
 
@@ -44,5 +44,30 @@ describe('applyFilters', () => {
     expect(names({ [categoryColumnId]: ['kjøkken'], [columnId(brensel)]: ['gass'] })).toEqual(['Kokeapparat', 'Primus'])
     expect(names({ [categoryColumnId]: ['turutstyr'], [columnId(brensel)]: ['gass'] })).toEqual([])
     expect(names({})).toHaveLength(5)
+  })
+})
+
+describe('withoutFilter', () => {
+  it('applies every filter but the named one, so a menu counts what the others leave', () => {
+    const f = { [categoryColumnId]: ['kjøkken'], [columnId(brensel)]: ['gass'] }
+    expect(withoutFilter(items, f, columnId(brensel)).map((i) => i.name)).toEqual(['Kokeapparat', 'Primus'])
+    expect(withoutFilter(items, f, categoryColumnId).map((i) => i.name)).toEqual(['Kokeapparat', 'Primus'])
+    expect(withoutFilter(items, { [categoryColumnId]: ['turutstyr'] }, categoryColumnId)).toHaveLength(5)
+  })
+})
+
+describe('date columns', () => {
+  it('facet by year', () => {
+    const dated = [
+      item('A', 'Turutstyr', [{ key: 'Kjøpt', value: '2021-06-01', unit: 'dato' }]),
+      item('B', 'Turutstyr', [{ key: 'Kjøpt', value: '2021-12-24', unit: 'dato' }]),
+      item('C', 'Turutstyr', [{ key: 'Kjøpt', value: '2023-01-02', unit: 'dato' }]),
+    ]
+    const col = { key: 'Kjøpt', unit: 'dato' }
+    expect(valuesFor(dated, col)).toEqual([
+      { key: '2021', label: '2021', count: 2 },
+      { key: '2023', label: '2023', count: 1 },
+    ])
+    expect(applyFilters(dated, { [columnId(col)]: ['2021'] }).map((i) => i.name)).toEqual(['A', 'B'])
   })
 })
