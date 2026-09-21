@@ -519,6 +519,7 @@ section {
    grey, and the actions at the right edge), a tinted band with whatever
    control is open, then the table or the list. No shadow, one hairline. */
 .table-card {
+  min-width: 0; /* a grid item; without this a wide table would widen the card and the page instead of scrolling inside the wrap */
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1105,6 +1106,12 @@ section {
   .grid-check input {
     opacity: 1;
   }
+}
+
+/* While the page scrolls, the row under a still pointer changes every frame;
+   its checkbox stays hidden until the scroll settles (Grid sets the class) */
+.grid.is-scrolling:not(.has-selection) tr:hover .grid-check input:not(:checked):not(:focus-visible) {
+  opacity: 0;
 }
 
 .topbar-end {

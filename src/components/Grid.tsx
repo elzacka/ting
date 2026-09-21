@@ -57,8 +57,14 @@ export function Grid({
     const head = headRef.current
     if (!table || !head) return
     let frame = 0
+    // Hover means nothing while the rows slide under a still pointer: the
+    // checkbox of whichever row passes would flash. Off until the scroll settles.
+    let settle = 0
     const place = () => {
       frame = 0
+      table.classList.add('is-scrolling')
+      window.clearTimeout(settle)
+      settle = window.setTimeout(() => table.classList.remove('is-scrolling'), 160)
       const cs = getComputedStyle(table)
       const stickyTop = parseFloat(cs.getPropertyValue('--topbar-h')) + parseFloat(cs.getPropertyValue('--head-h'))
       const rect = table.getBoundingClientRect()
@@ -76,6 +82,7 @@ export function Grid({
     ro.observe(table)
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame)
+      window.clearTimeout(settle)
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
       ro.disconnect()
