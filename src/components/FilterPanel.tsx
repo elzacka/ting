@@ -33,11 +33,6 @@ function isNumeric(values: FilterValue[], unit: string | null): boolean {
   return isDateUnit(unit) || values.every((v) => parseNumber(v.label) !== null)
 }
 
-// Text values most-used first, numbers and years in their own order
-function order(values: FilterValue[], unit: string | null): FilterValue[] {
-  return isNumeric(values, unit) ? values : [...values].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'nb'))
-}
-
 function isFacet(values: FilterValue[], unit: string | null): boolean {
   if (values.length === 0) return false
   if (values.length <= shortMenu || isNumeric(values, unit)) return true
@@ -68,7 +63,9 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
 
   const defs: Def[] = columnDefs(fields, properties, items).flatMap((d) => {
     if (d.kind === 'name') return []
-    const values = order(valuesFor(withoutFilter(searched, filters, d.id), d.col), d.col.unit)
+    // Alphabetical, numbers and years in their own order, as valuesFor delivers
+    // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
+    const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)
     if (!isFacet(values, d.col.unit)) return []
     return [{ id: d.id, label: d.col.key, unit: d.col.unit, values }]
   })
