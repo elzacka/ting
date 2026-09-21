@@ -155,7 +155,7 @@ export function StoragePage({
             )}
             {(status.kind === 'connected' || status.kind === 'error') && (
               <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
-                <Icon name="linkOff" />
+                <Icon name="folderOff" />
               </button>
             )}
           </div>
@@ -170,7 +170,7 @@ export function StoragePage({
                 {t.storage.grant}
               </button>
               <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
-                <Icon name="linkOff" />
+                <Icon name="folderOff" />
               </button>
             </div>
           </div>
@@ -205,15 +205,15 @@ export function StoragePage({
                 {t.vault.folderOpen}
               </button>
               <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
-                <Icon name="linkOff" />
+                <Icon name="folderOff" />
               </button>
             </div>
           </form>
         )}
         {status.kind === 'connected' && (
-          <p>
+          <p className="hint">
             {t.storage.connected(status.name)}{' '}
-            <span className="meta num">
+            <span className="num">
               {status.lastWrittenAt ? t.storage.lastWritten(formatTime(status.lastWrittenAt)) : t.storage.loaded}
             </span>
           </p>
