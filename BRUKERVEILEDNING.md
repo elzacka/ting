@@ -87,7 +87,8 @@ høyre. En ny rad åpner seg: Skriv navnet, fyll det du vet, klikk i «Legg til
 ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
 
 Valglister og datoer arver verdien fra raden over. Det du ikke vet ennå, lar du
-stå tomt: Linja øverst teller hva som mangler, og ett klikk finner dem igjen.
+stå tomt: «Status» under Innstillinger teller hva som mangler, og ett klikk
+der finner dem igjen.
 
 ### 5. Ta vare på alt
 
@@ -138,8 +139,8 @@ I boden, med mobilen. Under 600 px bred er appen laget for akkurat dette.
 3. Skriv navnet. Kategori og plassering står igjen fra forrige ting.
 4. «Lagre». Skjermen er klar for neste ting.
 
-Pris og resten fyller du inn ved skrivebordet senere. Linja øverst i tabellen
-sier «5 mangler kjøpesum», og klikket finner dem.
+Pris og resten fyller du inn ved skrivebordet senere. «Status» under
+Innstillinger sier «5 mangler kjøpesum», og klikket finner dem.
 
 > [!NOTE]
 > På mobilen lagres alt med én gang. Det finnes ingen «ulagrede endringer» der.
@@ -271,7 +272,8 @@ Ikonet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge); «Koble fra» kobler fra |
+| Status | Hva som mangler: bilde, og verdi i hver kr-kolonne. Hvert tall er et søk som åpner tabellen med akkurat de tingene |
+| Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
 | Automatisk lås | Slår låsen etter 10 minutter av eller på |
 | Passord | Nøkkelikonet bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |

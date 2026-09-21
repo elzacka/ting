@@ -560,8 +560,77 @@ section {
 
 /* A second block in the band is set off by a hairline above, not a box */
 .controls > * + * {
-  padding-top: var(--s-4);
+  padding-top: var(--s-3);
   border-top: 1px solid var(--border);
+}
+
+/* Everything in the band is set in the column headers' size, on 36 px
+   controls: the band serves the table and must not outweigh it. Touch
+   screens keep 16 px text in fields so iOS does not zoom. */
+.controls {
+  font-size: var(--text-xs);
+}
+
+.controls .input,
+.controls .select,
+.controls .btn,
+.controls .field label,
+.controls .field-label,
+.controls .filter summary,
+.controls .filter-option,
+.controls .summary-link,
+.controls .filter-narrow {
+  font-size: var(--text-xs);
+}
+
+.controls .input,
+.controls .select,
+.controls .btn,
+.controls .filters,
+.controls .filter summary,
+.controls .check-option {
+  min-height: var(--row-h-sm);
+}
+
+.controls .btn {
+  padding: 0 var(--s-3);
+}
+
+.controls .btn-icon {
+  min-width: var(--row-h-sm);
+}
+
+.controls .search .input {
+  padding-right: var(--row-h-sm);
+}
+
+.controls .search .btn-icon {
+  width: var(--row-h-sm);
+  height: var(--row-h-sm);
+}
+
+.controls .check-option {
+  gap: var(--s-2);
+}
+
+.controls .check-option input {
+  width: 16px;
+  height: 16px;
+}
+
+.controls .field {
+  gap: 2px;
+}
+
+.controls .stack-sm {
+  gap: var(--s-2);
+}
+
+@media (hover: none) {
+  .controls .input,
+  .controls .select {
+    font-size: 16px;
+  }
 }
 
 .column-form .toolbar {
@@ -1382,11 +1451,11 @@ section {
 
 .search-bar .filters {
   flex: 1 1 320px;
-  min-height: var(--row-h);
+  min-height: var(--row-h-sm);
 }
 
 .search-bar .filters .filter summary {
-  min-height: var(--row-h);
+  min-height: var(--row-h-sm);
 }
 
 /* Sortable headers */

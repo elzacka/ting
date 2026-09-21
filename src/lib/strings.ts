@@ -190,6 +190,8 @@ export const t = {
   },
   storage: {
     title: 'Innstillinger',
+    statusTitle: 'Status',
+    statusComplete: 'Ingenting mangler.',
     folderTitle: 'Mappe på maskinen',
     folderWhat: 'Automatisk: Appen krypterer dataene og synkroniserer dem med mappen hver gang du lagrer. Tar du med mappen til en annen maskin, får du tilgang til alt i appen der.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',

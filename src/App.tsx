@@ -11,7 +11,7 @@ import {
 } from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
-import { href, useRoute, type Route } from './lib/route'
+import { href, navigate, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { initVault, lock, setupVault, unlock, useVault } from './lib/vault'
@@ -80,6 +80,7 @@ export function App() {
     setFilters({})
     setQuery(q)
     setSearchOpen(true)
+    navigate(href.list)
   }, [])
   const [autoLock, setAutoLock] = useState(readAutoLock)
   const toggleAutoLock = useCallback((on: boolean) => {
@@ -300,7 +301,6 @@ function Screen({
         widths={widths}
         onWidth={onWidth}
         onDirtyChange={onDirtyChange}
-        onOpenQuery={onOpenQuery}
       />
     )
   }
@@ -313,6 +313,7 @@ function Screen({
         folder={folder}
         autoLock={autoLock}
         onAutoLockChange={onAutoLockChange}
+        onOpenQuery={onOpenQuery}
       />
     )
   }

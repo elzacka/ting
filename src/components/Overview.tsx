@@ -3,7 +3,7 @@ import { createPortal, flushSync } from 'react-dom'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { formatDate, formatNumber } from '../lib/format'
 import { href } from '../lib/route'
-import { missing, totals } from '../lib/summary'
+import { totals } from '../lib/summary'
 import { useObjectUrl } from './useObjectUrl'
 import {
   addProperty,
@@ -75,8 +75,6 @@ type Props = {
   onDirtyChange: (dirty: boolean) => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
-  // A "mangler" fact on the summary line runs its search
-  onOpenQuery: (query: string) => void
 }
 
 // Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
@@ -99,7 +97,6 @@ export function Overview({
   onDirtyChange,
   filters,
   onFiltersChange,
-  onOpenQuery,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
@@ -310,7 +307,6 @@ export function Overview({
   }, [])
 
   const sums = useMemo(() => totals(items, properties), [items, properties])
-  const gaps = useMemo(() => missing(items, properties), [items, properties])
   const narrowed = visible.length !== items.length
 
   // Adding or editing rows is one mode, selecting rows is another. Never both.
@@ -633,11 +629,6 @@ export function Overview({
             </strong>
             {sums.map((x) => (
               <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
-            ))}
-            {gaps.map((m) => (
-              <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
-                {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-              </button>
             ))}
             {empty > 0 && (
               <button type="button" className="summary-link" onClick={() => setShowEmpty((v) => !v)}>

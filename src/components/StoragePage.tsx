@@ -5,6 +5,7 @@ import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envel
 import type { FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
+import { missing } from '../lib/summary'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
@@ -23,9 +24,11 @@ type Props = {
   folder: ReturnType<typeof useFolderSync>
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
+  onOpenQuery: (q: string) => void
 }
 
-export function StoragePage({ items, properties, fields, folder, autoLock, onAutoLockChange }: Props) {
+export function StoragePage({ items, properties, fields, folder, autoLock, onAutoLockChange, onOpenQuery }: Props) {
+  const gaps = missing(items, properties)
   const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Loaded | null>(null)
@@ -107,19 +110,40 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
       <section className="setting">
         <div className="setting-head">
           <div>
+            <h2 className="section-label">{t.storage.statusTitle}</h2>
+            {/* What is missing: a photo, a value in a kr column. Each is a
+                search that opens the overview narrowed to those things. */}
+            <p className="hint summary">
+              {gaps.length === 0
+                ? t.storage.statusComplete
+                : gaps.map((m) => (
+                    <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
+                      {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+                    </button>
+                  ))}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="setting">
+        <div className="setting-head">
+          <div>
             <h2 className="section-label">{t.storage.folderTitle}</h2>
             <p className="hint">{t.storage.folderWhat}</p>
           </div>
-          {(status.kind === 'none' || status.kind === 'error') && (
-            <button type="button" className="btn btn-icon" aria-label={t.storage.choose} title={t.storage.choose} onClick={connect}>
-              <Icon name="folderOpen" />
-            </button>
-          )}
-          {status.kind === 'connected' && (
-            <button type="button" className="btn" onClick={disconnect}>
-              {t.storage.disconnect}
-            </button>
-          )}
+          <div className="row">
+            {(status.kind === 'none' || status.kind === 'error') && (
+              <button type="button" className="btn btn-icon" aria-label={t.storage.choose} title={t.storage.choose} onClick={connect}>
+                <Icon name="folderOpen" />
+              </button>
+            )}
+            {(status.kind === 'connected' || status.kind === 'error') && (
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+                <Icon name="linkOff" />
+              </button>
+            )}
+          </div>
         </div>
         {status.kind === 'unsupported' && <p>{t.storage.unsupported}</p>}
         {status.kind === 'checking' && <p className="hint">{t.storage.checking}</p>}
@@ -130,8 +154,8 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
               <button type="button" className="btn btn-primary" onClick={grant}>
                 {t.storage.grant}
               </button>
-              <button type="button" className="btn" onClick={disconnect}>
-                {t.storage.disconnect}
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+                <Icon name="linkOff" />
               </button>
             </div>
           </div>
@@ -165,8 +189,8 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
               <button type="submit" className="btn btn-primary">
                 {t.vault.folderOpen}
               </button>
-              <button type="button" className="btn" onClick={disconnect}>
-                {t.storage.disconnect}
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+                <Icon name="linkOff" />
               </button>
             </div>
           </form>
@@ -198,16 +222,9 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
           </div>
         )}
         {status.kind === 'error' && (
-          <div className="stack-sm">
-            <p className="error" role="alert">
-              {t.storage.error(status.name)}
-            </p>
-            <div>
-              <button type="button" className="btn" onClick={disconnect}>
-                {t.storage.disconnect}
-              </button>
-            </div>
-          </div>
+          <p className="error" role="alert">
+            {t.storage.error(status.name)}
+          </p>
         )}
       </section>
 

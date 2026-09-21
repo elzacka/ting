@@ -35,6 +35,7 @@
   --max-w: 720px; /* reading width for prose and forms; lists and tables use the full width */
   --gutter: 16px;
   --row-h: 44px;
+  --row-h-sm: 36px; /* controls in the register's band, one step under the table's rows */
   --duration: 120ms;
 }
 
