@@ -113,13 +113,16 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
             <h2 className="section-label">{t.storage.statusTitle}</h2>
             {/* What is missing: a photo, a value in a kr column. Each is a
                 search that opens the overview narrowed to those things. */}
-            <p className="hint summary">
+            <p className="hint">
               {gaps.length === 0
                 ? t.storage.statusComplete
                 : gaps.map((m) => (
-                    <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
-                      {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-                    </button>
+                    <span key={m.query}>
+                      <button type="button" className="status-link" onClick={() => onOpenQuery(m.query)}>
+                        {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+                      </button>
+                      .{' '}
+                    </span>
                   ))}
             </p>
           </div>

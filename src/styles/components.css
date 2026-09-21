@@ -1365,6 +1365,24 @@ section {
   cursor: text;
 }
 
+/* A fact in Status reads like the line under any other setting; it is
+   still a search, so it underlines under the pointer and on focus */
+.status-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.status-link:hover,
+.status-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* A setting: title and one line of explanation on the left, its control on
    the right, on one line. What the control did, or asks, comes underneath. */
 .setting {
