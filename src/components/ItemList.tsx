@@ -38,7 +38,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, sear
     <div className="stack">
       <div className="table-card">
       <div className="overview-head">
-        <a className="btn btn-icon" href={href.add} aria-label={t.table.addRow} title={t.table.addRow}>
+        <a className="btn btn-icon" href={href.add} aria-label={t.table.addRow}>
           <Icon name="add" />
         </a>
         <p className="summary">

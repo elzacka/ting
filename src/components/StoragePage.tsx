@@ -149,12 +149,12 @@ export function StoragePage({
           </div>
           <div className="row">
             {(status.kind === 'none' || status.kind === 'error') && (
-              <button type="button" className="btn btn-icon" aria-label={t.storage.choose} title={t.storage.choose} onClick={connect}>
+              <button type="button" className="btn btn-icon" aria-label={t.storage.choose} onClick={connect}>
                 <Icon name="folderOpen" />
               </button>
             )}
             {(status.kind === 'connected' || status.kind === 'error') && (
-              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} onClick={disconnect}>
                 <Icon name="folderOff" />
               </button>
             )}
@@ -169,7 +169,7 @@ export function StoragePage({
               <button type="button" className="btn btn-primary" onClick={grant}>
                 {t.storage.grant}
               </button>
-              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} onClick={disconnect}>
                 <Icon name="folderOff" />
               </button>
             </div>
@@ -204,7 +204,7 @@ export function StoragePage({
               <button type="submit" className="btn btn-primary">
                 {t.vault.folderOpen}
               </button>
-              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} title={t.storage.disconnect} onClick={disconnect}>
+              <button type="button" className="btn btn-icon" aria-label={t.storage.disconnect} onClick={disconnect}>
                 <Icon name="folderOff" />
               </button>
             </div>
@@ -254,7 +254,6 @@ export function StoragePage({
               type="button"
               className="btn btn-icon"
               aria-label={t.storage.download}
-              title={t.storage.download}
               disabled={items.length === 0}
               onClick={() => void download()}
             >
@@ -271,7 +270,6 @@ export function StoragePage({
               type="button"
               className="btn btn-icon"
               aria-label={t.storage.restore}
-              title={t.storage.restore}
               onClick={() => fileRef.current?.click()}
             >
               <Icon name="upload" />
@@ -402,7 +400,6 @@ export function StoragePage({
               type="button"
               className="btn btn-icon"
               aria-label={t.vault.change}
-              title={t.vault.change}
               onClick={() => {
                 setPassMessage(null)
                 setChangingPass(true)

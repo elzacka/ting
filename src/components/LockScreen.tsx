@@ -60,7 +60,6 @@ export function LockScreen(props: Props) {
             type="button"
             className="btn btn-icon"
             aria-label={show ? t.vault.hide : t.vault.show}
-            title={show ? t.vault.hide : t.vault.show}
             aria-pressed={show}
             onClick={() => setShow(!show)}
           >

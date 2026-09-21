@@ -17,7 +17,6 @@ export function UpdateButton() {
       type="button"
       className="btn btn-icon is-active"
       aria-label={t.notice.update}
-      title={t.notice.update}
       onClick={() => updateServiceWorker(true)}
     >
       <Icon name="autorenew" />

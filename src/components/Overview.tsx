@@ -615,14 +615,13 @@ export function Overview({
                 {t.table.deleteSelected(selected.size)}
               </button>
             )}
-            <button type="button" className="btn btn-icon" aria-label={t.table.addRow} title={t.table.addRow} onClick={addRow}>
+            <button type="button" className="btn btn-icon" aria-label={t.table.addRow} onClick={addRow}>
               <Icon name="add" />
             </button>
             <button
               type="button"
               className={`btn btn-icon${addingColumn ? ' is-active' : ''}`}
               aria-label={t.table.addColumn}
-              title={t.table.addColumn}
               aria-expanded={addingColumn}
               aria-controls="column-form"
               onClick={() => setAddingColumn((v) => !v)}
@@ -634,7 +633,6 @@ export function Overview({
                 type="button"
                 className="btn btn-icon"
                 aria-label={t.report.csv}
-                title={t.report.csv}
                 onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
               >
                 <Icon name="download" />
@@ -645,7 +643,6 @@ export function Overview({
                 type="button"
                 className={`btn btn-icon${printPick ? ' is-active' : ''}`}
                 aria-label={t.report.print}
-                title={t.report.print}
                 aria-expanded={printPick !== null}
                 aria-controls="print-form"
                 onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}

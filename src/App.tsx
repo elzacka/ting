@@ -194,7 +194,7 @@ export function App() {
               </button>
             )}
             {unlocked && (
-              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} title={t.lock.lock} onClick={lockApp}>
+              <button type="button" className="btn btn-icon" aria-label={t.lock.lock} onClick={lockApp}>
                 <Icon name="lockOpen" />
               </button>
             )}
@@ -203,7 +203,6 @@ export function App() {
                 className={`btn btn-icon${route.view === 'storage' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
                 href={href.storage}
                 aria-label={storageLabel}
-                title={storageLabel}
                 aria-current={route.view === 'storage' ? 'page' : undefined}
                 onClick={guardNav}
               >
