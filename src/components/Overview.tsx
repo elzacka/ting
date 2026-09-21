@@ -153,7 +153,7 @@ export function Overview({
   // A column earns its place by holding a value for a row on screen (or a
   // new row, or an active filter). Navn always. Everything else is noise for
   // the view at hand: a sleeping-bag column in a list of books.
-  const { shown, empty } = useMemo(() => {
+  const { shown: shownAll, empty } = useMemo(() => {
     const used = new Set<string>()
     for (const item of visible) for (const s of item.specs) used.add(columnId({ key: s.key, unit: s.unit }))
     for (const row of newRows) for (const [id, v] of Object.entries(row.cells)) if (v.trim() !== '') used.add(id)
@@ -162,6 +162,17 @@ export function Overview({
     const empty = items.length === 0 ? 0 : defs.filter((d) => !inUse(d)).length
     return { shown: showEmpty || items.length === 0 ? defs : defs.filter(inUse), empty }
   }, [defs, visible, newRows, filters, showEmpty, items.length])
+
+  // Skriv ut asks which columns go on paper; Navn always does. Chosen once
+  // per session, null before that: everything on screen. While the browser
+  // takes its snapshot the table itself narrows to the choice.
+  const [printCols, setPrintCols] = useState<Set<string> | null>(null)
+  const [printPick, setPrintPick] = useState<Set<string> | null>(null)
+  const [printing, setPrinting] = useState(false)
+  const shown = useMemo(
+    () => (printing && printCols ? shownAll.filter((d) => d.kind === 'name' || printCols.has(d.id)) : shownAll),
+    [shownAll, printing, printCols],
+  )
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -286,7 +297,6 @@ export function Overview({
   // Printing needs every row on the page, not the windowed ones. Cmd+P and the
   // link both go through the same state; flushSync so the rows exist before
   // the browser takes its snapshot.
-  const [printing, setPrinting] = useState(false)
   useEffect(() => {
     const before = () => flushSync(() => setPrinting(true))
     const after = () => setPrinting(false)
@@ -583,10 +593,62 @@ export function Overview({
           >
             {t.report.csv}
           </button>
-          <button type="button" className="summary-link" onClick={() => window.print()}>
+          <button
+            type="button"
+            className="summary-link"
+            aria-expanded={printPick !== null}
+            aria-controls="print-form"
+            onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? shownAll.map((d) => d.id))))}
+          >
             {t.report.print}
           </button>
         </p>
+      )}
+
+      {printPick && (
+        <form
+          id="print-form"
+          className="stack-sm column-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            // The choice must be in the DOM before the browser takes its snapshot
+            flushSync(() => {
+              setPrintCols(printPick)
+              setPrintPick(null)
+            })
+            window.print()
+          }}
+        >
+          <p className="field-label">{t.report.pick}</p>
+          <div className="row toolbar">
+            {shownAll.map((def) => (
+              <label key={def.id} className="check-option">
+                <input
+                  type="checkbox"
+                  checked={def.kind === 'name' || printPick.has(def.id)}
+                  disabled={def.kind === 'name'}
+                  onChange={(e) =>
+                    setPrintPick((p) => {
+                      const next = new Set(p)
+                      if (e.target.checked) next.add(def.id)
+                      else next.delete(def.id)
+                      return next
+                    })
+                  }
+                />
+                <span>{labelOf(def)}</span>
+              </label>
+            ))}
+          </div>
+          <div className="row">
+            <button type="submit" className="btn btn-primary">
+              {t.report.print}
+            </button>
+            <button type="button" className="btn" onClick={() => setPrintPick(null)}>
+              {t.action.cancel}
+            </button>
+          </div>
+        </form>
       )}
 
       <div className="print-only">

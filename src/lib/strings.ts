@@ -77,6 +77,7 @@ export const t = {
   report: {
     csv: 'Last ned CSV',
     print: 'Skriv ut',
+    pick: 'Ta med i utskriften',
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
   },

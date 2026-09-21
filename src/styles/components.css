@@ -743,8 +743,18 @@ section {
 }
 
 @media print {
+  /* Smallest margin most printers keep; the bottom one holds the page
+     number. Margin boxes are Chrome and Edge (131+); other browsers print
+     the same page without the footer. */
   @page {
-    margin: 15mm;
+    margin: 10mm 10mm 12mm;
+
+    @bottom-right {
+      content: "Side " counter(page) "/" counter(pages);
+      font-family: var(--font);
+      font-size: 9pt;
+      color: #5f5f5c;
+    }
   }
 
   html {
@@ -764,6 +774,10 @@ section {
   .print-only {
     display: block;
     margin-bottom: 6mm;
+  }
+
+  #print-form {
+    display: none;
   }
 
   .page {

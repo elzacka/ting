@@ -59,7 +59,7 @@ Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
 
 ## Rapport
 
-«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen; utskriften får tittel og dato og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
+«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen. «Skriv ut» spør først hvilke kolonner som skal med (Navn er alltid med); utskriften får tittel, dato og sidetall og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
 
 ## Kjør lokalt
 
