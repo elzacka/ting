@@ -104,18 +104,25 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
     <div className="stack narrow">
       <h1 className="title">{t.storage.title}</h1>
 
-      <section className="stack-sm">
-        <h2 className="section-label">{t.storage.folderTitle}</h2>
-        <p className="hint">{t.storage.folderWhat}</p>
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label">{t.storage.folderTitle}</h2>
+            <p className="hint">{t.storage.folderWhat}</p>
+          </div>
+          {(status.kind === 'none' || status.kind === 'error') && (
+            <button type="button" className="btn btn-icon" aria-label={t.storage.choose} title={t.storage.choose} onClick={connect}>
+              <Icon name="folderOpen" />
+            </button>
+          )}
+          {status.kind === 'connected' && (
+            <button type="button" className="btn" onClick={disconnect}>
+              {t.storage.disconnect}
+            </button>
+          )}
+        </div>
         {status.kind === 'unsupported' && <p>{t.storage.unsupported}</p>}
         {status.kind === 'checking' && <p className="hint">{t.storage.checking}</p>}
-        {status.kind === 'none' && (
-          <div>
-            <button type="button" className="btn btn-primary" onClick={connect}>
-              {t.storage.choose}
-            </button>
-          </div>
-        )}
         {status.kind === 'needs-permission' && (
           <div className="stack-sm">
             <p>{t.storage.needsPermission(status.name)}</p>
@@ -165,19 +172,12 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
           </form>
         )}
         {status.kind === 'connected' && (
-          <div className="stack-sm">
-            <p>
-              {t.storage.connected(status.name)}{' '}
-              <span className="meta num">
-                {status.lastWrittenAt ? t.storage.lastWritten(formatTime(status.lastWrittenAt)) : t.storage.loaded}
-              </span>
-            </p>
-            <div>
-              <button type="button" className="btn" onClick={disconnect}>
-                {t.storage.disconnect}
-              </button>
-            </div>
-          </div>
+          <p>
+            {t.storage.connected(status.name)}{' '}
+            <span className="meta num">
+              {status.lastWrittenAt ? t.storage.lastWritten(formatTime(status.lastWrittenAt)) : t.storage.loaded}
+            </span>
+          </p>
         )}
         {status.kind === 'conflict' && (
           <div className="confirm" role="alertdialog" aria-labelledby="folder-conflict">
@@ -202,10 +202,7 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
             <p className="error" role="alert">
               {t.storage.error(status.name)}
             </p>
-            <div className="row">
-              <button type="button" className="btn btn-primary" onClick={connect}>
-                {t.storage.choose}
-              </button>
+            <div>
               <button type="button" className="btn" onClick={disconnect}>
                 {t.storage.disconnect}
               </button>
@@ -214,36 +211,40 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
         )}
       </section>
 
-      <section className="stack-sm">
-        <h2 className="section-label">{t.storage.copyTitle}</h2>
-        <p className="hint">{t.storage.copyWhat}</p>
-        <div className="row toolbar">
-          <button
-            type="button"
-            className="btn btn-icon"
-            aria-label={t.storage.download}
-            title={t.storage.download}
-            disabled={items.length === 0}
-            onClick={() => void download()}
-          >
-            <Icon name="download" />
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="visually-hidden"
-            onChange={(e) => void onFile(e.target.files?.[0])}
-          />
-          <button
-            type="button"
-            className="btn btn-icon"
-            aria-label={t.storage.restore}
-            title={t.storage.restore}
-            onClick={() => fileRef.current?.click()}
-          >
-            <Icon name="upload" />
-          </button>
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label">{t.storage.copyTitle}</h2>
+            <p className="hint">{t.storage.copyWhat}</p>
+          </div>
+          <div className="row">
+            <button
+              type="button"
+              className="btn btn-icon"
+              aria-label={t.storage.download}
+              title={t.storage.download}
+              disabled={items.length === 0}
+              onClick={() => void download()}
+            >
+              <Icon name="download" />
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="visually-hidden"
+              onChange={(e) => void onFile(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              className="btn btn-icon"
+              aria-label={t.storage.restore}
+              title={t.storage.restore}
+              onClick={() => fileRef.current?.click()}
+            >
+              <Icon name="upload" />
+            </button>
+          </div>
         </div>
         {foreignCopy && (
           <form className="stack-sm" onSubmit={openForeignCopy}>
@@ -295,34 +296,54 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
         )}
       </section>
 
-      <section className="stack-sm">
-        <h2 className="section-label">{t.vault.lockTitle}</h2>
-        <label className="check-option">
-          <input type="checkbox" checked={autoLock} onChange={(e) => onAutoLockChange(e.target.checked)} />
-          <span>{t.vault.autoLockOption}</span>
-        </label>
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label" id="lock-title">
+              {t.vault.lockTitle}
+            </h2>
+            <p className="hint" id="lock-hint">
+              {t.vault.autoLockOption}
+            </p>
+          </div>
+          <span className="setting-check">
+            <input
+              type="checkbox"
+              aria-labelledby="lock-title lock-hint"
+              checked={autoLock}
+              onChange={(e) => onAutoLockChange(e.target.checked)}
+            />
+          </span>
+        </div>
       </section>
 
-      <section className="stack-sm">
-        <h2 className="section-label">{t.vault.changeTitle}</h2>
-        {!changingPass ? (
-          <div className="row">
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label">{t.vault.changeTitle}</h2>
+            <p className="hint">{t.vault.changeWhat}</p>
+          </div>
+          {!changingPass && (
             <button
               type="button"
-              className="btn"
+              className="btn btn-icon"
+              aria-label={t.vault.change}
+              title={t.vault.change}
               onClick={() => {
                 setPassMessage(null)
                 setChangingPass(true)
               }}
             >
-              {t.vault.change}
+              <Icon name="key" />
             </button>
-            {passMessage && (
-              <p className="hint" role="status">
-                {passMessage}
-              </p>
-            )}
-          </div>
+          )}
+        </div>
+        {!changingPass ? (
+          passMessage && (
+            <p className="hint" role="status">
+              {passMessage}
+            </p>
+          )
         ) : (
           <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
             <div className="field">

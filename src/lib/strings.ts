@@ -20,6 +20,7 @@ export const t = {
     lockTitle: 'Automatisk lås',
     autoLockOption: 'Krev passord etter 10 minutter',
     changeTitle: 'Passord',
+    changeWhat: 'Låser alt du registrerer, på enheten og i alle kopier. Kopier du tok før et bytte, åpnes med det gamle passordet.',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',

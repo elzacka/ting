@@ -309,13 +309,21 @@
 .list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--s-4);
   border-top: 1px solid var(--border);
+}
+
+/* The band above already draws that line */
+.controls + .list {
+  border-top: 0;
 }
 
 .list-row {
   height: 56px;
-  border-bottom: 1px solid var(--border);
+}
+
+.list-row + .list-row {
+  border-top: 1px solid var(--border);
 }
 
 .list-link {
@@ -507,9 +515,55 @@ section {
   flex-wrap: wrap;
 }
 
-/* The report icons sit at the right end of the toolbar, like the header's */
-.toolbar .toolbar-end {
-  margin-left: auto;
+/* One card holds the register: a head line (what is on screen, small and
+   grey, and the actions at the right edge), a tinted band with whatever
+   control is open, then the table or the list. No shadow, one hairline. */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* The text sits as far from the left edge as the last icon's glyph sits
+   from the right: the button's own inset plus the same outer gap */
+.overview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-1) var(--s-1) var(--s-1) calc(var(--s-1) + (var(--row-h) - 24px) / 2);
+}
+
+/* One step under the column headers, grey: the table is the subject */
+.summary {
+  font-size: var(--text-2xs);
+}
+
+.summary strong {
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.controls {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-card > .empty,
+.table-card > .list-empty {
+  padding: var(--s-4);
+}
+
+/* A second block in the band is set off by a hairline above, not a box */
+.controls > * + * {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
 }
 
 .column-form .toolbar {
@@ -532,10 +586,10 @@ section {
   flex: none;
 }
 
+/* The checkbox gutter is the left inset; the right gets the same air */
 .table-wrap {
   overflow-x: auto;
-  margin: 0 calc(var(--gutter) * -1);
-  padding: 0 var(--gutter) 0 0;
+  padding: 0 var(--s-4) 0 var(--s-1);
 }
 
 /* Headers one step above the cells, not two (15 px until 20 September 2026) */
@@ -707,7 +761,7 @@ section {
 .grid th:nth-child(2),
 .grid td:nth-child(2) {
   position: sticky;
-  background: var(--bg);
+  background: var(--surface);
   z-index: 1;
 }
 
@@ -801,6 +855,17 @@ section {
     overflow: visible;
     margin: 0;
     padding: 0;
+  }
+
+  .table-card {
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .controls,
+  .overview-head {
+    display: none;
   }
 
   .grid {
@@ -1223,6 +1288,58 @@ section {
   background: var(--bg);
 }
 
+/* The foot of the table reads "Legg til ting" in grey; a click there is a new row */
+.grid-ghost td {
+  border-bottom-color: transparent;
+}
+
+.grid-ghost .grid-input {
+  color: var(--text-2);
+  cursor: text;
+}
+
+/* A setting: title and one line of explanation on the left, its control on
+   the right, on one line. What the control did, or asks, comes underneath. */
+.setting {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.setting-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.setting-head > div:first-child {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.setting-head > .btn,
+.setting-head > .row {
+  flex: none;
+}
+
+/* The checkbox sits in the same 44 px square as an icon button */
+.setting-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--row-h);
+  height: var(--row-h);
+}
+
+.setting-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 /* A setting: checkbox and its sentence on one 44 px line */
 .check-option {
   display: flex;
@@ -1353,8 +1470,8 @@ section {
 .summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--s-4);
-  font-size: var(--text-sm);
+  align-items: baseline;
+  gap: 0 var(--s-3);
   color: var(--text-2);
 }
 

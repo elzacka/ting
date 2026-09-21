@@ -572,603 +572,621 @@ export function Overview({
 
   return (
     <div className="stack">
-      {items.length === 0 && newRows.length === 0 && <p className="hint">{t.list.empty}</p>}
-
-      {items.length > 0 && (
-        <p className="summary">
-          {/* What is on screen and the whole register; the gaps run their
-              search, and the two actions take what is on screen */}
-          <span>{narrowed ? t.summary.shown(visible.length, items.length) : t.summary.things(items.length)}</span>
-          {sums.map((x) => (
-            <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
-          ))}
-          {gaps.map((m) => (
-            <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
-              {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-            </button>
-          ))}
-        </p>
-      )}
-
-
-      <div className="print-only">
-        <h1 className="title">{t.report.docTitle}</h1>
-        <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
-      </div>
-
-      {searchOpen && (
-        <div className="search-bar">
-          <SearchField
-            value={query}
-            onChange={onQueryChange}
-            onClose={onSearchClose}
-            listTip={t.search.tipsTableText}
-          />
-          <FilterPanel
-            items={items}
-            searched={searched}
-            properties={properties}
-            fields={fields}
-            filters={filters}
-            onChange={onFiltersChange}
-          />
-        </div>
-      )}
-
-      <div className="row toolbar">
-        <button type="button" className="btn" onClick={addRow}>
-          <Icon name="add" size={20} />
-          {t.table.addRow}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          aria-expanded={addingColumn}
-          aria-controls="column-form"
-          onClick={() => setAddingColumn((v) => !v)}
-        >
-          <Icon name="add" size={20} />
-          {t.table.addColumn}
-        </button>
-        {empty > 0 && (
-          <button type="button" className="btn" onClick={() => setShowEmpty((v) => !v)}>
-            {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
-          </button>
-        )}
-        {selected.size > 0 && !confirmingDelete && (
-          <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
-            <Icon name="delete" size={20} />
-            {t.table.deleteSelected(selected.size)}
-          </button>
-        )}
-        {items.length > 0 && (
-          <>
-            <button
-              type="button"
-              className="btn btn-icon toolbar-end"
-              aria-label={t.report.csv}
-              title={t.report.csv}
-              onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
-            >
-              <Icon name="download" />
-            </button>
-            <button
-              type="button"
-              className={`btn btn-icon${printPick ? ' is-active' : ''}`}
-              aria-label={t.report.print}
-              title={t.report.print}
-              aria-expanded={printPick !== null}
-              aria-controls="print-form"
-              onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
-            >
-              <Icon name="print" />
-            </button>
-          </>
-        )}
-      </div>
-
-      {printPick && (
-        <form
-          id="print-form"
-          className="stack-sm column-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            // The choice must be in the DOM before the browser takes its snapshot
-            flushSync(() => {
-              setPrintCols(printPick)
-              setPrintPick(null)
-            })
-            window.print()
-          }}
-        >
-          <p className="field-label">{t.report.pick}</p>
-          <div className="row toolbar">
-            <button
-              type="button"
-              className="summary-link"
-              onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
-            >
-              {t.report.pickAll}
-            </button>
-            <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
-              {t.report.pickNone}
-            </button>
-          </div>
-          <div className="row toolbar">
-            {shownAll.map((def) => (
-              <label key={def.id} className="check-option">
-                <input
-                  type="checkbox"
-                  checked={def.kind === 'name' || printPick.has(def.id)}
-                  disabled={def.kind === 'name'}
-                  onChange={(e) =>
-                    setPrintPick((p) => {
-                      const next = new Set(p)
-                      if (e.target.checked) next.add(def.id)
-                      else next.delete(def.id)
-                      return next
-                    })
-                  }
-                />
-                <span>{labelOf(def)}</span>
-              </label>
+      <div className="table-card">
+        <div className="overview-head">
+          <p className="summary">
+            {/* What is on screen and the whole register; the gaps run their search */}
+            <strong>
+              {items.length === 0
+                ? t.list.empty
+                : narrowed
+                  ? t.summary.shown(visible.length, items.length)
+                  : t.summary.things(items.length)}
+            </strong>
+            {sums.map((x) => (
+              <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
             ))}
-          </div>
+            {gaps.map((m) => (
+              <button type="button" className="summary-link" key={m.query} onClick={() => onOpenQuery(m.query)}>
+                {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+              </button>
+            ))}
+            {empty > 0 && (
+              <button type="button" className="summary-link" onClick={() => setShowEmpty((v) => !v)}>
+                {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
+              </button>
+            )}
+          </p>
+          {/* Every action on the register, header style: add, add a column, and
+              the two reports, which take what is on screen */}
           <div className="row">
-            <button type="submit" className="btn btn-primary">
-              {t.report.print}
+            {selected.size > 0 && !confirmingDelete && (
+              <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
+                <Icon name="delete" size={20} />
+                {t.table.deleteSelected(selected.size)}
+              </button>
+            )}
+            <button type="button" className="btn btn-icon" aria-label={t.table.addRow} title={t.table.addRow} onClick={addRow}>
+              <Icon name="add" />
             </button>
-            <button type="button" className="btn" onClick={() => setPrintPick(null)}>
-              {t.action.cancel}
+            <button
+              type="button"
+              className={`btn btn-icon${addingColumn ? ' is-active' : ''}`}
+              aria-label={t.table.addColumn}
+              title={t.table.addColumn}
+              aria-expanded={addingColumn}
+              aria-controls="column-form"
+              onClick={() => setAddingColumn((v) => !v)}
+            >
+              <Icon name="viewColumn" />
             </button>
+            {items.length > 0 && (
+              <button
+                type="button"
+                className="btn btn-icon"
+                aria-label={t.report.csv}
+                title={t.report.csv}
+                onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
+              >
+                <Icon name="download" />
+              </button>
+            )}
+            {items.length > 0 && (
+              <button
+                type="button"
+                className={`btn btn-icon${printPick ? ' is-active' : ''}`}
+                aria-label={t.report.print}
+                title={t.report.print}
+                aria-expanded={printPick !== null}
+                aria-controls="print-form"
+                onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
+              >
+                <Icon name="print" />
+              </button>
+            )}
           </div>
-        </form>
-      )}
+        </div>
 
-      {addingColumn && (
-        <form
-          id="column-form"
-          className="stack-sm column-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void addColumn()
-          }}
-        >
-          <div className="row toolbar">
-            <div className="field">
-              <label htmlFor="col-key">{t.table.columnKey}</label>
-              <input
-                id="col-key"
-                className="input input-key"
-                value={columnDraft.key}
-                onChange={(e) => {
-                  setColumnDraft({ ...columnDraft, key: e.target.value })
-                  setColumnError(null)
-                }}
-                autoFocus
+        {(printPick || searchOpen || addingColumn) && (
+        <div className="controls">
+
+          {printPick && (
+            <form
+              id="print-form"
+              className="stack-sm"
+              onSubmit={(e) => {
+                e.preventDefault()
+                // The choice must be in the DOM before the browser takes its snapshot
+                flushSync(() => {
+                  setPrintCols(printPick)
+                  setPrintPick(null)
+                })
+                window.print()
+              }}
+            >
+              <p className="field-label">{t.report.pick}</p>
+              <div className="row toolbar">
+                <button
+                  type="button"
+                  className="summary-link"
+                  onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
+                >
+                  {t.report.pickAll}
+                </button>
+                <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
+                  {t.report.pickNone}
+                </button>
+              </div>
+              <div className="row toolbar">
+                {shownAll.map((def) => (
+                  <label key={def.id} className="check-option">
+                    <input
+                      type="checkbox"
+                      checked={def.kind === 'name' || printPick.has(def.id)}
+                      disabled={def.kind === 'name'}
+                      onChange={(e) =>
+                        setPrintPick((p) => {
+                          const next = new Set(p)
+                          if (e.target.checked) next.add(def.id)
+                          else next.delete(def.id)
+                          return next
+                        })
+                      }
+                    />
+                    <span>{labelOf(def)}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="row">
+                <button type="submit" className="btn btn-primary">
+                  {t.report.print}
+                </button>
+                <button type="button" className="btn" onClick={() => setPrintPick(null)}>
+                  {t.action.cancel}
+                </button>
+              </div>
+            </form>
+          )}
+
+
+          {searchOpen && (
+            <div className="search-bar">
+              <SearchField
+                value={query}
+                onChange={onQueryChange}
+                onClose={onSearchClose}
+                listTip={t.search.tipsTableText}
+              />
+              <FilterPanel
+                items={items}
+                searched={searched}
+                properties={properties}
+                fields={fields}
+                filters={filters}
+                onChange={onFiltersChange}
               />
             </div>
-            <div className="field">
-              <label htmlFor="col-type">{t.table.columnType}</label>
-              <select
-                id="col-type"
-                className="select input-narrow"
-                value={columnDraft.type}
-                onChange={(e) => setColumnDraft({ ...columnDraft, type: e.target.value as PropertyType })}
+          )}
+
+
+          {addingColumn && (
+            <form
+              id="column-form"
+              className="stack-sm column-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                void addColumn()
+              }}
+            >
+              <div className="row toolbar">
+                <div className="field">
+                  <label htmlFor="col-key">{t.table.columnKey}</label>
+                  <input
+                    id="col-key"
+                    className="input input-key"
+                    value={columnDraft.key}
+                    onChange={(e) => {
+                      setColumnDraft({ ...columnDraft, key: e.target.value })
+                      setColumnError(null)
+                    }}
+                    autoFocus
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="col-type">{t.table.columnType}</label>
+                  <select
+                    id="col-type"
+                    className="select input-narrow"
+                    value={columnDraft.type}
+                    onChange={(e) => setColumnDraft({ ...columnDraft, type: e.target.value as PropertyType })}
+                  >
+                    {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
+                      <option key={ty} value={ty}>
+                        {t.table.types[ty]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {columnDraft.type === 'choice' && (
+                  <div className="field">
+                    <label htmlFor="col-options">{t.table.columnOptions}</label>
+                    <input
+                      id="col-options"
+                      className="input input-key"
+                      value={columnDraft.options}
+                      onChange={(e) => setColumnDraft({ ...columnDraft, options: e.target.value })}
+                    />
+                  </div>
+                )}
+                {columnDraft.type === 'number' && (
+                  <div className="field">
+                    <label htmlFor="col-unit">
+                      {t.table.columnUnit} <span className="hint">({t.table.columnUnitOptional})</span>
+                    </label>
+                    <input
+                      id="col-unit"
+                      className="input input-narrow"
+                      list="unit-options"
+                      value={columnDraft.unit}
+                      onChange={(e) => setColumnDraft({ ...columnDraft, unit: e.target.value })}
+                    />
+                  </div>
+                )}
+                <div className="field field-actions">
+                  <button type="submit" className="btn btn-primary">
+                    {t.table.columnAdd}
+                  </button>
+                  <button type="button" className="btn" onClick={() => setAddingColumn(false)}>
+                    {t.action.cancel}
+                  </button>
+                </div>
+              </div>
+              {columnError && (
+                <p className="error" role="alert">
+                  {columnError}
+                </p>
+              )}
+            </form>
+          )}
+        </div>
+        )}
+
+        <div className="print-only">
+          <h1 className="title">{t.report.docTitle}</h1>
+          <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
+        </div>
+
+        {confirmingDiscard && (
+          <div className="confirm" role="alertdialog" aria-labelledby="confirm-discard">
+            <p id="confirm-discard">{t.confirm.saveOrDiscard}</p>
+            <div className="row">
+              <button
+                type="button"
+                className="btn btn-primary"
+                autoFocus
+                onClick={() => {
+                  setConfirmingDiscard(false)
+                  void save()
+                }}
               >
-                {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
-                  <option key={ty} value={ty}>
-                    {t.table.types[ty]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {columnDraft.type === 'choice' && (
-              <div className="field">
-                <label htmlFor="col-options">{t.table.columnOptions}</label>
-                <input
-                  id="col-options"
-                  className="input input-key"
-                  value={columnDraft.options}
-                  onChange={(e) => setColumnDraft({ ...columnDraft, options: e.target.value })}
-                />
-              </div>
-            )}
-            {columnDraft.type === 'number' && (
-              <div className="field">
-                <label htmlFor="col-unit">
-                  {t.table.columnUnit} <span className="hint">({t.table.columnUnitOptional})</span>
-                </label>
-                <input
-                  id="col-unit"
-                  className="input input-narrow"
-                  list="unit-options"
-                  value={columnDraft.unit}
-                  onChange={(e) => setColumnDraft({ ...columnDraft, unit: e.target.value })}
-                />
-              </div>
-            )}
-            <div className="field field-actions">
-              <button type="submit" className="btn btn-primary">
-                {t.table.columnAdd}
+                {t.action.save}
               </button>
-              <button type="button" className="btn" onClick={() => setAddingColumn(false)}>
+              <button type="button" className="btn" onClick={reset}>
+                {t.confirm.discard}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {removingColumn && (
+          <div className="confirm" role="alertdialog" aria-labelledby="confirm-column">
+            <p id="confirm-column">
+              {removingColumn.kind === 'prop' && t.table.removeColumnConfirm(removingColumn.col.key, usedBy(removingColumn.col))}
+            </p>
+            <div className="row">
+              <button
+                type="button"
+                className="btn btn-danger"
+                autoFocus
+                onClick={() => void doRemoveColumn(removingColumn)}
+              >
+                {t.table.removeColumnAction}
+              </button>
+              <button type="button" className="btn" onClick={() => setRemovingColumn(null)}>
                 {t.action.cancel}
               </button>
             </div>
           </div>
-          {columnError && (
-            <p className="error" role="alert">
-              {columnError}
-            </p>
-          )}
-        </form>
-      )}
+        )}
 
-      {confirmingDiscard && (
-        <div className="confirm" role="alertdialog" aria-labelledby="confirm-discard">
-          <p id="confirm-discard">{t.confirm.saveOrDiscard}</p>
-          <div className="row">
-            <button
-              type="button"
-              className="btn btn-primary"
-              autoFocus
-              onClick={() => {
-                setConfirmingDiscard(false)
-                void save()
-              }}
-            >
-              {t.action.save}
-            </button>
-            <button type="button" className="btn" onClick={reset}>
-              {t.confirm.discard}
-            </button>
+        {confirmingDelete && (
+          <div className="confirm" role="alertdialog" aria-labelledby="confirm-many">
+            <p id="confirm-many">{t.confirm.deleteMany(selected.size)}</p>
+            <div className="row">
+              <button type="button" className="btn btn-danger" onClick={deleteSelected} autoFocus>
+                {t.action.delete}
+              </button>
+              <button type="button" className="btn" onClick={() => setConfirmingDelete(false)}>
+                {t.action.cancel}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {removingColumn && (
-        <div className="confirm" role="alertdialog" aria-labelledby="confirm-column">
-          <p id="confirm-column">
-            {removingColumn.kind === 'prop' && t.table.removeColumnConfirm(removingColumn.col.key, usedBy(removingColumn.col))}
-          </p>
-          <div className="row">
-            <button
-              type="button"
-              className="btn btn-danger"
-              autoFocus
-              onClick={() => void doRemoveColumn(removingColumn)}
-            >
-              {t.table.removeColumnAction}
-            </button>
-            <button type="button" className="btn" onClick={() => setRemovingColumn(null)}>
-              {t.action.cancel}
-            </button>
-          </div>
-        </div>
-      )}
+        <datalist id="unit-options">
+          {t.table.unitOptions.map(([symbol, word]) => (
+            <option key={symbol} value={symbol} label={word} />
+          ))}
+        </datalist>
+        {defs.map(
+          (def) =>
+            def.kind === 'prop' &&
+            def.type === 'choice' && (
+              <datalist key={def.id} id={choiceListId(def.id)}>
+                {[
+                  ...new Set([
+                    ...(def.property?.options ?? []),
+                    ...distinct(items, (i) => {
+                      const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+                      return spec ? String(spec.value) : ''
+                    }),
+                  ]),
+                ].map((v) => (
+                  <option key={v} value={v} />
+                ))}
+              </datalist>
+            ),
+        )}
+        <datalist id="name-options">
+          {names.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
 
-      {confirmingDelete && (
-        <div className="confirm" role="alertdialog" aria-labelledby="confirm-many">
-          <p id="confirm-many">{t.confirm.deleteMany(selected.size)}</p>
-          <div className="row">
-            <button type="button" className="btn btn-danger" onClick={deleteSelected} autoFocus>
-              {t.action.delete}
-            </button>
-            <button type="button" className="btn" onClick={() => setConfirmingDelete(false)}>
-              {t.action.cancel}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <datalist id="unit-options">
-        {t.table.unitOptions.map(([symbol, word]) => (
-          <option key={symbol} value={symbol} label={word} />
-        ))}
-      </datalist>
-      {defs.map(
-        (def) =>
-          def.kind === 'prop' &&
-          def.type === 'choice' && (
-            <datalist key={def.id} id={choiceListId(def.id)}>
-              {[
-                ...new Set([
-                  ...(def.property?.options ?? []),
-                  ...distinct(items, (i) => {
-                    const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                    return spec ? String(spec.value) : ''
-                  }),
-                ]),
-              ].map((v) => (
-                <option key={v} value={v} />
-              ))}
-            </datalist>
-          ),
-      )}
-      <datalist id="name-options">
-        {names.map((n) => (
-          <option key={n} value={n} />
-        ))}
-      </datalist>
-
-      {hasRows && (
-        <Grid
-          defs={shown}
-          widths={widths}
-          sort={sort}
-          onWidth={onWidth}
-          hasSelection={selected.size > 0}
-          allRows={printing}
-          label={labelOf}
-          onPaste={onPaste}
-          headerCheck={
-            <>
-              {allIds.length > 0 && !editing && (
-                <input
-                  type="checkbox"
-                  aria-label={t.table.selectAll}
-                  checked={allSelected}
-                  onChange={(e) => setSelected(e.target.checked ? new Set(allIds) : new Set())}
-                />
-              )}
-            </>
-          }
-          header={(def, index) => (
-            <>
-              {renaming && renaming.def.id === def.id ? (
-                <form
-                  className="row grid-col-rename"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    void commitRename()
-                  }}
-                >
+        {hasRows && (
+          <Grid
+            defs={shown}
+            widths={widths}
+            sort={sort}
+            onWidth={onWidth}
+            hasSelection={selected.size > 0}
+            allRows={printing}
+            label={labelOf}
+            onPaste={onPaste}
+            headerCheck={
+              <>
+                {allIds.length > 0 && !editing && (
                   <input
-                    className="input"
-                    aria-label={t.table.columnKey}
-                    value={renaming.key}
-                    onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
-                    autoFocus
+                    type="checkbox"
+                    aria-label={t.table.selectAll}
+                    checked={allSelected}
+                    onChange={(e) => setSelected(e.target.checked ? new Set(allIds) : new Set())}
                   />
-                  {def.kind === 'prop' && (
-                    <select
-                      className="select input-narrow"
-                      aria-label={t.table.columnType}
-                      value={renaming.type}
-                      onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
-                    >
-                      {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
-                        <option key={ty} value={ty}>
-                          {t.table.types[ty]}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  {def.kind === 'prop' && renaming.type === 'choice' && (
-                    <input
-                      className="input"
-                      aria-label={t.table.columnOptions}
-                      value={renaming.options}
-                      onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
-                    />
-                  )}
-                  {def.kind === 'prop' && renaming.type === 'number' && (
-                    <input
-                      className="input input-narrow"
-                      list="unit-options"
-                      aria-label={t.table.columnUnit}
-                      value={renaming.unit}
-                      onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
-                    />
-                  )}
-                  <button type="submit" className="btn btn-icon" aria-label={t.table.renameSave}>
-                    <Icon name="check" size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-icon"
-                    aria-label={t.table.renameCancel}
-                    onClick={() => setRenaming(null)}
-                  >
-                    <Icon name="close" size={20} />
-                  </button>
-                </form>
-              ) : (
-                <span className="grid-col-head">
-                  <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
-                  <details
-                    className="col-menu"
-                    onToggle={(e) => {
-                      const d = e.currentTarget
-                      if (!d.open) {
-                        setMenuPos((p) => (p?.id === def.id ? null : p))
-                        return
-                      }
-                      const r = d.querySelector('summary')?.getBoundingClientRect()
-                      if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
+                )}
+              </>
+            }
+            header={(def, index) => (
+              <>
+                {renaming && renaming.def.id === def.id ? (
+                  <form
+                    className="row grid-col-rename"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      void commitRename()
                     }}
                   >
-                    <summary aria-label={t.table.columnMenu(labelOf(def))}>
-                      <Icon name="chevronRight" size={14} className="col-menu-chevron" />
-                    </summary>
-                  </details>
-                  {menuPos?.id === def.id &&
-                    createPortal(
-                      <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
-                        <button
-                          type="button"
-                          className="col-menu-item"
-                          role="menuitem"
-                          onClick={() => {
-                            closeMenu()
-                            setRenaming({
-                              def,
-                              key: labelOf(def),
-                              unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
-                              type: def.kind === 'prop' ? def.type : 'text',
-                              options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
-                            })
-                          }}
-                        >
-                          <Icon name="edit" size={16} />
-                          {t.table.renameColumn}
-                        </button>
-                        <button
-                          type="button"
-                          className="col-menu-item"
-                          role="menuitem"
-                          disabled={index <= 1}
-                          onClick={() => void moveColumn(def, -1)}
-                        >
-                          <Icon name="chevronLeft" size={16} />
-                          {t.table.moveLeft}
-                        </button>
-                        <button
-                          type="button"
-                          className="col-menu-item"
-                          role="menuitem"
-                          disabled={index === shown.length - 1}
-                          onClick={() => void moveColumn(def, 1)}
-                        >
-                          <Icon name="chevronRight" size={16} />
-                          {t.table.moveRight}
-                        </button>
-                        {def.kind !== 'name' && (
+                    <input
+                      className="input"
+                      aria-label={t.table.columnKey}
+                      value={renaming.key}
+                      onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
+                      autoFocus
+                    />
+                    {def.kind === 'prop' && (
+                      <select
+                        className="select input-narrow"
+                        aria-label={t.table.columnType}
+                        value={renaming.type}
+                        onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
+                      >
+                        {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
+                          <option key={ty} value={ty}>
+                            {t.table.types[ty]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {def.kind === 'prop' && renaming.type === 'choice' && (
+                      <input
+                        className="input"
+                        aria-label={t.table.columnOptions}
+                        value={renaming.options}
+                        onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
+                      />
+                    )}
+                    {def.kind === 'prop' && renaming.type === 'number' && (
+                      <input
+                        className="input input-narrow"
+                        list="unit-options"
+                        aria-label={t.table.columnUnit}
+                        value={renaming.unit}
+                        onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
+                      />
+                    )}
+                    <button type="submit" className="btn btn-icon" aria-label={t.table.renameSave}>
+                      <Icon name="check" size={20} />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-icon"
+                      aria-label={t.table.renameCancel}
+                      onClick={() => setRenaming(null)}
+                    >
+                      <Icon name="close" size={20} />
+                    </button>
+                  </form>
+                ) : (
+                  <span className="grid-col-head">
+                    <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
+                    <details
+                      className="col-menu"
+                      onToggle={(e) => {
+                        const d = e.currentTarget
+                        if (!d.open) {
+                          setMenuPos((p) => (p?.id === def.id ? null : p))
+                          return
+                        }
+                        const r = d.querySelector('summary')?.getBoundingClientRect()
+                        if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
+                      }}
+                    >
+                      <summary aria-label={t.table.columnMenu(labelOf(def))}>
+                        <Icon name="chevronRight" size={14} className="col-menu-chevron" />
+                      </summary>
+                    </details>
+                    {menuPos?.id === def.id &&
+                      createPortal(
+                        <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
                           <button
                             type="button"
-                            className="col-menu-item col-menu-danger"
+                            className="col-menu-item"
                             role="menuitem"
-                            onClick={() => void requestRemoveColumn(def)}
+                            onClick={() => {
+                              closeMenu()
+                              setRenaming({
+                                def,
+                                key: labelOf(def),
+                                unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
+                                type: def.kind === 'prop' ? def.type : 'text',
+                                options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
+                              })
+                            }}
                           >
-                            <Icon name="delete" size={16} />
-                            {t.table.removeColumn}
+                            <Icon name="edit" size={16} />
+                            {t.table.renameColumn}
                           </button>
-                        )}
-                      </div>,
-                      document.body,
-                    )}
-                </span>
-              )}
-            </>
-          )}
-          rowCount={visible.length}
-          row={(i) => {
-            const item = visible[i]
-            if (!item) return null
-            return (
-              <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
-                <td className="grid-check">
-                  {!editing && (
-                    <input
-                      type="checkbox"
-                      aria-label={t.table.selectRow(item.name)}
-                      checked={selected.has(item.id)}
-                      onChange={(e) => toggle(item.id, e.target.checked)}
-                    />
-                  )}
-                </td>
-                {shown.map((def) => {
-                  const label = t.table.cell(item.name, labelOf(def))
-                  const text = def.kind === 'name' ? value(item, 'name') : cell(item, def.col)
-                  if (active?.row !== item.id && def.kind === 'name') {
-                    return (
-                      <td key={def.id}>
-                        <NameCell item={item} name={text} />
-                      </td>
-                    )
-                  }
-                  if (active?.row !== item.id) {
-                    return (
-                      <td key={def.id}>
-                        <button
-                          type="button"
-                          className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
-                          aria-label={label}
-                          onFocus={() => setActive({ row: item.id, col: def.id })}
-                        >
-                          {text}
-                        </button>
-                      </td>
-                    )
-                  }
-                  const focus = active.col === def.id ? focusWithoutScroll : undefined
-                  return (
-                    <td key={def.id}>
+                          <button
+                            type="button"
+                            className="col-menu-item"
+                            role="menuitem"
+                            disabled={index <= 1}
+                            onClick={() => void moveColumn(def, -1)}
+                          >
+                            <Icon name="chevronLeft" size={16} />
+                            {t.table.moveLeft}
+                          </button>
+                          <button
+                            type="button"
+                            className="col-menu-item"
+                            role="menuitem"
+                            disabled={index === shown.length - 1}
+                            onClick={() => void moveColumn(def, 1)}
+                          >
+                            <Icon name="chevronRight" size={16} />
+                            {t.table.moveRight}
+                          </button>
+                          {def.kind !== 'name' && (
+                            <button
+                              type="button"
+                              className="col-menu-item col-menu-danger"
+                              role="menuitem"
+                              onClick={() => void requestRemoveColumn(def)}
+                            >
+                              <Icon name="delete" size={16} />
+                              {t.table.removeColumn}
+                            </button>
+                          )}
+                        </div>,
+                        document.body,
+                      )}
+                  </span>
+                )}
+              </>
+            )}
+            rowCount={visible.length}
+            row={(i) => {
+              const item = visible[i]
+              if (!item) return null
+              return (
+                <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
+                  <td className="grid-check">
+                    {!editing && (
                       <input
-                        className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
-                        list={def.kind === 'name' ? 'name-options' : def.type === 'choice' ? choiceListId(def.id) : undefined}
-                        aria-label={label}
-                        value={text}
-                        ref={focus}
-                        data-row={item.id}
-                        data-col={def.id}
-                        onChange={(e) =>
-                          editItem(item.id, def.kind === 'name' ? { name: e.target.value } : { cells: { [def.id]: e.target.value } })
-                        }
+                        type="checkbox"
+                        aria-label={t.table.selectRow(item.name)}
+                        checked={selected.has(item.id)}
+                        onChange={(e) => toggle(item.id, e.target.checked)}
                       />
-                    </td>
-                  )
-                })}
-              </tr>
-            )
-          }}
-          tail={
-            <>
-              {newRows.map((row) => (
-                <tr key={row.tempId} className="is-new">
-                  <td className="grid-check" />
-                  {shown.map((def) =>
-                    def.kind === 'name' ? (
+                    )}
+                  </td>
+                  {shown.map((def) => {
+                    const label = t.table.cell(item.name, labelOf(def))
+                    const text = def.kind === 'name' ? value(item, 'name') : cell(item, def.col)
+                    if (active?.row !== item.id && def.kind === 'name') {
+                      return (
+                        <td key={def.id}>
+                          <NameCell item={item} name={text} />
+                        </td>
+                      )
+                    }
+                    if (active?.row !== item.id) {
+                      return (
+                        <td key={def.id}>
+                          <button
+                            type="button"
+                            className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
+                            aria-label={label}
+                            onFocus={() => setActive({ row: item.id, col: def.id })}
+                          >
+                            {text}
+                          </button>
+                        </td>
+                      )
+                    }
+                    const focus = active.col === def.id ? focusWithoutScroll : undefined
+                    return (
                       <td key={def.id}>
                         <input
-                          className="grid-input"
-                          list="name-options"
-                          aria-label={t.table.cell(row.name, nameLabel)}
-                          value={row.name}
-                          onChange={(e) => editNew(row.tempId, { name: e.target.value })}
-                          data-row={row.tempId}
+                          className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
+                          list={def.kind === 'name' ? 'name-options' : def.type === 'choice' ? choiceListId(def.id) : undefined}
+                          aria-label={label}
+                          value={text}
+                          ref={focus}
+                          data-row={item.id}
                           data-col={def.id}
-                          ref={row.tempId === lastNewId && shown[0]?.kind === 'name' ? focusWithoutScroll : undefined}
+                          onChange={(e) =>
+                            editItem(item.id, def.kind === 'name' ? { name: e.target.value } : { cells: { [def.id]: e.target.value } })
+                          }
                         />
                       </td>
-                    ) : (
-                      <td key={def.id}>
-                        <input
-                          className="grid-input num"
-                          list={def.type === 'choice' ? choiceListId(def.id) : undefined}
-                          aria-label={t.table.cell(row.name, def.col.key)}
-                          value={row.cells[def.id] ?? ''}
-                          onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
-                          data-row={row.tempId}
-                          data-col={def.id}
-                          ref={row.tempId === lastNewId && shown[0]?.id === def.id ? focusWithoutScroll : undefined}
-                        />
-                      </td>
-                    ),
-                  )}
+                    )
+                  })}
                 </tr>
-              ))}
-            </>
-          }
-        />
-      )}
-
-      {items.length > 0 && visible.length === 0 && newRows.length === 0 && (
-        <div className="empty">
-          <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              onQueryChange('')
-              onFiltersChange({})
+              )
             }}
-          >
-            {t.search.showAll}
-          </button>
-        </div>
-      )}
+            tail={
+              <>
+                {newRows.map((row) => (
+                  <tr key={row.tempId} className="is-new">
+                    <td className="grid-check" />
+                    {shown.map((def) =>
+                      def.kind === 'name' ? (
+                        <td key={def.id}>
+                          <input
+                            className="grid-input"
+                            list="name-options"
+                            aria-label={t.table.cell(row.name, nameLabel)}
+                            value={row.name}
+                            onChange={(e) => editNew(row.tempId, { name: e.target.value })}
+                            data-row={row.tempId}
+                            data-col={def.id}
+                            ref={row.tempId === lastNewId && shown[0]?.kind === 'name' ? focusWithoutScroll : undefined}
+                          />
+                        </td>
+                      ) : (
+                        <td key={def.id}>
+                          <input
+                            className="grid-input num"
+                            list={def.type === 'choice' ? choiceListId(def.id) : undefined}
+                            aria-label={t.table.cell(row.name, def.col.key)}
+                            value={row.cells[def.id] ?? ''}
+                            onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
+                            data-row={row.tempId}
+                            data-col={def.id}
+                            ref={row.tempId === lastNewId && shown[0]?.id === def.id ? focusWithoutScroll : undefined}
+                          />
+                        </td>
+                      ),
+                    )}
+                  </tr>
+                ))}
+                <tr className="grid-ghost" aria-hidden="true">
+                  <td className="grid-check" />
+                  <td colSpan={shown.length}>
+                    <input className="grid-input" placeholder={t.table.addRow} readOnly tabIndex={-1} onFocus={addRow} />
+                  </td>
+                </tr>
+              </>
+            }
+          />
+        )}
+
+        {items.length > 0 && visible.length === 0 && newRows.length === 0 && (
+          <div className="empty">
+            <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                onQueryChange('')
+                onFiltersChange({})
+              }}
+            >
+              {t.search.showAll}
+            </button>
+          </div>
+        )}
+      </div>
 
       {error && (
         <p className="error" role="alert">

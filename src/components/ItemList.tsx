@@ -36,21 +36,26 @@ export function ItemList({ items, properties, fields, query, onQueryChange, sear
 
   return (
     <div className="stack">
-      {searchOpen && (
-        <div className="search-bar">
-          <SearchField value={query} onChange={onQueryChange} onClose={onSearchClose} />
-        </div>
-      )}
-      <div className="row toolbar">
-        <a className="btn" href={href.add}>
-          <Icon name="add" size={20} />
-          {t.table.addRow}
+      <div className="table-card">
+      <div className="overview-head">
+        <p className="summary">
+          <strong>
+            {items.length === 0 ? t.list.empty : query.trim() === '' ? t.summary.things(items.length) : t.summary.shown(hits.length, items.length)}
+          </strong>
+        </p>
+        <a className="btn btn-icon" href={href.add} aria-label={t.table.addRow} title={t.table.addRow}>
+          <Icon name="add" />
         </a>
       </div>
-      {items.length === 0 ? (
-        <p className="hint">{t.list.empty}</p>
-      ) : hits.length === 0 ? (
-        <p className="hint">{t.list.noMatch}</p>
+      {searchOpen && (
+        <div className="controls">
+          <div className="search-bar">
+            <SearchField value={query} onChange={onQueryChange} onClose={onSearchClose} />
+          </div>
+        </div>
+      )}
+      {items.length === 0 ? null : hits.length === 0 ? (
+        <p className="hint list-empty">{t.list.noMatch}</p>
       ) : (
         <ul ref={ref} className="list" style={{ paddingTop: win.topPad, paddingBottom: win.bottomPad }}>
           {hits.slice(win.start, win.end).map((item) => (
@@ -58,6 +63,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, sear
           ))}
         </ul>
       )}
+      </div>
     </div>
   )
 }
