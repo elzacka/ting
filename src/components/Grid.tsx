@@ -1,4 +1,4 @@
-import type { ClipboardEvent, ReactNode } from 'react'
+import { useEffect, useRef, type ClipboardEvent, type ReactNode } from 'react'
 import { checkColumnWidth, columnWidth, tableWidth } from '../lib/columnWidths'
 import type { ColumnDef } from '../lib/fields'
 import type { Sort } from '../lib/sort'
@@ -47,12 +47,47 @@ export function Grid({
   wrap,
 }: Props) {
   const { ref: bodyRef, window: win } = useRowWindow(rowCount, rowHeight, allRows || wrap)
+  const tableRef = useRef<HTMLTableElement>(null)
+  const headRef = useRef<HTMLTableSectionElement>(null)
+  // Keeps the header row under the card's head while the page scrolls past
+  // the table: the wrap scrolls sideways, so position: sticky would pin the
+  // row to the wrap instead of the page. Not while printing: every row is on paper.
+  useEffect(() => {
+    const table = tableRef.current
+    const head = headRef.current
+    if (!table || !head) return
+    let frame = 0
+    const place = () => {
+      frame = 0
+      const cs = getComputedStyle(table)
+      const stickyTop = parseFloat(cs.getPropertyValue('--topbar-h')) + parseFloat(cs.getPropertyValue('--head-h'))
+      const rect = table.getBoundingClientRect()
+      const room = rect.height - head.getBoundingClientRect().height
+      const offset = Math.min(Math.max(0, stickyTop - rect.top), Math.max(0, room))
+      head.style.transform = offset > 0 ? `translateY(${offset}px)` : ''
+    }
+    const schedule = () => {
+      if (frame === 0) frame = requestAnimationFrame(place)
+    }
+    place()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    const ro = new ResizeObserver(schedule)
+    ro.observe(table)
+    return () => {
+      if (frame !== 0) cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      ro.disconnect()
+    }
+  }, [])
   const span = defs.length + 1
   const indexes: number[] = []
   for (let i = win.start; i < win.end; i++) indexes.push(i)
   return (
     <div className="table-wrap">
       <table
+        ref={tableRef}
         className={`grid${hasSelection ? ' has-selection' : ''}${wrap ? ' is-wrap' : ''}`}
         style={{ width: tableWidth(defs, widths) }}
         onPaste={onPaste}
@@ -63,7 +98,7 @@ export function Grid({
             <col key={def.id} style={{ width: columnWidth(def, widths) }} />
           ))}
         </colgroup>
-        <thead>
+        <thead ref={headRef}>
           <tr>
             <th scope="col" className="grid-check">
               {headerCheck}

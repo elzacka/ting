@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ClipboardEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react'
 import { createPortal, flushSync } from 'react-dom'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { formatDate, formatNumber } from '../lib/format'
@@ -189,6 +189,20 @@ export function Overview({
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
+  // The head's height goes into --head-h on the card, so the table's header
+  // row can stick right under it whatever the head line wraps to
+  const cardRef = useRef<HTMLDivElement>(null)
+  const headRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const head = headRef.current
+    const card = cardRef.current
+    if (!head || !card) return
+    const set = () => card.style.setProperty('--head-h', `${head.getBoundingClientRect().height}px`)
+    set()
+    const ro = new ResizeObserver(set)
+    ro.observe(head)
+    return () => ro.disconnect()
+  }, [])
   const shown = useMemo(
     () => (printing && printCols ? shownAll.filter((d) => d.kind === 'name' || printCols.has(d.id)) : shownAll),
     [shownAll, printing, printCols],
@@ -590,8 +604,8 @@ export function Overview({
 
   return (
     <div className="stack">
-      <div className="table-card">
-        <div className="overview-head">
+      <div className="table-card" ref={cardRef}>
+        <div className="overview-head" ref={headRef}>
           {/* Every action on the register, header style: add, add a column, and
               the two reports, which take what is on screen */}
           <div className="row">

@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0 var(--s-4);
-  min-height: 56px;
+  min-height: var(--topbar-h);
   margin: 0 calc(var(--gutter) * -1) var(--s-6);
   padding: 0 var(--gutter);
   background: var(--bg);
@@ -522,15 +522,30 @@ section {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: clip; /* clips to the radius without becoming a scroll container, so the head can stick to the page */
 }
 
 /* The actions at the right edge, and under them, flush with the last
-   glyph, what is on screen in the same small grey as the table's foot row */
+   glyph, what is on screen in the same small grey as the table's foot row.
+   The head stays under the top bar while the rows scroll, and the table's
+   header row stays under the head: Overview measures the head into --head-h. */
 .overview-head {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 4;
   display: grid;
   justify-items: end;
   padding: var(--s-1) var(--s-1) var(--s-2);
+  background: var(--surface);
+}
+
+/* The header row follows the page scroll under the head: Grid moves it with
+   a transform, since the sideways-scrolling wrap would pin a sticky header to
+   itself rather than to the page. Painted above the rows it slides over. */
+.grid thead {
+  position: relative;
+  z-index: 2;
+  background: var(--surface);
 }
 
 .overview-head .summary {
@@ -933,6 +948,11 @@ section {
   .controls,
   .overview-head {
     display: none;
+  }
+
+  /* The header row is wherever the page had scrolled to; on paper it belongs at the top */
+  .grid thead {
+    transform: none !important;
   }
 
   .grid {
