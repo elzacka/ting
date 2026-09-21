@@ -1375,15 +1375,27 @@ section {
   cursor: text;
 }
 
+/* Choices under a setting read like the line under it: the hint's size and
+   grey, 16 px boxes on 36 px lines */
+.setting .check-option,
+.disclosure summary {
+  min-height: var(--row-h-sm);
+  gap: var(--s-2);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.setting .check-option input {
+  width: 16px;
+  height: 16px;
+}
+
 /* A folded list under a setting: closed until asked, a chevron that turns */
 .disclosure summary {
   display: flex;
   align-items: center;
-  gap: var(--s-1);
-  min-height: var(--row-h-sm);
   list-style: none;
   cursor: pointer;
-  font-size: var(--text-sm);
 }
 
 .disclosure summary::-webkit-details-marker {
