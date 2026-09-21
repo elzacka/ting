@@ -61,7 +61,8 @@ Hengelåsen øverst låser med én gang.
 ### 3. Lag egenskapene dine
 
 En egenskap er en kolonne i tabellen. Bare «Navn» finnes fra start. Trykk på
-«Legg til egenskap» og lag de du trenger. Et godt utgangspunkt:
+kolonneikonet øverst til høyre i tabellen («Legg til egenskap») og lag de du
+trenger. Et godt utgangspunkt:
 
 | Egenskap | Felttype | Alternativer eller enhet |
 |---|---|---|
@@ -81,9 +82,9 @@ lån, tilstand eller antall: Det er egenskaper, se [Egenskaper](#egenskaper).
 
 ### 4. Legg til de første tingene
 
-Trykk på «Legg til ting». En ny rad åpner seg i tabellen: Skriv navnet, fyll
-det du vet, trykk på «Legg til ting» igjen for neste. «Lagre» nederst lagrer
-alle radene på én gang.
+Klikk i «Legg til ting» nederst i tabellen, eller på plussikonet øverst til
+høyre. En ny rad åpner seg: Skriv navnet, fyll det du vet, klikk i «Legg til
+ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
 
 Valglister og datoer arver verdien fra raden over. Det du ikke vet ennå, lar du
 stå tomt: Linja øverst teller hva som mangler, og ett klikk finner dem igjen.
@@ -120,9 +121,10 @@ kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn.
 
 Ved skrivebordet, flere ting fra samme butikk:
 
-1. «Legg til ting». Skriv navn, pris, butikk og dato på første rad.
-2. «Legg til ting» igjen. Butikk, dato og plassering står allerede der; skriv
-   navn og pris.
+1. Klikk i «Legg til ting» nederst i tabellen. Skriv navn, pris, butikk og
+   dato på første rad.
+2. Klikk i «Legg til ting» igjen. Butikk, dato og plassering står allerede
+   der; skriv navn og pris.
 3. Gjenta for hver linje på kvitteringen. «Lagre».
 
 Pris og tekst arves ikke: Hver rad har sin egen.
@@ -131,7 +133,7 @@ Pris og tekst arves ikke: Hver rad har sin egen.
 
 I boden, med mobilen. Under 600 px bred er appen laget for akkurat dette.
 
-1. «Legg til ting» åpner skjermen «Ny ting».
+1. Plussikonet øverst til høyre åpner skjermen «Ny ting».
 2. «Ta bilde». Kameraet åpner seg direkte.
 3. Skriv navnet. Kategori og plassering står igjen fra forrige ting.
 4. «Lagre». Skjermen er klar for neste ting.
@@ -179,7 +181,7 @@ tingen for å se alt.
 | På tingens side | Trykk på blyanten ved verdien. <kbd>Enter</kbd> eller et trykk utenfor lagrer, <kbd>Esc</kbd> angrer |
 | Samme verdi på mange | Kopier én celle, lim inn i første rad av det som skal endres |
 | Bilde | På tingens side: «Velg bilde», «Bytt bilde», «Fjern bilde» |
-| Slette | På tingens side, eller huk av flere rader i tabellen og «Slett valgte» |
+| Slette | På tingens side, eller huk av flere rader i tabellen: «Slett valgte» dukker opp øverst til høyre |
 
 ### Mange ting på én gang
 
@@ -193,7 +195,7 @@ Snevre inn med søk eller filtre til det som skal med. Så:
 
 | Vil du | Slik |
 |---|---|
-| Utskrift eller PDF | Skriverikonet til høyre i verktøylinja. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
+| Utskrift eller PDF | Skriverikonet øverst til høyre i tabellen. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
 | Regneark | Nedlastingsikonet ved siden av. CSV-fila åpner rett i Excel og Numbers, med norske tall og datoer |
 
 Rapporten er ukryptert og laget for å leses. Den er ikke en sikkerhetskopi.
@@ -242,8 +244,9 @@ sikkerhetskopi flytter den.
 
 Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Kolonner som er tomme
-for alt som vises, er skjult; «Vis n tomme kolonner» henter dem fram. Navn står
-alltid først og blir stående når tabellen ruller sidelengs. Kategori, Notat og
+for alt som vises, er skjult; «Vis n tomme kolonner» på linja øverst i tabellen
+henter dem fram. Navn står alltid først og blir stående når tabellen ruller
+sidelengs. Kategori, Notat og
 Strekkode er egenskaper som alle andre.
 
 Filtrene under søkefeltet viser bare verdier som finnes i det som vises, med
@@ -268,10 +271,10 @@ Ikonet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Mappe på maskinen | Kobler til eller fra (Chrome og Edge) |
+| Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge); «Koble fra» kobler fra |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
 | Automatisk lås | Slår låsen etter 10 minutter av eller på |
-| Passord | Bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |
+| Passord | Nøkkelikonet bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |
 
 ---
 
@@ -281,7 +284,7 @@ Ikonet lengst til høyre i topplinja.
 |---|---|---|
 | Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet |
 | Brunt Innstillinger-ikon | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
-| «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult fordi den er tom | Kolonnen vises ved siden av meldingen. Endre den fra kolonnemenyen i stedet |
+| «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult fordi den er tom | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
 | «Fant ingen strekkode i bildet.» | Ingen av de to leserne fant en kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
 | Appen er tom etter en stund på iPhone | Safari rydder nettleserdata som ikke er brukt på sju dager, også for apper på Hjem-skjermen i enkelte tilfeller | Gjenopprett fra sikkerhetskopien. Ta en ny kopi hver gang du har registrert noe på iPhone |
