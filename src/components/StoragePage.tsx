@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { replaceAll, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
-import type { FieldSettings } from '../lib/fields'
+import { columnDefs, type FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
 import { missing } from '../lib/summary'
@@ -24,11 +24,29 @@ type Props = {
   folder: ReturnType<typeof useFolderSync>
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
+  hidden: Set<string>
+  onHiddenChange: (id: string, visible: boolean) => void
+  wrap: boolean
+  onWrapChange: (on: boolean) => void
   onOpenQuery: (q: string) => void
 }
 
-export function StoragePage({ items, properties, fields, folder, autoLock, onAutoLockChange, onOpenQuery }: Props) {
+export function StoragePage({
+  items,
+  properties,
+  fields,
+  folder,
+  autoLock,
+  onAutoLockChange,
+  hidden,
+  onHiddenChange,
+  wrap,
+  onWrapChange,
+  onOpenQuery,
+}: Props) {
   const gaps = missing(items, properties)
+  const columns = columnDefs(fields, properties, items).filter((d) => d.kind === 'prop')
+  const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Loaded | null>(null)
@@ -314,6 +332,37 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
             {message}
           </p>
         )}
+      </section>
+
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label">{t.storage.viewTitle}</h2>
+            <p className="hint">{t.storage.viewWhat}</p>
+          </div>
+        </div>
+        <label className="check-option">
+          <input type="checkbox" checked={wrap} onChange={(e) => onWrapChange(e.target.checked)} />
+          <span>{t.table.wrap}</span>
+        </label>
+        <details className="disclosure">
+          <summary>
+            <Icon name="chevronRight" size={16} className="disclosure-chevron" />
+            {t.storage.viewSummary(visibleCount, columns.length)}
+          </summary>
+          <div className="disclosure-body">
+            {columns.map((def) => (
+              <label key={def.id} className="check-option">
+                <input
+                  type="checkbox"
+                  checked={!hidden.has(def.id)}
+                  onChange={(e) => onHiddenChange(def.id, e.target.checked)}
+                />
+                <span>{def.col.key}</span>
+              </label>
+            ))}
+          </div>
+        </details>
       </section>
 
       <section className="setting">

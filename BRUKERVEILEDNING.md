@@ -245,8 +245,9 @@ sikkerhetskopi flytter den.
 
 Kolonnene er så brede som innholdet trenger, opp til en grense. Dra i kanten
 av en kolonneoverskrift for å sette bredden selv; dobbeltklikk der for å
-tilpasse den til innholdet igjen. «Bryt tekst» øverst til høyre lar lange
-verdier gå over flere linjer i stedet for å ende i tre prikker.
+tilpasse den til innholdet igjen. Under Innstillinger › Tilpass visning velger
+du hvilke egenskaper tabellen viser, og om lange verdier skal brytes over
+flere linjer. Begge deler husker enheten.
 
 Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Kolonner som er tomme
@@ -279,6 +280,7 @@ Ikonet lengst til høyre i topplinja.
 |---|---|
 | Status | Hva som mangler: bilde, og verdi i hver kr-kolonne. Hvert tall er et søk som åpner tabellen med akkurat de tingene |
 | Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
+| Tilpass visning | Bryt lang tekst over flere linjer, og lista over egenskaper: Fjern haken for å ta en kolonne ut av tabellen. Navn vises alltid. Enheten husker valgene |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
 | Automatisk lås | Slår låsen etter 10 minutter av eller på |
 | Passord | Nøkkelikonet bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |

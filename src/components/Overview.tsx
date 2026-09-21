@@ -76,6 +76,10 @@ type Props = {
   onDirtyChange: (dirty: boolean) => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
+  // Columns taken out of the table on Innstillinger; Navn is never among them
+  hidden: Set<string>
+  // Long values run onto more lines instead of ending in an ellipsis (Innstillinger)
+  wrap: boolean
 }
 
 // Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
@@ -98,6 +102,8 @@ export function Overview({
   onDirtyChange,
   filters,
   onFiltersChange,
+  hidden,
+  wrap,
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
@@ -119,8 +125,6 @@ export function Overview({
   const [columnError, setColumnError] = useState<string | null>(null)
   // Columns empty for every row on screen are hidden; this shows them anyway
   const [showEmpty, setShowEmpty] = useState(false)
-  // Long values wrap onto more lines instead of ending in an ellipsis
-  const [wrap, setWrap] = useState(false)
   const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
     key: '',
     unit: '',
@@ -173,9 +177,10 @@ export function Overview({
     for (const row of newRows) for (const [id, v] of Object.entries(row.cells)) if (v.trim() !== '') used.add(id)
     for (const [id, values] of Object.entries(filters)) if (values.length > 0) used.add(id)
     const inUse = (d: ColumnDef) => d.kind === 'name' || used.has(d.id)
-    const empty = items.length === 0 ? 0 : defs.filter((d) => !inUse(d)).length
-    return { shown: showEmpty || items.length === 0 ? defs : defs.filter(inUse), empty }
-  }, [defs, visible, newRows, filters, showEmpty, items.length])
+    const chosen = defs.filter((d) => d.kind === 'name' || !hidden.has(d.id))
+    const empty = items.length === 0 ? 0 : chosen.filter((d) => !inUse(d)).length
+    return { shown: showEmpty || items.length === 0 ? chosen : chosen.filter(inUse), empty }
+  }, [defs, visible, newRows, filters, showEmpty, items.length, hidden])
 
   // Skriv ut asks which columns go on paper; Navn always does, and the form
   // starts with Navn alone. Chosen once per session, null before that:
@@ -598,16 +603,6 @@ export function Overview({
             )}
             <button type="button" className="btn btn-icon" aria-label={t.table.addRow} title={t.table.addRow} onClick={addRow}>
               <Icon name="add" />
-            </button>
-            <button
-              type="button"
-              className={`btn btn-icon${wrap ? ' is-active' : ''}`}
-              aria-label={wrap ? t.table.noWrap : t.table.wrap}
-              title={wrap ? t.table.noWrap : t.table.wrap}
-              aria-pressed={wrap}
-              onClick={() => setWrap((v) => !v)}
-            >
-              <Icon name="wrapText" />
             </button>
             <button
               type="button"

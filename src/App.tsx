@@ -23,7 +23,7 @@ import { useColumnWidths } from './lib/columnWidths'
 import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
 import { useNarrow } from './lib/useNarrow'
-import { readAutoLock, writeAutoLock } from './lib/prefs'
+import { readAutoLock, readHiddenColumns, readWrap, writeAutoLock, writeHiddenColumns, writeWrap } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
 import { AddItem } from './components/AddItem'
 import { ItemList } from './components/ItemList'
@@ -83,6 +83,22 @@ export function App() {
     navigate(href.list)
   }, [])
   const [autoLock, setAutoLock] = useState(readAutoLock)
+  // Tilpass visning: columns taken out of the table on this device
+  const [hidden, setHidden] = useState(readHiddenColumns)
+  const [wrap, setWrap] = useState(readWrap)
+  const toggleWrap = useCallback((on: boolean) => {
+    writeWrap(on)
+    setWrap(on)
+  }, [])
+  const toggleHidden = useCallback((id: string, visible: boolean) => {
+    setHidden((prev) => {
+      const next = new Set(prev)
+      if (visible) next.delete(id)
+      else next.add(id)
+      writeHiddenColumns(next)
+      return next
+    })
+  }, [])
   const toggleAutoLock = useCallback((on: boolean) => {
     writeAutoLock(on)
     setAutoLock(on)
@@ -229,6 +245,10 @@ export function App() {
               folder={folder}
               autoLock={autoLock}
               onAutoLockChange={toggleAutoLock}
+              hidden={hidden}
+              onHiddenChange={toggleHidden}
+              wrap={wrap}
+              onWrapChange={toggleWrap}
               onOpenQuery={openQuery}
             />
           )}
@@ -258,6 +278,10 @@ type ScreenProps = {
   folder: ReturnType<typeof useFolderSync>
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
+  hidden: Set<string>
+  onHiddenChange: (id: string, visible: boolean) => void
+  wrap: boolean
+  onWrapChange: (on: boolean) => void
   onOpenQuery: (q: string) => void
 }
 
@@ -281,6 +305,10 @@ function Screen({
   folder,
   autoLock,
   onAutoLockChange,
+  hidden,
+  onHiddenChange,
+  wrap,
+  onWrapChange,
   onOpenQuery,
 }: ScreenProps) {
   const search = { query, onQueryChange, searchOpen, onSearchClose }
@@ -301,6 +329,8 @@ function Screen({
         widths={widths}
         onWidth={onWidth}
         onDirtyChange={onDirtyChange}
+        hidden={hidden}
+        wrap={wrap}
       />
     )
   }
@@ -313,6 +343,10 @@ function Screen({
         folder={folder}
         autoLock={autoLock}
         onAutoLockChange={onAutoLockChange}
+        hidden={hidden}
+        onHiddenChange={onHiddenChange}
+        wrap={wrap}
+        onWrapChange={onWrapChange}
         onOpenQuery={onOpenQuery}
       />
     )

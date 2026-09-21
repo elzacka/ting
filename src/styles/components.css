@@ -1375,6 +1375,36 @@ section {
   cursor: text;
 }
 
+/* A folded list under a setting: closed until asked, a chevron that turns */
+.disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--row-h-sm);
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure-chevron {
+  transition: transform var(--duration) ease-out;
+}
+
+.disclosure[open] .disclosure-chevron {
+  transform: rotate(90deg);
+}
+
+.disclosure-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 var(--s-4);
+  padding-left: var(--s-6);
+}
+
 /* A fact in Status reads like the line under any other setting; it is
    still a search, so it underlines under the pointer and on focus */
 .status-link {
