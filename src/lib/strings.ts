@@ -134,6 +134,8 @@ export const t = {
     name: 'Navn',
     addRow: 'Legg til ting',
     addColumn: 'Legg til egenskap',
+    wrap: 'Bryt tekst',
+    noWrap: 'Ikke bryt tekst',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
     types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato' },

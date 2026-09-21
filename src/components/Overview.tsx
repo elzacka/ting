@@ -16,6 +16,7 @@ import {
 } from '../db/db'
 import type { Item, Property, PropertyType } from '../db/schema'
 import { distinct, parseNumber } from '../lib/filter'
+import { autoWidths } from '../lib/columnWidths'
 import { categoryColumnId, columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
@@ -118,6 +119,8 @@ export function Overview({
   const [columnError, setColumnError] = useState<string | null>(null)
   // Columns empty for every row on screen are hidden; this shows them anyway
   const [showEmpty, setShowEmpty] = useState(false)
+  // Long values wrap onto more lines instead of ending in an ellipsis
+  const [wrap, setWrap] = useState(false)
   const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
     key: '',
     unit: '',
@@ -138,6 +141,20 @@ export function Overview({
   }
 
   const baseCells = useMemo(() => new Map(items.map((i) => [i.id, cellsFrom(i)])), [items])
+  // Columns fit their content unless the user has dragged or fitted them
+  const fitted = useMemo(
+    () =>
+      autoWidths(
+        defs,
+        labelOf,
+        (def) =>
+          def.kind === 'name' ? items.map((i) => i.name) : items.map((i) => baseCells.get(i.id)?.[def.id] ?? ''),
+        items.some((i) => i.photo !== null),
+      ),
+    // labelOf reads fields, which defs already depend on
+    [defs, items, baseCells],
+  )
+  const effectiveWidths = useMemo(() => ({ ...fitted, ...widths }), [fitted, widths])
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
   // Edited rows stay visible even when they stop matching the query.
   const searched = useMemo(() => searchItems(items, query), [items, query])
@@ -584,6 +601,16 @@ export function Overview({
             </button>
             <button
               type="button"
+              className={`btn btn-icon${wrap ? ' is-active' : ''}`}
+              aria-label={wrap ? t.table.noWrap : t.table.wrap}
+              title={wrap ? t.table.noWrap : t.table.wrap}
+              aria-pressed={wrap}
+              onClick={() => setWrap((v) => !v)}
+            >
+              <Icon name="wrapText" />
+            </button>
+            <button
+              type="button"
               className={`btn btn-icon${addingColumn ? ' is-active' : ''}`}
               aria-label={t.table.addColumn}
               title={t.table.addColumn}
@@ -897,11 +924,12 @@ export function Overview({
         {hasRows && (
           <Grid
             defs={shown}
-            widths={widths}
+            widths={effectiveWidths}
             sort={sort}
             onWidth={onWidth}
             hasSelection={selected.size > 0}
             allRows={printing}
+            wrap={wrap}
             label={labelOf}
             onPaste={onPaste}
             headerCheck={

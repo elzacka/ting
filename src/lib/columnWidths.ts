@@ -31,6 +31,43 @@ export function tableWidth(defs: readonly ColumnDef[], widths: Widths, extra = 0
   return checkColumnWidth() + defs.reduce((sum, d) => sum + columnWidth(d, widths), 0) + extra
 }
 
+const maxAutoWidth = 420
+
+function cssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+// Every column's width from its content, for columns the user has not set:
+// the widest value in the column (measured in the cell font, off screen on a
+// canvas) or the header, plus the cell's chrome, capped so one long name
+// cannot take the table. Runs over all rows on screen, not only the windowed
+// ones, so scrolling never changes a width.
+export function autoWidths(
+  defs: readonly ColumnDef[],
+  label: (def: ColumnDef) => string,
+  values: (def: ColumnDef) => Iterable<string>,
+  thumbs: boolean,
+): Widths {
+  const ctx = document.createElement('canvas').getContext('2d')
+  const out: Widths = {}
+  if (!ctx) return out
+  const font = cssVar('--font')
+  const cellFont = `${cssVar('--text-cell')} ${font}`
+  const headFont = `600 ${cssVar('--text-xs')} ${font}`
+  for (const def of defs) {
+    ctx.font = headFont
+    let max = ctx.measureText(label(def)).width + headerPadding + headerExtra
+    ctx.font = cellFont
+    const extra = cellPadding + (def.kind === 'name' && thumbs ? 32 + thumbGap : 0)
+    for (const v of values(def)) {
+      const w = ctx.measureText(v).width + extra
+      if (w > max) max = w
+    }
+    out[def.id] = Math.min(maxAutoWidth, Math.max(minColumnWidth, Math.ceil(max + slack)))
+  }
+  return out
+}
+
 // Anything from localStorage is untrusted: keep only finite numbers in range.
 function read(): Widths {
   try {

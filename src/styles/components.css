@@ -1355,6 +1355,16 @@ section {
   background: var(--bg);
 }
 
+/* Bryt tekst: values run onto more lines, rows grow, and the row window is
+   off (every row is rendered) since it counts on one row height */
+.grid.is-wrap .grid-cell,
+.grid.is-wrap .grid-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  height: auto;
+}
+
 /* The foot of the table reads "Legg til ting" in grey; a click there is a new row */
 .grid-ghost td {
   border-bottom-color: transparent;

@@ -243,6 +243,11 @@ sikkerhetskopi flytter den.
 | Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Kolonner i kr summeres øverst |
 | Dato | Skriv `19.09.26` |
 
+Kolonnene er så brede som innholdet trenger, opp til en grense. Dra i kanten
+av en kolonneoverskrift for å sette bredden selv; dobbeltklikk der for å
+tilpasse den til innholdet igjen. «Bryt tekst» øverst til høyre lar lange
+verdier gå over flere linjer i stedet for å ende i tre prikker.
+
 Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Kolonner som er tomme
 for alt som vises, er skjult; «Vis n tomme kolonner» på linja øverst i tabellen

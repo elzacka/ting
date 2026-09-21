@@ -24,8 +24,10 @@ type Props = {
   // Rows after the windowed ones, always rendered: new rows being typed
   tail?: ReactNode
   onPaste?: (e: ClipboardEvent<HTMLTableElement>) => void
-  // Every row, not only the ones on screen: while printing
+  // Every row, not only the ones on screen: while printing, and while text
+  // wraps, since the row window counts on one row height
   allRows?: boolean
+  wrap?: boolean
 }
 
 export function Grid({
@@ -42,15 +44,16 @@ export function Grid({
   tail,
   onPaste,
   allRows,
+  wrap,
 }: Props) {
-  const { ref: bodyRef, window: win } = useRowWindow(rowCount, rowHeight, allRows)
+  const { ref: bodyRef, window: win } = useRowWindow(rowCount, rowHeight, allRows || wrap)
   const span = defs.length + 1
   const indexes: number[] = []
   for (let i = win.start; i < win.end; i++) indexes.push(i)
   return (
     <div className="table-wrap">
       <table
-        className={`grid${hasSelection ? ' has-selection' : ''}`}
+        className={`grid${hasSelection ? ' has-selection' : ''}${wrap ? ' is-wrap' : ''}`}
         style={{ width: tableWidth(defs, widths) }}
         onPaste={onPaste}
       >
