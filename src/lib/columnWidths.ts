@@ -5,6 +5,8 @@ const storageKey = 'ting.columnWidths'
 export const minColumnWidth = 56
 const headerPadding = 20 // th padding left and right
 const headerExtra = 28 // menu chevron and sort arrow
+const cellPadding = 18 // a cell's control: 8 px padding and 1 px border on each side
+const thumbGap = 8 // between a thumbnail and the name
 const slack = 4
 
 export type Widths = Record<string, number>
@@ -64,23 +66,41 @@ export function useColumnWidths(): { widths: Widths; setWidth: (id: string, w: n
   return { widths, setWidth }
 }
 
-// Width that shows every value in the column in full. Measured from the DOM:
-// scrollWidth already accounts for padding, the font and the dropdown indicator
-// a suggestion list adds to an input.
+// The narrowest width that shows every value in the column whole: each
+// cell's text is measured in its own font, off screen, and the cell's chrome
+// (padding, a thumbnail, the header's chevron and arrow) is added. Reading a
+// cell's scrollWidth would never come out below the width it already has.
 export function fitWidth(table: HTMLTableElement, colIndex: number): number {
+  const probe = document.createElement('span')
+  probe.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre'
+  document.body.appendChild(probe)
   let max = 0
-  table.querySelectorAll('tr').forEach((row) => {
-    const cell = row.children[colIndex]
-    if (!(cell instanceof HTMLElement)) return
-    let w: number
-    if (cell.tagName === 'TH') {
-      const label = cell.querySelector<HTMLElement>('.sort-btn')
-      w = (label?.scrollWidth ?? 0) + headerPadding + headerExtra
-    } else {
+  try {
+    table.querySelectorAll('tr').forEach((row) => {
+      const cell = row.children[colIndex]
+      if (!(cell instanceof HTMLElement)) return
+      // Spacer and foot rows span every column; their width says nothing about this one
+      if (cell instanceof HTMLTableCellElement && cell.colSpan > 1) return
       const input = cell.querySelector('input')
-      w = input ? input.scrollWidth + 2 : cell.scrollWidth
-    }
-    if (w > max) max = w
-  })
+      const inner =
+        cell.querySelector<HTMLElement>('.sort-btn') ??
+        cell.querySelector<HTMLElement>('.grid-link') ??
+        cell.querySelector<HTMLElement>('.grid-cell') ??
+        input ??
+        cell
+      probe.style.font = getComputedStyle(inner).font
+      probe.textContent = input ? input.value : (inner.textContent ?? '')
+      let w = probe.offsetWidth
+      if (cell.tagName === 'TH') w += headerPadding + headerExtra
+      else {
+        w += cellPadding
+        const thumb = cell.querySelector<HTMLElement>('.thumb')
+        if (thumb) w += thumb.offsetWidth + thumbGap
+      }
+      if (w > max) max = w
+    })
+  } finally {
+    probe.remove()
+  }
   return Math.max(minColumnWidth, max + slack)
 }
