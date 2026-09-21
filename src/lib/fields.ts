@@ -29,6 +29,18 @@ export const categoryProperty = (): Property => ({
   options: [],
 })
 
+// The property Strekkode: a text column, created the first time a code is
+// scanned or typed on the phone form.
+export const barcodeKey = 'Strekkode'
+export const barcodeColumnId = columnId({ key: barcodeKey, unit: null })
+export const barcodeProperty = (): Property => ({
+  id: barcodeColumnId,
+  key: barcodeKey,
+  unit: null,
+  createdAt: Date.now(),
+  type: 'text',
+})
+
 export function readFieldSettings(raw: unknown): FieldSettings {
   const r = (raw ?? {}) as Partial<FieldSettings>
   return { name: { label: r.name?.label ?? null } }

@@ -2,14 +2,19 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Everything is local: no fonts, icons or data leave the device. The CSP says so
-// to the browser, which also helps Android browsers treat the app as safe to install.
+// Everything is local: no fonts, icons or code come from outside, and nothing
+// leaves the device except the one lookup the user asks for by pressing
+// "Slå opp på nett" (src/lib/lookup.ts): the digits of a barcode to one of
+// the three catalogues below. The CSP says so to the browser, which also helps
+// Android browsers treat the app as safe to install.
+const lookupOrigins = ['https://openlibrary.org', 'https://world.openproductsfacts.org', 'https://world.openfoodfacts.org']
+
 const productionCsp = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
-  "connect-src 'self'",
+  `connect-src 'self' ${lookupOrigins.join(' ')}`,
   "font-src 'self'",
   "manifest-src 'self'",
   "worker-src 'self' blob:",

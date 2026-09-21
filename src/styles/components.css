@@ -297,6 +297,13 @@
   color: var(--text-2);
 }
 
+/* The code field shares its row with Skann and Slå opp */
+.input-code {
+  flex: 1 1 160px;
+  width: auto;
+  font-family: var(--font-mono);
+}
+
 /* Phone list: one thing per row, the name and what the Valgliste columns say */
 
 .list {
@@ -815,11 +822,25 @@ section {
     border-bottom: 1px solid #000;
   }
 
+  /* The frozen columns keep their sticky rules on paper unless told at the
+     same specificity: an opaque, stacked name cell painted over the header
+     border under it once the table got narrower */
+  .grid th:nth-child(1),
+  .grid td:nth-child(1),
+  .grid th:nth-child(2),
+  .grid td:nth-child(2) {
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    z-index: auto;
+  }
+
   .grid tr {
     break-inside: avoid;
   }
 
-  .grid-link {
+  .grid-link,
+  .grid-link:hover {
     color: #000;
     text-decoration: none;
   }

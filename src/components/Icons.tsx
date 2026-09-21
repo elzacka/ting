@@ -1,4 +1,4 @@
-// Self-hosted icons. Paths from Google's Material Icons (outlined), Apache 2.0.
+// Self-hosted icons. Paths from Google's Material Symbols (outlined), Apache 2.0.
 // Drawn with currentColor so they inherit the text colour of their context.
 
 type IconProps = {

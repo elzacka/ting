@@ -163,9 +163,10 @@ export function Overview({
     return { shown: showEmpty || items.length === 0 ? defs : defs.filter(inUse), empty }
   }, [defs, visible, newRows, filters, showEmpty, items.length])
 
-  // Skriv ut asks which columns go on paper; Navn always does. Chosen once
-  // per session, null before that: everything on screen. While the browser
-  // takes its snapshot the table itself narrows to the choice.
+  // Skriv ut asks which columns go on paper; Navn always does, and the form
+  // starts with Navn alone. Chosen once per session, null before that:
+  // everything on screen (Cmd+P without a choice). While the browser takes
+  // its snapshot the table itself narrows to the choice.
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
@@ -598,7 +599,7 @@ export function Overview({
             className="summary-link"
             aria-expanded={printPick !== null}
             aria-controls="print-form"
-            onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? shownAll.map((d) => d.id))))}
+            onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
           >
             {t.report.print}
           </button>
@@ -620,6 +621,18 @@ export function Overview({
           }}
         >
           <p className="field-label">{t.report.pick}</p>
+          <div className="row toolbar">
+            <button
+              type="button"
+              className="summary-link"
+              onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
+            >
+              {t.report.pickAll}
+            </button>
+            <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
+              {t.report.pickNone}
+            </button>
+          </div>
           <div className="row toolbar">
             {shownAll.map((def) => (
               <label key={def.id} className="check-option">
