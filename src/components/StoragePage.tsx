@@ -123,29 +123,23 @@ export function StoragePage({
 
   return (
     <div className="stack narrow">
-      <h1 className="title">{t.storage.title}</h1>
+      {/* What is missing, above the settings since it is about the register,
+          not the device: a quiet band, there only while something is missing.
+          Each fact is a search that opens the overview narrowed to those things. */}
+      {gaps.length > 0 && (
+        <p className="notice" role="status">
+          {gaps.map((m) => (
+            <span key={m.query}>
+              <button type="button" className="status-link" onClick={() => onOpenQuery(m.query)}>
+                {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
+              </button>
+              .{' '}
+            </span>
+          ))}
+        </p>
+      )}
 
-      <section className="setting">
-        <div className="setting-head">
-          <div>
-            <h2 className="section-label">{t.storage.statusTitle}</h2>
-            {/* What is missing: a photo, a value in a kr column. Each is a
-                search that opens the overview narrowed to those things. */}
-            <p className="hint">
-              {gaps.length === 0
-                ? t.storage.statusComplete
-                : gaps.map((m) => (
-                    <span key={m.query}>
-                      <button type="button" className="status-link" onClick={() => onOpenQuery(m.query)}>
-                        {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-                      </button>
-                      .{' '}
-                    </span>
-                  ))}
-            </p>
-          </div>
-        </div>
-      </section>
+      <h1 className="title">{t.storage.title}</h1>
 
       <section className="setting">
         <div className="setting-head">
@@ -355,8 +349,11 @@ export function StoragePage({
         </div>
         <details className="disclosure">
           <summary>
-            <Icon name="chevronRight" size={16} className="disclosure-chevron" />
-            {t.storage.viewSummary(visibleCount, columns.length)}
+            <span>{t.storage.viewList}</span>
+            <span className="disclosure-meta">
+              {t.storage.viewShown(visibleCount, columns.length)}
+              <Icon name="chevronRight" size={16} className="disclosure-chevron" />
+            </span>
           </summary>
           <div className="disclosure-body">
             {columns.map((def) => (

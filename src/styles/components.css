@@ -1390,10 +1390,13 @@ section {
   height: 16px;
 }
 
-/* A folded list under a setting: closed until asked, a chevron that turns */
+/* A folded list under a setting: one line with the name at the left and the
+   count and a chevron at the right, closed until asked; open, the choices
+   sit in the same tinted band as the table's controls */
 .disclosure summary {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   list-style: none;
   cursor: pointer;
 }
@@ -1402,29 +1405,52 @@ section {
   display: none;
 }
 
+.disclosure-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
 .disclosure-chevron {
+  transform: rotate(90deg);
   transition: transform var(--duration) ease-out;
 }
 
 .disclosure[open] .disclosure-chevron {
-  transform: rotate(90deg);
+  transform: rotate(-90deg);
 }
 
 .disclosure-body {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0 var(--s-4);
-  padding-left: var(--s-6);
+  padding: var(--s-1) var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
-/* A fact in Status reads like the line under any other setting; it is
-   still a search, so it underlines under the pointer and on focus */
+/* A quiet band with a fact about the register: the table band's tint and
+   hairline, the hint's size and grey, no icon and no title. It is not a
+   warning; nothing is wrong, something is unfinished. */
+.notice {
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+/* A fact in the notice is a search: set in the accent, the one colour the
+   app uses for what can be acted on, and underlined under the pointer */
 .status-link {
   padding: 0;
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--accent);
   font: inherit;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
 }
