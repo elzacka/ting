@@ -8,6 +8,7 @@ import { formatDate } from '../lib/format'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
+import { Icon } from './Icons'
 import { errorText } from '../lib/errors'
 import { requestFullPhotoWrite } from '../lib/folderStore'
 
@@ -217,8 +218,15 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
         <h2 className="section-label">{t.storage.copyTitle}</h2>
         <p className="hint">{t.storage.copyWhat}</p>
         <div className="row toolbar">
-          <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
-            {t.storage.download}
+          <button
+            type="button"
+            className="btn btn-icon"
+            aria-label={t.storage.download}
+            title={t.storage.download}
+            disabled={items.length === 0}
+            onClick={() => void download()}
+          >
+            <Icon name="download" />
           </button>
           <input
             ref={fileRef}
@@ -227,8 +235,14 @@ export function StoragePage({ items, properties, fields, folder, autoLock, onAut
             className="visually-hidden"
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
-          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-            {t.storage.restore}
+          <button
+            type="button"
+            className="btn btn-icon"
+            aria-label={t.storage.restore}
+            title={t.storage.restore}
+            onClick={() => fileRef.current?.click()}
+          >
+            <Icon name="upload" />
           </button>
         </div>
         {foreignCopy && (

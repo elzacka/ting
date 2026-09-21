@@ -507,6 +507,11 @@ section {
   flex-wrap: wrap;
 }
 
+/* The report icons sit at the right end of the toolbar, like the header's */
+.toolbar .toolbar-end {
+  margin-left: auto;
+}
+
 .column-form .toolbar {
   align-items: flex-end;
 }
@@ -879,18 +884,25 @@ section {
   color: var(--accent);
 }
 
-/* Tips take their own full-width row after the field and the filters; the
-   toggle hangs tight under them, right-aligned */
+/* The field and its tips are one column; the toggle hangs under the field,
+   at its left edge, and the tips open beneath it at the field's width */
 
-.search-bar > .tips {
-  order: 1;
-  flex-basis: 100%;
-  margin-top: calc(var(--s-2) * -1);
+.search-column {
+  flex: 1 1 320px;
+  max-width: 440px;
+  display: grid;
+  gap: var(--s-1);
+  align-content: start;
+}
+
+.search-column .search-block {
+  flex: none;
+  max-width: none;
 }
 
 .tips summary {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   gap: 2px;
   list-style: none;

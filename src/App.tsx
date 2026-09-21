@@ -92,10 +92,11 @@ export function App() {
     if (initial !== '') setQuery(initial)
     else document.getElementById('search')?.focus()
   }, [])
+  // Hiding the panel keeps the search and the filters: the header icon stays
+  // lit while a query narrows the table. Clearing is the field's own X, the
+  // filters' "Fjern alle filtre", or "Vis alle ting".
   const closeSearch = useCallback(() => {
     setSearchOpen(false)
-    setQuery('')
-    setFilters({})
   }, [])
   const toggleSearch = useCallback(() => {
     if (searchOpen) closeSearch()
@@ -166,7 +167,7 @@ export function App() {
             {searchable && unlocked && (
               <button
                 type="button"
-                className={`btn btn-icon${query !== '' ? ' is-active' : ''}`}
+                className={`btn btn-icon${query !== '' || Object.values(filters).some((v) => v.length > 0) ? ' is-active' : ''}`}
                 aria-label={searchOpen ? t.search.close : t.search.open}
                 aria-pressed={searchOpen}
                 aria-controls="search"

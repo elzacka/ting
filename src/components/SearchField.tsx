@@ -15,7 +15,7 @@ export function SearchField({ value, onChange, onClose, listTip }: Props) {
   const finePointer = window.matchMedia('(pointer: fine)').matches
 
   return (
-    <>
+    <div className="search-column">
       <div className="search search-block">
         <Icon name="search" size={20} className="icon-lead" />
         <label htmlFor="search" className="visually-hidden">
@@ -66,6 +66,6 @@ export function SearchField({ value, onChange, onClose, listTip }: Props) {
           {listTip && <p className="hint">{listTip}</p>}
         </div>
       </details>
-    </>
+    </div>
   )
 }

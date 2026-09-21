@@ -587,24 +587,85 @@ export function Overview({
               {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
             </button>
           ))}
-          <button
-            type="button"
-            className="summary-link"
-            onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
-          >
-            {t.report.csv}
-          </button>
-          <button
-            type="button"
-            className="summary-link"
-            aria-expanded={printPick !== null}
-            aria-controls="print-form"
-            onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
-          >
-            {t.report.print}
-          </button>
         </p>
       )}
+
+
+      <div className="print-only">
+        <h1 className="title">{t.report.docTitle}</h1>
+        <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
+      </div>
+
+      {searchOpen && (
+        <div className="search-bar">
+          <SearchField
+            value={query}
+            onChange={onQueryChange}
+            onClose={onSearchClose}
+            listTip={t.search.tipsTableText}
+          />
+          <FilterPanel
+            items={items}
+            searched={searched}
+            properties={properties}
+            fields={fields}
+            filters={filters}
+            onChange={onFiltersChange}
+          />
+        </div>
+      )}
+
+      <div className="row toolbar">
+        <button type="button" className="btn" onClick={addRow}>
+          <Icon name="add" size={20} />
+          {t.table.addRow}
+        </button>
+        <button
+          type="button"
+          className="btn"
+          aria-expanded={addingColumn}
+          aria-controls="column-form"
+          onClick={() => setAddingColumn((v) => !v)}
+        >
+          <Icon name="add" size={20} />
+          {t.table.addColumn}
+        </button>
+        {empty > 0 && (
+          <button type="button" className="btn" onClick={() => setShowEmpty((v) => !v)}>
+            {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
+          </button>
+        )}
+        {selected.size > 0 && !confirmingDelete && (
+          <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
+            <Icon name="delete" size={20} />
+            {t.table.deleteSelected(selected.size)}
+          </button>
+        )}
+        {items.length > 0 && (
+          <>
+            <button
+              type="button"
+              className="btn btn-icon toolbar-end"
+              aria-label={t.report.csv}
+              title={t.report.csv}
+              onClick={() => downloadText(exportFilename('csv'), toCsv(visible, properties, fields), 'text/csv;charset=utf-8')}
+            >
+              <Icon name="download" />
+            </button>
+            <button
+              type="button"
+              className={`btn btn-icon${printPick ? ' is-active' : ''}`}
+              aria-label={t.report.print}
+              title={t.report.print}
+              aria-expanded={printPick !== null}
+              aria-controls="print-form"
+              onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
+            >
+              <Icon name="print" />
+            </button>
+          </>
+        )}
+      </div>
 
       {printPick && (
         <form
@@ -663,58 +724,6 @@ export function Overview({
           </div>
         </form>
       )}
-
-      <div className="print-only">
-        <h1 className="title">{t.report.docTitle}</h1>
-        <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
-      </div>
-
-      {searchOpen && (
-        <div className="search-bar">
-          <SearchField
-            value={query}
-            onChange={onQueryChange}
-            onClose={onSearchClose}
-            listTip={t.search.tipsTableText}
-          />
-          <FilterPanel
-            items={items}
-            searched={searched}
-            properties={properties}
-            fields={fields}
-            filters={filters}
-            onChange={onFiltersChange}
-          />
-        </div>
-      )}
-
-      <div className="row toolbar">
-        <button type="button" className="btn" onClick={addRow}>
-          <Icon name="add" size={20} />
-          {t.table.addRow}
-        </button>
-        <button
-          type="button"
-          className="btn"
-          aria-expanded={addingColumn}
-          aria-controls="column-form"
-          onClick={() => setAddingColumn((v) => !v)}
-        >
-          <Icon name="add" size={20} />
-          {t.table.addColumn}
-        </button>
-        {empty > 0 && (
-          <button type="button" className="btn" onClick={() => setShowEmpty((v) => !v)}>
-            {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
-          </button>
-        )}
-        {selected.size > 0 && !confirmingDelete && (
-          <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
-            <Icon name="delete" size={20} />
-            {t.table.deleteSelected(selected.size)}
-          </button>
-        )}
-      </div>
 
       {addingColumn && (
         <form

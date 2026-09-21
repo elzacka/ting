@@ -151,14 +151,8 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
         )
       })}
       {activeCount(filters) > 0 && (
-        <button
-          type="button"
-          className="btn btn-icon"
-          aria-label={t.filters.clearAll}
-          title={t.filters.clearAll}
-          onClick={() => onChange({})}
-        >
-          <Icon name="close" size={20} />
+        <button type="button" className="summary-link" onClick={() => onChange({})}>
+          {t.filters.clearAll}
         </button>
       )}
     </div>
