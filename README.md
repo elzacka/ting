@@ -14,9 +14,9 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 
 | | |
 |---|---|
-| Én tabell | Egenskaper som kolonner, du bestemmer hvilke. Rediger i cellene, lim inn fra et regneark, søk med operatorer, filtrer med antall |
+| Én tabell | Egenskaper som kolonner, du bestemmer hvilke. Rediger i cellene, lim inn fra et regneark, søk med operatorer, filtrer med antall. Søket kan gjemmes uten å slippe taket |
 | Én side per ting | Bilde og alle verdier, hver av dem redigerbar der den står |
-| Mobil | Søk og liste, og «Legg til ting» med kamera, strekkode og oppslag av navn for bøker og varer, én ting om gangen |
+| Mobil | Søk og liste, og «Legg til ting» med kamera, strekkodeleser (følger med appen, virker uten nett) og oppslag av navn for bøker og varer, én ting om gangen |
 | Rapport | Utskrift eller PDF med valgte kolonner, eller CSV |
 | Ta vare på alt | Mappe på maskinen som holdes oppdatert (Chrome og Edge), eller en kryptert sikkerhetskopi |
 

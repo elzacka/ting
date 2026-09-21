@@ -96,7 +96,7 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Mappe på maskinen | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi». Hent den inn igjen med «Gjenopprett» |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | Pil ned laster ned fila. Pil opp henter den inn igjen |
 
 Begge tar med alle ting, egenskaper, bilder og kolonneinnstillinger, er
 kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn.
@@ -148,7 +148,7 @@ På «Ny ting» ligger feltet «Strekkode».
 
 | Vil du | Slik |
 |---|---|
-| Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, QR og flere. Virker i Chrome og Edge; Safari og alle nettlesere på iPhone kan ikke lese strekkoder, så der skriver du tallene under streken |
+| Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere. Leseren følger med appen og virker uten nett, også på iPhone. Leser den ikke koden: Nærmere, rett forfra, uten refleks. Eller skriv tallene under streken |
 | Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Open Library, varer i Open Products Facts og Open Food Facts. Rett navnet før du lagrer |
 | Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
 
@@ -159,8 +159,14 @@ du selv.
 ### Finne igjen en ting
 
 Trykk på forstørrelsesglasset, eller <kbd>⌘</kbd>+<kbd>K</kbd> på Mac. Søket
-tåler skrivefeil og forstår spørsmål som `komfort<0` og `plassering:loftsbod`.
-Se [Søk](#søk). Filtrene under søkefeltet viser hver verdi med antall.
+tåler skrivefeil og forstår spørsmål som `komfort<0` og `plassering:loftsbod`;
+«Søketips» under feltet viser alle. Se [Søk](#søk). Filtrene ved siden av viser
+hver verdi med antall.
+
+Trykk på forstørrelsesglasset igjen for å gjemme feltet og filtrene. Søket
+gjelder fortsatt: Ikonet lyser, og linja øverst sier «12 av 304 ting». Tøm
+feltet med krysset, filtrene med «Fjern alle filtre», eller alt med «Vis alle
+ting».
 
 På mobilen svarer lista med kategori og plassering rett under navnet. Trykk på
 tingen for å se alt.
@@ -187,8 +193,8 @@ Snevre inn med søk eller filtre til det som skal med. Så:
 
 | Vil du | Slik |
 |---|---|
-| Utskrift eller PDF | «Skriv ut» øverst. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
-| Regneark | «Last ned CSV». Åpner rett i Excel og Numbers, med norske tall og datoer |
+| Utskrift eller PDF | Skriverikonet til høyre i verktøylinja. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
+| Regneark | Nedlastingsikonet ved siden av. CSV-fila åpner rett i Excel og Numbers, med norske tall og datoer |
 
 Rapporten er ukryptert og laget for å leses. Den er ikke en sikkerhetskopi.
 
@@ -197,8 +203,8 @@ Rapporten er ukryptert og laget for å leses. Den er ikke en sikkerhetskopi.
 Appen synkroniserer ikke selv. Én enhet har sannheten om gangen, og en
 sikkerhetskopi flytter den.
 
-1. **På Mac:** Innstillinger › «Last ned sikkerhetskopi». AirDrop fila til iPhone.
-2. **På iPhone:** Innstillinger › «Gjenopprett», samme passord. Registrer i boden.
+1. **På Mac:** Innstillinger › pil ned. AirDrop fila til iPhone.
+2. **På iPhone:** Innstillinger › pil opp, samme passord. Registrer i boden.
 3. **Tilbake på Mac:** Last ned sikkerhetskopi på iPhone, AirDrop den til Mac,
    gjenopprett.
 
@@ -263,7 +269,7 @@ Ikonet lengst til høyre i topplinja.
 | Valg | Gjør |
 |---|---|
 | Mappe på maskinen | Kobler til eller fra (Chrome og Edge) |
-| Sikkerhetskopi | Laster ned eller gjenoppretter |
+| Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
 | Automatisk lås | Slår låsen etter 10 minutter av eller på |
 | Passord | Bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |
 
@@ -276,7 +282,7 @@ Ikonet lengst til høyre i topplinja.
 | Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet |
 | Brunt Innstillinger-ikon | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
 | «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult fordi den er tom | Kolonnen vises ved siden av meldingen. Endre den fra kolonnemenyen i stedet |
-| «Fant ingen strekkode i bildet.» | Koden ble ikke lest | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
+| «Fant ingen strekkode i bildet.» | Ingen av de to leserne fant en kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
 | Appen er tom etter en stund på iPhone | Safari rydder nettleserdata som ikke er brukt på sju dager, også for apper på Hjem-skjermen i enkelte tilfeller | Gjenopprett fra sikkerhetskopien. Ta en ny kopi hver gang du har registrert noe på iPhone |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |
