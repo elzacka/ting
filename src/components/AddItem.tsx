@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { addItem, addProperty } from '../db/db'
 import { asImage } from '../lib/backup'
-import { canDecode, classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
+import { classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
 import type { Item, Property } from '../db/schema'
 import { errorText } from '../lib/errors'
 import { distinct } from '../lib/filter'
@@ -200,22 +200,18 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
               setCodeNote(null)
             }}
           />
-          {canDecode() && (
-            <>
-              <input
-                ref={scanRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="visually-hidden"
-                onChange={(e) => void scan(e.target.files?.[0])}
-              />
-              <button type="button" className="btn" disabled={busy !== null} onClick={() => scanRef.current?.click()}>
-                <Icon name="photoCamera" size={20} />
-                {busy === 'scan' ? t.barcode.scanning : t.barcode.scan}
-              </button>
-            </>
-          )}
+          <input
+            ref={scanRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="visually-hidden"
+            onChange={(e) => void scan(e.target.files?.[0])}
+          />
+          <button type="button" className="btn" disabled={busy !== null} onClick={() => scanRef.current?.click()}>
+            <Icon name="photoCamera" size={20} />
+            {busy === 'scan' ? t.barcode.scanning : t.barcode.scan}
+          </button>
           {classify(code) !== 'other' && (
             <button type="button" className="btn" disabled={busy !== null} onClick={() => void lookUp()}>
               {busy === 'lookup' ? t.barcode.looking : t.barcode.lookup}
@@ -223,7 +219,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
           )}
         </div>
         <p className="hint" aria-live="polite">
-          {codeNote ?? (canDecode() ? '' : t.barcode.unsupported)}
+          {codeNote ?? ''}
         </p>
       </div>
       {choices.map((def) => (

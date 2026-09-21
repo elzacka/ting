@@ -106,7 +106,6 @@ export const t = {
     scanning: 'Leser…',
     read: (format: string) => `Lest som ${format}.`,
     none: 'Fant ingen strekkode i bildet. Ta bildet nærmere, rett forfra.',
-    unsupported: 'Denne nettleseren kan ikke lese strekkoder. Skriv tallene under streken.',
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Navnet er hentet fra ${source}. Rett det som er feil før du lagrer.`,

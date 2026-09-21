@@ -11,7 +11,8 @@ const lookupOrigins = ['https://openlibrary.org', 'https://world.openproductsfac
 
 const productionCsp = [
   "default-src 'self'",
-  "script-src 'self'",
+  // 'wasm-unsafe-eval' lets the bundled barcode reader (zxing-wasm) compile; it allows no script
+  "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   `connect-src 'self' ${lookupOrigins.join(' ')}`,
@@ -76,7 +77,9 @@ export default defineConfig(({ command, isPreview }) => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,svg,png}'],
+          globPatterns: ['**/*.{js,css,html,svg,png,wasm}'],
+          // The barcode reader is about 1 MB; Workbox's default cap is 2 MiB, this keeps headroom
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         },
       }),
     ],

@@ -1,5 +1,10 @@
 // Barcodes: what a scanned or typed code is, and how to read one out of a
 // photo. Decoding runs on the device; nothing here touches the network.
+// Two readers: the browser's own BarcodeDetector where it exists (Chrome,
+// Edge, Android), and the bundled ZXing port (zxing-wasm, MIT) everywhere,
+// which is what Safari and every browser on iOS get. The wasm file ships with
+// the app and loads on the first scan; nothing is fetched from a CDN.
+import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 
 export type CodeKind = 'isbn' | 'ean' | 'upc' | 'other'
 
@@ -43,21 +48,39 @@ export function classify(code: string): CodeKind {
   return 'other'
 }
 
-// What a format is called on the label, for the line under the field
+// What a format is called on the label, for the line under the field. Keys
+// as BarcodeDetector names them (snake_case) and as ZXing does (CamelCase).
 const formatNames: Record<string, string> = {
   ean_13: 'EAN-13',
+  EAN13: 'EAN-13',
   ean_8: 'EAN-8',
+  EAN8: 'EAN-8',
   upc_a: 'UPC-A',
+  UPCA: 'UPC-A',
   upc_e: 'UPC-E',
+  UPCE: 'UPC-E',
   itf: 'ITF',
+  ITF: 'ITF',
+  ITF14: 'ITF-14',
   code_128: 'Code 128',
+  Code128: 'Code 128',
   code_39: 'Code 39',
+  Code39: 'Code 39',
   code_93: 'Code 93',
+  Code93: 'Code 93',
   codabar: 'Codabar',
+  Codabar: 'Codabar',
+  DataBar: 'DataBar',
+  DataBarExp: 'DataBar Expanded',
   qr_code: 'QR',
+  QRCode: 'QR',
+  MicroQRCode: 'Micro QR',
   data_matrix: 'Data Matrix',
+  DataMatrix: 'Data Matrix',
   pdf417: 'PDF417',
+  PDF417: 'PDF417',
   aztec: 'Aztec',
+  Aztec: 'Aztec',
 }
 
 export function formatName(format: string): string {
@@ -67,23 +90,51 @@ export function formatName(format: string): string {
 type Detector = { detect(source: ImageBitmap): Promise<{ rawValue: string; format: string }[]> }
 type DetectorCtor = new () => Detector
 
-export function canDecode(): boolean {
-  return 'BarcodeDetector' in window
+function found(value: string, format: string): Decoded | null {
+  const clean = cleanCode(value)
+  return clean === '' ? null : { value: clean, format: formatName(String(format).slice(0, 24)) }
 }
 
-// Reads the first code in a still photo with the browser's own detector.
-// Safari (every browser on iOS) has none: canDecode() says so and the
-// number is typed from the label instead. A bundled decoder would go here.
-export async function decodeImage(blob: Blob): Promise<Decoded | null> {
-  if (!canDecode()) return null
+// A photo the browser cannot read, or cannot even decode as an image, is ZXing's to try
+async function viaBrowser(blob: Blob): Promise<Decoded | null> {
+  if (!('BarcodeDetector' in window)) return null
   const Ctor = (window as unknown as { BarcodeDetector: DetectorCtor }).BarcodeDetector
-  const bitmap = await createImageBitmap(blob)
+  let bitmap: ImageBitmap
   try {
-    // No format list: every format the browser has (EAN, UPC, ITF, Code 128/39/93, QR, Data Matrix, PDF417, Aztec)
-    const found = await new Ctor().detect(bitmap)
-    const first = found.find((f) => cleanCode(f.rawValue) !== '')
-    return first ? { value: cleanCode(first.rawValue), format: formatName(String(first.format).slice(0, 24)) } : null
+    bitmap = await createImageBitmap(blob)
+  } catch {
+    return null
+  }
+  try {
+    // No format list: every format the browser has
+    for (const r of await new Ctor().detect(bitmap)) {
+      const hit = found(r.rawValue, r.format)
+      if (hit) return hit
+    }
+    return null
+  } catch {
+    return null
   } finally {
     bitmap.close()
   }
+}
+
+async function viaZxing(blob: Blob): Promise<Decoded | null> {
+  const { prepareZXingModule, readBarcodesFromImageFile } = await import('zxing-wasm/reader')
+  prepareZXingModule({
+    overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) },
+  })
+  for (const r of await readBarcodesFromImageFile(blob, { tryHarder: true, maxNumberOfSymbols: 4 })) {
+    if (!r.isValid) continue
+    const hit = found(r.text, r.format)
+    if (hit) return hit
+  }
+  return null
+}
+
+// Reads the first code in a still photo: the browser's detector first, since
+// it is quick and already there, then ZXing, which also has a second go at a
+// photo the browser gave up on.
+export async function decodeImage(blob: Blob): Promise<Decoded | null> {
+  return (await viaBrowser(blob)) ?? (await viaZxing(blob))
 }
