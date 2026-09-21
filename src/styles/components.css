@@ -187,6 +187,17 @@
   font-size: var(--text-sm);
 }
 
+/* Own chevron, the same 20 px glyph as the icons, one gutter in from the
+   edge; the native one sits against the border. Colour is --text-2. */
+.select {
+  padding-right: calc(var(--s-3) + 20px + var(--s-2));
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='%235f5f5c'%3E%3Cpath d='M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--s-3) center;
+}
+
 .textarea {
   min-height: calc(var(--row-h) * 2);
   resize: vertical;

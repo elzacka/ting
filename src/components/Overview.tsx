@@ -117,6 +117,8 @@ export function Overview({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [addingColumn, setAddingColumn] = useState(false)
+  // Shown inside the column form: the page's error line sits under the table
+  const [columnError, setColumnError] = useState<string | null>(null)
   // Columns empty for every row on screen are hidden; this shows them anyway
   const [showEmpty, setShowEmpty] = useState(false)
   const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
@@ -315,20 +317,30 @@ export function Overview({
     const unit = unitFor(columnDraft.type, columnDraft.unit)
     if (key === '') return
     const col = { key, unit }
-    if (columns.some((c) => columnId(c) === columnId(col))) {
-      setError(t.error.columnExists)
+    const id = columnId(col)
+    if (columns.some((c) => columnId(c) === id)) {
+      // The column may exist and be hidden for holding no value; show it
+      // beside the message, so the message can be checked
+      setColumnError(t.error.columnExists)
+      if (!shown.some((d) => d.id === id)) setShowEmpty(true)
       return
     }
-    setError(null)
+    setColumnError(null)
     const options = columnDraft.type === 'choice' ? parseOptions(columnDraft.options) : []
-    await addProperty({
-      id: columnId(col),
-      key,
-      unit,
-      type: columnDraft.type,
-      ...(options.length > 0 ? { options } : {}),
-      createdAt: Date.now(),
-    })
+    try {
+      await addProperty({
+        id,
+        key,
+        unit,
+        type: columnDraft.type,
+        ...(options.length > 0 ? { options } : {}),
+        createdAt: Date.now(),
+      })
+    } catch (err) {
+      console.error(errorText(err))
+      setColumnError(t.error.saveFailed)
+      return
+    }
     setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
     setAddingColumn(false)
   }
@@ -645,7 +657,10 @@ export function Overview({
                 id="col-key"
                 className="input input-key"
                 value={columnDraft.key}
-                onChange={(e) => setColumnDraft({ ...columnDraft, key: e.target.value })}
+                onChange={(e) => {
+                  setColumnDraft({ ...columnDraft, key: e.target.value })
+                  setColumnError(null)
+                }}
                 autoFocus
               />
             </div>
@@ -698,6 +713,11 @@ export function Overview({
               </button>
             </div>
           </div>
+          {columnError && (
+            <p className="error" role="alert">
+              {columnError}
+            </p>
+          )}
         </form>
       )}
 
