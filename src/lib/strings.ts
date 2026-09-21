@@ -194,7 +194,6 @@ export const t = {
     statusTitle: 'Status',
     statusComplete: 'Ingenting mangler.',
     viewTitle: 'Tilpass visning',
-    viewWhat: 'Velg hvilke egenskaper tabellen viser. Navn vises alltid.',
     viewSummary: (shown: number, total: number) => `Egenskaper: ${shown} av ${total} vises`,
     folderTitle: 'Mappe på maskinen',
     folderWhat: 'Automatisk: Appen krypterer dataene og synkroniserer dem med mappen hver gang du lagrer. Tar du med mappen til en annen maskin, får du tilgang til alt i appen der.',

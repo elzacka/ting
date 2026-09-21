@@ -337,14 +337,22 @@ export function StoragePage({
       <section className="setting">
         <div className="setting-head">
           <div>
-            <h2 className="section-label">{t.storage.viewTitle}</h2>
-            <p className="hint">{t.storage.viewWhat}</p>
+            <h2 className="section-label" id="view-title">
+              {t.storage.viewTitle}
+            </h2>
+            <p className="hint" id="view-hint">
+              {t.table.wrap}
+            </p>
           </div>
+          <span className="setting-check">
+            <input
+              type="checkbox"
+              aria-labelledby="view-title view-hint"
+              checked={wrap}
+              onChange={(e) => onWrapChange(e.target.checked)}
+            />
+          </span>
         </div>
-        <label className="check-option">
-          <input type="checkbox" checked={wrap} onChange={(e) => onWrapChange(e.target.checked)} />
-          <span>{t.table.wrap}</span>
-        </label>
         <details className="disclosure">
           <summary>
             <Icon name="chevronRight" size={16} className="disclosure-chevron" />
