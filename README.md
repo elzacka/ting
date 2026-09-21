@@ -6,10 +6,12 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 
 - Ett skjermbilde: Øverst én linje med hvor mange ting du har, summen av hver kr-kolonne og hva som mangler verdi. Under: Én tabell med egenskaper som kolonner. Søket tåler skrivefeil og forstår operatorer som `komfort<0`, `-sommer` og `has:bilde`; filtrene viser antall per verdi. Klikk på navnet for å åpne tingen, klikk i en annen celle for å endre den; «Lagre» dukker opp nederst når noe er endret. Legg til ting og egenskaper, endre mange ting samtidig, lim inn fra et regneark
 - Egen side for hver ting med alle egenskaper. Her legger du til bilde og retter enkeltverdier
-- På mobil: Søk, en liste over ting med kategori og plassering, og «Legg til ting» som tar bilde og lagrer én ting om gangen. Kolonner, summer og rapporter hører til på en større skjerm
+- På mobil: Søk, en liste over ting med kategori og plassering, og «Legg til ting» som tar bilde og lagrer én ting om gangen. Strekkoden på tingen kan skannes eller skrives inn, og for bøker og varer kan navnet hentes fra et åpent oppslagsverk. Kolonner, summer og rapporter hører til på en større skjerm
 - Innstillinger: Koble appen til en mappe på maskinen (Chrome og Edge), eller last ned og gjenopprett en sikkerhetskopi
 
 **Appen ligger her:** https://elzacka.github.io/ting/
+
+**Brukerveiledning:** [BRUKERVEILEDNING.md](BRUKERVEILEDNING.md), fra første gang til rapporten.
 
 ## Installer som app
 
@@ -52,6 +54,8 @@ Ting har ingen mapper, etiketter, utlån eller lagerbeholdning som egne funksjon
 | Legge til mange ting samtidig | Kopier radene i Excel, Numbers eller Google Sheets, klikk i en celle i tabellen og lim inn. Blokken fyller mot høyre og nedover og lager nye rader |
 | Registrere det som ligger på kjøpet eller i hylla | Legg til ting rad for rad: Valglister og datoer arver verdien fra raden over, så butikk, dato og plassering skriver du én gang. Pris og tekst er radens egne |
 | Registrere med mobilen, med tingen i hånden | «Legg til ting» på mobilen åpner én ting om gangen: Ta bilde, skriv navnet, lagre. Kategori og plassering står igjen til neste ting. Resten fyller du inn på tingens side eller i tabellen etterpå; «mangler»-lenkene øverst i tabellen finner det som gjenstår |
+| Ta vare på strekkoden | «Skann strekkode» leser koden fra et bilde av etiketten (EAN, UPC, ISBN, ITF, Code 128, QR og flere) og legger den i egenskapen Strekkode, som lages første gang. Nettlesere uten leser (Safari og alt på iPhone) tar tallene under streken skrevet inn. Serienummer og etiketter er tekst som alt annet |
+| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i Strekkode-feltet: «Slå opp på nett». Bøker slås opp i Open Library, varer i Open Products Facts og Open Food Facts. Bare sifrene sendes, bare når du trykker, og du retter navnet før du lagrer. Turutstyr og elektronikk finnes sjelden der; boka og matvaren finnes som regel |
 | Rette en verdi uten å gå til tabellen | Åpne tingen og trykk på blyanten ved verdien. Enter eller et trykk utenfor lagrer, Escape angrer |
 | Sette samme verdi på mange ting | Kopier én celle, lim inn i første rad; eller kopier en kolonne fra regnearket |
 
@@ -59,7 +63,7 @@ Lenker i Kommentar og andre tekstfelt kan klikkes på tingens side.
 
 ## Rapport
 
-«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen. «Skriv ut» spør først hvilke kolonner som skal med (Navn er alltid med); utskriften får tittel, dato og sidetall og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
+«Last ned CSV» og «Skriv ut» øverst tar med det som vises i tabellen. Snevre inn med søk eller filtre for å ta med bare noen. «Skriv ut» spør først hvilke kolonner som skal med: Bare Navn er valgt fra start, «Velg alle» og «Fjern alle» gjør resten; utskriften får tittel, dato og sidetall og kan lagres som PDF. Rapporten passer til forsikringen eller for å dele. Den er ikke en sikkerhetskopi: Den er ukryptert og kan ikke hentes inn igjen.
 
 ## Kjør lokalt
 
@@ -91,11 +95,11 @@ Alt du registrerer krypteres på enheten med et passord du velger første gang d
 | Bytte passord | Under Innstillinger. Dataene krypteres på nytt. Kopier du tok før byttet, åpnes med det gamle passordet |
 | Mister du passordet | Dataene er tapt. Det finnes ingen bakvei |
 
-Ingenting sendes noe sted: appen har ingen server, ingen konto og ingen sporing.
+Ingenting sendes noe sted, med ett unntak du styrer selv: «Slå opp på nett» sender sifrene i en strekkode til Open Library, Open Products Facts eller Open Food Facts, og de ser da koden og IP-adressen din. Ingenting annet forlater enheten. Appen har ingen server, ingen konto og ingen sporing.
 
 ## Sikkerhet
 
-Alt du skriver inn behandles som tekst, aldri som kode. Appen laster ingenting fra andre steder og sender ingenting ut. Passordet lagres og logges aldri. Trusselmodellen og tiltakene, punkt for punkt mot OWASP Top 10, står i `SECURITY.md` (engelsk).
+Alt du skriver inn, skanner eller får tilbake fra et oppslag behandles som tekst, aldri som kode. Appen laster ingenting fra andre steder og sender bare det oppslaget du selv ber om. Passordet lagres og logges aldri. Trusselmodellen og tiltakene, punkt for punkt mot OWASP Top 10, står i `SECURITY.md` (engelsk).
 
 Appen bruker ingen KI.
 
@@ -123,4 +127,4 @@ Ikonet lengst til høyre i topplinja.
 
 ## Lisens
 
-Ikonene i appen er hentet fra Google Material Icons, og appikonet bruker symbolet «inventory» fra Material Symbols (begge Apache 2.0).
+Alle ikonene i appen, og appikonet med symbolet «inventory», er hentet fra Google Material Symbols (Apache 2.0).

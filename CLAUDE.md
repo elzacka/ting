@@ -4,7 +4,7 @@ Project rules for Ting. Global rules in `~/.claude/CLAUDE.md` apply on top.
 
 ## What this is
 
-Offline-first PWA that keeps track of what a household owns and where it is: one table of things with user-defined properties as columns, fast spec search, encrypted at rest. Plan and design system live in `dev_only/` (gitignored).
+Offline-first PWA that keeps track of what a household owns and where it is: one table of things with user-defined properties as columns, fast spec search, encrypted at rest. Plan and design system live in `dev_only/` (gitignored). User documentation is `BRUKERVEILEDNING.md` (Norwegian, klarspråk); `README.md` describes the app, `SECURITY.md` the threat model. A change a user can see updates the guide in the same commit.
 
 ## Version
 
@@ -21,7 +21,7 @@ Offline-first PWA that keeps track of what a household owns and where it is: one
 | Tests | Vitest, pure logic only (`src/**/*.test.ts`) |
 | Styling | Plain CSS, tokens in `src/styles/tokens.css` |
 
-No CSS framework, no router library, no search library, no external fonts or CDNs. Production build injects a `default-src 'self'` CSP.
+No CSS framework, no router library, no search library, no external fonts or CDNs. Production build injects a `default-src 'self'` CSP; `connect-src` adds the three lookup hosts.
 
 Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflows/deploy-pages.yml` on every push to `main`; `.github/workflows/ci.yml` runs tests and build on pull requests. `vite.config.ts` uses `base: '/ting/'` for builds only; the dev server stays at `/`. The PWA manifest and service worker are served in dev too (`devOptions.enabled`), so Chrome offers install on localhost.
 
@@ -59,8 +59,10 @@ Deployed to GitHub Pages at https://elzacka.github.io/ting/ by `.github/workflow
 | `src/lib/summary.ts` | The line above the table: totals per kr property, what is missing (each a search). Pure and tested |
 | `src/lib/useRowWindow.ts` | Both tables and the phone list render only the rows on screen (fixed row height, page scroll, padding keeps the height) |
 | `src/lib/useNarrow.ts` | True below 600 px: the phone product. Not a mode, the width decides |
+| `src/lib/barcode.ts` | `classify` (isbn, ean, upc by GS1 check digit, else other), `cleanCode`, `decodeImage` through the browser's `BarcodeDetector` (not in Safari or on iOS: `canDecode` says so and the code is typed). Tested |
+| `src/lib/lookup.ts` | The one network call: "Slå opp på nett" sends the digits of a retail code to Open Library (ISBN) or Open Products Facts then Open Food Facts (EAN, UPC), and returns a name for the user to review. The three hosts are the `connect-src` list in `vite.config.ts`; change both together |
 | `src/lib/paste.ts` | `parseBlock`: a spreadsheet block (tabs, newlines) for the table, filling right and down from the cell it lands in; `splitLinks`: http(s) addresses in text, for the detail page. Tested |
-| `src/components/` | One file per screen or reusable piece. `Overview` is the main screen: summary line with CSV and print (print asks which columns go on paper, Navn always; the table narrows to the choice while the browser takes its snapshot), toolbar, search and filters, the table (a name is a link; any other cell turns its row into inputs; unsaved edits stay in memory until "Lagre", which sticks to the bottom while there is something to save). `Grid` is the table skeleton (widths, header cells with resize, windowed body). `ItemDetail` shows a thing, sets its photo and deletes it (every other field is a column in the table). Below 600 px the overview is `ItemList` instead: search and a list of hits (thumbnail, name, the Valgliste values), no columns, totals or reports; `useNarrow` decides. `AddItem` is the phone's way in (`#/ting/ny`): camera, Navn and the Valgliste columns, saved one thing at a time; the Valgliste values stay for the next thing. `ItemDetail` shows a thing with every column as a row, each edited in place and stored when left (Enter or blur; Escape drops it), sets its photo and deletes it. `ErrorBoundary` wraps `main` |
+| `src/components/` | One file per screen or reusable piece. `Overview` is the main screen: summary line with CSV and print (print asks which columns go on paper, Navn always; the table narrows to the choice while the browser takes its snapshot), toolbar, search and filters, the table (a name is a link; any other cell turns its row into inputs; unsaved edits stay in memory until "Lagre", which sticks to the bottom while there is something to save). `Grid` is the table skeleton (widths, header cells with resize, windowed body). `ItemDetail` shows a thing, sets its photo and deletes it (every other field is a column in the table). Below 600 px the overview is `ItemList` instead: search and a list of hits (thumbnail, name, the Valgliste values), no columns, totals or reports; `useNarrow` decides. `AddItem` is the phone's way in (`#/ting/ny`): camera, Navn, Strekkode (scan from a photo of the label, or type; Slå opp på nett for retail codes) and the Valgliste columns, saved one thing at a time; the Valgliste values stay for the next thing. `ItemDetail` shows a thing with every column as a row, each edited in place and stored when left (Enter or blur; Escape drops it), sets its photo and deletes it. `ErrorBoundary` wraps `main` |
 | `src/styles/` | `tokens.css`, `base.css`, `components.css` |
 
 ## Encryption
@@ -82,6 +84,8 @@ Every mutation in `db.ts` bumps `localChangedAt`; loading from a file or folder 
 `readItems` keeps opened items in memory keyed by id and the nonces of their sealed parts, so a change re-opens only the rows whose seal changed; the cache empties on lock. The items query watches primary keys, not rows. The folder write skips a photo whose file is newer than the item's `updatedAt`; a restore from a backup file asks for one full photo write. In the table only the row being touched has inputs. A new row inherits the Valgliste and date values of the row above (shop and date down a receipt, location down a shelf), never numbers or text; the first row inherits the Kategori of the newest thing.
 
 Photos are stored as `Blob`, never base64.
+
+Strekkode is a text property created the first time a code is saved from the phone form (`barcodeProperty` in `fields.ts`); retail codes are stored as digits.
 
 Kategori is a property like any other (a Valgliste, first column by default), not a built-in field; the only built-in is Navn. Its cells offer the values already in the column through `<datalist>`. Decided by elzacka, 21 September 2026.
 
