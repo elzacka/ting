@@ -11,7 +11,7 @@ import {
 } from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
-import { href, navigate, useRoute, type Route } from './lib/route'
+import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { initVault, lock, setupVault, unlock, useVault } from './lib/vault'
@@ -75,13 +75,6 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({})
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
-  // A "mangler" fact in the summary line runs its search
-  const openQuery = useCallback((q: string) => {
-    setFilters({})
-    setQuery(q)
-    setSearchOpen(true)
-    navigate(href.list)
-  }, [])
   const [autoLock, setAutoLock] = useState(readAutoLock)
   // Tilpass visning: columns taken out of the table on this device
   const [hidden, setHidden] = useState(readHiddenColumns)
@@ -248,7 +241,6 @@ export function App() {
               onHiddenChange={toggleHidden}
               wrap={wrap}
               onWrapChange={toggleWrap}
-              onOpenQuery={openQuery}
             />
           )}
         </ErrorBoundary>
@@ -281,7 +273,6 @@ type ScreenProps = {
   onHiddenChange: (id: string, visible: boolean) => void
   wrap: boolean
   onWrapChange: (on: boolean) => void
-  onOpenQuery: (q: string) => void
 }
 
 function Screen({
@@ -308,7 +299,6 @@ function Screen({
   onHiddenChange,
   wrap,
   onWrapChange,
-  onOpenQuery,
 }: ScreenProps) {
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   if (route.view === 'list' && narrow) {
@@ -346,7 +336,6 @@ function Screen({
         onHiddenChange={onHiddenChange}
         wrap={wrap}
         onWrapChange={onWrapChange}
-        onOpenQuery={onOpenQuery}
       />
     )
   }

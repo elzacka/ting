@@ -5,7 +5,6 @@ import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envel
 import { columnDefs, type FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
-import { gapsByCategory } from '../lib/summary'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault } from '../lib/vault'
@@ -28,7 +27,6 @@ type Props = {
   onHiddenChange: (id: string, visible: boolean) => void
   wrap: boolean
   onWrapChange: (on: boolean) => void
-  onOpenQuery: (q: string) => void
 }
 
 export function StoragePage({
@@ -42,9 +40,7 @@ export function StoragePage({
   onHiddenChange,
   wrap,
   onWrapChange,
-  onOpenQuery,
 }: Props) {
-  const gaps = gapsByCategory(items, properties)
   const columns = columnDefs(fields, properties, items).filter((d) => d.kind === 'prop')
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
@@ -123,33 +119,6 @@ export function StoragePage({
 
   return (
     <div className="stack narrow">
-      {/* What is missing, above the settings since it is about the register,
-          not the device: a quiet band, there only while something is missing.
-          Each fact is a search that opens the overview narrowed to those things. */}
-      {gaps.length > 0 && (
-        <div className="notice" role="status">
-          {gaps.map((g) => (
-            <p key={g.category ?? ''}>
-              {/* The heading is the category, so the list says where the work
-                  is. Left out when nothing is categorised: then there is only
-                  one line and nothing to tell it apart from. */}
-              {g.category !== null && <span className="notice-where">{t.summary.gapsIn(g.category)}</span>}
-              {gaps.length > 1 && g.category === null && (
-                <span className="notice-where">{t.summary.gapsNoCategory}</span>
-              )}
-              {g.missing.map((m) => (
-                <span key={m.query}>
-                  <button type="button" className="status-link" onClick={() => onOpenQuery(m.query)}>
-                    {m.what === 'photo' ? t.summary.missingPhoto(m.count) : t.summary.missingValue(m.count, m.key)}
-                  </button>
-                  .{' '}
-                </span>
-              ))}
-            </p>
-          ))}
-        </div>
-      )}
-
       <h1 className="title">{t.storage.title}</h1>
 
       <section className="setting">

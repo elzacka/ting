@@ -79,12 +79,6 @@ export const t = {
     things: (n: number) => (n === 1 ? '1 ting' : `${n} ting`),
     shown: (n: number, total: number) => `${n} av ${total} ting`,
     total: (key: string, amount: string) => `${key} totalt: ${amount}`,
-    missingPhoto: (n: number) => (n === 1 ? '1 mangler bilde' : `${n} mangler bilde`),
-    missingValue: (n: number, key: string) =>
-      n === 1 ? `1 mangler ${key.toLocaleLowerCase('nb')}` : `${n} mangler ${key.toLocaleLowerCase('nb')}`,
-    // The gaps, category by category. Things nobody has put in one come last.
-    gapsIn: (category: string) => `${category}:`,
-    gapsNoCategory: 'Uten kategori:',
   },
   report: {
     csv: 'Last ned CSV',

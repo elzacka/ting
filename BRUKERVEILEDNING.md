@@ -90,9 +90,9 @@ Klikk i «Legg til ting» nederst i tabellen, eller på plussikonet øverst til
 høyre. En ny rad åpner seg: Skriv navnet, fyll det du vet, klikk i «Legg til
 ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
 
-Valglister og datoer arver verdien fra raden over. Det du ikke vet ennå, lar du
-stå tomt: Øverst på Innstillinger står hva som mangler, og ett klikk der
-finner dem igjen.
+Valglister, datoer og plasseringer arver verdien fra raden over. Det du ikke
+vet ennå, lar du stå tomt: `-has:kjøpesum` i søket finner tingene som mangler
+den senere.
 
 ### 5. Ta vare på alt
 
@@ -144,8 +144,8 @@ I boden, med mobilen. Under 600 px bred er appen laget for akkurat dette.
 3. Skriv navnet. Kategori og plassering står igjen fra forrige ting.
 4. «Lagre». Skjermen er klar for neste ting.
 
-Pris og resten fyller du inn ved skrivebordet senere. Øverst på Innstillinger
-står «5 mangler kjøpesum», og klikket finner dem.
+Pris og resten fyller du inn ved skrivebordet senere. `-has:pris` i søket
+henter fram de som står igjen.
 
 > [!NOTE]
 > På mobilen lagres alt med én gang. Det finnes ingen «ulagrede endringer» der.
@@ -317,7 +317,6 @@ Ikonet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Over overskriften | Hva som mangler, kategori for kategori: bilde, og verdi i hver kr-kolonne. Én linje per kategori som mangler noe, tingene uten kategori til slutt. Bare der når noe mangler. Hvert tall er et søk som åpner tabellen med akkurat de tingene |
 | Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
 | Tilpass visning | Bryt lang tekst over flere linjer, og lista over egenskaper: Fjern haken for å ta en kolonne ut av tabellen. Navn vises alltid. Enheten husker valgene |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
