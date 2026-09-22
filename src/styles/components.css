@@ -1537,6 +1537,16 @@ section {
   color: var(--text-2);
 }
 
+/* One line per category, each a heading and the facts that follow from it */
+.notice p + p {
+  margin-top: var(--s-1);
+}
+
+.notice-where {
+  margin-right: var(--s-1);
+  color: var(--text);
+}
+
 /* A fact in the notice is a search: set in the accent, the one colour the
    app uses for what can be acted on, and underlined under the pointer */
 .status-link {
