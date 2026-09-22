@@ -1,6 +1,6 @@
 # Ting
 
-Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder og en rapport til forsikringen. En PWA som virker uten nett og lagrer alt kryptert i nettleseren. Ingen konto, ingen sky, ingen sporing, ingen KI.
+Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendeler, med egenskaper, bilder, utskrift og CSV. En PWA som virker uten nett og lagrer alt kryptert i nettleseren. Ingen konto, ingen sky, ingen sporing, ingen KI.
 
 **Appen:** https://elzacka.github.io/ting/
 

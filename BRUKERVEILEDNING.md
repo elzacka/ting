@@ -21,7 +21,7 @@ situasjonene du står i etterpå.
   - [Finne igjen en ting](#finne-igjen-en-ting)
   - [Rette noe](#rette-noe)
   - [Mange ting på én gang](#mange-ting-på-én-gang)
-  - [Rapport til forsikringen](#rapport-til-forsikringen)
+  - [Rapport og regneark](#rapport-og-regneark)
   - [Mac og iPhone sammen](#mac-og-iphone-sammen)
 - [Oppslagsverk](#oppslagsverk)
   - [Søk](#søk)
@@ -190,7 +190,7 @@ Kopier radene i Excel, Numbers eller Google Sheets. Klikk i en celle i tabellen
 og lim inn. Blokken fyller mot høyre og nedover og lager nye rader. Lag
 kolonnene i samme rekkefølge som regnearket først, så treffer alt.
 
-### Rapport til forsikringen
+### Rapport og regneark
 
 Snevre inn med søk eller filtre til det som skal med. Så:
 
@@ -290,24 +290,6 @@ antall. Datoer filtreres per år.
 | Skille kjøpesum fra verdi | Tall «Verdi» i kr ved siden av «Kjøpesum» |
 
 </details>
-
-#### Hvis du dokumenterer for forsikringen
-
-Et skadeoppgjør spør om tre ting utover navn og bilde. Lag dem som egenskaper
-med «Legg til egenskap» over tabellen:
-
-| Egenskap | Hva |
-|---|---|
-| Verdi | Tall i kr. Hva det koster å kjøpe tingen på nytt i dag, ikke hva du ga for den. Kr-kolonner summeres over tabellen |
-| Kjøpt | Dato |
-| Serienummer | Tekst. Tallet eller koden på selve tingen |
-
-Ta bilde av tingen, og et nærbilde av serienummeret på elektronikk. Er det bare
-noen kategorier som har serienummer, velger du kategorien og bruker «Bruk bare
-i …» i kolonnemenyen på Serienummer.
-
-Dokumentasjon er ingen garanti for at et krav blir godkjent, eller for hvor mye
-du får. Den gjør det lettere å vise hva du hadde.
 
 ### Innstillinger
 
