@@ -91,6 +91,14 @@ export const t = {
     pickNone: 'Fjern alle',
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
+    // Two choices that change the shape of the paper: headings that add up,
+    // and a photo beside each thing.
+    groupBy: 'Grupper etter',
+    groupNone: 'Ingen',
+    groupRest: (key: string) => `Uten ${key.toLocaleLowerCase('nb')}`,
+    withPhotos: 'Ta med bilder',
+    sum: (key: string, amount: string) => `${key}: ${amount}`,
+    grandTotal: 'Til sammen',
   },
   action: {
     save: 'Lagre',

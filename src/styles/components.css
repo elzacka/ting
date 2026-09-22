@@ -737,8 +737,14 @@ section {
   }
 }
 
-.column-form .toolbar {
+.column-form .toolbar,
+#print-form .print-shape {
   align-items: flex-end;
+}
+
+/* The checkbox sits beside the select, not above it */
+#print-form .print-shape .check-option {
+  min-height: var(--row-h);
 }
 
 .field-actions {
@@ -975,7 +981,8 @@ section {
 
 /* Print: the table that is on screen, every row, with a title and the date */
 
-.print-only {
+.print-only,
+.print-report {
   display: none;
 }
 
@@ -1011,6 +1018,105 @@ section {
   .print-only {
     display: block;
     margin-bottom: 6mm;
+  }
+
+  /* The report layout: the things one under the other instead of the table,
+     asked for by a grouping or by the photos. */
+  .table-card.is-report .table-wrap {
+    display: none;
+  }
+
+  .print-report {
+    display: block;
+  }
+
+  /* A heading belongs with what follows it, never alone at a page foot */
+  .report-heading {
+    margin: 6mm 0 2mm;
+    padding-bottom: 1mm;
+    border-bottom: 1pt solid #1f1f1d;
+    font-size: 12pt;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .report-group:first-child .report-heading {
+    margin-top: 0;
+  }
+
+  /* One thing, kept whole: a block split over two pages reads as two things */
+  .report-item {
+    display: flex;
+    gap: 4mm;
+    padding: 2mm 0;
+    border-bottom: 0.5pt solid #d9d9d4;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-photo {
+    flex: none;
+    width: 24mm;
+    height: 24mm;
+    object-fit: cover;
+    border: 0.5pt solid #d9d9d4;
+  }
+
+  .report-photo.is-empty {
+    border-style: dotted;
+  }
+
+  .report-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .report-name {
+    margin: 0 0 1mm;
+    font-size: 11pt;
+    font-weight: 600;
+  }
+
+  /* Two pairs to a line: a thing with eight values is still one block */
+  .report-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 6mm;
+    margin: 0;
+    font-size: 9.5pt;
+  }
+
+  .report-specs > div {
+    display: flex;
+    gap: 2mm;
+  }
+
+  .report-specs dt {
+    color: #5f5f5c;
+  }
+
+  .report-specs dd {
+    margin: 0;
+  }
+
+  .report-sum,
+  .report-total {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6mm;
+    margin: 2mm 0 0;
+    font-size: 10pt;
+  }
+
+  .report-total {
+    justify-content: space-between;
+    margin-top: 4mm;
+    padding-top: 2mm;
+    border-top: 1pt solid #1f1f1d;
+  }
+
+  .report-total .report-sum {
+    margin: 0;
   }
 
   #print-form {

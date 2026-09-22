@@ -199,6 +199,18 @@ Snevre inn med søk eller filtre til det som skal med. Så:
 | Utskrift eller PDF | Skriverikonet øverst til høyre i tabellen. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
 | Regneark | Nedlastingsikonet ved siden av. CSV-fila åpner rett i Excel og Numbers, med norske tall og datoer |
 
+To valg under kolonnene bestemmer formen på papiret:
+
+| Valg | Gjør |
+|---|---|
+| Grupper etter | Velg en valgliste, for eksempel Kategori. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum. Kolonnen du grupperer etter, gjentas ikke på hver ting |
+| Ta med bilder | Hver ting får bildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
+
+Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
+tingene under hverandre i stedet, én blokk per ting som ikke deles over to
+sider. Summene følger det du ser: Søk og filtre gjelder, og kolonner du ikke
+tar med, telles ikke.
+
 Rapporten er ukryptert og laget for å leses. Den er ikke en sikkerhetskopi.
 
 ### Mac og iPhone sammen

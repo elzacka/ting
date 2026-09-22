@@ -4,6 +4,7 @@ import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { formatDate, formatNumber } from '../lib/format'
 import { href } from '../lib/route'
 import { totals } from '../lib/summary'
+import { groupItems } from '../lib/report'
 import { useObjectUrl } from './useObjectUrl'
 import {
   addProperty,
@@ -35,6 +36,7 @@ import { searchItems } from '../lib/search'
 import { applyFilters, valuesFor, withoutFilter, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
 import { Grid } from './Grid'
+import { PrintReport } from './PrintReport'
 import { parseBlock } from '../lib/paste'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
@@ -236,6 +238,14 @@ export function Overview({
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
+  // Two choices that change the shape of the paper rather than its contents:
+  // the column the things are grouped under, and whether each carries its
+  // photo. Either one turns the table into the report layout; neither leaves
+  // the table printing itself, as it always has.
+  const [printGroup, setPrintGroup] = useState<string | null>(null)
+  const [printPhotos, setPrintPhotos] = useState(false)
+  const [draftGroup, setDraftGroup] = useState<string | null>(null)
+  const [draftPhotos, setDraftPhotos] = useState(false)
   // The head's height goes into --head-h on the card, so the table's header
   // row can stick right under it whatever the head line wraps to
   const cardRef = useRef<HTMLDivElement>(null)
@@ -254,6 +264,40 @@ export function Overview({
     () => (printing && printCols ? shownAll.filter((d) => d.kind === 'name' || printCols.has(d.id)) : shownAll),
     [shownAll, printing, printCols],
   )
+
+  // The report layout instead of the table: asked for by a grouping, by the
+  // photos, or by both. The columns and the sums are the ones chosen for the
+  // paper, so a column left off is left out of the arithmetic as well.
+  const reporting = printing && printCols !== null && (printGroup !== null || printPhotos)
+  const reportColumns = useMemo(
+    () => shown.flatMap((d) => (d.kind === 'prop' ? [d] : [])),
+    [shown],
+  )
+  const reportProperties = useMemo(
+    () => reportColumns.flatMap((d) => (d.property ? [d.property] : [])),
+    [reportColumns],
+  )
+  const reportGroups = useMemo(
+    () => (reporting ? groupItems(visible, printGroup) : []),
+    [reporting, visible, printGroup],
+  )
+  // A Valgliste is the only column with few enough values to head a page.
+  const groupChoices = useMemo(
+    () => defs.flatMap((d) => (d.kind === 'prop' && d.type === 'choice' ? [d] : [])),
+    [defs],
+  )
+  const groupLabel = useMemo(
+    () => groupChoices.find((d) => d.id === printGroup)?.col.key ?? null,
+    [groupChoices, printGroup],
+  )
+  const anyPhoto = useMemo(() => visible.some((i) => i.photo !== null), [visible])
+
+  // Photos are object URLs the browser has to fetch and decode; a snapshot
+  // taken before they land prints empty frames.
+  async function waitForPhotos() {
+    const imgs = [...document.querySelectorAll<HTMLImageElement>('.print-report img')]
+    await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
+  }
 
   const dirtyIds = Object.keys(edits).filter((id) => {
     const item = items.find((i) => i.id === id)
@@ -392,7 +436,9 @@ export function Overview({
     }
   }, [])
 
-  const sums = useMemo(() => totals(items, properties), [items, properties])
+  // What is on screen, like the count beside it: a filtered register says what
+  // the filter leaves, not what the register holds (elzacka, 22 September 2026)
+  const sums = useMemo(() => totals(visible, properties), [visible, properties])
   const narrowed = visible.length !== items.length
 
   // Adding or editing rows is one mode, selecting rows is another. Never both.
@@ -676,7 +722,7 @@ export function Overview({
 
   return (
     <div className="stack">
-      <div className="table-card" ref={cardRef}>
+      <div className={`table-card${reporting ? ' is-report' : ''}`} ref={cardRef}>
         <div className="overview-head" ref={headRef}>
           {/* Every action on the register, header style: add, add a column, and
               the two reports, which take what is on screen */}
@@ -717,7 +763,11 @@ export function Overview({
                 aria-label={t.report.print}
                 aria-expanded={printPick !== null}
                 aria-controls="print-form"
-                onClick={() => setPrintPick((p) => (p ? null : new Set(printCols ?? [])))}
+                onClick={() => {
+                  setDraftGroup(printGroup)
+                  setDraftPhotos(printPhotos)
+                  setPrintPick((p) => (p ? null : new Set(printCols ?? [])))
+                }}
               >
                 <Icon name="print" />
               </button>
@@ -783,12 +833,16 @@ export function Overview({
               className="stack-sm"
               onSubmit={(e) => {
                 e.preventDefault()
-                // The choice must be in the DOM before the browser takes its snapshot
+                // The choice must be in the DOM before the browser takes its
+                // snapshot, and a photo that has not decoded yet prints blank.
                 flushSync(() => {
                   setPrintCols(printPick)
+                  setPrintGroup(draftGroup)
+                  setPrintPhotos(draftPhotos)
                   setPrintPick(null)
+                  setPrinting(true)
                 })
-                window.print()
+                void waitForPhotos().then(() => window.print())
               }}
             >
               <p className="field-label">{t.report.pick}</p>
@@ -824,6 +878,43 @@ export function Overview({
                   </label>
                 ))}
               </div>
+              {/* What shape the paper takes. Either of these turns the table
+                  into the report: the things one under the other, under
+                  headings that add up. */}
+              {(groupChoices.length > 0 || anyPhoto) && (
+                <div className="row toolbar print-shape">
+                  {groupChoices.length > 0 && (
+                    <div className="field">
+                      <label htmlFor="print-group">{t.report.groupBy}</label>
+                      <select
+                        id="print-group"
+                        className="select input-key"
+                        value={draftGroup ?? ''}
+                        onChange={(e) => setDraftGroup(e.target.value === '' ? null : e.target.value)}
+                      >
+                        <option value="">{t.report.groupNone}</option>
+                        {groupChoices.map((def) => (
+                          <option key={def.id} value={def.id}>
+                            {def.col.key}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {anyPhoto && (
+                    <div className="field">
+                      <label className="check-option">
+                        <input
+                          type="checkbox"
+                          checked={draftPhotos}
+                          onChange={(e) => setDraftPhotos(e.target.checked)}
+                        />
+                        <span>{t.report.withPhotos}</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="row">
                 <button type="submit" className="btn btn-primary">
                   {t.report.print}
@@ -954,6 +1045,17 @@ export function Overview({
           <h1 className="title">{t.report.docTitle}</h1>
           <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
         </div>
+
+        {reporting && (
+          <PrintReport
+            groups={reportGroups}
+            columns={reportColumns}
+            properties={reportProperties}
+            photos={printPhotos}
+            groupId={printGroup}
+            groupKey={groupLabel}
+          />
+        )}
 
         {confirmingDiscard && (
           <div className="confirm" role="alertdialog" aria-labelledby="confirm-discard">
