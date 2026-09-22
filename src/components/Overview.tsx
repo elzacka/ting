@@ -91,6 +91,10 @@ type Props = {
   onDirtyChange: (dirty: boolean) => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
+  // Whether a category has been chosen at all. Until one is, the card shows
+  // its categories and nothing else.
+  viewPicked: boolean
+  onViewPickedChange: (picked: boolean) => void
   // Columns taken out of the table on Innstillinger; Navn is never among them
   hidden: Set<string>
   // Long values run onto more lines instead of ending in an ellipsis (Innstillinger)
@@ -120,6 +124,8 @@ export function Overview({
   onDirtyChange,
   filters,
   onFiltersChange,
+  viewPicked,
+  onViewPickedChange,
   hidden,
   wrap,
 }: Props) {
@@ -469,7 +475,14 @@ export function Overview({
     if (editing) setSelected(new Set())
   }, [editing])
   const lastNewId = newRows[newRows.length - 1]?.tempId
-  const hasRows = items.length > 0 || newRows.length > 0
+  // The table waits for a category. Until one is picked the card is its
+  // categories and nothing else — but anything that means "show me things"
+  // opens it too: a new row, a search, or having no categories to pick
+  // between in the first place. The chooser itself is only drawn from two
+  // categories up, and a table nobody can reach would be a trap.
+  const showTable =
+    viewPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
+  const hasRows = showTable && (items.length > 0 || newRows.length > 0)
   const allIds = visible.map((i) => i.id)
   const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id))
 
@@ -799,24 +812,31 @@ export function Overview({
               the columns and the filters under them. Only worth a line once
               there is more than one category to choose between. */}
           {categoryValues.length > 1 && (
-            <div className="view-pick" role="group" aria-label={t.view.label}>
+            <div className={`view-pick${showTable ? ' is-folded' : ''}`}>
               {/* A glyph per category with its count on it. Seventeen names
                   wrapped onto two lines of text; seventeen glyphs are one
                   line you can scan. The name is the button's label, which the
                   stylesheet shows under it on hover, like every other icon
-                  button here (elzacka, 23 September 2026). */}
+                  button here. Once the table has the card the row folds to a
+                  strip and comes back over it on hover, so the head's height
+                  never moves under the sticky header (elzacka, 23 September
+                  2026). */}
+              <div className="view-tabs" role="group" aria-label={t.view.label}>
               <button
                 type="button"
-                className={`view-tab${cats.length === 0 ? ' is-active' : ''}`}
+                className={`view-tab${viewPicked && cats.length === 0 ? ' is-active' : ''}`}
                 aria-label={t.view.all}
-                aria-pressed={cats.length === 0}
-                onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: [] })}
+                aria-pressed={viewPicked && cats.length === 0}
+                onClick={() => {
+                  onFiltersChange({ ...filters, [categoryColumnId]: [] })
+                  onViewPickedChange(!(viewPicked && cats.length === 0))
+                }}
               >
                 <Icon name={allCategoriesIcon} size={22} />
                 <span className="view-count num">{searched.length}</span>
               </button>
               {categoryValues.map((v) => {
-                const on = cats.length === 1 && cats[0] === v.key
+                const on = viewPicked && cats.length === 1 && cats[0] === v.key
                 return (
                   <button
                     key={v.key}
@@ -824,17 +844,22 @@ export function Overview({
                     className={`view-tab${on ? ' is-active' : ''}`}
                     aria-label={v.label}
                     aria-pressed={on}
-                    onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: on ? [] : [v.key] })}
+                    onClick={() => {
+                      onFiltersChange({ ...filters, [categoryColumnId]: on ? [] : [v.key] })
+                      onViewPickedChange(!on)
+                    }}
                   >
                     <Icon name={categoryIcon(v.label)} size={22} />
                     <span className="view-count num">{v.count}</span>
                   </button>
                 )
               })}
+              </div>
             </div>
           )}
+          {showTable && (
           <p className="summary">
-            {/* What is on screen and the whole register; the gaps run their search */}
+            {/* What is on screen and the whole register */}
             <strong>
               {items.length === 0
                 ? t.list.empty
@@ -851,6 +876,7 @@ export function Overview({
               </button>
             )}
           </p>
+          )}
         </div>
 
         {(printPick || searchOpen || addingColumn) && (

@@ -274,11 +274,16 @@ egenskaper som alle andre.
 
 #### Kategorien bestemmer hva du ser
 
-Over tabellen står kategoriene dine som små symboler med antallet på: Alle
+Registeret åpner på kategoriene sine: små symboler med antallet på, Alle
 først, så én for hver kategori du har tatt i bruk. Hold pekeren over et symbol
-for å se navnet. Velger du én, får du tingene i den, kolonnene som hører til
-den og filtrene som gjelder der. Kategori-kolonnen forsvinner så lenge du står
-i én kategori: der sier den det samme på hver rad.
+for å se navnet. Tabellen kommer når du velger en: du får tingene i
+kategorien, kolonnene som hører til den og filtrene som gjelder der.
+Kategori-kolonnen forsvinner så lenge du står i én kategori: der sier den det
+samme på hver rad.
+
+Når tabellen er framme, legger symbolene seg bort og etterlater en tynn strek
+øverst til venstre. Hold pekeren over streken, så kommer de fram igjen over
+tabellen. Trykk på symbolet du står i for å gå tilbake til kategoriene.
 
 Symbolet velges ut fra ordene i kategorinavnet. Kjenner appen ikke igjen noen
 av dem, får kategorien et nøytralt symbol. Navnet er det samme uansett.

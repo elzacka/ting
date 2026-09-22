@@ -73,6 +73,10 @@ export function App() {
   const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [searchOpen, setSearchOpen] = useState(() => query !== '')
   const [filters, setFilters] = useState<Filters>({})
+  // The register opens on its categories alone: the table waits for one to be
+  // picked. Kept here rather than in Overview so opening a thing and coming
+  // back does not send you to the start (elzacka, 23 September 2026).
+  const [viewPicked, setViewPicked] = useState(false)
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
   const [autoLock, setAutoLock] = useState(readAutoLock)
@@ -229,6 +233,8 @@ export function App() {
               onSearchClose={closeSearch}
               filters={filters}
               onFiltersChange={setFilters}
+              viewPicked={viewPicked}
+              onViewPickedChange={setViewPicked}
               sort={sort}
               onSortChange={setSort}
               widths={widths}
@@ -261,6 +267,8 @@ type ScreenProps = {
   onSearchClose: () => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
+  viewPicked: boolean
+  onViewPickedChange: (picked: boolean) => void
   sort: Sort | null
   onSortChange: (s: Sort | null) => void
   widths: Record<string, number>
@@ -287,6 +295,8 @@ function Screen({
   onSearchClose,
   filters,
   onFiltersChange,
+  viewPicked,
+  onViewPickedChange,
   sort,
   onSortChange,
   widths,
@@ -313,6 +323,8 @@ function Screen({
         {...search}
         filters={filters}
         onFiltersChange={onFiltersChange}
+        viewPicked={viewPicked}
+        onViewPickedChange={onViewPickedChange}
         sort={sort}
         onSortChange={onSortChange}
         widths={widths}

@@ -680,19 +680,72 @@ section {
   color: var(--text-2);
 }
 
-/* Kategori as the view: a glyph per category over the table, right-aligned
-   with the summary under it. Names wrapped onto two lines once there were
-   more than a dozen; glyphs stay one line you can scan, and each carries its
-   count. The chosen one takes the accent. The category's own name is the
-   button's label, shown under it on hover like every other icon button here. */
+/* Kategori as the view: a glyph per category over the table. Names wrapped
+   onto two lines once there were more than a dozen; glyphs stay one line you
+   can scan, and each carries its count. The chosen one takes the accent. The
+   category's own name is the button's label, shown under it on hover like
+   every other icon button here. */
 .view-pick {
+  /* The head right-aligns what it holds; the tiles read left to right */
+  width: 100%;
+}
+
+/* Lined up with Navn, the first column the eye reads: the table starts at the
+   same left edge as this row and its checkbox column is one gutter wide. The
+   offset sits here rather than on the row, so it holds when the tiles fold
+   away and lay themselves out absolutely. */
+.view-tabs {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: var(--s-2);
-  /* The head right-aligns what it holds; the tiles read left to right */
-  width: 100%;
-  padding: var(--s-1) 0 var(--s-2);
+  padding: var(--s-1) 0 var(--s-2) var(--gutter);
+}
+
+/* Once a category is chosen the tiles fold to a strip and the table has the
+   card. A hairline says where they went. They come back over the table on
+   hover rather than pushing it down: the head's height feeds the sticky
+   header, and moving it would make the header jump.
+   (elzacka, 23 September 2026) */
+.view-pick.is-folded {
+  position: relative;
+  height: 12px;
+}
+
+.view-pick.is-folded::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: var(--gutter);
+  width: 44px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border);
+  transition: background-color var(--duration) ease-out;
+}
+
+.view-pick.is-folded:hover::before,
+.view-pick.is-folded:focus-within::before {
+  background: var(--border-input);
+}
+
+.view-pick.is-folded .view-tabs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  padding-top: 0;
+  background: var(--surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration) ease-out;
+}
+
+.view-pick.is-folded:hover .view-tabs,
+.view-pick.is-folded:focus-within .view-tabs {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .view-tab {
