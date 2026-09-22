@@ -243,6 +243,7 @@ export async function setColumnOrder(defs: readonly ColumnDef[]): Promise<void> 
         order: i,
         ...(d.property?.type ? { type: d.property.type } : {}),
         ...(d.property?.options ? { options: d.property.options } : {}),
+        ...(d.property?.categories ? { categories: d.property.categories } : {}),
       })
   })
   const rows = await Promise.all(props.map((p) => sealProperty(propertySchema.parse(p))))
@@ -271,6 +272,7 @@ export async function renameProperty(
       ...(next.options && next.options.length > 0 ? { options: next.options } : {}),
       createdAt: old?.createdAt ?? Date.now(),
       ...(old?.order !== undefined ? { order: old.order } : {}),
+      ...(old?.categories && old.categories.length > 0 ? { categories: old.categories } : {}),
     }),
   )
   const items = await readItems()
@@ -289,6 +291,19 @@ export async function renameProperty(
     if (oldRow) await db.properties.delete(oldId)
     await db.properties.put(def)
     await db.items.bulkPut(changed)
+    await touch()
+  })
+}
+
+// Narrows a column to a set of Kategori values, or widens it back to all of
+// them with an empty list. A column that only ever lived in item values gets
+// a definition here, which is what carries the choice.
+export async function setPropertyCategories(property: Property, categories: string[]): Promise<void> {
+  const { categories: _old, ...rest } = property
+  const next = propertySchema.parse({ ...rest, ...(categories.length > 0 ? { categories } : {}) })
+  const row = await sealProperty(next)
+  await db.transaction('rw', db.properties, db.settings, async () => {
+    await db.properties.put(row)
     await touch()
   })
 }

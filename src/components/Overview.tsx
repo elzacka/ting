@@ -13,15 +13,26 @@ import {
   saveBatch,
   setColumnOrder,
   setFieldSettings,
+  setPropertyCategories,
 } from '../db/db'
 import type { Item, Property, PropertyType } from '../db/schema'
 import { distinct, parseNumber } from '../lib/filter'
 import { autoWidths } from '../lib/columnWidths'
-import { categoryColumnId, columnDefs, propColumns, unitFor, type ColumnDef, type FieldSettings } from '../lib/fields'
+import {
+  appliesTo,
+  categoryColumnId,
+  claimedBy,
+  columnDefs,
+  propColumns,
+  unitFor,
+  withCategory,
+  type ColumnDef,
+  type FieldSettings,
+} from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
-import { applyFilters, type Filters } from '../lib/filters'
+import { applyFilters, valuesFor, withoutFilter, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
 import { Grid } from './Grid'
 import { parseBlock } from '../lib/paste'
@@ -123,13 +134,22 @@ export function Overview({
   const [addingColumn, setAddingColumn] = useState(false)
   // Shown inside the column form: the page's error line sits under the table
   const [columnError, setColumnError] = useState<string | null>(null)
-  // Columns empty for every row on screen are hidden; this shows them anyway
-  const [showEmpty, setShowEmpty] = useState(false)
-  const [columnDraft, setColumnDraft] = useState<{ key: string; unit: string; type: PropertyType; options: string }>({
+  // Columns the view leaves out are hidden; this shows every one of them anyway
+  const [showAllCols, setShowAllCols] = useState(false)
+  // A column added while one category is in view belongs to that category
+  // unless the user says otherwise.
+  const [columnDraft, setColumnDraft] = useState<{
+    key: string
+    unit: string
+    type: PropertyType
+    options: string
+    onlyHere: boolean
+  }>({
     key: '',
     unit: '',
     type: 'text',
     options: '',
+    onlyHere: true,
   })
   // Only the row being touched carries inputs; every other row is text.
   const [active, setActive] = useState<{ row: string; col: string } | null>(null)
@@ -168,19 +188,46 @@ export function Overview({
     return sortItems([...hits, ...items.filter((i) => !ids.has(i.id) && edits[i.id] !== undefined)], columns, sort)
   }, [items, searched, filters, edits, columns, sort])
 
-  // A column earns its place by holding a value for a row on screen (or a
-  // new row, or an active filter). Navn always. Everything else is noise for
-  // the view at hand: a sleeping-bag column in a list of books.
-  const { shown: shownAll, empty } = useMemo(() => {
+  // Kategori is the view: the categories it names decide the rows, the
+  // columns, the filters and what a new row is born with. The chosen keys are
+  // folded the way the filters fold them; the labels come from the values.
+  const categoryDef = useMemo(() => defs.find((d) => d.id === categoryColumnId), [defs])
+  const categoryValues = useMemo(
+    () =>
+      categoryDef?.kind === 'prop'
+        ? valuesFor(withoutFilter(searched, filters, categoryColumnId), categoryDef.col)
+        : [],
+    [categoryDef, searched, filters],
+  )
+  const cats = useMemo(() => filters[categoryColumnId] ?? [], [filters])
+  // The label to write, and to hand a new row, while exactly one is in view.
+  // Read from every thing, not from what is on screen: a search that leaves
+  // none of them must not turn Bok back into the folded key.
+  const oneCategory = useMemo(() => {
+    if (cats.length !== 1 || categoryDef?.kind !== 'prop') return null
+    return valuesFor(items, categoryDef.col).find((v) => v.key === cats[0])?.label ?? null
+  }, [cats, categoryDef, items])
+
+  // A column earns its place twice over: it must belong to every category in
+  // view, and then either be one those categories ask for or hold a value for
+  // a row on screen (or a new row, or an active filter). Navn always.
+  // Everything else is noise for the view at hand: a sleeping-bag column in a
+  // list of books. Inside one category its own columns stay even when empty —
+  // there they are the work list, not noise.
+  const { shown: shownAll, extra } = useMemo(() => {
     const used = new Set<string>()
     for (const item of visible) for (const s of item.specs) used.add(columnId({ key: s.key, unit: s.unit }))
     for (const row of newRows) for (const [id, v] of Object.entries(row.cells)) if (v.trim() !== '') used.add(id)
     for (const [id, values] of Object.entries(filters)) if (values.length > 0) used.add(id)
-    const inUse = (d: ColumnDef) => d.kind === 'name' || used.has(d.id)
-    const chosen = defs.filter((d) => d.kind === 'name' || !hidden.has(d.id))
-    const empty = items.length === 0 ? 0 : chosen.filter((d) => !inUse(d)).length
-    return { shown: showEmpty || items.length === 0 ? chosen : chosen.filter(inUse), empty }
-  }, [defs, visible, newRows, filters, showEmpty, items.length, hidden])
+    const fits = (d: ColumnDef) =>
+      d.kind === 'name' || (appliesTo(d.property, cats) && (claimedBy(d.property, cats) || used.has(d.id)))
+    // With one category in view its own column says the same on every row
+    const chosen = defs.filter(
+      (d) => d.kind === 'name' || (!hidden.has(d.id) && !(cats.length === 1 && d.id === categoryColumnId)),
+    )
+    const extra = items.length === 0 ? 0 : chosen.filter((d) => !fits(d)).length
+    return { shown: showAllCols || items.length === 0 ? chosen : chosen.filter(fits), extra }
+  }, [defs, visible, newRows, filters, showAllCols, items.length, hidden, cats])
 
   // Skriv ut asks which columns go on paper; Navn always does, and the form
   // starts with Navn alone. Chosen once per session, null before that:
@@ -253,6 +300,9 @@ export function Overview({
       }
       return cells
     }
+    // In a category's own view that is what a new thing is; otherwise the
+    // Kategori of the newest thing, which is what the last batch was.
+    if (oneCategory !== null) return { [categoryColumnId]: oneCategory }
     const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
     const value = newest ? (baseCells.get(newest.id)?.[categoryColumnId] ?? '') : ''
     return value === '' ? {} : { [categoryColumnId]: value }
@@ -365,11 +415,12 @@ export function Overview({
       // The column may exist and be hidden for holding no value; show it
       // beside the message, so the message can be checked
       setColumnError(t.error.columnExists)
-      if (!shown.some((d) => d.id === id)) setShowEmpty(true)
+      if (!shown.some((d) => d.id === id)) setShowAllCols(true)
       return
     }
     setColumnError(null)
     const options = columnDraft.type === 'choice' ? parseOptions(columnDraft.options) : []
+    const only = oneCategory !== null && columnDraft.onlyHere ? [oneCategory] : []
     try {
       await addProperty({
         id,
@@ -377,6 +428,7 @@ export function Overview({
         unit,
         type: columnDraft.type,
         ...(options.length > 0 ? { options } : {}),
+        ...(only.length > 0 ? { categories: only } : {}),
         createdAt: Date.now(),
       })
     } catch (err) {
@@ -384,8 +436,28 @@ export function Overview({
       setColumnError(t.error.saveFailed)
       return
     }
-    setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
+    setColumnDraft({ key: '', unit: '', type: 'text', options: '', onlyHere: true })
     setAddingColumn(false)
+  }
+
+  // Narrows a column to the category in view, or takes it back out again. A
+  // column that only ever lived in item values gets a definition on the way.
+  async function scopeColumn(def: ColumnDef, category: string) {
+    closeMenu()
+    if (def.kind !== 'prop') return
+    const property: Property = def.property ?? {
+      id: def.id,
+      key: def.col.key,
+      unit: def.col.unit,
+      type: def.type,
+      createdAt: Date.now(),
+    }
+    try {
+      await setPropertyCategories(property, withCategory(def.property, category, !claimedBy(def.property, cats)))
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.error.saveFailed)
+    }
   }
 
   // Swaps a column with its neighbour and stores the whole order.
@@ -554,7 +626,7 @@ export function Overview({
     setRemovingColumn(null)
     setSelected(new Set())
     setAddingColumn(false)
-    setColumnDraft({ key: '', unit: '', type: 'text', options: '' })
+    setColumnDraft({ key: '', unit: '', type: 'text', options: '', onlyHere: true })
     setConfirmingDelete(false)
     setConfirmingDiscard(false)
     setError(null)
@@ -651,6 +723,37 @@ export function Overview({
               </button>
             )}
           </div>
+          {/* Kategori is the view, not a filter menu: one click changes the rows,
+              the columns and the filters under them. Only worth a line once
+              there is more than one category to choose between. */}
+          {categoryValues.length > 1 && (
+            <div className="view-pick" role="group" aria-label={t.view.label}>
+              <button
+                type="button"
+                className={`view-tab${cats.length === 0 ? ' is-active' : ''}`}
+                aria-pressed={cats.length === 0}
+                onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: [] })}
+              >
+                {t.view.all}
+                <span className="hint num">{searched.length}</span>
+              </button>
+              {categoryValues.map((v) => {
+                const on = cats.length === 1 && cats[0] === v.key
+                return (
+                  <button
+                    key={v.key}
+                    type="button"
+                    className={`view-tab${on ? ' is-active' : ''}`}
+                    aria-pressed={on}
+                    onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: on ? [] : [v.key] })}
+                  >
+                    {v.label}
+                    <span className="hint num">{v.count}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
           <p className="summary">
             {/* What is on screen and the whole register; the gaps run their search */}
             <strong>
@@ -663,9 +766,9 @@ export function Overview({
             {sums.map((x) => (
               <span key={x.key}>{t.summary.total(x.key, `${formatNumber(x.sum)} ${x.unit}`)}</span>
             ))}
-            {empty > 0 && (
-              <button type="button" className="summary-link" onClick={() => setShowEmpty((v) => !v)}>
-                {showEmpty ? t.table.hideEmpty : t.table.showEmpty(empty)}
+            {(extra > 0 || showAllCols) && (
+              <button type="button" className="summary-link" onClick={() => setShowAllCols((v) => !v)}>
+                {showAllCols ? t.table.hideMore : t.table.showMore(extra)}
               </button>
             )}
           </p>
@@ -814,6 +917,18 @@ export function Overview({
                       value={columnDraft.unit}
                       onChange={(e) => setColumnDraft({ ...columnDraft, unit: e.target.value })}
                     />
+                  </div>
+                )}
+                {oneCategory !== null && (
+                  <div className="field">
+                    <label className="check-option">
+                      <input
+                        type="checkbox"
+                        checked={columnDraft.onlyHere}
+                        onChange={(e) => setColumnDraft({ ...columnDraft, onlyHere: e.target.checked })}
+                      />
+                      <span>{t.table.onlyIn(oneCategory)}</span>
+                    </label>
                   </div>
                 )}
                 <div className="field field-actions">
@@ -1050,6 +1165,21 @@ export function Overview({
                             <Icon name="edit" size={16} />
                             {t.table.renameColumn}
                           </button>
+                          {oneCategory !== null && def.kind === 'prop' && def.id !== categoryColumnId && (
+                            <button
+                              type="button"
+                              className="col-menu-item"
+                              role="menuitem"
+                              onClick={() => void scopeColumn(def, oneCategory)}
+                            >
+                              <Icon name="viewColumn" size={16} />
+                              {claimedBy(def.property, cats)
+                                ? t.table.notIn(oneCategory)
+                                : (def.property?.categories?.length ?? 0) > 0
+                                  ? t.table.alsoIn(oneCategory)
+                                  : t.table.onlyIn(oneCategory)}
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="col-menu-item"

@@ -56,6 +56,11 @@ export const t = {
       ['has:vekt', 'Har en verdi i Vekt'],
     ],
   },
+  // The category line over the table: which categories the register shows
+  view: {
+    label: 'Velg kategori',
+    all: 'Alle',
+  },
   filters: {
     showAll: (n: number) => `Vis alle ${n}`,
     narrow: (label: string) => `Søk i ${label.toLocaleLowerCase('nb')}`,
@@ -157,8 +162,12 @@ export const t = {
       ['år', 'år'],
     ],
     removeColumn: 'Fjern',
-    showEmpty: (n: number) => (n === 1 ? 'Vis 1 tom kolonne' : `Vis ${n} tomme kolonner`),
-    hideEmpty: 'Skjul tomme kolonner',
+    showMore: (n: number) => (n === 1 ? 'Vis 1 kolonne til' : `Vis ${n} kolonner til`),
+    hideMore: 'Vis færre kolonner',
+    // The column menu, only while one category is in view: what the column is for
+    onlyIn: (category: string) => `Bruk bare i ${category}`,
+    alsoIn: (category: string) => `Bruk også i ${category}`,
+    notIn: (category: string) => `Ikke bruk i ${category}`,
     removeColumnConfirm: (key: string, n: number) =>
       `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Fjern den fra alle? Du kan ikke angre.`,
     removeColumnAction: 'Fjern',

@@ -41,6 +41,9 @@ export const propertySchema = z.object({
   type: z.enum(['text', 'choice', 'number', 'date']).optional(),
   // Choices offered by a Liste column, on top of values already in use.
   options: z.array(z.string().trim().min(1)).optional(),
+  // The Kategori values this column belongs to. Missing or empty means it
+  // belongs to every category: that is what a column is until it is narrowed.
+  categories: z.array(z.string().trim().min(1)).optional(),
 })
 
 export type PropertyType = 'text' | 'choice' | 'number' | 'date'

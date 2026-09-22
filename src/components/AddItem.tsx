@@ -6,6 +6,7 @@ import type { Item, Property } from '../db/schema'
 import { errorText } from '../lib/errors'
 import { distinct } from '../lib/filter'
 import {
+  appliesTo,
   barcodeColumnId,
   barcodeKey,
   barcodeProperty,
@@ -41,10 +42,6 @@ function domId(prefix: string, id: string): string {
 // next thing, so the second thing on the same shelf is a photo and a name.
 export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
-  const choices = useMemo(
-    () => defs.filter((d): d is ChoiceDef => d.kind === 'prop' && d.type === 'choice'),
-    [defs],
-  )
   const nameLabel = fields.name.label ?? t.table.name
   const [name, setName] = useState('')
   // The first thing starts with the Kategori of the newest thing, like a new row in the table
@@ -53,6 +50,17 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
     const spec = newest?.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId)
     return spec ? { [categoryColumnId]: String(spec.value) } : {}
   })
+  // Kategori comes first and decides the rest: once it says Bok the form asks
+  // what a book needs, not what a sleeping bag needs.
+  const category = cells[categoryColumnId]?.trim() ?? ''
+  const choices = useMemo(
+    () =>
+      defs.filter(
+        (d): d is ChoiceDef =>
+          d.kind === 'prop' && d.type === 'choice' && appliesTo(d.property, category === '' ? [] : [category]),
+      ),
+    [defs, category],
+  )
   const [photo, setPhoto] = useState<Blob | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)

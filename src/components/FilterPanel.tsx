@@ -3,7 +3,7 @@ import type { Item, Property } from '../db/schema'
 import { activeCount, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
 import { isDateUnit } from '../lib/dates'
 import { parseNumber } from '../lib/filter'
-import { columnDefs, type FieldSettings } from '../lib/fields'
+import { appliesTo, categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
@@ -61,8 +61,12 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
     return () => document.removeEventListener('mousedown', onDown)
   }, [])
 
+  // Kategori is chosen over the table, not here: it picks the view the rest of
+  // these menus belong to, and a column outside that view has nothing to say.
+  const cats = filters[categoryColumnId] ?? []
   const defs: Def[] = columnDefs(fields, properties, items).flatMap((d) => {
-    if (d.kind === 'name') return []
+    if (d.kind === 'name' || d.id === categoryColumnId) return []
+    if (!appliesTo(d.property, cats)) return []
     // Alphabetical, numbers and years in their own order, as valuesFor delivers
     // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
     const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)
@@ -147,8 +151,13 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
           </details>
         )
       })}
-      {activeCount(filters) > 0 && (
-        <button type="button" className="summary-link" onClick={() => onChange({})}>
+      {/* The view is not a filter: clearing these leaves the chosen category alone */}
+      {activeCount({ ...filters, [categoryColumnId]: [] }) > 0 && (
+        <button
+          type="button"
+          className="summary-link"
+          onClick={() => onChange(cats.length > 0 ? { [categoryColumnId]: cats } : {})}
+        >
           {t.filters.clearAll}
         </button>
       )}

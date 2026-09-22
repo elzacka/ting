@@ -78,6 +78,39 @@ export function propColumns(defs: readonly ColumnDef[]): Column[] {
   return defs.flatMap((d) => (d.kind === 'prop' ? [d.col] : []))
 }
 
+// Kategori values are typed by hand, so they are compared folded, the way the
+// filters compare the values they were chosen from.
+function foldCategory(value: string): string {
+  return value.trim().toLocaleLowerCase('nb')
+}
+
+// A column belongs in the view when it belongs to every category in view. A
+// column that names no category belongs to all of them, so it always does.
+// With no category chosen the view is every category at once, which leaves
+// the columns that belong everywhere.
+export function appliesTo(property: Property | null, categories: readonly string[]): boolean {
+  const own = property?.categories
+  if (!own || own.length === 0) return true
+  if (categories.length === 0) return false
+  const mine = new Set(own.map(foldCategory))
+  return categories.every((c) => mine.has(foldCategory(c)))
+}
+
+// Whether a column is one the categories in view ask for. Those are shown
+// even when empty: inside a category its own columns are the work list.
+export function claimedBy(property: Property | null, categories: readonly string[]): boolean {
+  return categories.length > 0 && (property?.categories?.length ?? 0) > 0 && appliesTo(property, categories)
+}
+
+// The list a column carries after it is used, or stopped being used, in one
+// category. Emptied, it belongs everywhere again.
+export function withCategory(property: Property | null, category: string, on: boolean): string[] {
+  const own = property?.categories ?? []
+  const fold = foldCategory(category)
+  const rest = own.filter((c) => foldCategory(c) !== fold)
+  return on ? [...rest, category] : rest
+}
+
 // Rows written before types existed: the date marker means date, any other
 // unit means number (text columns never carry a unit), otherwise text.
 export function propertyType(p: Pick<Property, 'type' | 'unit'>): PropertyType {

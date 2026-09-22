@@ -609,6 +609,45 @@ section {
   color: var(--text-2);
 }
 
+/* Kategori as the view: one quiet line over the table, right-aligned with the
+   summary under it. The chosen one carries the accent; the rest read as the
+   grey line they sit in. Its count follows each name, as in the filter menus. */
+.view-pick {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--s-3);
+  padding-right: calc((var(--row-h) - 24px) / 2);
+}
+
+.view-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--row-h-sm);
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-cell);
+  cursor: pointer;
+}
+
+.view-tab:hover {
+  color: var(--text);
+}
+
+.view-tab.is-active {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
+.view-tab.is-active .hint {
+  color: var(--accent);
+}
+
 .controls {
   display: grid;
   gap: var(--s-4);

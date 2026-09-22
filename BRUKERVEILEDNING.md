@@ -250,14 +250,33 @@ du hvilke egenskaper tabellen viser, og om lange verdier skal brytes over
 flere linjer. Begge deler husker enheten.
 
 Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
-Fjerner du en egenskap, forsvinner verdien fra alle ting. Kolonner som er tomme
-for alt som vises, er skjult; «Vis n tomme kolonner» på linja øverst i tabellen
-henter dem fram. Navn står alltid først og blir stående når tabellen ruller
-sidelengs. Kategori, Notat og
-Strekkode er egenskaper som alle andre.
+Fjerner du en egenskap, forsvinner verdien fra alle ting. Navn står alltid
+først og blir stående når tabellen ruller sidelengs. Notat og Strekkode er
+egenskaper som alle andre.
+
+#### Kategorien bestemmer hva du ser
+
+Over tabellen står kategoriene dine med antall: Alle, og én for hver kategori
+du har tatt i bruk. Velger du én, får du tingene i den, kolonnene som hører til
+den og filtrene som gjelder der. Kategori-kolonnen forsvinner så lenge du står
+i én kategori: der sier den det samme på hver rad.
+
+En egenskap hører til alle kategorier til du sier noe annet. Står du i én
+kategori, har kolonnemenyen valget «Bruk bare i <kategori>». Da følger
+kolonnen den kategorien, og bare den. Vil du ha den i en til, går du dit og
+velger «Bruk også i <kategori>». «Ikke bruk i <kategori>» tar den ut igjen, og
+er den ute av alle, hører den til alle igjen. Lager du en ny egenskap mens du
+står i en kategori, hører den til der med en gang.
+
+Verdier forsvinner aldri av dette. Endrer du kategori på en ting, blir det du
+har skrevet stående, og søket finner det fortsatt.
+
+Tabellen viser kolonnene kategorien spør etter, også de tomme — det er dem du
+har igjen å fylle ut. Resten er skjult: «Vis n kolonner til» på linja øverst
+henter fram alt.
 
 Filtrene under søkefeltet viser bare verdier som finnes i det som vises, med
-antall, så et valg i Kategori snevrer inn de andre. Datoer filtreres per år.
+antall. Datoer filtreres per år.
 
 <details>
 <summary>Egenskaper for det Ting ikke har egne funksjoner for</summary>

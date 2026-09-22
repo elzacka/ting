@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { categoryProperty, columnDefs, defaultFieldSettings, readFieldSettings } from './fields'
+import {
+  appliesTo,
+  categoryProperty,
+  claimedBy,
+  columnDefs,
+  defaultFieldSettings,
+  readFieldSettings,
+  withCategory,
+} from './fields'
 import { columnId } from './grid'
 
 function item(name: string, specs: Item['specs']): Item {
@@ -41,5 +49,63 @@ describe('readFieldSettings', () => {
   it('fills in defaults for missing or partial settings', () => {
     expect(readFieldSettings(undefined)).toEqual(defaultFieldSettings)
     expect(readFieldSettings({ name: { label: 'Ting' } }).name).toEqual({ label: 'Ting' })
+  })
+})
+
+function column(categories?: string[]) {
+  return {
+    id: columnId({ key: 'Forfatter', unit: null }),
+    key: 'Forfatter',
+    unit: null,
+    createdAt: 0,
+    ...(categories ? { categories } : {}),
+  }
+}
+
+describe('appliesTo', () => {
+  it('lets a column that names no category belong everywhere', () => {
+    expect(appliesTo(column(), [])).toBe(true)
+    expect(appliesTo(column(), ['Bok'])).toBe(true)
+    expect(appliesTo(column([]), ['Bok'])).toBe(true)
+    expect(appliesTo(null, ['Bok'])).toBe(true)
+  })
+
+  it('keeps a named column out of the view of every category at once', () => {
+    expect(appliesTo(column(['Bok']), [])).toBe(false)
+  })
+
+  it('matches the category however it was typed', () => {
+    expect(appliesTo(column(['Bok']), ['bok'])).toBe(true)
+    expect(appliesTo(column(['Turutstyr']), [' turutstyr '])).toBe(true)
+    expect(appliesTo(column(['Bok']), ['Elektronikk'])).toBe(false)
+  })
+
+  it('needs every category in view, not just one of them', () => {
+    expect(appliesTo(column(['Bok', 'Tegneserie']), ['Bok', 'Tegneserie'])).toBe(true)
+    expect(appliesTo(column(['Bok']), ['Bok', 'Tegneserie'])).toBe(false)
+  })
+})
+
+describe('claimedBy', () => {
+  it('is the columns a category asks for, which stay on screen while empty', () => {
+    expect(claimedBy(column(['Bok']), ['Bok'])).toBe(true)
+    expect(claimedBy(column(['Bok']), ['Elektronikk'])).toBe(false)
+    // Belongs everywhere, so no category asked for it in particular
+    expect(claimedBy(column(), ['Bok'])).toBe(false)
+    expect(claimedBy(column(['Bok']), [])).toBe(false)
+  })
+})
+
+describe('withCategory', () => {
+  it('narrows a column to a category and widens it back', () => {
+    expect(withCategory(column(), 'Bok', true)).toEqual(['Bok'])
+    expect(withCategory(column(['Bok']), 'Elektronikk', true)).toEqual(['Bok', 'Elektronikk'])
+    expect(withCategory(column(['Bok', 'Elektronikk']), 'Bok', false)).toEqual(['Elektronikk'])
+    // Emptied, it belongs everywhere again
+    expect(withCategory(column(['Bok']), 'bok', false)).toEqual([])
+  })
+
+  it('does not list the same category twice', () => {
+    expect(withCategory(column(['Bok']), 'bok', true)).toEqual(['bok'])
   })
 })
