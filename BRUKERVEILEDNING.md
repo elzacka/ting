@@ -151,7 +151,7 @@ På «Ny ting» ligger feltet «Strekkode».
 
 | Vil du | Slik |
 |---|---|
-| Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere. Leseren følger med appen og virker uten nett, også på iPhone. Leser den ikke koden: Nærmere, rett forfra, uten refleks. Eller skriv tallene under streken |
+| Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere. Leseren følger med appen og virker uten nett, også på iPhone. Har QR-koden på pakken en varekode (GS1), er det den som havner i feltet. Leser den ikke koden: Nærmere, rett forfra, uten refleks. Eller skriv tallene under streken |
 | Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene for andre varer, kosmetikk og dyrefôr. Rett navnet før du lagrer |
 | Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
 

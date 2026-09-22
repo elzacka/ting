@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classify, cleanCode, digitsOf } from './barcode'
+import { classify, cleanCode, digitsOf, gtinOf } from './barcode'
 
 describe('classify', () => {
   it('knows a book by its 978 or 979 prefix and check digit', () => {
@@ -34,5 +34,27 @@ describe('digitsOf', () => {
   it('drops hyphens and spaces only', () => {
     expect(digitsOf('978-1 78816 866-3')).toBe('9781788168663')
     expect(digitsOf('N9LM')).toBe('N9LM')
+  })
+})
+
+describe('gtinOf', () => {
+  it('finds the printed code in a GS1 Digital Link', () => {
+    expect(gtinOf('https://id.gs1.org/01/09788205573284')).toBe('9788205573284')
+    expect(gtinOf('https://example.com/shop/01/09788205573284/10/AB12?17=261231')).toBe('9788205573284')
+    expect(gtinOf('https://id.gs1.org/01/00036000291452')).toBe('036000291452')
+    expect(gtinOf('https://id.gs1.org/01/00000096385074')).toBe('96385074')
+  })
+
+  it('finds it in a GS1 element string, raw or bracketed', () => {
+    expect(gtinOf('0109788205573284172612311012345')).toBe('9788205573284')
+    expect(gtinOf('(01)09788205573284(17)261231(10)12345')).toBe('9788205573284')
+  })
+
+  it('leaves everything else alone', () => {
+    expect(gtinOf('9788205573284')).toBeNull()
+    expect(gtinOf('https://example.com/x')).toBeNull()
+    expect(gtinOf('https://id.gs1.org/01/09788205573285')).toBeNull()
+    expect(gtinOf('https://id.gs1.org/01/19788205573284')).toBeNull()
+    expect(gtinOf('N9LMTF070124')).toBeNull()
   })
 })

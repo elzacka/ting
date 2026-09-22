@@ -1,8 +1,8 @@
 // Barcodes: what a scanned or typed code is, and how to read one out of a
 // photo. Decoding runs on the device; nothing here touches the network.
-// Two readers: the browser's own BarcodeDetector where it exists (Chrome,
-// Edge, Android), and the bundled ZXing port (zxing-wasm, MIT) everywhere,
-// which is what Safari and every browser on iOS get. The wasm file ships with
+// Two readers: the browser's own BarcodeDetector where it has one (Chrome
+// and Edge on Android and macOS), and the bundled ZXing port (zxing-wasm,
+// MIT) everywhere, which is what Safari and every browser on iOS get. The wasm file ships with
 // the app and loads on the first scan; nothing is fetched from a CDN.
 import wasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url'
 
@@ -38,7 +38,8 @@ export function digitsOf(code: string): string {
 }
 
 // Retail codes with a valid check digit get a kind; everything else (serial
-// numbers, Code 128 labels, QR content) is 'other' and is never looked up.
+// numbers, Code 128 labels, QR content without a GS1 code) is 'other' and is
+// never looked up.
 export function classify(code: string): CodeKind {
   const d = digitsOf(code)
   if (!/^\d+$/.test(d)) return 'other'
@@ -46,6 +47,21 @@ export function classify(code: string): CodeKind {
   if (d.length === 12 && gs1Valid(d)) return 'upc'
   if (d.length === 8 && gs1Valid(d)) return 'ean'
   return 'other'
+}
+
+// The retail code inside a 2D code on a pack: a GS1 Digital Link
+// (https://host/01/<gtin>...) or a GS1 element string (01 and fourteen
+// digits, then other fields; HRI form brackets the 01). Both pad the code
+// with zeros to fourteen digits; the code as the label prints it comes back,
+// and the rest of the content stays where it is. Null when there is none.
+export function gtinOf(code: string): string | null {
+  const digits = /\/01\/(\d{8,14})(?=[/?#]|$)/.exec(code)?.[1] ?? /^\(?01\)?(\d{14})/.exec(code)?.[1]
+  if (!digits) return null
+  for (const len of [8, 12, 13]) {
+    const printed = digits.slice(-len)
+    if (digits.length >= len && /^0*$/.test(digits.slice(0, -len)) && classify(printed) !== 'other') return printed
+  }
+  return null
 }
 
 // What a format is called on the label, for the line under the field. Keys
@@ -88,17 +104,21 @@ export function formatName(format: string): string {
 }
 
 type Detector = { detect(source: ImageBitmap): Promise<{ rawValue: string; format: string }[]> }
-type DetectorCtor = new () => Detector
+type DetectorCtor = { new (): Detector; getSupportedFormats(): Promise<string[]> }
 
 function found(value: string, format: string): Decoded | null {
   const clean = cleanCode(value)
-  return clean === '' ? null : { value: clean, format: formatName(String(format).slice(0, 24)) }
+  if (clean === '') return null
+  return { value: gtinOf(clean) ?? clean, format: formatName(String(format).slice(0, 24)) }
 }
 
 // A photo the browser cannot read, or cannot even decode as an image, is ZXing's to try
 async function viaBrowser(blob: Blob): Promise<Decoded | null> {
   if (!('BarcodeDetector' in window)) return null
   const Ctor = (window as unknown as { BarcodeDetector: DetectorCtor }).BarcodeDetector
+  // Chrome on Windows and Linux has the constructor and no reader behind it
+  const formats = await Ctor.getSupportedFormats().catch(() => [])
+  if (formats.length === 0) return null
   let bitmap: ImageBitmap
   try {
     bitmap = await createImageBitmap(blob)
