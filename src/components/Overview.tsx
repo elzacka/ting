@@ -42,6 +42,7 @@ import { parseBlock } from '../lib/paste'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
+import { allCategoriesIcon, categoryIcon } from '../lib/categoryIcons'
 import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
@@ -799,14 +800,20 @@ export function Overview({
               there is more than one category to choose between. */}
           {categoryValues.length > 1 && (
             <div className="view-pick" role="group" aria-label={t.view.label}>
+              {/* A glyph per category with its count on it. Seventeen names
+                  wrapped onto two lines of text; seventeen glyphs are one
+                  line you can scan. The name is the button's label, which the
+                  stylesheet shows under it on hover, like every other icon
+                  button here (elzacka, 23 September 2026). */}
               <button
                 type="button"
                 className={`view-tab${cats.length === 0 ? ' is-active' : ''}`}
+                aria-label={t.view.all}
                 aria-pressed={cats.length === 0}
                 onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: [] })}
               >
-                {t.view.all}
-                <span className="hint num">{searched.length}</span>
+                <Icon name={allCategoriesIcon} size={22} />
+                <span className="view-count num">{searched.length}</span>
               </button>
               {categoryValues.map((v) => {
                 const on = cats.length === 1 && cats[0] === v.key
@@ -815,11 +822,12 @@ export function Overview({
                     key={v.key}
                     type="button"
                     className={`view-tab${on ? ' is-active' : ''}`}
+                    aria-label={v.label}
                     aria-pressed={on}
                     onClick={() => onFiltersChange({ ...filters, [categoryColumnId]: on ? [] : [v.key] })}
                   >
-                    {v.label}
-                    <span className="hint num">{v.count}</span>
+                    <Icon name={categoryIcon(v.label)} size={22} />
+                    <span className="view-count num">{v.count}</span>
                   </button>
                 )
               })}

@@ -155,11 +155,13 @@
 /* The name of an icon button, shown under it after a short rest of the
    pointer, or while it has keyboard focus: the same text a screen reader
    gets. The browser's own title tooltip was slow and not on every button. */
-.btn-icon {
+.btn-icon,
+.view-tab {
   position: relative;
 }
 
-.btn-icon[aria-label]::after {
+.btn-icon[aria-label]::after,
+.view-tab[aria-label]::after {
   content: attr(aria-label);
   position: absolute;
   top: calc(100% + var(--s-1));
@@ -180,7 +182,9 @@
 }
 
 .btn-icon[aria-label]:hover::after,
-.btn-icon[aria-label]:focus-visible::after {
+.btn-icon[aria-label]:focus-visible::after,
+.view-tab[aria-label]:hover::after,
+.view-tab[aria-label]:focus-visible::after {
   opacity: 1;
   transition-delay: 300ms;
 }
@@ -189,6 +193,7 @@
 .topbar-end .btn-icon[aria-label]::after,
 .overview-head .btn-icon[aria-label]::after,
 .setting-head .btn-icon[aria-label]::after,
+.view-tab[aria-label]::after,
 .spec-edit[aria-label]::after {
   left: auto;
   right: 0;
@@ -196,7 +201,8 @@
 }
 
 @media (hover: none) {
-  .btn-icon[aria-label]:hover::after {
+  .btn-icon[aria-label]:hover::after,
+  .view-tab[aria-label]:hover::after {
     opacity: 0;
   }
 }
@@ -666,34 +672,39 @@ section {
   color: var(--text-2);
 }
 
-/* Kategori as the view: one quiet line over the table, right-aligned with the
-   summary under it. The chosen one carries the accent; the rest read as the
-   grey line they sit in. Its count follows each name, as in the filter menus. */
+/* Kategori as the view: a glyph per category over the table, right-aligned
+   with the summary under it. Names wrapped onto two lines once there were
+   more than a dozen; glyphs stay one line you can scan, and each carries its
+   count. The chosen one takes the accent. The category's own name is the
+   button's label, shown under it on hover like every other icon button here. */
 .view-pick {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0 var(--s-3);
+  gap: var(--s-1);
   padding-right: calc((var(--row-h) - 24px) / 2);
 }
 
 .view-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--s-1);
-  min-height: var(--row-h-sm);
+  justify-content: center;
+  width: 40px;
+  height: var(--row-h-sm);
   padding: 0;
   border: 0;
   border-bottom: 2px solid transparent;
+  border-radius: var(--radius) var(--radius) 0 0;
   background: transparent;
   color: var(--text-2);
-  font: inherit;
-  font-size: var(--text-cell);
   cursor: pointer;
+  transition: color var(--duration) ease-out;
 }
 
 .view-tab:hover {
   color: var(--text);
+  background: var(--bg);
 }
 
 .view-tab.is-active {
@@ -701,8 +712,28 @@ section {
   color: var(--accent);
 }
 
-.view-tab.is-active .hint {
-  color: var(--accent);
+/* The count rides the glyph's top right corner */
+.view-count {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.view-tab:hover .view-count {
+  background: var(--border);
+}
+
+.view-tab.is-active .view-count {
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .controls {

@@ -274,10 +274,14 @@ egenskaper som alle andre.
 
 #### Kategorien bestemmer hva du ser
 
-Over tabellen står kategoriene dine med antall: Alle, og én for hver kategori
-du har tatt i bruk. Velger du én, får du tingene i den, kolonnene som hører til
+Over tabellen står kategoriene dine som små symboler med antallet på: Alle
+først, så én for hver kategori du har tatt i bruk. Hold pekeren over et symbol
+for å se navnet. Velger du én, får du tingene i den, kolonnene som hører til
 den og filtrene som gjelder der. Kategori-kolonnen forsvinner så lenge du står
 i én kategori: der sier den det samme på hver rad.
+
+Symbolet velges ut fra ordene i kategorinavnet. Kjenner appen ikke igjen noen
+av dem, får kategorien et nøytralt symbol. Navnet er det samme uansett.
 
 En egenskap hører til alle kategorier til du sier noe annet. Står du i én
 kategori, har kolonnemenyen valget «Bruk bare i <kategori>». Da følger
