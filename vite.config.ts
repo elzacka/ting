@@ -5,9 +5,17 @@ import { VitePWA } from 'vite-plugin-pwa'
 // Everything is local: no fonts, icons or code come from outside, and nothing
 // leaves the device except the one lookup the user asks for by pressing
 // "Slå opp på nett" (src/lib/lookup.ts): the digits of a barcode to one of
-// the three catalogues below. The CSP says so to the browser, which also helps
-// Android browsers treat the app as safe to install.
-const lookupOrigins = ['https://openlibrary.org', 'https://world.openproductsfacts.org', 'https://world.openfoodfacts.org']
+// the catalogues below. The CSP says so to the browser, which also helps
+// Android browsers treat the app as safe to install. The four Facts hosts are
+// one database; a lookup may be redirected between them.
+const lookupOrigins = [
+  'https://api.nb.no',
+  'https://openlibrary.org',
+  'https://world.openfoodfacts.org',
+  'https://world.openproductsfacts.org',
+  'https://world.openbeautyfacts.org',
+  'https://world.openpetfoodfacts.org',
+]
 
 const productionCsp = [
   "default-src 'self'",

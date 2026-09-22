@@ -152,7 +152,7 @@ På «Ny ting» ligger feltet «Strekkode».
 | Vil du | Slik |
 |---|---|
 | Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere. Leseren følger med appen og virker uten nett, også på iPhone. Leser den ikke koden: Nærmere, rett forfra, uten refleks. Eller skriv tallene under streken |
-| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Open Library, varer i Open Products Facts og Open Food Facts. Rett navnet før du lagrer |
+| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene for andre varer, kosmetikk og dyrefôr. Rett navnet før du lagrer |
 | Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
 
 Bøker og matvarer finnes som regel i oppslagsverkene. Turutstyr og elektronikk
@@ -313,7 +313,7 @@ steder og bruker ingen KI.
 | Ukryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
 | Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
 | Lås | Appen åpner alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen |
-| Ut av enheten | Bare sifrene i en strekkode, bare når du trykker på «Slå opp på nett», til Open Library, Open Products Facts eller Open Food Facts. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
+| Ut av enheten | Bare sifrene i en strekkode, bare når du trykker på «Slå opp på nett», til Nasjonalbiblioteket, Open Library eller Open Food Facts med søsterkatalogene. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
 
 Alt du skriver inn, skanner eller får tilbake fra et oppslag behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).
