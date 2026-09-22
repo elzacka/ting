@@ -15,15 +15,18 @@ import { errorText } from '../lib/errors'
 import { currentKey, subscribeVault, vaultState } from '../lib/vault'
 
 // Every record is stored sealed under the session key: an item is one sealed
-// JSON document plus its photo as separately sealed bytes, a property is one
+// JSON document plus its photos as separately sealed bytes, a property is one
 // sealed document, and the field settings are a sealed setting. Only the id,
 // the folder handle, the change stamp and the vault (which is itself only a
 // wrapped key) are stored in the clear.
 
+type SealedPhoto = { iv: string; data: ArrayBuffer; type: string }
 type SealedItemRow = {
   id: string
   sealed: Sealed
-  photo: { iv: string; data: ArrayBuffer; type: string } | null
+  photos: SealedPhoto[]
+  // Written before a thing could carry more than one. Read, never written.
+  photo?: SealedPhoto | null
 }
 type SealedPropertyRow = { id: string; sealed: Sealed }
 type Setting = { key: string; value?: unknown; sealed?: Sealed }
@@ -62,26 +65,35 @@ async function touch(): Promise<void> {
 
 // --- sealing helpers -------------------------------------------------------
 
+// A row's photos, whichever way the row was written: a list, or the one photo
+// a thing could carry before it could carry several.
+function sealedPhotos(row: SealedItemRow): SealedPhoto[] {
+  if (row.photos) return row.photos
+  return row.photo ? [row.photo] : []
+}
+
 async function sealItem(item: Item): Promise<SealedItemRow> {
   const { key } = currentKey()
   const sealed = await sealJson(key, toStored(item))
-  let photo: SealedItemRow['photo'] = null
-  if (item.photo) {
-    const { iv, data } = await encryptBytes(key, new Uint8Array(await item.photo.arrayBuffer()))
-    photo = { iv: toB64(iv), data: data.buffer as ArrayBuffer, type: item.photo.type }
-  }
-  return { id: item.id, sealed, photo }
+  const photos = await Promise.all(
+    item.photos.map(async (photo) => {
+      const { iv, data } = await encryptBytes(key, new Uint8Array(await photo.arrayBuffer()))
+      return { iv: toB64(iv), data: data.buffer as ArrayBuffer, type: photo.type }
+    }),
+  )
+  return { id: item.id, sealed, photos }
 }
 
 async function openItem(row: SealedItemRow): Promise<Item> {
   const { key } = currentKey()
   const stored = storedItemSchema.parse(await openJson(key, row.sealed))
-  let photo: Blob | null = null
-  if (row.photo) {
-    const bytes = await decryptBytes(key, fromB64(row.photo.iv), new Uint8Array(row.photo.data))
-    photo = new Blob([bytes as BlobPart], { type: row.photo.type })
-  }
-  return fromStored(stored, photo)
+  const photos = await Promise.all(
+    sealedPhotos(row).map(async (p) => {
+      const bytes = await decryptBytes(key, fromB64(p.iv), new Uint8Array(p.data))
+      return new Blob([bytes as BlobPart], { type: p.type })
+    }),
+  )
+  return fromStored(stored, photos)
 }
 
 async function sealProperty(p: Property): Promise<SealedPropertyRow> {
@@ -109,18 +121,21 @@ async function openAll<R extends { id: string }, T>(rows: R[], open: (row: R) =>
 // Opened items are kept by id and by the nonces of their sealed parts: a
 // fresh seal means a fresh nonce, so an unchanged row costs nothing to read
 // again. The cache belongs to one data key; another key empties it.
-const opened = new Map<string, { dekId: string; iv: string; photoIv: string | null; item: Item }>()
+const opened = new Map<string, { dekId: string; iv: string; photoIvs: string; item: Item }>()
 subscribeVault(() => {
   if (vaultState().status !== 'open') opened.clear()
 })
 
 async function openItemCached(row: SealedItemRow): Promise<Item> {
   const { dekId } = currentKey()
-  const photoIv = row.photo?.iv ?? null
+  // One nonce per photo: a photo added, dropped or replaced changes the join
+  const photoIvs = sealedPhotos(row)
+    .map((p) => p.iv)
+    .join(' ')
   const hit = opened.get(row.id)
-  if (hit && hit.dekId === dekId && hit.iv === row.sealed.iv && hit.photoIv === photoIv) return hit.item
+  if (hit && hit.dekId === dekId && hit.iv === row.sealed.iv && hit.photoIvs === photoIvs) return hit.item
   const item = await openItem(row)
-  opened.set(row.id, { dekId, iv: row.sealed.iv, photoIv, item })
+  opened.set(row.id, { dekId, iv: row.sealed.iv, photoIvs, item })
   return item
 }
 

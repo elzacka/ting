@@ -135,7 +135,8 @@ Pris og tekst arves ikke: Hver rad har sin egen.
 I boden, med mobilen. Under 600 px bred er appen laget for akkurat dette.
 
 1. Plussikonet øverst til høyre åpner skjermen «Ny ting».
-2. «Ta bilde». Kameraet åpner seg direkte.
+2. «Ta bilde». Kameraet åpner seg direkte. «Ta ett bilde til» for neste, for
+   eksempel av etiketten eller serienummeret.
 3. Skriv navnet. Kategori og plassering står igjen fra forrige ting.
 4. «Lagre». Skjermen er klar for neste ting.
 
@@ -181,7 +182,7 @@ tingen for å se alt.
 | I tabellen | Klikk i cellen, skriv, «Lagre» nederst |
 | På tingens side | Trykk på blyanten ved verdien. <kbd>Enter</kbd> eller et trykk utenfor lagrer, <kbd>Esc</kbd> angrer |
 | Samme verdi på mange | Kopier én celle, lim inn i første rad av det som skal endres |
-| Bilde | På tingens side: «Velg bilde», «Bytt bilde», «Fjern bilde» |
+| Bilder | På tingens side: «Legg til bilde». Du kan velge flere på én gang, og legge til flere senere. Har tingen mer enn ett, står de som små ruter under det store: Trykk på en for å gjøre den til hovedbilde, krysset fjerner den |
 | Slette | På tingens side, eller huk av flere rader i tabellen: «Slett valgte» dukker opp øverst til høyre |
 
 ### Mange ting på én gang
@@ -204,7 +205,7 @@ To valg under kolonnene bestemmer formen på papiret:
 | Valg | Gjør |
 |---|---|
 | Grupper etter | Velg en valgliste, for eksempel Kategori. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum. Kolonnen du grupperer etter, gjentas ikke på hver ting |
-| Ta med bilder | Hver ting får bildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
+| Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler. Har tingen flere, er det bare det første som går på papiret |
 
 Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
 tingene under hverandre i stedet, én blokk per ting som ikke deles over to
@@ -244,7 +245,7 @@ sikkerhetskopi flytter den.
 | `farge=rød` | Nøyaktig lik |
 | `brensel:gass` | Inneholder |
 | `kjøpsdato<01.01.26` | Dato før |
-| `has:bilde`, `has:vekt` | Har bilde, har en verdi i Vekt |
+| `has:bilde`, `has:vekt` | Har minst ett bilde, har en verdi i Vekt |
 
 ### Egenskaper
 

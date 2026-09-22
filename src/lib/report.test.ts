@@ -10,7 +10,7 @@ function item(name: string, category?: string): Item {
     id: crypto.randomUUID(),
     name,
     specs: category === undefined ? [] : [{ key: 'Kategori', value: category, unit: null }],
-    photo: null,
+    photos: [],
     createdAt: 0,
     updatedAt: 0,
   }

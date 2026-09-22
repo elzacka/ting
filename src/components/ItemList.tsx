@@ -69,7 +69,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, sear
 }
 
 function Row({ item, choiceIds }: { item: Item; choiceIds: readonly string[] }) {
-  const url = useObjectUrl(item.photo)
+  const url = useObjectUrl(item.photos[0] ?? null)
   const meta = choiceIds
     .map((id) => item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === id))
     .flatMap((s) => (s ? [String(s.value)] : []))

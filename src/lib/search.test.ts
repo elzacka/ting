@@ -7,7 +7,7 @@ function item(name: string, specs: Item['specs'], photo: Blob | null = null): It
     id: crypto.randomUUID(),
     name,
     specs,
-    photo,
+    photos: photo ? [photo] : [],
     createdAt: 0,
     updatedAt: 0,
   }

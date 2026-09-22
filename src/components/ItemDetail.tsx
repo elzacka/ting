@@ -12,6 +12,7 @@ import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
+import { PhotoStrip } from './PhotoStrip'
 import { splitLinks } from '../lib/paste'
 
 type Props = { item: Item; items: Item[]; properties: Property[]; fields: FieldSettings }
@@ -25,7 +26,7 @@ function domId(prefix: string, id: string): string {
 // A thing, every column as a row, each stored the moment it is left. Nothing
 // here waits for Lagre: on a phone this is the way to correct a thing.
 export function ItemDetail({ item, items, properties, fields }: Props) {
-  const url = useObjectUrl(item.photo)
+  const url = useObjectUrl(item.photos[0] ?? null)
   const [confirming, setConfirming] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
@@ -41,10 +42,27 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     navigate(href.list)
   }
 
-  // The photo is the one thing the table cannot hold, so it is set here.
-  async function setPhoto(photo: Blob | null) {
-    await updateItem(item.id, { name: item.name, specs: item.specs, photo })
+  // The photos are the one thing the table cannot hold, so they are set here.
+  // The first is the one every other screen shows.
+  async function setPhotos(photos: Blob[]) {
+    await updateItem(item.id, { name: item.name, specs: item.specs, photos })
     if (fileRef.current) fileRef.current.value = ''
+  }
+
+  function addPhotos(files: FileList | null) {
+    const added = [...(files ?? [])].map(asImage).filter((b): b is Blob => b !== null)
+    if (added.length > 0) void setPhotos([...item.photos, ...added])
+    else if (fileRef.current) fileRef.current.value = ''
+  }
+
+  function makeFirst(index: number) {
+    const photo = item.photos[index]
+    if (!photo) return
+    void setPhotos([photo, ...item.photos.filter((_, i) => i !== index)])
+  }
+
+  function dropPhoto(index: number) {
+    void setPhotos(item.photos.filter((_, i) => i !== index))
   }
 
   function start(id: string) {
@@ -78,7 +96,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
             {
               name: id === 'name' ? value : item.name,
               cells: id === 'name' ? cells : { ...cells, [id]: value },
-              photo: item.photo,
+              photos: item.photos,
             },
             propColumns(defs),
           ),
@@ -141,6 +159,8 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
       )}
 
       {url && <img className="photo" src={url} alt={t.detail.photoAlt(item.name)} />}
+
+      <PhotoStrip photos={item.photos} name={item.name} onFirst={makeFirst} onRemove={dropPhoto} />
 
       <section className="stack-sm">
         <h2 className="section-label">{t.detail.specs}</h2>
@@ -211,15 +231,17 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
             ref={fileRef}
             type="file"
             accept="image/*"
+            multiple
             className="visually-hidden"
-            onChange={(e) => void setPhoto(asImage(e.target.files?.[0]))}
+            onChange={(e) => addPhotos(e.target.files)}
           />
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
             <Icon name="photoCamera" size={20} />
-            {item.photo ? t.action.changePhoto : t.action.choosePhoto}
+            {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
           </button>
-          {item.photo && (
-            <button type="button" className="btn" onClick={() => void setPhoto(null)}>
+          {/* With several, each tile carries its own way out */}
+          {item.photos.length === 1 && (
+            <button type="button" className="btn" onClick={() => dropPhoto(0)}>
               {t.action.removePhoto}
             </button>
           )}

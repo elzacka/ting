@@ -168,7 +168,7 @@ function specHit(item: Item, key: string, op: Op, value: string): boolean {
 }
 
 function hasHit(item: Item, what: string): boolean {
-  if (what === 'bilde' || what === 'foto') return item.photo !== null
+  if (what === 'bilde' || what === 'foto') return item.photos.length > 0
   return item.specs.some((s) => norm(s.key).startsWith(what))
 }
 

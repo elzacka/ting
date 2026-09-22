@@ -66,7 +66,7 @@ function inCategory(category: string | null, gap: string, split: boolean): strin
 export function gapsByCategory(items: readonly Item[], properties: readonly Property[]): Gaps[] {
   // Nothing nags about a habit that has not started: the photo counts as a
   // gap once any thing at all carries one.
-  const photosInUse = items.some((i) => i.photo !== null)
+  const photosInUse = items.some((i) => i.photos.length > 0)
   const groups = new Map<string, { label: string | null; rows: Item[] }>()
   for (const item of items) {
     const label = categoryOf(item)
@@ -79,7 +79,7 @@ export function gapsByCategory(items: readonly Item[], properties: readonly Prop
   const out: Gaps[] = []
   for (const { label, rows } of groups.values()) {
     const missing: Missing[] = []
-    const noPhoto = rows.filter((i) => i.photo === null).length
+    const noPhoto = rows.filter((i) => i.photos.length === 0).length
     if (photosInUse && noPhoto > 0)
       missing.push({ what: 'photo', key: 'bilde', count: noPhoto, query: inCategory(label, '-has:bilde', split) })
     for (const p of properties) {

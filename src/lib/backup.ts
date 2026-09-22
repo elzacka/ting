@@ -13,11 +13,21 @@ export const fileFormat = 1
 export const dataFileName = 'ting.json'
 export const photoDirName = 'bilder'
 
+// One photo as a file beside the document, or embedded as a data URL, or
+// both empty for a thing that has none.
+const storedPhotoSchema = z.object({
+  file: z.string().nullable().optional(),
+  type: z.string().nullable().optional(),
+  data: z.string().nullable().optional(),
+})
+
 // Files and rows from before 21 September 2026 carry a note field and a few
 // fields nothing ever wrote; the note becomes the property Notat on load,
-// the rest is dropped.
-const storedItemSchema = itemSchema.omit({ photo: true }).extend({
-  photoFile: z.string().nullable(),
+// the rest is dropped. Files from before 22 September 2026 carry one photo in
+// photoFile/photoType/photoData instead of the photos list, and still load.
+const storedItemSchema = itemSchema.omit({ photos: true }).extend({
+  photos: z.array(storedPhotoSchema).optional(),
+  photoFile: z.string().nullable().optional(),
   photoType: z.string().nullable().optional(),
   photoData: z.string().nullable().optional(),
   note: z.string().nullable().optional(),
@@ -42,6 +52,7 @@ export const dataFileSchema = z.object({
 })
 
 export { storedItemSchema }
+export type StoredPhoto = z.infer<typeof storedPhotoSchema>
 export type StoredItem = z.infer<typeof storedItemSchema>
 export type DataFile = z.infer<typeof dataFileSchema>
 
@@ -50,13 +61,30 @@ function extensionFor(blob: Blob): string {
   return map[blob.type] ?? 'bin'
 }
 
-export function photoFileName(item: Item): string | null {
-  return item.photo ? `${photoDirName}/${item.id}.${extensionFor(item.photo)}` : null
+// bilder/<id>-1.<ext>, numbered from one in the order the thing carries them.
+// Flat, so the folder keeps one directory and the sweep that deletes what no
+// thing claims any more keeps working (elzacka, 22 September 2026).
+export function photoFileNames(item: Item): string[] {
+  return item.photos.map((photo, i) => `${photoDirName}/${item.id}-${i + 1}.${extensionFor(photo)}`)
 }
 
 export function toStored(item: Item): StoredItem {
-  const { photo: _photo, ...rest } = item
-  return { ...rest, photoFile: photoFileName(item) }
+  const { photos: _photos, ...rest } = item
+  const names = photoFileNames(item)
+  return {
+    ...rest,
+    photos: item.photos.map((photo, i) => ({ file: names[i] ?? null, type: photo.type })),
+  }
+}
+
+// What a stored thing says about its photos, however it was written: the list,
+// or the single photo a file could hold before the list existed.
+export function storedPhotos(stored: StoredItem): StoredPhoto[] {
+  if (stored.photos) return stored.photos
+  if (stored.photoFile || stored.photoData) {
+    return [{ file: stored.photoFile, type: stored.photoType, data: stored.photoData }]
+  }
+  return []
 }
 
 export const noteKey = 'Notat'
@@ -85,9 +113,9 @@ export function toDataFile(
   return { app: 'ting', format: fileFormat, exportedAt, items: items.map(toStored), properties: [...properties], fields }
 }
 
-export function fromStored(stored: StoredItem, photo: Blob | null): Item {
-  const { photoFile: _file, photoData: _data, photoType: _type, note, category, ...rest } = stored
-  return itemSchema.parse({ ...rest, specs: legacyAsSpecs(rest.specs, { note, category }), photo })
+export function fromStored(stored: StoredItem, photos: Blob[]): Item {
+  const { photos: _photos, photoFile: _file, photoData: _data, photoType: _type, note, category, ...rest } = stored
+  return itemSchema.parse({ ...rest, specs: legacyAsSpecs(rest.specs, { note, category }), photos })
 }
 
 const sealedSchema = z.object({ iv: z.string(), data: z.string() })
@@ -153,13 +181,18 @@ export async function openEnvelope(
   return { file: dataFileSchema.parse(await openJson(key.key, env.sealed)), open: key }
 }
 
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(blob)
-  })
+// The mirror of dataUrlToBlob, and encoded by hand for the same reason: no
+// browser-only reader in the middle of a pure conversion. The bytes go through
+// btoa in chunks, since one call with a megapixel photo's worth of arguments
+// overflows the stack.
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer())
+  const chunk = 0x8000
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return `data:${blob.type};base64,${btoa(binary)}`
 }
 
 // A photo is accepted only when it is an image. Anything else that arrives in a
@@ -170,10 +203,23 @@ export function asImage(blob: Blob | null | undefined): Blob | null {
   return blob && imageTypes.has(blob.type) ? blob : null
 }
 
-async function dataUrlToBlob(url: string): Promise<Blob | null> {
-  if (!/^data:image\/[a-z0-9.+-]+;base64,/i.test(url)) return null
-  const res = await fetch(url)
-  return asImage(await res.blob())
+// Decoded by hand, not by fetch(): the production CSP says connect-src 'self',
+// which a data: URL is not, so fetching one throws and takes the whole restore
+// with it. The base64 comes from a file, so a bad one returns null rather than
+// throwing (elzacka, 22 September 2026).
+function dataUrlToBlob(url: string): Blob | null {
+  const match = /^data:(image\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]*)$/i.exec(url)
+  const type = match?.[1]
+  const base64 = match?.[2]
+  if (type === undefined || base64 === undefined) return null
+  try {
+    const binary = atob(base64.replace(/\s/g, ''))
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    return asImage(new Blob([bytes], { type }))
+  } catch {
+    return null
+  }
 }
 
 // Download copy: photos embedded, the whole document sealed, so one file holds everything.
@@ -187,8 +233,13 @@ export async function toBackupJson(
   const file = toDataFile(items, properties, fields)
   const withPhotos = await Promise.all(
     file.items.map(async (stored, i) => {
-      const photo = items[i]?.photo ?? null
-      return { ...stored, photoFile: null, photoData: photo ? await blobToDataUrl(photo) : null }
+      const photos = items[i]?.photos ?? []
+      return {
+        ...stored,
+        photos: await Promise.all(
+          photos.map(async (photo) => ({ file: null, type: photo.type, data: await blobToDataUrl(photo) })),
+        ),
+      }
     }),
   )
   return JSON.stringify(await sealDataFile(open, vault, { ...file, items: withPhotos }), null, 2)
@@ -198,7 +249,10 @@ export type Loaded = { items: Item[]; properties: Property[]; fields: FieldSetti
 
 export async function itemsFromDataFile(file: DataFile): Promise<Loaded> {
   const items = await Promise.all(
-    file.items.map(async (s) => fromStored(s, s.photoData ? await dataUrlToBlob(s.photoData) : null)),
+    file.items.map(async (s) => {
+      const photos = storedPhotos(s).map((p) => (p.data ? dataUrlToBlob(p.data) : null))
+      return fromStored(s, photos.filter((b): b is Blob => b !== null))
+    }),
   )
   return { items, properties: file.properties, fields: file.fields }
 }

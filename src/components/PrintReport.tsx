@@ -36,7 +36,7 @@ function Sums({ items, properties }: { items: readonly Item[]; properties: Prope
 }
 
 function Photo({ item }: { item: Item }) {
-  const url = useObjectUrl(item.photo)
+  const url = useObjectUrl(item.photos[0] ?? null)
   if (!url) return <div className="report-photo is-empty" aria-hidden="true" />
   return <img className="report-photo" src={url} alt={t.detail.photoAlt(item.name)} />
 }

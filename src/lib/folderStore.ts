@@ -17,9 +17,11 @@ import {
   parseAnyFile,
   photoDirName,
   sealDataFile,
+  storedPhotos,
   toDataFile,
   type DataFile,
   type Envelope,
+  type StoredPhoto,
 } from './backup'
 import { decryptBytes, encryptBytes, type OpenKey, type Vault } from './crypto'
 import { asImage } from './backup'
@@ -81,24 +83,39 @@ async function writeFile(dir: DirHandle, name: string, data: Blob | Uint8Array |
   await w.close()
 }
 
-// Photos are stored as bilder/<id>.bin: 12-byte nonce followed by the ciphertext.
-// Only names the app itself writes: <uuid>.<ext>. A crafted ting.json cannot
-// point at anything else in the folder.
-const photoName = /^[0-9a-f-]{36}\.(bin|jpg|jpeg|png|webp|heic|heif|gif|avif)$/i
+// Photos are stored as bilder/<id>-1.bin: 12-byte nonce followed by the
+// ciphertext. Only names the app itself writes: <uuid>-<n>.<ext>, or the
+// <uuid>.<ext> a thing got while it could carry only one. A crafted ting.json
+// cannot point at anything else in the folder.
+const photoName = /^[0-9a-f-]{36}(-\d{1,4})?\.(bin|jpg|jpeg|png|webp|heic|heif|gif|avif)$/i
 
-async function readPhoto(photos: DirHandle, stored: DataFile['items'][number], open: OpenKey): Promise<Blob | null> {
-  if (!stored.photoFile) return null
-  const name = stored.photoFile.replace(`${photoDirName}/`, '')
+async function readPhoto(photos: DirHandle, stored: StoredPhoto, open: OpenKey): Promise<Blob | null> {
+  if (!stored.file) return null
+  const name = stored.file.replace(`${photoDirName}/`, '')
   if (!photoName.test(name)) return null
   try {
     const file = await (await photos.getFileHandle(name)).getFile()
     if (!name.endsWith('.bin')) return asImage(file) // written before encryption
     const bytes = new Uint8Array(await file.arrayBuffer())
     const plain = await decryptBytes(open.key, bytes.slice(0, 12), bytes.slice(12))
-    return asImage(new Blob([plain as BlobPart], { type: stored.photoType ?? '' }))
+    return asImage(new Blob([plain as BlobPart], { type: stored.type ?? '' }))
   } catch {
     return null
   }
+}
+
+// A thing's photos from the folder. A file that will not open leaves a hole,
+// and the local copy fills it if there is one: a folder that has lost a photo
+// must not take the app's away as well.
+async function readAllPhotos(
+  photos: DirHandle,
+  stored: DataFile['items'][number],
+  open: OpenKey,
+  local: readonly Blob[],
+): Promise<Blob[]> {
+  const wanted = storedPhotos(stored)
+  const out = await Promise.all(wanted.map(async (p, i) => (await readPhoto(photos, p, open)) ?? local[i] ?? null))
+  return out.filter((b): b is Blob => b !== null)
 }
 
 // A restore from a backup file can bring photos the folder never saw under
@@ -142,7 +159,7 @@ export async function readFolder(
   dir: DirHandle,
   open: OpenKey,
   passphrase?: string,
-  localPhotos: ReadonlyMap<string, Blob> = new Map(),
+  localPhotos: ReadonlyMap<string, Blob[]> = new Map(),
 ): Promise<FolderRead> {
   const text = await readText(dir, dataFileName)
   if (text === null) return { kind: 'empty' }
@@ -162,9 +179,7 @@ export async function readFolder(
   }
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
   const items = await Promise.all(
-    file.items.map(async (s) =>
-      fromStored(s, (await readPhoto(photos, s, key)) ?? (s.photoFile ? (localPhotos.get(s.id) ?? null) : null)),
-    ),
+    file.items.map(async (s) => fromStored(s, await readAllPhotos(photos, s, key, localPhotos.get(s.id) ?? []))),
   )
   return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, fields: file.fields, open: key, vault }
 }
@@ -192,21 +207,21 @@ export async function writeFolder(
     const item = items[i]
     const stored = file.items[i]
     if (!item || !stored) continue
-    if (!item.photo) {
-      stored.photoFile = null
-      continue
+    stored.photos = []
+    for (let n = 0; n < item.photos.length; n++) {
+      const photo = item.photos[n]
+      if (!photo) continue
+      const name = `${item.id}-${n + 1}.bin`
+      if (all || (await writtenSince(photos, name, item.updatedAt))) {
+        const { iv, data } = await encryptBytes(open.key, new Uint8Array(await photo.arrayBuffer()))
+        const bytes = new Uint8Array(iv.length + data.length)
+        bytes.set(iv)
+        bytes.set(data, iv.length)
+        await writeFile(photos, name, bytes)
+      }
+      stored.photos.push({ file: `${photoDirName}/${name}`, type: photo.type })
+      wanted.add(name)
     }
-    const name = `${item.id}.bin`
-    if (all || (await writtenSince(photos, name, item.updatedAt))) {
-      const { iv, data } = await encryptBytes(open.key, new Uint8Array(await item.photo.arrayBuffer()))
-      const bytes = new Uint8Array(iv.length + data.length)
-      bytes.set(iv)
-      bytes.set(data, iv.length)
-      await writeFile(photos, name, bytes)
-    }
-    stored.photoFile = `${photoDirName}/${name}`
-    stored.photoType = item.photo.type
-    wanted.add(name)
   }
   for await (const entry of photos.values()) {
     if (entry.kind === 'file' && !wanted.has(entry.name)) await photos.removeEntry(entry.name)
@@ -233,9 +248,9 @@ export async function reconcile(dir: DirHandle, open: OpenKey, vault: Vault): Pr
   return 'written'
 }
 
-export function localPhotoMap(items: readonly Item[]): Map<string, Blob> {
-  const map = new Map<string, Blob>()
-  for (const item of items) if (item.photo) map.set(item.id, item.photo)
+export function localPhotoMap(items: readonly Item[]): Map<string, Blob[]> {
+  const map = new Map<string, Blob[]>()
+  for (const item of items) if (item.photos.length > 0) map.set(item.id, item.photos)
   return map
 }
 

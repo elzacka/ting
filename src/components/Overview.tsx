@@ -175,7 +175,7 @@ export function Overview({
         labelOf,
         (def) =>
           def.kind === 'name' ? items.map((i) => i.name) : items.map((i) => baseCells.get(i.id)?.[def.id] ?? ''),
-        items.some((i) => i.photo !== null),
+        items.some((i) => i.photos.length > 0),
       ),
     // labelOf reads fields, which defs already depend on
     [defs, items, baseCells],
@@ -290,7 +290,7 @@ export function Overview({
     () => groupChoices.find((d) => d.id === printGroup)?.col.key ?? null,
     [groupChoices, printGroup],
   )
-  const anyPhoto = useMemo(() => visible.some((i) => i.photo !== null), [visible])
+  const anyPhoto = useMemo(() => visible.some((i) => i.photos.length > 0), [visible])
 
   // Photos are object URLs the browser has to fetch and decode; a snapshot
   // taken before they land prints empty frames.
@@ -627,7 +627,7 @@ export function Overview({
     setSaving(true)
     try {
       await saveBatch(
-        added.map((r) => inputFrom({ ...r, photo: null }, columns)),
+        added.map((r) => inputFrom({ ...r, photos: [] }, columns)),
         dirtyIds.flatMap((id) => {
           const item = items.find((i) => i.id === id)
           if (!item) return []
@@ -639,7 +639,7 @@ export function Overview({
                 {
                   name: value(item, 'name'),
                   cells,
-                  photo: item.photo,
+                  photos: item.photos,
                 },
                 columns,
               ),
@@ -1467,7 +1467,7 @@ export function Overview({
 
 // The name is the way to the thing; the thumbnail rides along
 function NameCell({ item, name }: { item: Item; name: string }) {
-  const url = useObjectUrl(item.photo)
+  const url = useObjectUrl(item.photos[0] ?? null)
   return (
     <a className="grid-link" href={href.detail(item.id)}>
       {url && <img className="thumb" src={url} alt="" />}

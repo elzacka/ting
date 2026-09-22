@@ -110,6 +110,13 @@ export const t = {
     removePhoto: 'Fjern bilde',
     takePhoto: 'Ta bilde',
     retakePhoto: 'Ta nytt bilde',
+    // Several photos per thing: the first is the one the table and the report
+    // show, and any of them can be made the first.
+    addPhoto: 'Legg til bilde',
+    onePhotoMore: 'Ta ett bilde til',
+    makeFirstPhoto: 'Gjør til hovedbilde',
+    firstPhoto: 'Hovedbilde',
+    removePhotoAt: (n: number) => `Fjern bilde ${n}`,
   },
   add: {
     title: 'Ny ting',
@@ -132,6 +139,7 @@ export const t = {
   },
   detail: {
     specs: 'Egenskaper',
+    photos: 'Bilder',
     noSpecs: 'Ingen egenskaper',
     notFound: 'Fant ikke denne tingen',
     photoAlt: (name: string) => `Bilde av ${name}`,

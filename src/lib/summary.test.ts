@@ -7,7 +7,7 @@ function item(name: string, category: string, specs: Item['specs'], photo: Blob 
     id: crypto.randomUUID(),
     name,
     specs: [{ key: 'Kategori', value: category, unit: null }, ...specs],
-    photo,
+    photos: photo ? [photo] : [],
     createdAt: 0,
     updatedAt: 0,
   }
@@ -50,12 +50,12 @@ describe('gapsByCategory', () => {
   })
 
   it('leaves out a category with nothing missing', () => {
-    const none = items.map((i) => ({ ...i, photo: null }))
+    const none = items.map((i) => ({ ...i, photos: [] }))
     expect(gapsByCategory(none, [pris]).map((g) => g.category)).toEqual(['Klær'])
   })
 
   it('says nothing about photos while no thing has one', () => {
-    const none = items.map((i) => ({ ...i, photo: null }))
+    const none = items.map((i) => ({ ...i, photos: [] }))
     expect(gapsByCategory(none, [pris]).flatMap((g) => g.missing.map((m) => m.what))).toEqual(['value'])
   })
 

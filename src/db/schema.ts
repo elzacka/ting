@@ -6,13 +6,16 @@ export const specSchema = z.object({
   unit: z.string().trim().nullable(),
 })
 
-// A thing is a name, its properties as specs, and maybe a photo. Everything
-// else it can carry is a property: Kategori and Notat among them.
+// A thing is a name, its properties as specs, and its photos. Everything else
+// it can carry is a property: Kategori and Notat among them. The first photo
+// is the one shown wherever there is room for only one: the table, the phone
+// list, the report. Rows and files written before a thing could carry more
+// than one hold a single `photo`, which reads as a list of one.
 export const itemSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
   specs: z.array(specSchema),
-  photo: z.instanceof(Blob).nullable(),
+  photos: z.array(z.instanceof(Blob)),
   createdAt: z.number(),
   updatedAt: z.number(),
 })
@@ -24,7 +27,7 @@ export type Item = z.infer<typeof itemSchema>
 export const itemInputSchema = itemSchema.pick({
   name: true,
   specs: true,
-  photo: true,
+  photos: true,
 })
 
 export type ItemInput = z.infer<typeof itemInputSchema>

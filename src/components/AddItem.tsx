@@ -21,6 +21,7 @@ import { lookup } from '../lib/lookup'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
+import { PhotoStrip } from './PhotoStrip'
 
 type Props = {
   items: Item[]
@@ -61,12 +62,12 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
       ),
     [defs, category],
   )
-  const [photo, setPhoto] = useState<Blob | null>(null)
+  const [photos, setPhotos] = useState<Blob[]>([])
   const [saved, setSaved] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
-  const url = useObjectUrl(photo)
+  const url = useObjectUrl(photos[0] ?? null)
   // The barcode: scanned from a photo of the label or typed from it. What
   // the last scan or lookup said is one line under the field.
   const [code, setCode] = useState('')
@@ -74,7 +75,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [busy, setBusy] = useState<'scan' | 'lookup' | null>(null)
   const scanRef = useRef<HTMLInputElement>(null)
 
-  const dirty = name.trim() !== '' || photo !== null || code !== ''
+  const dirty = name.trim() !== '' || photos.length > 0 || code !== ''
   useEffect(() => {
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
@@ -147,10 +148,10 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
       }
       // A retail code is stored as the scanner reads it: digits only
       const stored = classify(code) === 'other' ? code : digitsOf(code)
-      await addItem(inputFrom({ name, cells: { ...cells, [barcodeColumnId]: stored }, photo }, columns))
+      await addItem(inputFrom({ name, cells: { ...cells, [barcodeColumnId]: stored }, photos }, columns))
       setSaved(name.trim())
       setName('')
-      setPhoto(null)
+      setPhotos([])
       setCode('')
       setCodeNote(null)
       if (fileRef.current) fileRef.current.value = ''
@@ -166,6 +167,13 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
     <form className="stack narrow" onSubmit={(e) => void save(e)}>
       <h1 className="title">{t.add.title}</h1>
       {url && <img className="photo" src={url} alt={t.add.photoAlt} />}
+      {/* The thing, then its label: the camera opens again for each one */}
+      <PhotoStrip
+        photos={photos}
+        name={name.trim() === '' ? t.add.title : name}
+        onFirst={(i) => setPhotos((p) => [p[i] as Blob, ...p.filter((_, n) => n !== i)])}
+        onRemove={(i) => setPhotos((p) => p.filter((_, n) => n !== i))}
+      />
       <div className="row">
         <input
           ref={fileRef}
@@ -173,11 +181,15 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
           accept="image/*"
           capture="environment"
           className="visually-hidden"
-          onChange={(e) => setPhoto(asImage(e.target.files?.[0]))}
+          onChange={(e) => {
+            const added = asImage(e.target.files?.[0])
+            if (added) setPhotos((p) => [...p, added])
+            if (fileRef.current) fileRef.current.value = ''
+          }}
         />
         <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
           <Icon name="photoCamera" size={20} />
-          {photo ? t.action.retakePhoto : t.action.takePhoto}
+          {photos.length === 0 ? t.action.takePhoto : t.action.onePhotoMore}
         </button>
       </div>
       <div className="field">
