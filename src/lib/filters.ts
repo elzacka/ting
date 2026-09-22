@@ -1,13 +1,31 @@
 import type { Item } from '../db/schema'
 import { isDateUnit } from './dates'
+import { isPathUnit, pathPrefix } from './paths'
 import { parseNumber } from './filter'
 import { columnId, type Column } from './grid'
 
 // One filter per column: the set of accepted values (empty = no filter).
 // Values are compared by their normalised text so "5" and 5 are the same.
+// A place column has one filter per level, keyed "<column>#1", "<column>#2":
+// the level is in the id, so nothing downstream needs to know the types.
 export type Filters = Record<string, string[]>
 
 export const categoryFilterId = 'category'
+
+const levelMark = '#'
+
+export function levelId(id: string, level: number): string {
+  return `${id}${levelMark}${level}`
+}
+
+// A filter id split back into the column it narrows and the level it narrows
+// it to, or no level for the columns that have only one.
+export function splitLevel(filterId: string): { id: string; level: number | null } {
+  const at = filterId.lastIndexOf(levelMark)
+  if (at < 0) return { id: filterId, level: null }
+  const level = Number(filterId.slice(at + 1))
+  return Number.isInteger(level) && level > 0 ? { id: filterId.slice(0, at), level } : { id: filterId, level: null }
+}
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
@@ -29,9 +47,25 @@ function labelFor(v: string | number, unit: string | null): string {
   return n === null ? String(v).trim() : new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2 }).format(n).replace('-', '−')
 }
 
+// What one spec offers a filter: a year for a date, the way in as far as the
+// level for a place, the value itself for everything else. Null when the spec
+// has nothing to say at that level.
+function keyOf(value: string | number, unit: string | null, level: number | null): string | null {
+  if (level !== null) {
+    const prefix = pathPrefix(value, level)
+    return prefix === null ? null : valueKey(prefix)
+  }
+  return isDateUnit(unit) ? yearOf(value) : valueKey(value)
+}
+
+function labelOf(value: string | number, unit: string | null, level: number | null): string {
+  const prefix = level === null ? null : pathPrefix(value, level)
+  return prefix ?? labelFor(value, unit)
+}
+
 // Distinct values present for a column with how many things carry each,
-// numeric-aware sort.
-export function valuesFor(items: readonly Item[], col: Column): FilterValue[] {
+// numeric-aware sort. A level narrows a place column to its first n steps.
+export function valuesFor(items: readonly Item[], col: Column, level: number | null = null): FilterValue[] {
   const seen = new Map<string, FilterValue>()
   const add = (k: string, label: string) => {
     const cur = seen.get(k)
@@ -42,16 +76,21 @@ export function valuesFor(items: readonly Item[], col: Column): FilterValue[] {
   for (const item of items) {
     for (const s of item.specs) {
       if (columnId({ key: s.key, unit: s.unit }) !== id) continue
-      add(isDateUnit(s.unit) ? yearOf(s.value) : valueKey(s.value), labelFor(s.value, s.unit))
+      const key = keyOf(s.value, s.unit, level)
+      if (key !== null) add(key, labelOf(s.value, s.unit, level))
     }
   }
   return [...seen.values()].sort((a, b) => collator.compare(a.label, b.label))
 }
 
 export function itemValueKeys(item: Item, filterId: string): string[] {
+  const { id, level } = splitLevel(filterId)
   return item.specs
-    .filter((s) => columnId({ key: s.key, unit: s.unit }) === filterId)
-    .map((s) => (isDateUnit(s.unit) ? yearOf(s.value) : valueKey(s.value)))
+    .filter((s) => columnId({ key: s.key, unit: s.unit }) === id)
+    .flatMap((s) => {
+      const key = keyOf(s.value, s.unit, isPathUnit(s.unit) ? level : null)
+      return key === null ? [] : [key]
+    })
 }
 
 // The rows every filter but one leaves: what that one filter's menu counts.

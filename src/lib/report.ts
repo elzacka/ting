@@ -1,5 +1,7 @@
 import type { Item } from '../db/schema'
+import { splitLevel } from './filters'
 import { columnId } from './grid'
+import { isPathUnit, pathPrefix } from './paths'
 
 // What the printed report is made of. The table prints itself; this is the
 // other shape it can take: the things one under the other, each with its
@@ -9,9 +11,14 @@ export type ReportGroup = { label: string | null; items: Item[] }
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
-function valueIn(item: Item, id: string): string | null {
+// A place column can be grouped at one of its levels: the id carries which,
+// the same way a filter id does.
+function valueIn(item: Item, filterId: string): string | null {
+  const { id, level } = splitLevel(filterId)
   const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === id)
-  const value = spec === undefined ? '' : String(spec.value).trim()
+  if (spec === undefined) return null
+  if (level !== null && isPathUnit(spec.unit)) return pathPrefix(spec.value, level)
+  const value = String(spec.value).trim()
   return value === '' ? null : value
 }
 

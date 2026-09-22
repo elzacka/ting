@@ -1,5 +1,6 @@
 import type { Item, ItemInput, Spec } from '../db/schema'
 import { formatStoredDate, isDateUnit, parseDateInput } from './dates'
+import { formatPath, isPathUnit, parsePath } from './paths'
 import { parseNumber } from './filter'
 
 // A column is one spec key with one unit. The same key with two different
@@ -26,10 +27,18 @@ export function columnsFrom(items: readonly Item[]): Column[] {
   )
 }
 
+// A date and a place are shown the way they read, not the way they are
+// stored: the cell the eye sees and the cell the editor starts from are the
+// same text, whichever separator the place was typed with.
 export function cellsFrom(item: Item): Record<string, string> {
   const cells: Record<string, string> = {}
   for (const s of item.specs) {
-    cells[columnId({ key: s.key, unit: s.unit })] = isDateUnit(s.unit) ? formatStoredDate(s.value) : String(s.value)
+    const value = isDateUnit(s.unit)
+      ? formatStoredDate(s.value)
+      : isPathUnit(s.unit)
+        ? formatPath(parsePath(s.value))
+        : String(s.value)
+    cells[columnId({ key: s.key, unit: s.unit })] = value
   }
   return cells
 }
@@ -40,7 +49,11 @@ export function specsFrom(cells: Record<string, string>, columns: readonly Colum
   for (const col of columns) {
     const raw = (cells[columnId(col)] ?? '').trim()
     if (raw === '') continue
-    const value = isDateUnit(col.unit) ? (parseDateInput(raw) ?? raw) : (parseNumber(raw) ?? raw)
+    const value = isDateUnit(col.unit)
+      ? (parseDateInput(raw) ?? raw)
+      : isPathUnit(col.unit)
+        ? formatPath(parsePath(raw))
+        : (parseNumber(raw) ?? raw)
     specs.push({ key: col.key, value, unit: col.unit })
   }
   return specs

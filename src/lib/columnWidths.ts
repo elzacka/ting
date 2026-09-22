@@ -19,7 +19,8 @@ export function checkColumnWidth(): number {
   const n = parseFloat(raw)
   return Number.isFinite(n) ? n : 24
 }
-const defaults = { category: 160, name: 260, text: 160, choice: 160, number: 120, date: 112 }
+// A place carries the whole way in, so it is the widest of the lot
+const defaults = { category: 160, name: 260, text: 160, choice: 160, number: 120, date: 112, path: 220 }
 
 export function columnWidth(def: ColumnDef, widths: Widths): number {
   const set = widths[def.id]

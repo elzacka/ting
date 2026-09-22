@@ -31,9 +31,10 @@ import {
   type FieldSettings,
 } from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
+import { maxPathLevels, parsePath, pathsInUse } from '../lib/paths'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
-import { applyFilters, valuesFor, withoutFilter, type Filters } from '../lib/filters'
+import { applyFilters, levelId, valuesFor, withoutFilter, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
 import { Grid } from './Grid'
 import { PrintReport } from './PrintReport'
@@ -94,6 +95,9 @@ type Props = {
   // Long values run onto more lines instead of ending in an ellipsis (Innstillinger)
   wrap: boolean
 }
+
+// Every field type a column can have, in the order the menus offer them.
+const propertyTypes: readonly PropertyType[] = ['text', 'choice', 'number', 'date', 'path']
 
 // Column ids are JSON; an id attribute with quotes in it breaks attribute selectors.
 function choiceListId(columnId: string): string {
@@ -281,13 +285,30 @@ export function Overview({
     () => (reporting ? groupItems(visible, printGroup) : []),
     [reporting, visible, printGroup],
   )
-  // A Valgliste is the only column with few enough values to head a page.
+  // Few enough values to head a page: a Valgliste, or a place at one of its
+  // levels — by room, by shelf, by box.
   const groupChoices = useMemo(
-    () => defs.flatMap((d) => (d.kind === 'prop' && d.type === 'choice' ? [d] : [])),
-    [defs],
+    () =>
+      defs.flatMap((d) => {
+        if (d.kind !== 'prop') return []
+        if (d.type === 'choice') return [{ id: d.id, label: d.col.key }]
+        if (d.type !== 'path') return []
+        const deepest = Math.min(
+          maxPathLevels,
+          items.reduce((deep, item) => {
+            const spec = item.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === d.id)
+            return spec ? Math.max(deep, parsePath(spec.value).length) : deep
+          }, 0),
+        )
+        return Array.from({ length: deepest }, (_, i) => ({
+          id: levelId(d.id, i + 1),
+          label: t.filters.level(d.col.key, i + 1),
+        }))
+      }),
+    [defs, items],
   )
   const groupLabel = useMemo(
-    () => groupChoices.find((d) => d.id === printGroup)?.col.key ?? null,
+    () => groupChoices.find((d) => d.id === printGroup)?.label ?? null,
     [groupChoices, printGroup],
   )
   const anyPhoto = useMemo(() => visible.some((i) => i.photos.length > 0), [visible])
@@ -331,14 +352,14 @@ export function Overview({
   }
 
   // A new row inherits what describes the batch from the row above: every
-  // Valgliste and date value (a shop and a purchase date carry down a
-  // receipt, a location carries down a shelf). Prices, texts and numbers are
+  // Valgliste, date and place (a shop and a purchase date carry down a
+  // receipt, a place carries down a shelf). Prices, texts and numbers are
   // the row's own. The first row inherits only the Kategori of the newest thing.
   function inherited(prev?: NewRow): Record<string, string> {
     if (prev) {
       const cells: Record<string, string> = {}
       for (const def of defs) {
-        if (def.kind !== 'prop' || (def.type !== 'choice' && def.type !== 'date')) continue
+        if (def.kind !== 'prop' || (def.type !== 'choice' && def.type !== 'date' && def.type !== 'path')) continue
         const v = prev.cells[def.id] ?? ''
         if (v.trim() !== '') cells[def.id] = v
       }
@@ -895,7 +916,7 @@ export function Overview({
                         <option value="">{t.report.groupNone}</option>
                         {groupChoices.map((def) => (
                           <option key={def.id} value={def.id}>
-                            {def.col.key}
+                            {def.label}
                           </option>
                         ))}
                       </select>
@@ -978,7 +999,7 @@ export function Overview({
                     value={columnDraft.type}
                     onChange={(e) => setColumnDraft({ ...columnDraft, type: e.target.value as PropertyType })}
                   >
-                    {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
+                    {(propertyTypes).map((ty) => (
                       <option key={ty} value={ty}>
                         {t.table.types[ty]}
                       </option>
@@ -1120,9 +1141,27 @@ export function Overview({
           ))}
         </datalist>
         {defs.map(
-          (def) =>
-            def.kind === 'prop' &&
-            def.type === 'choice' && (
+          (def) => {
+            if (def.kind !== 'prop') return null
+            // A place offers every place in use and every place on the way to
+            // one, so the shelf is one pick and the loft another.
+            if (def.type === 'path') {
+              const places = pathsInUse(
+                items.flatMap((i) => {
+                  const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+                  return spec ? [spec.value] : []
+                }),
+              )
+              return (
+                <datalist key={def.id} id={choiceListId(def.id)}>
+                  {places.map((v) => (
+                    <option key={v} value={v} />
+                  ))}
+                </datalist>
+              )
+            }
+            if (def.type !== 'choice') return null
+            return (
               <datalist key={def.id} id={choiceListId(def.id)}>
                 {[
                   ...new Set([
@@ -1136,7 +1175,8 @@ export function Overview({
                   <option key={v} value={v} />
                 ))}
               </datalist>
-            ),
+            )
+          },
         )}
         <datalist id="name-options">
           {names.map((n) => (
@@ -1191,7 +1231,7 @@ export function Overview({
                         value={renaming.type}
                         onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
                       >
-                        {(['text', 'choice', 'number', 'date'] as const).map((ty) => (
+                        {(propertyTypes).map((ty) => (
                           <option key={ty} value={ty}>
                             {t.table.types[ty]}
                           </option>
@@ -1365,7 +1405,7 @@ export function Overview({
                       <td key={def.id}>
                         <input
                           className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
-                          list={def.kind === 'name' ? 'name-options' : def.type === 'choice' ? choiceListId(def.id) : undefined}
+                          list={def.kind === 'name' ? 'name-options' : def.type === 'choice' || def.type === 'path' ? choiceListId(def.id) : undefined}
                           aria-label={label}
                           value={text}
                           ref={focus}
@@ -1404,7 +1444,7 @@ export function Overview({
                         <td key={def.id}>
                           <input
                             className="grid-input num"
-                            list={def.type === 'choice' ? choiceListId(def.id) : undefined}
+                            list={def.type === 'choice' || def.type === 'path' ? choiceListId(def.id) : undefined}
                             aria-label={t.table.cell(row.name, def.col.key)}
                             value={row.cells[def.id] ?? ''}
                             onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}

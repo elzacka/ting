@@ -41,7 +41,7 @@ export const propertySchema = z.object({
   // Position among columns. Missing on rows written before ordering existed.
   order: z.number().optional(),
   // Field type. Missing on older rows: dates are recognised by their unit marker, the rest is text.
-  type: z.enum(['text', 'choice', 'number', 'date']).optional(),
+  type: z.enum(['text', 'choice', 'number', 'date', 'path']).optional(),
   // Choices offered by a Liste column, on top of values already in use.
   options: z.array(z.string().trim().min(1)).optional(),
   // The Kategori values this column belongs to. Missing or empty means it
@@ -49,6 +49,6 @@ export const propertySchema = z.object({
   categories: z.array(z.string().trim().min(1)).optional(),
 })
 
-export type PropertyType = 'text' | 'choice' | 'number' | 'date'
+export type PropertyType = 'text' | 'choice' | 'number' | 'date' | 'path'
 
 export type Property = z.infer<typeof propertySchema>

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
 import { columnId } from './grid'
+import { levelId } from './filters'
+import { pathUnit } from './paths'
 import { groupItems } from './report'
 
 const kategori = columnId({ key: 'Kategori', unit: '' })
@@ -48,5 +50,37 @@ describe('groupItems', () => {
     const out = groupItems([item('A'), item('B', 'Bok'), item('C', '  ')], kategori)
     expect(out.map((g) => g.label)).toEqual(['Bok', null])
     expect(out[1]?.items.map((i) => i.name)).toEqual(['A', 'C'])
+  })
+})
+
+describe('groupItems by a place', () => {
+  const plassering = columnId({ key: 'Plassering', unit: pathUnit })
+  function placed(name: string, place?: string): Item {
+    return {
+      id: crypto.randomUUID(),
+      name,
+      specs: place === undefined ? [] : [{ key: 'Plassering', value: place, unit: pathUnit }],
+      photos: [],
+      createdAt: 0,
+      updatedAt: 0,
+    }
+  }
+  const items = [
+    placed('Telt', 'Loftsbod › Hylle 2 › Boks 4'),
+    placed('Sekk', 'Loftsbod › Hylle 1'),
+    placed('Ski', 'Kjellerbod'),
+    placed('Krakk'),
+  ]
+
+  it('gathers a whole room under one heading', () => {
+    const out = groupItems(items, levelId(plassering, 1))
+    expect(out.map((g) => g.label)).toEqual(['Kjellerbod', 'Loftsbod', null])
+    expect(out[1]?.items.map((i) => i.name)).toEqual(['Telt', 'Sekk'])
+  })
+
+  it('splits the room into its shelves a level down, and leaves out what does not reach', () => {
+    const out = groupItems(items, levelId(plassering, 2))
+    expect(out.map((g) => g.label)).toEqual(['Loftsbod › Hylle 1', 'Loftsbod › Hylle 2', null])
+    expect(out[2]?.items.map((i) => i.name)).toEqual(['Ski', 'Krakk'])
   })
 })

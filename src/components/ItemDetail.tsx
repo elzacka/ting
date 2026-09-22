@@ -3,6 +3,7 @@ import { deleteItem, updateItem } from '../db/db'
 import { asImage } from '../lib/backup'
 import type { Item, Property } from '../db/schema'
 import { parseDateInput } from '../lib/dates'
+import { pathsInUse } from '../lib/paths'
 import { errorText } from '../lib/errors'
 import { columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { distinct, parseNumber } from '../lib/filter'
@@ -127,7 +128,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
         id={domId('edit', id)}
         className="input"
         aria-label={label}
-        list={def?.type === 'choice' ? domId('edit-list', id) : undefined}
+        list={def?.type === 'choice' || def?.type === 'path' ? domId('edit-list', id) : undefined}
         inputMode={def?.type === 'number' ? 'decimal' : undefined}
         value={editing?.draft ?? ''}
         onChange={(e) => {
@@ -190,17 +191,25 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
         )}
         {props.map(
           (def) =>
-            def.type === 'choice' && (
+            (def.type === 'choice' || def.type === 'path') && (
               <datalist key={def.id} id={domId('edit-list', def.id)}>
-                {[
-                  ...new Set([
-                    ...(def.property?.options ?? []),
-                    ...distinct(items, (i) => {
-                      const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                      return s ? String(s.value) : ''
-                    }),
-                  ]),
-                ].map((v) => (
+                {(def.type === 'path'
+                  ? pathsInUse(
+                      items.flatMap((i) => {
+                        const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+                        return s ? [s.value] : []
+                      }),
+                    )
+                  : [
+                      ...new Set([
+                        ...(def.property?.options ?? []),
+                        ...distinct(items, (i) => {
+                          const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+                          return s ? String(s.value) : ''
+                        }),
+                      ]),
+                    ]
+                ).map((v) => (
                   <option key={v} value={v} />
                 ))}
               </datalist>

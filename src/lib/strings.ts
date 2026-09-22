@@ -63,6 +63,9 @@ export const t = {
   },
   filters: {
     showAll: (n: number) => `Vis alle ${n}`,
+    // A place column gets one menu per level: the column's own name for the
+    // first, then the name with the level after it.
+    level: (key: string, level: number) => (level === 1 ? key : `${key} ${level}`),
     narrow: (label: string) => `Søk i ${label.toLocaleLowerCase('nb')}`,
     clearOne: 'Fjern filteret',
     clearAll: 'Fjern alle filtre',
@@ -161,7 +164,7 @@ export const t = {
     wrap: 'Bryt lang tekst over flere linjer',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
-    types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato' },
+    types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato', path: 'Sti' },
     columnOptions: 'Alternativer',
     columnUnit: 'Enhet',
     columnUnitOptional: 'Valgfritt',

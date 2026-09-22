@@ -67,7 +67,7 @@ trenger. Et godt utgangspunkt:
 | Egenskap | Felttype | Alternativer eller enhet |
 |---|---|---|
 | Kategori | Valgliste | Turutstyr, Kjøkken, Klær og sko, Data og kontor |
-| Plassering | Valgliste | Leilighet, Loftsbod, Kjellerbod |
+| Plassering | Sti | Loftsbod/Hylle 2/Boks 4 |
 | Kjøpesum | Tall | kr |
 | Kjøpsdato | Dato | |
 | Kommentar | Tekst | |
@@ -76,9 +76,13 @@ Alt du senere trenger, lager du på samme måte. Ting har ingen faste felt for
 lån, tilstand eller antall: Det er egenskaper, se [Egenskaper](#egenskaper).
 
 > [!TIP]
-> Skriv plasseringen som en sti med hele veien inn: «Loftsbod › Hylle 2 ›
-> Boks 4». Da finner søket `plassering:loftsbod` alt på loftet, og
-> `plassering:"boks 4"` finner boksen.
+> Skriv hele veien inn, ikke bare rommet: `Loftsbod/Hylle 2/Boks 4`.
+> Skråstrek er lettest på mobilen; appen gjør den om til «›» selv. Da får du
+> ett filter per nivå: Ett klikk på «Loftsbod» henter alt på loftet, uansett
+> hvor dypt inne det står. Tre nivåer er nok til sted, sone og boks.
+
+Har du allerede en Valgliste med plasseringer, endrer du felttypen til Sti i
+kolonnemenyen. Verdiene blir stående som de er.
 
 ### 4. Legg til de første tingene
 
@@ -255,6 +259,7 @@ sikkerhetskopi flytter den.
 | Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene skilles med komma |
 | Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Kolonner i kr summeres øverst |
 | Dato | Skriv `19.09.26` |
+| Sti | Hele veien inn til en plass. Skriv `Loftsbod/Hylle 2/Boks 4` eller bruk `>` eller `›`: Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`. Feltet foreslår plassene du alt bruker, og veien inn til dem |
 
 Kolonnene er så brede som innholdet trenger, opp til en grense. Dra i kanten
 av en kolonneoverskrift for å sette bredden selv; dobbeltklikk der for å
@@ -289,7 +294,9 @@ har igjen å fylle ut. Resten er skjult: «Vis n kolonner til» på linja øvers
 henter fram alt.
 
 Filtrene under søkefeltet viser bare verdier som finnes i det som vises, med
-antall. Datoer filtreres per år.
+antall. Datoer filtreres per år. En Sti får ett filter per nivå: «Plassering»
+er rommet, «Plassering 2» hylla, «Plassering 3» boksen. Utskriften kan
+grupperes på samme måte.
 
 <details>
 <summary>Egenskaper for det Ting ikke har egne funksjoner for</summary>

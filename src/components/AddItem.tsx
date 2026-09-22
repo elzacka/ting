@@ -17,6 +17,7 @@ import {
   type FieldSettings,
 } from '../lib/fields'
 import { columnId, inputFrom } from '../lib/grid'
+import { pathsInUse } from '../lib/paths'
 import { lookup } from '../lib/lookup'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
@@ -58,7 +59,9 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
     () =>
       defs.filter(
         (d): d is ChoiceDef =>
-          d.kind === 'prop' && d.type === 'choice' && appliesTo(d.property, category === '' ? [] : [category]),
+          d.kind === 'prop' &&
+          (d.type === 'choice' || d.type === 'path') &&
+          appliesTo(d.property, category === '' ? [] : [category]),
       ),
     [defs, category],
   )
@@ -82,6 +85,15 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
   function valuesFor(def: ChoiceDef): string[] {
+    // A place offers the way in as well as the places themselves
+    if (def.type === 'path') {
+      return pathsInUse(
+        items.flatMap((i) => {
+          const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+          return spec ? [spec.value] : []
+        }),
+      )
+    }
     return [
       ...new Set([
         ...(def.property?.options ?? []),

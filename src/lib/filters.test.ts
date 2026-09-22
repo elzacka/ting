@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { applyFilters, valuesFor, withoutFilter } from './filters'
+import { applyFilters, levelId, splitLevel, valuesFor, withoutFilter } from './filters'
 import { categoryColumnId } from './fields'
 import { columnId } from './grid'
+import { pathUnit } from './paths'
 
 function item(name: string, category: string, specs: Item['specs']): Item {
   return {
@@ -69,5 +70,51 @@ describe('date columns', () => {
       { key: '2023', label: '2023', count: 1 },
     ])
     expect(applyFilters(dated, { [columnId(col)]: ['2021'] }).map((i) => i.name)).toEqual(['A', 'B'])
+  })
+})
+
+describe('a place column, level by level', () => {
+  const col = { key: 'Plassering', unit: pathUnit }
+  const id = columnId(col)
+  const placed = [
+    item('Telt', 'Turutstyr', [{ key: 'Plassering', value: 'Loftsbod › Hylle 2 › Boks 4', unit: pathUnit }]),
+    item('Sekk', 'Turutstyr', [{ key: 'Plassering', value: 'Loftsbod › Hylle 2', unit: pathUnit }]),
+    item('Ski', 'Turutstyr', [{ key: 'Plassering', value: 'Kjellerbod', unit: pathUnit }]),
+    item('Krakk', 'Møbler', []),
+  ]
+
+  it('splits a filter id back into its column and its level', () => {
+    expect(splitLevel(levelId(id, 2))).toEqual({ id, level: 2 })
+    expect(splitLevel(id)).toEqual({ id, level: null })
+  })
+
+  it('offers the rooms at level one, counting everything inside them', () => {
+    expect(valuesFor(placed, col, 1)).toEqual([
+      { key: 'kjellerbod', label: 'Kjellerbod', count: 1 },
+      { key: 'loftsbod', label: 'Loftsbod', count: 2 },
+    ])
+  })
+
+  it('offers the way in, not just the last step, deeper down', () => {
+    expect(valuesFor(placed, col, 2).map((v) => v.label)).toEqual(['Loftsbod › Hylle 2'])
+    expect(valuesFor(placed, col, 3).map((v) => v.label)).toEqual(['Loftsbod › Hylle 2 › Boks 4'])
+  })
+
+  it('finds everything in a room, however deep in it the thing is', () => {
+    expect(applyFilters(placed, { [levelId(id, 1)]: ['loftsbod'] }).map((i) => i.name)).toEqual(['Telt', 'Sekk'])
+  })
+
+  it('finds what is on one shelf without the rest of the room', () => {
+    expect(applyFilters(placed, { [levelId(id, 2)]: ['loftsbod › hylle 2'] }).map((i) => i.name)).toEqual([
+      'Telt',
+      'Sekk',
+    ])
+    expect(applyFilters(placed, { [levelId(id, 3)]: ['loftsbod › hylle 2 › boks 4'] }).map((i) => i.name)).toEqual([
+      'Telt',
+    ])
+  })
+
+  it('leaves out a thing with no place at all, and one that does not go that deep', () => {
+    expect(applyFilters(placed, { [levelId(id, 2)]: ['kjellerbod'] })).toEqual([])
   })
 })

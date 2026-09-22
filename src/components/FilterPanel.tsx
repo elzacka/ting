@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Item, Property } from '../db/schema'
-import { activeCount, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
+import { activeCount, levelId, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
 import { isDateUnit } from '../lib/dates'
+import { columnId } from '../lib/grid'
+import { maxPathLevels, parsePath } from '../lib/paths'
 import { parseNumber } from '../lib/filter'
 import { appliesTo, categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
@@ -67,6 +69,23 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
   const defs: Def[] = columnDefs(fields, properties, items).flatMap((d) => {
     if (d.kind === 'name' || d.id === categoryColumnId) return []
     if (!appliesTo(d.property, cats)) return []
+    // A place has a menu per level it reaches: the room, then the shelf, then
+    // the box. Each one counts what the others and the search leave, so
+    // choosing the room shrinks the shelves to the ones in it.
+    if (d.type === 'path') {
+      const deepest = Math.min(
+        maxPathLevels,
+        items.reduce((deep, item) => {
+          const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === d.id)
+          return spec ? Math.max(deep, parsePath(spec.value).length) : deep
+        }, 0),
+      )
+      return Array.from({ length: deepest }, (_, i) => i + 1).flatMap((level) => {
+        const id = levelId(d.id, level)
+        const values = valuesFor(withoutFilter(searched, filters, id), d.col, level)
+        return values.length === 0 ? [] : [{ id, label: t.filters.level(d.col.key, level), unit: null, values }]
+      })
+    }
     // Alphabetical, numbers and years in their own order, as valuesFor delivers
     // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
     const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)

@@ -1,5 +1,6 @@
 import type { Item, Property, PropertyType } from '../db/schema'
 import { dateUnit, isDateUnit } from './dates'
+import { isPathUnit, pathUnit } from './paths'
 import { columnId, columnsFrom, type Column } from './grid'
 
 // Display settings for the one built-in field. Navn can be renamed but never
@@ -69,7 +70,8 @@ export function columnDefs(_fields: FieldSettings, properties: readonly Property
   for (const c of columnsFrom(items)) {
     const id = columnId(c)
     if (stored.has(id)) continue
-    defs.push({ kind: 'prop', id, order: Number.MAX_SAFE_INTEGER, col: c, property: null, type: isDateUnit(c.unit) ? 'date' : 'text' })
+    const marked: PropertyType = isDateUnit(c.unit) ? 'date' : isPathUnit(c.unit) ? 'path' : 'text'
+    defs.push({ kind: 'prop', id, order: Number.MAX_SAFE_INTEGER, col: c, property: null, type: marked })
   }
   return defs.sort((a, b) => a.order - b.order)
 }
@@ -111,17 +113,20 @@ export function withCategory(property: Property | null, category: string, on: bo
   return on ? [...rest, category] : rest
 }
 
-// Rows written before types existed: the date marker means date, any other
-// unit means number (text columns never carry a unit), otherwise text.
+// Rows written before types existed: a marker unit means the type it marks,
+// any other unit means number (text columns never carry a unit), otherwise text.
 export function propertyType(p: Pick<Property, 'type' | 'unit'>): PropertyType {
   if (p.type) return p.type
   if (isDateUnit(p.unit)) return 'date'
+  if (isPathUnit(p.unit)) return 'path'
   return p.unit ? 'number' : 'text'
 }
 
-// The unit a stored property gets for a type: dates carry the internal marker, text has none.
+// The unit a stored property gets for a type: dates and places carry their
+// internal marker, text has none.
 export function unitFor(type: PropertyType, unit: string): string | null {
   if (type === 'date') return dateUnit
+  if (type === 'path') return pathUnit
   if (type === 'text' || type === 'choice') return null
   return unit.trim() === '' ? null : unit.trim()
 }
