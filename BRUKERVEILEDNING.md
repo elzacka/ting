@@ -293,8 +293,8 @@ antall. Datoer filtreres per år.
 
 #### Hvis du dokumenterer for forsikringen
 
-Under Innstillinger › Klar for forsikring lager Ting de tre egenskapene et
-skadeoppgjør spør etter, og bare de du mangler:
+Et skadeoppgjør spør om tre ting utover navn og bilde. Lag dem som egenskaper
+med «Legg til egenskap» over tabellen:
 
 | Egenskap | Hva |
 |---|---|
@@ -316,7 +316,6 @@ Ikonet lengst til høyre i topplinja.
 | Valg | Gjør |
 |---|---|
 | Over overskriften | Hva som mangler, kategori for kategori: bilde, og verdi i hver kr-kolonne. Én linje per kategori som mangler noe, tingene uten kategori til slutt. Bare der når noe mangler. Hvert tall er et søk som åpner tabellen med akkurat de tingene |
-| Klar for forsikring | Lager egenskapene et skadeoppgjør spør etter: Verdi i kr, Kjøpt som dato og Serienummer. Lager bare de du ikke har fra før |
 | Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
 | Tilpass visning | Bryt lang tekst over flere linjer, og lista over egenskaper: Fjern haken for å ta en kolonne ut av tabellen. Navn vises alltid. Enheten husker valgene |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |

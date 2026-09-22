@@ -41,25 +41,6 @@ export const barcodeProperty = (): Property => ({
   type: 'text',
 })
 
-// What a claim asks about a thing, over and above its name and its photo:
-// what it is worth, when it was bought, and the number that tells one of a
-// kind from another. Norwegian insurers ask the same three of a bicycle and
-// of a sofa, so none of them names a category; narrow Serienummer from the
-// column menu if only some of your things carry one.
-export const insuranceColumns: readonly { key: string; type: PropertyType; unit: string }[] = [
-  { key: 'Verdi', type: 'number', unit: 'kr' },
-  { key: 'Kjøpt', type: 'date', unit: '' },
-  { key: 'Serienummer', type: 'text', unit: '' },
-]
-
-// The ones of those that do not exist yet. A column counts as there when its
-// name is taken, whatever unit it carries: a Verdi in kroner beside a Verdi
-// in plain text would be two columns with one name, which helps nobody.
-export function missingInsuranceColumns(properties: readonly Property[]): typeof insuranceColumns {
-  const taken = new Set(properties.map((p) => p.key.trim().toLocaleLowerCase('nb')))
-  return insuranceColumns.filter((c) => !taken.has(c.key.toLocaleLowerCase('nb')))
-}
-
 export function readFieldSettings(raw: unknown): FieldSettings {
   const r = (raw ?? {}) as Partial<FieldSettings>
   return { name: { label: r.name?.label ?? null } }

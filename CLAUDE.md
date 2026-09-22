@@ -87,8 +87,6 @@ Photos are stored as `Blob`, never base64.
 
 Strekkode is a text property created the first time a code is saved from the phone form (`barcodeProperty` in `fields.ts`); retail codes are stored as digits.
 
-Innstillinger has one action that creates the columns a claim asks for (`insuranceColumns` and `missingInsuranceColumns` in `fields.ts`: Verdi in kr, Kjøpt as a date, Serienummer as text). It creates only the names not already taken, whatever unit they carry, and none of them names a category: a bicycle and a sofa are asked the same three, and Serienummer is narrowed from the column menu if only some categories carry one.
-
 Kategori is a property like any other (a Valgliste, first column by default), not a built-in field; the only built-in is Navn. Its cells offer the values already in the column through `<datalist>`. Decided by elzacka, 21 September 2026.
 
 ## Conventions

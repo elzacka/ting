@@ -6,7 +6,6 @@ import {
   claimedBy,
   columnDefs,
   defaultFieldSettings,
-  missingInsuranceColumns,
   readFieldSettings,
   withCategory,
 } from './fields'
@@ -108,26 +107,5 @@ describe('withCategory', () => {
 
   it('does not list the same category twice', () => {
     expect(withCategory(column(['Bok']), 'bok', true)).toEqual(['bok'])
-  })
-})
-
-describe('missingInsuranceColumns', () => {
-  it('names all three when the register has none of them', () => {
-    expect(missingInsuranceColumns([]).map((c) => c.key)).toEqual(['Verdi', 'Kjøpt', 'Serienummer'])
-  })
-
-  it('counts a name as taken whatever unit it carries, so no column is made twice', () => {
-    const own = [{ id: columnId({ key: 'Verdi', unit: null }), key: 'verdi', unit: null, createdAt: 0 }]
-    expect(missingInsuranceColumns(own).map((c) => c.key)).toEqual(['Kjøpt', 'Serienummer'])
-  })
-
-  it('names none once they are all there', () => {
-    const own = ['Verdi', 'Kjøpt', 'Serienummer'].map((key) => ({
-      id: columnId({ key, unit: null }),
-      key,
-      unit: null,
-      createdAt: 0,
-    }))
-    expect(missingInsuranceColumns(own)).toEqual([])
   })
 })

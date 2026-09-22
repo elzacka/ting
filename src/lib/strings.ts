@@ -206,13 +206,6 @@ export const t = {
     viewTitle: 'Tilpass visning',
     viewList: 'Egenskaper i tabellen',
     viewShown: (shown: number, total: number) => `${shown} av ${total} vises`,
-    // The three columns a claim asks for. Norwegian lists the last item with og.
-    insuranceTitle: 'Klar for forsikring',
-    insuranceWhat: 'Et skadeoppgjør spør hva tingen er verdt, når du kjøpte den og hvilket nummer som står på den.',
-    insuranceAdd: 'Legg til',
-    insuranceMissing: (names: string) => `Du mangler ${names}.`,
-    insuranceAll: 'Du har Verdi, Kjøpt og Serienummer. Ta bilde av tingen også, og av serienummeret på den.',
-    insuranceAdded: (names: string) => `La til ${names}.`,
     folderTitle: 'Mappe på maskinen',
     folderWhat: 'Automatisk: Appen krypterer dataene og synkroniserer dem med mappen hver gang du lagrer. Tar du med mappen til en annen maskin, får du tilgang til alt i appen der.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
