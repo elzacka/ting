@@ -21,6 +21,19 @@ describe('categoryIcon', () => {
     expect(categoryIcon('Vesker og bagasje')).toBe('luggage')
   })
 
+  it('gives Elektronikk the glyph for a phone and a laptop together', () => {
+    expect(categoryIcon('Elektronikk')).toBe('devices')
+    // and not the one either half of it used to have
+    expect(categoryIcon('Elektronikk og tilbehør')).toBe('devices')
+  })
+
+  it('matches a word, never a fragment inside one', () => {
+    // "Elektronikk" contains "lek" and is not about toys
+    expect(categoryIcon('Elektronikk')).toBe('devices')
+    // "Sportsutstyr" starts with "sport", which is a word beginning
+    expect(categoryIcon('Sportsutstyr')).toBe('sportsSoccer')
+  })
+
   it('does not care how the category is capitalised', () => {
     expect(categoryIcon('KJØKKEN')).toBe('restaurant')
     expect(categoryIcon('kjøkken')).toBe('restaurant')

@@ -193,10 +193,18 @@
 .topbar-end .btn-icon[aria-label]::after,
 .overview-head .btn-icon[aria-label]::after,
 .setting-head .btn-icon[aria-label]::after,
-.view-tab[aria-label]::after,
 .spec-edit[aria-label]::after {
   left: auto;
   right: 0;
+  transform: none;
+}
+
+/* The category tiles run from the left edge, so their names hang the same
+   way: a long one then grows into the space to its right rather than off the
+   card, which the card's own clipping would cut. */
+.view-tab[aria-label]::after {
+  left: 0;
+  right: auto;
   transform: none;
 }
 
@@ -680,9 +688,11 @@ section {
 .view-pick {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--s-1);
-  padding-right: calc((var(--row-h) - 24px) / 2);
+  justify-content: flex-start;
+  gap: var(--s-2);
+  /* The head right-aligns what it holds; the tiles read left to right */
+  width: 100%;
+  padding: var(--s-1) 0 var(--s-2);
 }
 
 .view-tab {
@@ -690,36 +700,40 @@ section {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: var(--row-h-sm);
+  width: 52px;
+  height: 52px;
   padding: 0;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   color: var(--text-2);
   cursor: pointer;
-  transition: color var(--duration) ease-out;
+  transition:
+    color var(--duration) ease-out,
+    border-color var(--duration) ease-out;
 }
 
 .view-tab:hover {
   color: var(--text);
+  border-color: var(--border-input);
   background: var(--bg);
 }
 
 .view-tab.is-active {
-  border-bottom-color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
   color: var(--accent);
 }
 
-/* The count rides the glyph's top right corner */
+/* The count rides the tile's top right corner, over its edge */
 .view-count {
   position: absolute;
-  top: 1px;
-  right: 0;
-  min-width: 16px;
-  padding: 0 3px;
-  border-radius: 8px;
+  top: -7px;
+  right: -7px;
+  min-width: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--surface);
+  border-radius: 9px;
   background: var(--surface-2);
   color: var(--text-2);
   font-size: 10px;

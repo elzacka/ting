@@ -2,14 +2,19 @@ import type { IconName } from '../components/Icons'
 
 // Which glyph stands for a category. The categories are the user's own words,
 // so the match is by the words in them rather than by a fixed list: the first
-// keyword the name contains wins, and anything unrecognised gets the neutral
-// one. A wrong guess costs nothing — the name itself is the button's label.
+// keyword that starts a word in the name wins, and anything unrecognised gets
+// the neutral one. A wrong guess costs nothing — the name itself is the
+// button's label.
+//
+// A word, not a fragment of one: "Elektronikk" is not about "lek", and
+// matching anywhere in the string said it was.
 
 const byKeyword: readonly (readonly [string, IconName])[] = [
   ['bok', 'menuBook'],
   ['bøk', 'menuBook'],
   ['lek', 'toys'],
   ['barn', 'toys'],
+  ['elektronikk', 'devices'],
   ['data', 'computer'],
   ['kontor', 'computer'],
   ['pc', 'computer'],
@@ -50,7 +55,9 @@ export const allCategoriesIcon: IconName = 'gridView'
 export const otherCategoryIcon: IconName = 'category'
 
 export function categoryIcon(name: string): IconName {
-  const folded = name.toLocaleLowerCase('nb')
-  for (const [word, icon] of byKeyword) if (folded.includes(word)) return icon
+  const words = name.toLocaleLowerCase('nb').split(/[^\p{Letter}\p{Number}]+/u).filter(Boolean)
+  for (const [keyword, icon] of byKeyword) {
+    if (words.some((word) => word.startsWith(keyword))) return icon
+  }
   return otherCategoryIcon
 }

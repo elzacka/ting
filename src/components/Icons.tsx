@@ -45,6 +45,8 @@ const paths = {
     'M204-318q-22-38-33-78t-11-82q0-134 93-228t227-94h7l-64-64 56-56 160 160-160 160-56-56 64-64h-7q-100 0-170 70.5T240-478q0 26 6 51t18 49l-60 60ZM481-40 321-200l160-160 56 56-64 64h7q100 0 170-70.5T720-482q0-26-6-51t-18-49l60-60q22 38 33 78t11 82q0 134-93 228t-227 94h-7l64 64-56 56Z',
 
   // Category glyphs, chosen by the category's own name in lib/categoryIcons.ts
+  devices:
+    'M80-160v-120h80v-440q0-33 23.5-56.5T240-800h600v80H240v440h240v120H80Zm520 0q-17 0-28.5-11.5T560-200v-400q0-17 11.5-28.5T600-640h240q17 0 28.5 11.5T880-600v400q0 17-11.5 28.5T840-160H600Zm40-120h160v-280H640v280Zm0 0h160-160Z',
   gridView:
     'M120-520v-320h320v320H120Zm0 400v-320h320v320H120Zm400-400v-320h320v320H520Zm0 400v-320h320v320H520ZM200-600h160v-160H200v160Zm400 0h160v-160H600v160Zm0 400h160v-160H600v160Zm-400 0h160v-160H200v160Zm400-400Zm0 240Zm-240 0Zm0-240Z',
   menuBook:
@@ -88,7 +90,7 @@ const paths = {
 export type IconName = keyof typeof paths
 
 // Material Symbols paths use a 960 grid with a negative origin; the older Material Icons use 24.
-const symbolIcons: ReadonlySet<IconName> = new Set<IconName>(['autorenew', 'instantMix', 'gridView', 'menuBook', 'computer', 'palette', 'localLaundryService', 'lightbulb', 'restaurant', 'checkroom', 'tv', 'smartphone', 'chair', 'spa', 'localFireDepartment', 'sportsSoccer', 'hiking', 'handyman', 'luggage', 'category', 'toys'])
+const symbolIcons: ReadonlySet<IconName> = new Set<IconName>(['autorenew', 'instantMix', 'devices', 'gridView', 'menuBook', 'computer', 'palette', 'localLaundryService', 'lightbulb', 'restaurant', 'checkroom', 'tv', 'smartphone', 'chair', 'spa', 'localFireDepartment', 'sportsSoccer', 'hiking', 'handyman', 'luggage', 'category', 'toys'])
 
 export function Icon({ name, size = 24, className }: IconProps & { name: IconName }) {
   return (
