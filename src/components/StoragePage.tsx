@@ -1,8 +1,9 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { replaceAll, writeVault } from '../db/db'
+import { addProperty, replaceAll, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
-import { columnDefs, type FieldSettings } from '../lib/fields'
+import { columnDefs, missingInsuranceColumns, unitFor, type FieldSettings } from '../lib/fields'
+import { columnId } from '../lib/grid'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
 import { missing } from '../lib/summary'
@@ -45,6 +46,7 @@ export function StoragePage({
   onOpenQuery,
 }: Props) {
   const gaps = missing(items, properties)
+  const lacking = missingInsuranceColumns(properties)
   const columns = columnDefs(fields, properties, items).filter((d) => d.kind === 'prop')
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
@@ -58,7 +60,37 @@ export function StoragePage({
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [passMessage, setPassMessage] = useState<string | null>(null)
+  const [insuranceMessage, setInsuranceMessage] = useState<string | null>(null)
   const [changingPass, setChangingPass] = useState(false)
+
+  // Norwegian joins the last item of a list with og, not a comma
+  function listNo(names: readonly string[]): string {
+    if (names.length < 2) return names[0] ?? ''
+    return `${names.slice(0, -1).join(', ')} og ${names[names.length - 1]}`
+  }
+
+  // Creates the columns a claim asks for, and only the ones not there yet.
+  // They name no category: a bicycle and a sofa are asked the same three.
+  async function addInsuranceColumns() {
+    const made: string[] = []
+    try {
+      for (const c of lacking) {
+        const unit = unitFor(c.type, c.unit)
+        await addProperty({
+          id: columnId({ key: c.key, unit }),
+          key: c.key,
+          unit,
+          type: c.type,
+          createdAt: Date.now(),
+        })
+        made.push(c.key)
+      }
+      setInsuranceMessage(t.storage.insuranceAdded(listNo(made)))
+    } catch (err) {
+      console.error(errorText(err))
+      setInsuranceMessage(t.error.saveFailed)
+    }
+  }
 
   async function download() {
     const v = currentVault()
@@ -324,6 +356,34 @@ export function StoragePage({
             {message}
           </p>
         )}
+      </section>
+
+      {/* The three columns a claim asks for, made in one go. Which things
+          carry a serial number is the user's call: narrow Serienummer from
+          the column menu inside the category that has them. */}
+      <section className="setting">
+        <div className="setting-head">
+          <div>
+            <h2 className="section-label" id="insurance-title">
+              {t.storage.insuranceTitle}
+            </h2>
+            <p className="hint">{t.storage.insuranceWhat}</p>
+          </div>
+          {lacking.length > 0 && (
+            <button
+              type="button"
+              className="btn"
+              aria-describedby="insurance-title"
+              onClick={() => void addInsuranceColumns()}
+            >
+              {t.storage.insuranceAdd}
+            </button>
+          )}
+        </div>
+        <p className="hint" role="status">
+          {insuranceMessage ??
+            (lacking.length > 0 ? t.storage.insuranceMissing(listNo(lacking.map((c) => c.key))) : t.storage.insuranceAll)}
+        </p>
       </section>
 
       <section className="setting">

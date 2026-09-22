@@ -291,6 +291,24 @@ antall. Datoer filtreres per år.
 
 </details>
 
+#### Hvis du dokumenterer for forsikringen
+
+Under Innstillinger › Klar for forsikring lager Ting de tre egenskapene et
+skadeoppgjør spør etter, og bare de du mangler:
+
+| Egenskap | Hva |
+|---|---|
+| Verdi | Tall i kr. Hva det koster å kjøpe tingen på nytt i dag, ikke hva du ga for den. Kr-kolonner summeres over tabellen |
+| Kjøpt | Dato |
+| Serienummer | Tekst. Tallet eller koden på selve tingen |
+
+Ta bilde av tingen, og et nærbilde av serienummeret på elektronikk. Er det bare
+noen kategorier som har serienummer, velger du kategorien og bruker «Bruk bare
+i …» i kolonnemenyen på Serienummer.
+
+Dokumentasjon er ingen garanti for at et krav blir godkjent, eller for hvor mye
+du får. Den gjør det lettere å vise hva du hadde.
+
 ### Innstillinger
 
 Ikonet lengst til høyre i topplinja.
@@ -298,6 +316,7 @@ Ikonet lengst til høyre i topplinja.
 | Valg | Gjør |
 |---|---|
 | Over overskriften | Hva som mangler: bilde, og verdi i hver kr-kolonne. Bare der når noe mangler. Hvert tall er et søk som åpner tabellen med akkurat de tingene |
+| Klar for forsikring | Lager egenskapene et skadeoppgjør spør etter: Verdi i kr, Kjøpt som dato og Serienummer. Lager bare de du ikke har fra før |
 | Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
 | Tilpass visning | Bryt lang tekst over flere linjer, og lista over egenskaper: Fjern haken for å ta en kolonne ut av tabellen. Navn vises alltid. Enheten husker valgene |
 | Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
