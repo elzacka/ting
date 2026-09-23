@@ -73,11 +73,12 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const url = useObjectUrl(photos[0] ?? null)
-  // The barcode: read from any photo that shows one, or typed from the label.
-  // What the last read or lookup said is one line under the field.
+  // The barcode: scanned from a photo of the label or typed from it. What
+  // the last scan or lookup said is one line under the field.
   const [code, setCode] = useState('')
   const [codeNote, setCodeNote] = useState<string | null>(null)
-  const [looking, setLooking] = useState(false)
+  const [busy, setBusy] = useState<'scan' | 'lookup' | null>(null)
+  const scanRef = useRef<HTMLInputElement>(null)
 
   const dirty = name.trim() !== '' || photos.length > 0 || code !== ''
   useEffect(() => {
@@ -95,34 +96,43 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
     return recentValues(items, value, def.property?.options ?? [])
   }
 
-  // The camera or the photo library, as the phone offers. A photo of the
-  // label fills in the code while the field is empty: there is no separate scan.
-  async function addPhotos(files: FileList | null) {
+  // The camera or the photo library, as the phone offers
+  function addPhotos(files: FileList | null) {
     const added = [...(files ?? [])].map(asImage).filter((b): b is Blob => b !== null)
     if (fileRef.current) fileRef.current.value = ''
-    if (added.length === 0) return
-    setPhotos((p) => [...p, ...added])
-    if (code !== '') return
-    for (const image of added) {
-      try {
-        const found = await decodeImage(image)
-        if (found) {
-          setCode(found.value)
-          setCodeNote(t.barcode.read(classify(found.value) === 'isbn' ? 'ISBN' : found.format))
-          return
-        }
-      } catch (err) {
-        console.error(errorText(err))
+    if (added.length > 0) setPhotos((p) => [...p, ...added])
+  }
+
+  // Skann strekkode: the camera straight away, and the picture is only read,
+  // never kept as a photo of the thing
+  async function scan(file: File | undefined) {
+    if (scanRef.current) scanRef.current.value = ''
+    const image = asImage(file)
+    if (!image) return
+    setBusy('scan')
+    setCodeNote(null)
+    try {
+      const found = await decodeImage(image)
+      if (found) {
+        setCode(found.value)
+        setCodeNote(t.barcode.read(classify(found.value) === 'isbn' ? 'ISBN' : found.format))
+      } else {
+        setCodeNote(t.barcode.none)
       }
+    } catch (err) {
+      console.error(errorText(err))
+      setCodeNote(t.barcode.none)
+    } finally {
+      setBusy(null)
     }
   }
 
   // The one network call in the app, on this button alone
   async function lookUp() {
-    setLooking(true)
+    setBusy('lookup')
     setCodeNote(null)
     const result = await lookup(code)
-    setLooking(false)
+    setBusy(null)
     if (result.kind === 'found') {
       setName(result.name)
       setCodeNote(t.barcode.found(result.source))
@@ -193,7 +203,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
           accept="image/*"
           multiple
           className="visually-hidden"
-          onChange={(e) => void addPhotos(e.target.files)}
+          onChange={(e) => addPhotos(e.target.files)}
         />
         <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
           <Icon name="photoCamera" size={20} />
@@ -244,9 +254,21 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
               setCodeNote(null)
             }}
           />
+          <input
+            ref={scanRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="visually-hidden"
+            onChange={(e) => void scan(e.target.files?.[0])}
+          />
+          <button type="button" className="btn" disabled={busy !== null} onClick={() => scanRef.current?.click()}>
+            <Icon name="photoCamera" size={20} />
+            {busy === 'scan' ? t.barcode.scanning : t.barcode.scan}
+          </button>
           {classify(code) !== 'other' && (
-            <button type="button" className="btn" disabled={looking} onClick={() => void lookUp()}>
-              {looking ? t.barcode.looking : t.barcode.lookup}
+            <button type="button" className="btn" disabled={busy !== null} onClick={() => void lookUp()}>
+              {busy === 'lookup' ? t.barcode.looking : t.barcode.lookup}
             </button>
           )}
         </div>

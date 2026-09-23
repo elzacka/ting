@@ -63,10 +63,14 @@ async function secretFrom(credentialId: Uint8Array, salt: Uint8Array): Promise<U
     const cred = (await navigator.credentials.get({
       publicKey: {
         challenge: randomBytes(32) as BufferSource,
-        allowCredentials: [{ type: 'public-key', id: credentialId as BufferSource }],
+        // The passkey was made on this device's own authenticator. Saying so,
+        // and preferring it, sends the browser straight to Face ID or Touch ID
+        // rather than a chooser that offers a security key or a phone first.
+        allowCredentials: [{ type: 'public-key', id: credentialId as BufferSource, transports: ['internal'] }],
+        hints: ['client-device'],
         userVerification: 'required',
         extensions: { prf: { eval: { first: salt as BufferSource } } } as AuthenticationExtensionsClientInputs,
-      },
+      } as PublicKeyCredentialRequestOptions, // hints is newer than the DOM types
     })) as PublicKeyCredential | null
     return (cred && prfOutput(cred)) ?? 'failed'
   } catch (err) {
@@ -90,8 +94,9 @@ export async function createPasskey(open: OpenKey): Promise<PasskeyRecord | Pass
           { type: 'public-key', alg: -257 },
         ],
         authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'preferred', userVerification: 'required' },
+        hints: ['client-device'],
         extensions: { prf: { eval: { first: salt as BufferSource } } } as AuthenticationExtensionsClientInputs,
-      },
+      } as PublicKeyCredentialCreationOptions, // hints is newer than the DOM types
     })) as PublicKeyCredential | null
   } catch (err) {
     return failure(err)

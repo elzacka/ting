@@ -158,12 +158,12 @@ senere; `-har:pris` i søket henter fram de som står igjen.
 
 | Vil du | Slik |
 |---|---|
-| Lese koden fra etiketten | Ta et bilde av etiketten med «Legg til bilde». Appen leser koden fra bildet og fyller inn feltet. Den leser EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, uten nett, også på iPhone. Står feltet tomt etter bildet, tar du et nytt nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
+| Lese koden fra etiketten | «Skann strekkode» åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Leser den ikke koden, tar du et nytt bilde nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
 | Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene. Rett navnet før du lagrer |
-| Ta vare på et serienummer | Ta bilde av koden eller skriv den. Alt som ikke er en varekode, lagres som tekst |
+| Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
 
 Bøker og matvarer finnes som regel i oppslagsverkene. Turutstyr og elektronikk
-finnes sjelden: Da sparer bildet av koden deg for å skrive nummeret, og navnet
+finnes sjelden: Da sparer skanningen deg for å skrive nummeret, og navnet
 skriver du selv.
 
 ### Mange ting
@@ -484,7 +484,7 @@ Tannhjulet lengst til høyre i topplinja.
 | Brunt tannhjul | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
 | «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
-| «Strekkode» står tomt etter bildet av etiketten | Leseren fant ingen kode i bildet | Ta et nytt bilde nærmere, rett forfra, uten refleks. Eller skriv tallene |
+| «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
 | Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |

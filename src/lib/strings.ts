@@ -165,7 +165,10 @@ export const t = {
   },
   barcode: {
     label: 'Strekkode',
-    read: (format: string) => `Lest fra bildet som ${format}.`,
+    scan: 'Skann strekkode',
+    scanning: 'Leser…',
+    read: (format: string) => `Lest som ${format}.`,
+    none: 'Fant ingen strekkode i bildet. Ta bildet nærmere, rett forfra.',
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Navnet er hentet fra ${source}. Rett det som er feil før du lagrer.`,

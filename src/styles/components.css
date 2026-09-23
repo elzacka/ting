@@ -852,7 +852,7 @@ section {
    glyph and name, or Velg kategori in the placeholder grey until one is
    picked. Its box lines up with Navn: the table's checkbox column is one
    gutter wide. */
-/* No frame: the chevron says it opens, and the hover fills it in */
+/* No frame and no fill: the chevron says it opens */
 .view-select {
   display: inline-flex;
   align-items: center;
@@ -882,11 +882,6 @@ section {
 
 .view-select.is-placeholder {
   color: var(--text-2);
-}
-
-.view-select:hover,
-.view-select[aria-expanded='true'] {
-  background-color: var(--hover);
 }
 
 /* The categories as a dropdown under the button: glyph, name, count. Fixed
