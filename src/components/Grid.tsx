@@ -90,8 +90,10 @@ export function Grid({
       table.classList.add('is-scrolling')
       window.clearTimeout(settle)
       settle = window.setTimeout(() => table.classList.remove('is-scrolling'), 160)
-      const cs = getComputedStyle(table)
-      const stickyTop = parseFloat(cs.getPropertyValue('--topbar-h')) + parseFloat(cs.getPropertyValue('--head-h'))
+      // The top bar is measured, not read from --topbar-h: that holds a calc()
+      // with the safe area, which parseFloat cannot read
+      const topbar = document.querySelector('.topbar')?.getBoundingClientRect().height ?? 0
+      const stickyTop = topbar + parseFloat(getComputedStyle(table).getPropertyValue('--head-h'))
       const rect = table.getBoundingClientRect()
       const room = rect.height - head.getBoundingClientRect().height
       const offset = Math.min(Math.max(0, stickyTop - rect.top), Math.max(0, room))

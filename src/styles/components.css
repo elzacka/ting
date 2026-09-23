@@ -852,12 +852,15 @@ section {
    glyph and name, or Velg kategori in the placeholder grey until one is
    picked. Its box lines up with Navn: the table's checkbox column is one
    gutter wide. */
+/* No frame: the chevron says it opens, and the hover fills it in */
 .view-select {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  width: 280px;
+  width: auto;
   max-width: calc(100% - var(--gutter));
+  border-color: transparent;
+  background-color: transparent;
   margin-left: var(--gutter);
   color: var(--text);
   font-family: inherit;
@@ -881,8 +884,9 @@ section {
   color: var(--text-2);
 }
 
-.view-select:hover {
-  border-color: var(--text);
+.view-select:hover,
+.view-select[aria-expanded='true'] {
+  background-color: var(--hover);
 }
 
 /* The categories as a dropdown under the button: glyph, name, count. Fixed
@@ -1026,8 +1030,11 @@ section {
   padding: 0 var(--s-3);
 }
 
+/* No side padding: .controls .btn gives every button 12 px each side, which
+   left an icon in a 36 px button 12 px of room */
 .controls .btn-icon {
   min-width: var(--row-h-sm);
+  padding: 0;
 }
 
 .controls .search .input {
@@ -1095,17 +1102,25 @@ section {
 }
 
 /* Endre egenskaper: name, type, unit, categories, count and remove on one
-   line per property */
+   line per property. The rows share one set of columns (subgrid), so the
+   counts end on one edge and the bins stand in one column however long a
+   count is. */
 .property-rows {
-  display: grid;
-  gap: var(--s-2);
-}
-
-.property-row {
   display: grid;
   grid-template-columns: minmax(0, 220px) 140px 90px minmax(0, 240px) max-content var(--row-h-sm);
   gap: var(--s-2) var(--s-3);
   align-items: center;
+}
+
+.property-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+
+.property-count {
+  justify-self: end;
 }
 
 .property-row.is-removed input,
@@ -1839,6 +1854,24 @@ section {
 
 .btn-icon.is-active {
   color: var(--accent);
+}
+
+/* Updating: the arrows turn until the new version reloads the page, so a
+   press is seen to have landed */
+.btn-icon[aria-busy='true'] svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-icon[aria-busy='true'] svg {
+    animation: none;
+  }
 }
 
 /* The folder is not being written: the one place the header says so */

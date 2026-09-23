@@ -38,6 +38,7 @@ import { searchItems } from '../lib/search'
 import { searchTips } from '../lib/searchTips'
 import { applyFilters, levelId, valueKey, valuesFor, withoutFilter, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
+import { rowHeight } from '../lib/useRowWindow'
 import { Grid, isNumberColumn } from './Grid'
 import { PrintReport } from './PrintReport'
 import { parseBlock } from '../lib/paste'
@@ -724,6 +725,17 @@ export function Overview({
     if (editing) setSelected(new Set())
   }, [editing])
   const lastNewId = newRows[newRows.length - 1]?.tempId
+  // A new row comes after every other. Added from the foot it is already
+  // where the pointer is and stays put; added from the head, with hundreds of
+  // things above it, it is brought to the middle of the screen, or nothing
+  // would seem to happen.
+  useEffect(() => {
+    if (!lastNewId) return
+    const input = document.querySelector<HTMLElement>(`input[data-row="${lastNewId}"]`)
+    if (!input) return
+    const { top, bottom } = input.getBoundingClientRect()
+    if (top < 0 || bottom > window.innerHeight - 2 * rowHeight) input.scrollIntoView({ block: 'center', inline: 'nearest' })
+  }, [lastNewId])
   // The table waits for a category. Until one is picked the card is its
   // categories and nothing else — but anything that means "show me things"
   // opens it too: a new row, a search, or having no categories to pick
@@ -1128,9 +1140,8 @@ export function Overview({
               shows, Velg kategori above them as the way back to none. */}
           {categoryValues.length > 1 && (
             <>
-              {/* Drawn as the app's own select field, in both states: the
-                  same box, border and chevron as Grupper etter, so it reads as
-                  a choice and not as a heading */}
+              {/* The app's select field without its frame, in both states:
+                  the chevron says it is a choice and not a heading */}
               <button
                 type="button"
                 ref={currentRef}
@@ -1778,8 +1789,10 @@ export function Overview({
           </div>
         )}
 
+        {/* Alphabetical by the word: the symbols mix letters with ° and å
+            and would not sort the way anyone reads them */}
         <datalist id="unit-options">
-          {t.table.unitOptions.map(([symbol, word]) => (
+          {[...t.table.unitOptions].sort((a, b) => a[1].localeCompare(b[1], 'nb')).map(([symbol, word]) => (
             <option key={symbol} value={symbol} label={word} />
           ))}
         </datalist>

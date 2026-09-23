@@ -116,7 +116,7 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
                 <span>{where}</span>
                 <Icon name="chevronRight" size={16} className="property-scope-chevron" />
               </button>
-              <span className="hint num">{t.summary.things(r.count)}</span>
+              <span className="hint num property-count">{t.summary.things(r.count)}</span>
               <button
                 type="button"
                 className={`btn btn-icon property-remove${r.remove ? ' is-active' : ''}`}
@@ -127,7 +127,7 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
                   setConfirming(false)
                 }}
               >
-                <Icon name={r.remove ? 'close' : 'delete'} size={20} />
+                <Icon name={r.remove ? 'close' : 'delete'} size={24} />
               </button>
             </div>
           )

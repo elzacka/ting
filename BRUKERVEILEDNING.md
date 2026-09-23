@@ -480,7 +480,7 @@ Tannhjulet lengst til høyre i topplinja.
 
 | Du ser | Det betyr | Gjør |
 |---|---|---|
-| Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet |
+| Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet. Det snurrer til appen har lastet den nye versjonen |
 | Brunt tannhjul | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
 | «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
