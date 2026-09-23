@@ -30,4 +30,8 @@ describe('totals', () => {
   it('is empty without a kr property', () => {
     expect(totals(items, [type])).toEqual([])
   })
+  it('leaves out a kr property none of the things has a value in', () => {
+    const verdi: Property = { id: '["verdi","kr"]', key: 'Verdi', unit: 'kr', createdAt: 4, type: 'number' }
+    expect(totals(items, [pris, verdi])).toEqual([{ key: 'Pris', unit: 'kr', sum: 3500 }])
+  })
 })

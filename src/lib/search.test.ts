@@ -76,6 +76,11 @@ describe('searchItems', () => {
     expect(names('-has:komfort')).toEqual(['Kokeapparat', 'Liggeunderlag'])
   })
 
+  it('reads har: the same as has:', () => {
+    expect(names('har:bilde')).toEqual(['Sovepose sommer'])
+    expect(names('-har:komfort')).toEqual(['Kokeapparat', 'Liggeunderlag'])
+  })
+
   it('matches text specs with : and =', () => {
     expect(names('brensel:gas')).toEqual(['Kokeapparat'])
     expect(names('brensel=gas')).toEqual([])

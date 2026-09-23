@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { applyFilters, levelId, splitLevel, valuesFor, withoutFilter } from './filters'
+import { applyFilters, isFacet, levelId, splitLevel, valuesFor, withoutFilter } from './filters'
 import { categoryColumnId } from './fields'
 import { columnId } from './grid'
 import { pathUnit } from './paths'
@@ -116,5 +116,27 @@ describe('a place column, level by level', () => {
 
   it('leaves out a thing with no place at all, and one that does not go that deep', () => {
     expect(applyFilters(placed, { [levelId(id, 2)]: ['kjellerbod'] })).toEqual([])
+  })
+})
+
+describe('isFacet', () => {
+  const values = (labels: string[]) => labels.map((l) => ({ key: l, label: l, count: 1 }))
+  it('offers a menu for a dozen values or fewer, whatever they are', () => {
+    expect(isFacet(values(['1', '2', '3']), 'kr')).toBe(true)
+  })
+  it('offers none for many values that barely repeat, numbers included', () => {
+    const prices = values(Array.from({ length: 40 }, (_, i) => String(100 + i)))
+    expect(isFacet(prices, 'kr')).toBe(false)
+  })
+  it('offers one for many values that repeat', () => {
+    const brands = Array.from({ length: 20 }, (_, i) => ({ key: `b${i}`, label: `B${i}`, count: 5 }))
+    expect(isFacet(brands, null)).toBe(true)
+  })
+  it('always offers one for a date, which facets by year', () => {
+    const days = values(Array.from({ length: 40 }, (_, i) => `20${10 + i}`))
+    expect(isFacet(days, 'dato')).toBe(true)
+  })
+  it('offers none for a column with no values', () => {
+    expect(isFacet([], null)).toBe(false)
   })
 })

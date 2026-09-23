@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import { passkeySchema, type PasskeyRecord } from '../lib/passkey'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
 import { fromStored, legacyAsSpecs, storedItemSchema, toStored } from '../lib/backup'
 import { columnId } from '../lib/grid'
@@ -12,6 +13,7 @@ import {
   type FieldSettings,
 } from '../lib/fields'
 import { errorText } from '../lib/errors'
+import { applyCategoryEdit, type CategoryEdit } from '../lib/categories'
 import { currentKey, subscribeVault, vaultState } from '../lib/vault'
 
 // Every record is stored sealed under the session key: an item is one sealed
@@ -259,6 +261,7 @@ export async function setColumnOrder(defs: readonly ColumnDef[]): Promise<void> 
         ...(d.property?.type ? { type: d.property.type } : {}),
         ...(d.property?.options ? { options: d.property.options } : {}),
         ...(d.property?.categories ? { categories: d.property.categories } : {}),
+        ...(d.property?.icons ? { icons: d.property.icons } : {}),
       })
   })
   const rows = await Promise.all(props.map((p) => sealProperty(propertySchema.parse(p))))
@@ -288,6 +291,7 @@ export async function renameProperty(
       createdAt: old?.createdAt ?? Date.now(),
       ...(old?.order !== undefined ? { order: old.order } : {}),
       ...(old?.categories && old.categories.length > 0 ? { categories: old.categories } : {}),
+      ...(old?.icons ? { icons: old.icons } : {}),
     }),
   )
   const items = await readItems()
@@ -319,6 +323,23 @@ export async function setPropertyCategories(property: Property, categories: stri
   const row = await sealProperty(next)
   await db.transaction('rw', db.properties, db.settings, async () => {
     await db.properties.put(row)
+    await touch()
+  })
+}
+
+// Endre kategorier in one go: renames on every thing and every column that
+// belongs to a category, the icons and the new categories on Kategori.
+export async function saveCategories(edit: CategoryEdit): Promise<void> {
+  const items = await readItems()
+  const properties = await readProperties()
+  const kategori = properties.find((p) => p.id === categoryColumnId) ?? categoryProperty()
+  const out = applyCategoryEdit(items, properties, kategori, edit)
+  const now = Date.now()
+  const itemRows = await Promise.all(out.items.map((i) => sealItem(itemSchema.parse({ ...i, updatedAt: now }))))
+  const propRows = await Promise.all(out.properties.map((p) => sealProperty(propertySchema.parse(p))))
+  await db.transaction('rw', db.properties, db.items, db.settings, async () => {
+    await db.items.bulkPut(itemRows)
+    await db.properties.bulkPut(propRows)
     await touch()
   })
 }
@@ -383,6 +404,24 @@ export function writeVault(vault: Vault): Promise<void> {
   return setSetting(vaultKey, vault)
 }
 
+// Face ID or Touch ID on this device: a second wrapped copy of the data key
+// (`lib/passkey.ts`). In the clear like the vault, since only the device's
+// authenticator can open it; never in a backup or the folder.
+const passkeyKey = 'passkey'
+
+export async function readPasskey(): Promise<PasskeyRecord | null> {
+  const parsed = passkeySchema.safeParse(await getSetting(passkeyKey))
+  return parsed.success ? parsed.data : null
+}
+
+export function writePasskey(record: PasskeyRecord): Promise<void> {
+  return setSetting(passkeyKey, record)
+}
+
+export function deletePasskey(): Promise<void> {
+  return deleteSetting(passkeyKey)
+}
+
 // Kategori was a built-in field until 21 September 2026. Things from before
 // carry it as a Kategori spec once opened; the property row that makes it a
 // Valgliste in the first column is created here, once, if it is missing.
@@ -392,6 +431,26 @@ export async function ensureCategoryProperty(): Promise<void> {
   const items = await readItems()
   if (!items.some((i) => i.specs.some((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId))) return
   await addProperty(categoryProperty())
+}
+
+// --- before a passphrase ------------------------------------------------------
+
+// Rows from before encryption, still in the clear. They wait for a passphrase
+// on the setup screen rather than be sealed under a trial key that dies with the tab.
+export async function hasPlainRows(): Promise<boolean> {
+  const items = (await db.items.toArray()) as unknown as { sealed?: unknown }[]
+  const props = (await db.properties.toArray()) as unknown as { sealed?: unknown }[]
+  return items.some((r) => !r.sealed) || props.some((r) => !r.sealed)
+}
+
+// What an earlier trial sealed under a key nobody kept: unreadable, so gone.
+export async function clearTrialRows(): Promise<void> {
+  await db.transaction('rw', db.items, db.properties, db.settings, async () => {
+    await db.items.clear()
+    await db.properties.clear()
+    await db.settings.delete(fieldSettingsKey)
+    await db.settings.delete('localChangedAt')
+  })
 }
 
 // --- one-time migration of data written before encryption ------------------

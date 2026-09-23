@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPath, isPathUnit, parsePath, pathPrefix, pathsInUse } from './paths'
+import { formatPath, isPathUnit, nextLevels, parsePath, pathPrefix, pathsInUse } from './paths'
 
 describe('parsePath', () => {
   it('takes whichever separator the keyboard could reach', () => {
@@ -72,5 +72,33 @@ describe('isPathUnit', () => {
     expect(isPathUnit(' Sti ')).toBe(true)
     expect(isPathUnit('dato')).toBe(false)
     expect(isPathUnit(null)).toBe(false)
+  })
+})
+
+describe('nextLevels', () => {
+  const paths = pathsInUse(['Bod › Hylle 1', 'Bod › Hylle 2 › Blå kasse', 'Bod › Gulv', 'Stue › Bokhylle'])
+
+  it('offers the rooms while nothing is typed', () => {
+    expect(nextLevels(paths, '')).toEqual({ base: [], options: ['Bod', 'Stue'] })
+  })
+
+  it('offers what is inside a place in use', () => {
+    expect(nextLevels(paths, 'Bod')).toEqual({ base: ['Bod'], options: ['Gulv', 'Hylle 1', 'Hylle 2'] })
+    expect(nextLevels(paths, 'bod / hylle 2')).toEqual({ base: ['bod', 'hylle 2'], options: ['Blå kasse'] })
+  })
+
+  it('narrows the level being typed to the places that start with it', () => {
+    expect(nextLevels(paths, 'Bod › Hy')).toEqual({ base: ['Bod'], options: ['Hylle 1', 'Hylle 2'] })
+    expect(nextLevels(paths, 'St')).toEqual({ base: [], options: ['Stue'] })
+  })
+
+  it('offers the places beside one that has nothing inside it', () => {
+    expect(nextLevels(paths, 'Bod › Hylle 1')).toEqual({ base: ['Bod'], options: ['Gulv', 'Hylle 2'] })
+    expect(nextLevels(paths, 'Bod › Hylle 2 › Blå kasse')).toEqual({ base: ['Bod', 'Hylle 2'], options: [] })
+  })
+
+  it('offers nothing for a place not in use', () => {
+    expect(nextLevels(paths, 'Garasje').options).toEqual([])
+    expect(nextLevels(paths, 'Bod › Loft').options).toEqual([])
   })
 })

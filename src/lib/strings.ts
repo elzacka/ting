@@ -17,10 +17,17 @@ export const t = {
     unlock: 'Lås opp',
     wrong: 'Feil passord.',
     working: 'Låser opp…',
-    lockTitle: 'Automatisk lås',
-    autoLockOption: 'Krev passord etter 10 minutter',
+    // How this device locks and opens: the idle lock, and Face ID or Touch ID
+    // in place of the passphrase (a passkey)
+    lockTitle: 'Lås',
+    autoLockOption: 'Lås appen etter 10 minutter uten bruk',
+    passkeyOption: 'Lås opp med Face ID eller Touch ID på denne enheten',
+    passkeyUnlock: 'Lås opp med Face ID eller Touch ID',
+    passkeyFailed: 'Face ID eller Touch ID virket ikke. Lås opp med passordet.',
+    passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID.',
     changeTitle: 'Passord',
-    changeWhat: 'Låser alt du registrerer, på enheten og i alle kopier. Kopier du tok før et bytte, åpnes med det gamle passordet.',
+    changeWhat:
+      'Passordet krypterer alt du registrerer, på enheten, i lagringsmappen og i sikkerhetskopiene. Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned.',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',
@@ -29,6 +36,8 @@ export const t = {
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
     copyForeign: 'Kopien er kryptert med et annet passord. Skriv det inn for å lese den.',
+    // The account a password manager files the passphrase under
+    keychainName: 'Ting',
   },
   search: {
     label: 'Søk',
@@ -37,29 +46,62 @@ export const t = {
     placeholder: 'Søk på navn eller egenskap',
     clear: 'Tøm søk',
     tips: 'Søketips',
-    tipsTableText: 'Rader du har endret, blir stående til du lagrer, også når søket endres.',
     noMatch: (q: string) => `Fant ikke «${q}»`,
     showAll: 'Vis alle ting',
-    // One operator per row, with an example. The parser in lib/search.ts is the source of truth.
-    tipRows: [
-      ['sovepose', 'Ord. Tåler skrivefeil'],
-      ['"sovepose vinter"', 'Nøyaktig frase'],
-      ['-sommer', 'Uten dette ordet'],
-      ['s', 'Én bokstav: Alle navn som begynner på s'],
-      ['komfort<0', 'Mindre enn. Også <='],
-      ['vekt>1000', 'Større enn. Også >='],
-      ['farge=rød', 'Nøyaktig lik'],
-      ['brensel:gass', 'Inneholder'],
-      ['kategori:tur', 'Kategori som inneholder'],
-      ['kjøpsdato<01.01.26', 'Dato før'],
-      ['has:bilde', 'Har bilde. Også has:notat'],
-      ['has:vekt', 'Har en verdi i Vekt'],
-    ],
   },
   // The category line over the table: which categories the register shows
   view: {
     label: 'Velg kategori',
     all: 'Alle',
+    change: (current: string) => `Kategori: ${current}. Velg en annen`,
+    clear: 'Fjern alle valgte',
+  },
+  // Endre egenskaper: several properties changed or removed at once
+  properties: {
+    edit: 'Endre egenskaper',
+    title: 'Egenskaper',
+    hint: 'Endrer du navn eller felttype, gjelder det alle ting. Kategori endrer du under Endre kategorier.',
+    name: (key: string) => `Navn på ${key}`,
+    type: (key: string) => `Felttype for ${key}`,
+    unit: (key: string) => `Enhet for ${key}`,
+    scopeAll: 'Alle kategorier',
+    scopeButton: (key: string, where: string) => `${key} brukes i: ${where}. Endre`,
+    scopeTitle: (key: string) => `Kategorier for ${key}`,
+    remove: (key: string) => `Fjern ${key}`,
+    keep: (key: string) => `Behold ${key}`,
+    confirmRemove: (keys: string, n: number) =>
+      `${keys} har verdier på ${n === 1 ? '1 ting' : `${n} ting`}. Verdiene forsvinner fra alle. Du kan ikke angre.`,
+    removeAndSave: 'Fjern og lagre',
+    dirtyFirst: 'Lagre eller forkast endringene i tabellen først.',
+  },
+  // Ticked things: what can be done with all of them at once
+  selection: {
+    count: (n: number) => `${n} valgt`,
+    edit: 'Endre verdi',
+    editTitle: (n: number) => (n === 1 ? 'Endre 1 ting' : `Endre ${n} ting`),
+    property: 'Egenskap',
+    value: 'Ny verdi',
+    apply: 'Endre',
+    editHint: 'Et tomt felt fjerner verdien. Ingenting lagres før du trykker Lagre.',
+    print: 'Skriv ut',
+    csv: 'Last ned',
+    delete: 'Slett',
+    clear: 'Fjern valget',
+    printing: (n: number) => (n === 1 ? 'Bare den valgte tingen kommer med.' : `Bare de ${n} valgte tingene kommer med.`),
+  },
+  // Endre kategorier: names, icons and new categories
+  categories: {
+    edit: 'Endre kategorier',
+    title: 'Kategorier',
+    hint: 'Endrer du et navn, endres det på alle ting i kategorien. Gir du to kategorier samme navn, blir de én.',
+    name: 'Navn på kategori',
+    add: 'Ny kategori',
+    newRow: 'Ny',
+    iconButton: (category: string, icon: string) => `Symbol for ${category}: ${icon}. Velg et annet`,
+    pickerTitle: (category: string) => `Velg symbol for ${category}`,
+    search: 'Søk etter symbol',
+    suggested: 'foreslått ut fra navnet',
+    byName: 'Velg ut fra navnet',
   },
   filters: {
     showAll: (n: number) => `Vis alle ${n}`,
@@ -100,17 +142,15 @@ export const t = {
   action: {
     save: 'Lagre',
     cancel: 'Avbryt',
+    close: 'Lukk',
     delete: 'Slett',
     back: 'Tilbake',
     choosePhoto: 'Velg bilde',
     changePhoto: 'Bytt bilde',
     removePhoto: 'Fjern bilde',
-    takePhoto: 'Ta bilde',
-    retakePhoto: 'Ta nytt bilde',
     // Several photos per thing: the first is the one the table and the report
     // show, and any of them can be made the first.
     addPhoto: 'Legg til bilde',
-    onePhotoMore: 'Ta ett bilde til',
     makeFirstPhoto: 'Gjør til hovedbilde',
     firstPhoto: 'Hovedbilde',
     removePhotoAt: (n: number) => `Fjern bilde ${n}`,
@@ -120,13 +160,12 @@ export const t = {
     photoAlt: 'Bildet du tok',
     saved: (name: string) => `«${name}» er lagret.`,
     missingName: 'Tingen må ha et navn.',
+    // The values to tap under a field, named for the field
+    suggestions: (label: string) => `${label}: Forslag`,
   },
   barcode: {
     label: 'Strekkode',
-    scan: 'Skann strekkode',
-    scanning: 'Leser…',
-    read: (format: string) => `Lest som ${format}.`,
-    none: 'Fant ingen strekkode i bildet. Ta bildet nærmere, rett forfra.',
+    read: (format: string) => `Lest fra bildet som ${format}.`,
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Navnet er hentet fra ${source}. Rett det som er feil før du lagrer.`,
@@ -155,6 +194,13 @@ export const t = {
     name: 'Navn',
     addRow: 'Legg til ting',
     addColumn: 'Legg til egenskap',
+    // Plus opens a menu: a thing (a row) or a property (a column)
+    add: 'Legg til',
+    addColumnMenu: 'Legg til egenskap (kolonne)',
+    // Under the column form, as help: what exists where the new one would go
+    knownAll: 'Finnes i alle kategorier',
+    // Not for every category, but for this one (and maybe others)
+    knownOnly: (category: string) => `I tillegg i ${category}`,
     wrap: 'Bryt lang tekst over flere linjer',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
@@ -178,6 +224,7 @@ export const t = {
       ['år', 'år'],
     ],
     removeColumn: 'Fjern',
+    // The columns the view leaves out: empty here, or the same on every row
     showMore: (n: number) => (n === 1 ? 'Vis 1 kolonne til' : `Vis ${n} kolonner til`),
     hideMore: 'Vis færre kolonner',
     // The column menu, only while one category is in view: what the column is for
@@ -198,7 +245,6 @@ export const t = {
     moveLeft: 'Flytt til venstre',
     moveRight: 'Flytt til høyre',
     removeRow: 'Fjern rad',
-    deleteSelected: (n: number) => `Slett valgte (${n})`,
     unsaved: (n: number) => (n === 1 ? '1 endring ikke lagret' : `${n} endringer ikke lagret`),
     cell: (name: string, col: string) => `${col} for ${name === '' ? 'ny rad' : name}`,
   },
@@ -214,13 +260,37 @@ export const t = {
   notice: {
     update: 'Oppdater til ny versjon',
   },
+  // How to install, where the browser has no prompt of its own. Safari on an
+  // iPhone keeps Del behind ••• (iOS 26 and later); on an iPad and in the
+  // other iPhone browsers Del is on the bar itself.
+  install: {
+    prompt: 'Installer appen',
+    iosMore: 'Installer: ••• › Del › Legg til på Hjem-skjerm',
+    iosShare: 'Installer: Del › Legg til på Hjem-skjerm',
+    macSafari: 'Installer: Del › Legg til i Dock',
+    // With a passphrase: why installing matters in a browser that clears
+    // the data of a site nobody opens
+    evict: 'Nettleseren kan slette det du har lagt inn hvis du ikke åpner appen på sju dager.',
+  },
+  // Before a passphrase: the line under the top bar
+  trial: {
+    notice: 'Du prøver appen. Det du legger inn, blir borte når du lukker den.',
+    // A phone closes the app on its own, so the phone says when, not who
+    noticePhone: 'Det du legger inn, blir borte når appen lukkes.',
+    setPassword: 'Velg passord for å beholde det',
+    why: 'Passordet krypterer alt du legger inn, på enheten og i kopiene. Uten passord blir det borte når du lukker appen. Du trenger det hver gang du åpner appen.',
+    lost: 'Mister du passordet, er dataene tapt. Det finnes ingen bakvei.',
+    folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
+    done: 'Passordet er valgt. Alt du har lagt inn, er tatt vare på.',
+  },
   storage: {
     title: 'Innstillinger',
     viewTitle: 'Tilpass visning',
     viewList: 'Egenskaper i tabellen',
     viewShown: (shown: number, total: number) => `${shown} av ${total} vises`,
-    folderTitle: 'Mappe på maskinen',
-    folderWhat: 'Automatisk: Appen krypterer dataene og synkroniserer dem med mappen hver gang du lagrer. Tar du med mappen til en annen maskin, får du tilgang til alt i appen der.',
+    folderTitle: 'Lagringsmappe',
+    folderNone:
+      'Du har ikke valgt en mappe for automatisk lagring. Alt du registrerer, ligger bare i denne nettleseren. Sletter du nettstedsdata i nettleseren, blir det borte.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
     checking: 'Sjekker mappen…',
@@ -238,6 +308,8 @@ export const t = {
     copyTitle: 'Sikkerhetskopi',
     copyWhat: 'Manuelt: Én kryptert fil med alt du har lagt inn. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
     download: 'Last ned sikkerhetskopi',
+    // A phone saves the file through the share sheet: Filer, AirDrop, e-post
+    share: 'Del sikkerhetskopi',
     restore: 'Gjenopprett fra sikkerhetskopi',
     restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra filen? Du kan ikke angre.`,
     restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}.`,

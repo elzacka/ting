@@ -59,7 +59,7 @@ export function autoWidths(
     ctx.font = headFont
     let max = ctx.measureText(label(def)).width + headerPadding + headerExtra
     ctx.font = cellFont
-    const extra = cellPadding + (def.kind === 'name' && thumbs ? 32 + thumbGap : 0)
+    const extra = cellPadding + (def.kind === 'name' && thumbs ? 28 + thumbGap : 0)
     for (const v of values(def)) {
       const w = ctx.measureText(v).width + extra
       if (w > max) max = w

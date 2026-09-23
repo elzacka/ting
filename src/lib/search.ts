@@ -7,7 +7,7 @@ import { parseNumber } from './filter'
 //   "sovepose vinter"   exact phrase
 //   -sommer             exclude
 //   komfort<0           spec compare: < > <= >= = :   (key is a prefix, ":" is contains)
-//   has:bilde has:vekt (any property key prefix, so has:notat too)
+//   har:bilde har:vekt (any property key prefix, so har:notat too; has: is the same)
 //   kategori:tur         the property Kategori contains (or = for exact)
 //   kjøpsdato<01.01.26   date columns (unit "dato") compare as dates
 //   "r-verdi">=4        quote a key that contains an operator character
@@ -60,7 +60,7 @@ export function parseQuery(q: string): Term[] {
     const key = norm(unquote(head))
     const value = norm(unquote(rawValue))
     if (key === '') continue
-    if (key === 'has' && op === ':') {
+    if ((key === 'har' || key === 'has') && op === ':') {
       if (value !== '') terms.push({ type: 'has', what: value, negate })
       continue
     }

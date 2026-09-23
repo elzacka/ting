@@ -1,52 +1,69 @@
 import { describe, expect, it } from 'vitest'
-import { categoryIcon, otherCategoryIcon } from './categoryIcons'
+import { categoryIconFor, chosenIcon, guessCategoryIcon, otherCategoryIcon } from './categoryIcons'
 
-describe('categoryIcon', () => {
+describe('guessCategoryIcon', () => {
   it('reads the words in the register elzacka actually keeps', () => {
-    expect(categoryIcon('Bøker og leker')).toBe('menuBook')
-    expect(categoryIcon('Data og kontor')).toBe('computer')
-    expect(categoryIcon('Hobby og håndarbeid')).toBe('palette')
-    expect(categoryIcon('Hvitevarer')).toBe('localLaundryService')
-    expect(categoryIcon('Interiør')).toBe('lightbulb')
-    expect(categoryIcon('Kjøkken')).toBe('restaurant')
-    expect(categoryIcon('Klær og sko')).toBe('checkroom')
-    expect(categoryIcon('Lyd og bilde')).toBe('tv')
-    expect(categoryIcon('Mobil og tilbehør')).toBe('smartphone')
-    expect(categoryIcon('Møbler')).toBe('chair')
-    expect(categoryIcon('Personlig pleie')).toBe('spa')
-    expect(categoryIcon('Speiderutstyr')).toBe('localFireDepartment')
-    expect(categoryIcon('Sport og fritid')).toBe('sportsSoccer')
-    expect(categoryIcon('Turutstyr')).toBe('hiking')
-    expect(categoryIcon('Verktøy og vedlikehold')).toBe('handyman')
-    expect(categoryIcon('Vesker og bagasje')).toBe('luggage')
+    expect(guessCategoryIcon('Bøker og leker')).toBe('menu_book')
+    expect(guessCategoryIcon('Data og kontor')).toBe('computer')
+    expect(guessCategoryIcon('Hobby og håndarbeid')).toBe('palette')
+    expect(guessCategoryIcon('Hvitevarer')).toBe('local_laundry_service')
+    expect(guessCategoryIcon('Interiør')).toBe('lightbulb')
+    expect(guessCategoryIcon('Kjøkken')).toBe('restaurant')
+    expect(guessCategoryIcon('Klær og sko')).toBe('checkroom')
+    expect(guessCategoryIcon('Lyd og bilde')).toBe('tv')
+    expect(guessCategoryIcon('Mobil og tilbehør')).toBe('smartphone')
+    expect(guessCategoryIcon('Møbler')).toBe('chair')
+    expect(guessCategoryIcon('Personlig pleie')).toBe('spa')
+    expect(guessCategoryIcon('Speiderutstyr')).toBe('local_fire_department')
+    expect(guessCategoryIcon('Sport og fritid')).toBe('sports_soccer')
+    expect(guessCategoryIcon('Turutstyr')).toBe('hiking')
+    expect(guessCategoryIcon('Verktøy og vedlikehold')).toBe('handyman')
+    expect(guessCategoryIcon('Vesker og bagasje')).toBe('luggage')
   })
 
   it('gives Elektronikk the glyph for a phone and a laptop together', () => {
-    expect(categoryIcon('Elektronikk')).toBe('devices')
+    expect(guessCategoryIcon('Elektronikk')).toBe('devices')
     // and not the one either half of it used to have
-    expect(categoryIcon('Elektronikk og tilbehør')).toBe('devices')
+    expect(guessCategoryIcon('Elektronikk og tilbehør')).toBe('devices')
   })
 
   it('matches a word, never a fragment inside one', () => {
     // "Elektronikk" contains "lek" and is not about toys
-    expect(categoryIcon('Elektronikk')).toBe('devices')
+    expect(guessCategoryIcon('Elektronikk')).toBe('devices')
     // "Sportsutstyr" starts with "sport", which is a word beginning
-    expect(categoryIcon('Sportsutstyr')).toBe('sportsSoccer')
+    expect(guessCategoryIcon('Sportsutstyr')).toBe('sports_soccer')
   })
 
   it('does not care how the category is capitalised', () => {
-    expect(categoryIcon('KJØKKEN')).toBe('restaurant')
-    expect(categoryIcon('kjøkken')).toBe('restaurant')
+    expect(guessCategoryIcon('KJØKKEN')).toBe('restaurant')
+    expect(guessCategoryIcon('kjøkken')).toBe('restaurant')
   })
 
   it('gives anything it does not recognise the neutral glyph', () => {
-    expect(categoryIcon('Diverse')).toBe(otherCategoryIcon)
-    expect(categoryIcon('')).toBe(otherCategoryIcon)
+    expect(guessCategoryIcon('Diverse')).toBe(otherCategoryIcon)
+    expect(guessCategoryIcon('')).toBe(otherCategoryIcon)
   })
 
   it('takes the first word it knows, so a two-word name settles on one glyph', () => {
     // "Bøker og leker" is books before it is toys
-    expect(categoryIcon('Bøker og leker')).toBe('menuBook')
-    expect(categoryIcon('Leker og spill')).toBe('toys')
+    expect(guessCategoryIcon('Bøker og leker')).toBe('menu_book')
+    expect(guessCategoryIcon('Leker og spill')).toBe('toys')
+  })
+})
+
+describe('categoryIconFor', () => {
+  it('uses the chosen icon, whatever case the category is written in', () => {
+    expect(categoryIconFor('Kjøkken', { kjøkken: 'chair' })).toBe('chair')
+    expect(categoryIconFor(' KJØKKEN ', { Kjøkken: 'chair' })).toBe('chair')
+  })
+
+  it('falls back to the guess without a choice, or when the pack has lost the chosen icon', () => {
+    expect(categoryIconFor('Kjøkken')).toBe('restaurant')
+    expect(categoryIconFor('Kjøkken', { Kjøkken: 'no_such_icon' })).toBe('restaurant')
+  })
+
+  it('tells an explicit choice from a guess', () => {
+    expect(chosenIcon('Kjøkken', { Kjøkken: 'chair' })).toBe('chair')
+    expect(chosenIcon('Kjøkken', {})).toBeNull()
   })
 })

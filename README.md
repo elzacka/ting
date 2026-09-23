@@ -16,11 +16,11 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 |---|---|
 | Én tabell | Egenskaper som kolonner, du bestemmer hvilke. Rediger i cellene, lim inn fra et regneark, søk med operatorer, filtrer med antall. Søket kan gjemmes uten å slippe taket |
 | Én side per ting | Bilde og alle verdier, hver av dem redigerbar der den står |
-| Mobil | Søk og liste, og «Legg til ting» med kamera, strekkodeleser (følger med appen, virker uten nett) og oppslag av navn for bøker og varer, én ting om gangen |
+| Mobil | Søkefelt og pluss nederst, der tommelen er. «Ny ting» med kamera eller bilder, strekkoden lest fra bildet (leseren følger med appen og virker uten nett) og oppslag av navn for bøker og varer, én ting om gangen. Kategori og plassering velger du med et trykk |
 | Rapport | Utskrift eller PDF med valgte kolonner, eller CSV |
-| Ta vare på alt | Mappe på maskinen som holdes oppdatert (Chrome og Edge), eller en kryptert sikkerhetskopi |
+| Ta vare på alt | Lagringsmappe på maskinen som holdes oppdatert (Chrome og Edge), eller en kryptert sikkerhetskopi |
 
-Alt er kryptert på enheten med et passord du velger. Det eneste som noen gang forlater enheten, er sifrene i en strekkode når du selv trykker på «Slå opp på nett». Detaljene står i brukerveiledningen under [Personvern](BRUKERVEILEDNING.md#personvern).
+Alt er kryptert på enheten med et passord du velger. På en enhet med Face ID eller Touch ID kan du låse opp med dem i stedet. Det eneste som noen gang forlater enheten, er sifrene i en strekkode når du selv trykker på «Slå opp på nett». Detaljene står i brukerveiledningen under [Personvern](BRUKERVEILEDNING.md#personvern).
 
 ## Kjør lokalt
 
@@ -44,4 +44,4 @@ Hver push til `main` bygger og publiserer automatisk til GitHub Pages via `.gith
 
 ## Lisens
 
-Alle ikonene i appen, og appikonet med symbolet «inventory», er hentet fra Google Material Symbols (Apache 2.0).
+Alle ikonene i appen, og appikonet med symbolet «inventory», er hentet fra Google Material Symbols (Apache 2.0). Kategorisymbolene ligger i `src/icons/category/`; `src/icons/README.md` viser kilde og lisens for hvert av dem.

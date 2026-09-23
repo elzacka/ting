@@ -1,12 +1,12 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { deleteItem, updateItem } from '../db/db'
 import { asImage } from '../lib/backup'
 import type { Item, Property } from '../db/schema'
 import { parseDateInput } from '../lib/dates'
 import { pathsInUse } from '../lib/paths'
 import { errorText } from '../lib/errors'
-import { columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
-import { distinct, parseNumber } from '../lib/filter'
+import { appliesTo, categoryColumnId, columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
+import { parseNumber, recentValues } from '../lib/filter'
 import { formatValue } from '../lib/format'
 import { cellsFrom, columnId, inputFrom } from '../lib/grid'
 import { href, navigate } from '../lib/route'
@@ -14,6 +14,7 @@ import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 import { PhotoStrip } from './PhotoStrip'
+import { ValuePicker } from './ValuePicker'
 import { splitLinks } from '../lib/paste'
 
 type Props = { item: Item; items: Item[]; properties: Property[]; fields: FieldSettings }
@@ -31,9 +32,19 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
   const [confirming, setConfirming] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
-  const props = useMemo(() => defs.filter((d): d is PropDef => d.kind === 'prop'), [defs])
   const nameLabel = fields.name.label ?? t.table.name
   const cells = useMemo(() => cellsFrom(item), [item])
+  // The properties this thing's category has, the same rule as the table's
+  // columns, and any other the thing holds a value in; not every property of
+  // every category. The place comes first: it answers where the thing is.
+  const props = useMemo(() => {
+    const category = cells[categoryColumnId] ?? ''
+    const shown = defs.filter(
+      (d): d is PropDef =>
+        d.kind === 'prop' && ((cells[d.id] ?? '') !== '' || appliesTo(d.property, category === '' ? [] : [category])),
+    )
+    return [...shown.filter((d) => d.type === 'path'), ...shown.filter((d) => d.type !== 'path')]
+  }, [defs, cells])
   // The row being edited and what it says so far; 'name' or a column id
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -71,9 +82,11 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     setEditing({ id, draft: id === 'name' ? item.name : (cells[id] ?? '') })
   }
 
-  async function commit() {
+  // `picked` is a value tapped among the suggestions, stored at once
+  async function commit(picked?: string) {
     if (!editing) return
-    const { id, draft } = editing
+    const { id } = editing
+    const draft = picked ?? editing.draft
     const value = draft.trim()
     const def = props.find((d) => d.id === id)
     if (id === 'name' && value === '') {
@@ -122,24 +135,69 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     }
   }
 
+  // The values in use, for tapping: a Valgliste's, the one used last first,
+  // or every place on the way to one
+  function valuesFor(def: PropDef): string[] {
+    const value = (i: Item) => {
+      const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
+      return s ? String(s.value) : ''
+    }
+    if (def.type === 'path') return pathsInUse(items.map(value))
+    return recentValues(items, value, def.property?.options ?? [])
+  }
+
   function field(id: string, label: string, def?: PropDef) {
+    const change = (draft: string) => {
+      setError(null)
+      setEditing({ id, draft })
+    }
+    if (def?.type === 'choice' || def?.type === 'path') {
+      return (
+        <div className="spec-pick">
+          <ValuePicker
+            id={domId('edit', id)}
+            label={label}
+            aria-label={label}
+            kind={def.type}
+            values={valuesFor(def)}
+            value={editing?.draft ?? ''}
+            onChange={change}
+            // A value tapped is the answer, unless a place has a level further in
+            onPick={(v, done) => {
+              if (done) void commit(v)
+            }}
+            onBlur={() => void commit()}
+            onKeyDown={onKey}
+            // Selected, so one delete brings back every place or value to tap
+            onFocus={(e) => e.currentTarget.select()}
+            enterKeyHint="done"
+            autoFocus
+          />
+        </div>
+      )
+    }
     return (
       <input
         id={domId('edit', id)}
         className="input"
         aria-label={label}
-        list={def?.type === 'choice' || def?.type === 'path' ? domId('edit-list', id) : undefined}
         inputMode={def?.type === 'number' ? 'decimal' : undefined}
+        enterKeyHint="done"
         value={editing?.draft ?? ''}
-        onChange={(e) => {
-          setError(null)
-          setEditing({ id, draft: e.target.value })
-        }}
+        onChange={(e) => change(e.target.value)}
         onBlur={() => void commit()}
         onKeyDown={onKey}
         autoFocus
       />
     )
+  }
+
+  // The whole row opens the field, not only the pencil: on a touch screen the
+  // pencils are out of sight, and the row is the target. A link in a value
+  // still opens the link.
+  function startFromRow(e: MouseEvent, id: string) {
+    if (editing?.id === id || (e.target instanceof Element && e.target.closest('a, button'))) return
+    start(id)
   }
 
   const editButton = (id: string, label: string) => (
@@ -153,7 +211,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
       {editing?.id === 'name' ? (
         <h1 className="title">{field('name', nameLabel)}</h1>
       ) : (
-        <h1 className="title spec-row-edit">
+        <h1 className="title spec-row-edit spec-row-tap" onClick={(e) => startFromRow(e, 'name')}>
           {item.name}
           {editButton('name', nameLabel)}
         </h1>
@@ -172,7 +230,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
             {props.map((def) => {
               const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === def.id)
               return (
-                <div key={def.id}>
+                <div key={def.id} className="spec-row-tap" onClick={(e) => startFromRow(e, def.id)}>
                   <dt>{def.col.key}</dt>
                   <dd className="spec-row-edit">
                     {editing?.id === def.id ? (
@@ -189,32 +247,6 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
             })}
           </dl>
         )}
-        {props.map(
-          (def) =>
-            (def.type === 'choice' || def.type === 'path') && (
-              <datalist key={def.id} id={domId('edit-list', def.id)}>
-                {(def.type === 'path'
-                  ? pathsInUse(
-                      items.flatMap((i) => {
-                        const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                        return s ? [s.value] : []
-                      }),
-                    )
-                  : [
-                      ...new Set([
-                        ...(def.property?.options ?? []),
-                        ...distinct(items, (i) => {
-                          const s = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                          return s ? String(s.value) : ''
-                        }),
-                      ]),
-                    ]
-                ).map((v) => (
-                  <option key={v} value={v} />
-                ))}
-              </datalist>
-            ),
-        )}
         {error && (
           <p className="error" role="alert">
             {error}
@@ -222,38 +254,42 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
         )}
       </section>
 
+      <div className="row toolbar">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="visually-hidden"
+          onChange={(e) => addPhotos(e.target.files)}
+        />
+        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+          <Icon name="photoCamera" size={20} />
+          {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
+        </button>
+        {/* With several, each tile carries its own way out */}
+        {item.photos.length === 1 && (
+          <button type="button" className="btn" onClick={() => dropPhoto(0)}>
+            {t.action.removePhoto}
+          </button>
+        )}
+      </div>
+
+      {/* At the foot, on its own: nowhere near the buttons used every day */}
       {confirming ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-text">
           <p id="confirm-text">{t.confirm.delete(item.name)}</p>
           <div className="row">
-            <button type="button" className="btn btn-danger" onClick={onDelete} autoFocus>
+            <button type="button" className="btn btn-danger" onClick={onDelete}>
               {t.action.delete}
             </button>
-            <button type="button" className="btn" onClick={() => setConfirming(false)}>
+            <button type="button" className="btn" onClick={() => setConfirming(false)} autoFocus>
               {t.action.cancel}
             </button>
           </div>
         </div>
       ) : (
-        <div className="row toolbar">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="visually-hidden"
-            onChange={(e) => addPhotos(e.target.files)}
-          />
-          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-            <Icon name="photoCamera" size={20} />
-            {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
-          </button>
-          {/* With several, each tile carries its own way out */}
-          {item.photos.length === 1 && (
-            <button type="button" className="btn" onClick={() => dropPhoto(0)}>
-              {t.action.removePhoto}
-            </button>
-          )}
+        <div className="row detail-foot">
           <button type="button" className="btn btn-danger" onClick={() => setConfirming(true)}>
             <Icon name="delete" size={20} />
             {t.action.delete}

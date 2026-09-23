@@ -22,7 +22,8 @@
   gap: 0 var(--s-4);
   min-height: var(--topbar-h);
   margin: 0 calc(var(--gutter) * -1) var(--s-6);
-  padding: 0 var(--gutter);
+  /* An installed app on an iPhone draws under the status bar: the bar starts below it */
+  padding: env(safe-area-inset-top) var(--gutter) 0;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
@@ -30,6 +31,29 @@
 /* Page-level blocks get more air than the fields inside them */
 .page > main {
   gap: var(--s-6);
+}
+
+/* Before a passphrase: one quiet line straight under the top bar, full width
+   like it, in the band's tint and the hint's size. Not sticky: it scrolls
+   away with the page. Wraps on a phone. */
+.trial-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-4);
+  margin: calc(var(--s-6) * -1) calc(var(--gutter) * -1) var(--s-6);
+  padding: var(--s-2) var(--gutter);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--text-xs);
+}
+
+/* The one thing the line asks for, in the accent */
+.trial-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 2px;
 }
 
 .page > main > section + section,
@@ -113,7 +137,7 @@
 }
 
 .btn:hover {
-  background: var(--bg);
+  background: var(--hover);
 }
 
 .btn:disabled {
@@ -155,13 +179,11 @@
 /* The name of an icon button, shown under it after a short rest of the
    pointer, or while it has keyboard focus: the same text a screen reader
    gets. The browser's own title tooltip was slow and not on every button. */
-.btn-icon,
-.view-tab {
+.btn-icon {
   position: relative;
 }
 
-.btn-icon[aria-label]::after,
-.view-tab[aria-label]::after {
+.btn-icon[aria-label]::after {
   content: attr(aria-label);
   position: absolute;
   top: calc(100% + var(--s-1));
@@ -182,37 +204,38 @@
 }
 
 .btn-icon[aria-label]:hover::after,
-.btn-icon[aria-label]:focus-visible::after,
-.view-tab[aria-label]:hover::after,
-.view-tab[aria-label]:focus-visible::after {
+.btn-icon[aria-label]:focus-visible::after {
   opacity: 1;
   transition-delay: 300ms;
 }
 
 /* At the right edge the label hangs from the button's right corner instead */
 .topbar-end .btn-icon[aria-label]::after,
-.overview-head .btn-icon[aria-label]::after,
-.setting-head .btn-icon[aria-label]::after,
 .spec-edit[aria-label]::after {
   left: auto;
   right: 0;
   transform: none;
 }
 
-/* The category tiles run from the left edge, so their names hang the same
-   way: a long one then grows into the space to its right rather than off the
-   card, which the card's own clipping would cut. */
-.view-tab[aria-label]::after {
-  left: 0;
-  right: auto;
-  transform: none;
+/* In the register card the label sits to the left of the button, on its
+   centre line: the card clips at its edge, and with no table under the head
+   a label hanging below would be cut off there */
+.overview-head .btn-icon[aria-label]::after {
+  top: 50%;
+  left: auto;
+  right: calc(100% + var(--s-1));
+  transform: translateY(-50%);
 }
 
 @media (hover: none) {
-  .btn-icon[aria-label]:hover::after,
-  .view-tab[aria-label]:hover::after {
+  .btn-icon[aria-label]:hover::after {
     opacity: 0;
   }
+}
+
+/* While its menu or panel is open, the button's name would sit under it */
+.btn-icon[aria-expanded='true']::after {
+  display: none;
 }
 
 /* Fields */
@@ -376,11 +399,6 @@
   border-top: 1px solid var(--border);
 }
 
-/* The band above already draws that line */
-.controls + .list {
-  border-top: 0;
-}
-
 .list-row {
   height: 56px;
 }
@@ -406,9 +424,13 @@
   object-fit: cover;
 }
 
+/* A thing without a photo: its category's icon, in the grey of the line under the name */
 .list .thumb-empty {
+  display: grid;
+  place-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
+  color: var(--text-2);
 }
 
 .list-text {
@@ -431,6 +453,99 @@
 .list-meta {
   font-size: var(--text-xs);
   color: var(--text-2);
+}
+
+/* The phone's list runs edge to edge; the hairlines between rows stay one
+   gutter in from each side. Room at the foot for the bar over it. */
+.phone-list {
+  padding-bottom: calc(var(--row-h) + var(--s-4) + env(safe-area-inset-bottom));
+}
+
+.phone-list .list {
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 0 var(--gutter);
+  border-top: 0;
+}
+
+.phone-list > .list-empty {
+  padding: var(--s-8) 0;
+  text-align: center;
+}
+
+/* Where the thumb is: the search field and the way to add a thing, above
+   the home indicator, and above the keyboard while it is up (--kb) */
+.phone-bar {
+  position: fixed;
+  right: 0;
+  bottom: var(--kb, 0px);
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) calc(var(--gutter) + env(safe-area-inset-right))
+    max(var(--s-2), calc(env(safe-area-inset-bottom) - var(--kb, 0px))) calc(var(--gutter) + env(safe-area-inset-left));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.phone-bar .search-column {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The one action, filled in the accent and round, the way a phone draws it */
+.btn-round {
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-round:hover {
+  background: var(--accent);
+}
+
+/* Values in use under a field, to tap rather than type. The row of them is
+   44 px from one to the next; the chip itself is 36. */
+.picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-1);
+}
+
+.pick {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border-input);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.pick:hover {
+  background: var(--hover);
+}
+
+.pick[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Lagre on the phone form: pinned to the bottom, above the keyboard while
+   it is up, so the thing can be saved from any field */
+.form-bar {
+  position: sticky;
+  bottom: var(--kb, 0px);
+  z-index: 2;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: var(--s-2) var(--gutter) max(var(--s-2), calc(env(safe-area-inset-bottom) - var(--kb, 0px)));
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }
 
 /* Detail */
@@ -478,8 +593,10 @@
   overflow-wrap: anywhere;
 }
 
-/* Every row on the detail page can be edited where it stands. The pencil shows
-   on hover or focus where there is a pointer, always on a touch screen. */
+/* Every row on the detail page can be edited where it stands, by a click or
+   a tap anywhere on it. The pencil shows on hover or focus where there is a
+   pointer; on a touch screen it is out of sight and the row is the target,
+   while a screen reader still finds the pencil. */
 .spec-row-edit {
   display: flex;
   align-items: center;
@@ -508,8 +625,33 @@
 
 @media (hover: none) {
   .spec-edit {
-    opacity: 1;
+    position: absolute;
+    width: 1px;
+    min-width: 0;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
+}
+
+.spec-row-tap {
+  cursor: pointer;
+}
+
+/* A Valgliste or a place being edited: the field, and what can be tapped under it */
+.spec-pick {
+  flex: 1;
+  min-width: 0;
+  padding: var(--s-1) 0;
+}
+
+/* Slett at the foot of a thing's page, set apart by a hairline */
+.detail-foot {
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--border);
 }
 
 /* A section's text sits one step under its label, level with rows and inputs */
@@ -656,8 +798,33 @@ section {
   z-index: 4;
   display: grid;
   justify-items: end;
-  padding: var(--s-1) var(--s-1) var(--s-2);
+  padding: var(--s-2) var(--s-1);
   background: var(--surface);
+}
+
+/* Ticked things: the count, then what can be done with them */
+.selection-bar {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+
+.selection-count {
+  margin-right: var(--s-2);
+  font-weight: 600;
+}
+
+/* One line: the categories from the left, the actions at the right edge */
+.head-row {
+  justify-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-4);
+}
+
+.head-actions {
+  flex: none;
+  margin-left: auto;
 }
 
 /* The header row follows the page scroll under the head: Grid moves it with
@@ -680,127 +847,132 @@ section {
   color: var(--text-2);
 }
 
-/* Kategori as the view: a glyph per category over the table. Names wrapped
-   onto two lines once there were more than a dozen; glyphs stay one line you
-   can scan, and each carries its count. The chosen one takes the accent. The
-   category's own name is the button's label, shown under it on hover like
-   every other icon button here. */
-.view-pick {
-  /* The head right-aligns what it holds; the tiles read left to right */
-  width: 100%;
-}
-
-/* Lined up with Navn, the first column the eye reads: the table starts at the
-   same left edge as this row and its checkbox column is one gutter wide. The
-   offset sits here rather than on the row, so it holds when the tiles fold
-   away and lay themselves out absolutely. */
-.view-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: var(--s-2);
-  padding: var(--s-1) 0 var(--s-2) var(--gutter);
-}
-
-/* Once a category is chosen the tiles fold to a strip and the table has the
-   card. A hairline says where they went. They come back over the table on
-   hover rather than pushing it down: the head's height feeds the sticky
-   header, and moving it would make the header jump.
-   (elzacka, 23 September 2026) */
-.view-pick.is-folded {
-  position: relative;
-  height: 12px;
-}
-
-.view-pick.is-folded::before {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: var(--gutter);
-  width: 44px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--border);
-  transition: background-color var(--duration) ease-out;
-}
-
-.view-pick.is-folded:hover::before,
-.view-pick.is-folded:focus-within::before {
-  background: var(--border-input);
-}
-
-.view-pick.is-folded .view-tabs {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 6;
-  padding-top: 0;
-  background: var(--surface);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--duration) ease-out;
-}
-
-.view-pick.is-folded:hover .view-tabs,
-.view-pick.is-folded:focus-within .view-tabs {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.view-tab {
-  position: relative;
+/* Kategori as the view: the app's select field (.select), drawn as a button
+   so it can open the dropdown with glyphs and counts. The chosen category's
+   glyph and name, or Velg kategori in the placeholder grey until one is
+   picked. Its box lines up with Navn: the table's checkbox column is one
+   gutter wide. */
+.view-select {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  padding: 0;
-  border: 1px solid var(--border);
+  gap: var(--s-2);
+  width: 280px;
+  max-width: calc(100% - var(--gutter));
+  margin-left: var(--gutter);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.view-select > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.view-select > svg {
+  flex: none;
+  color: var(--text-2);
+}
+
+.view-select.is-placeholder {
+  color: var(--text-2);
+}
+
+.view-select:hover {
+  border-color: var(--text);
+}
+
+/* The categories as a dropdown under the button: glyph, name, count. Fixed
+   to the window like the column menu, and scrolls on its own when the list
+   is longer than the room under the button (Overview measures that room);
+   scrolling to its end does not carry on into the page. */
+.view-menu {
+  position: fixed;
+  z-index: 6;
+  display: grid;
+  min-width: 240px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-1);
+  border: 1px solid var(--border-input);
   border-radius: var(--radius-lg);
   background: var(--surface);
+}
+
+.view-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 36px;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
   color: var(--text-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
   cursor: pointer;
-  transition:
-    color var(--duration) ease-out,
-    border-color var(--duration) ease-out;
 }
 
-.view-tab:hover {
-  color: var(--text);
-  border-color: var(--border-input);
-  background: var(--bg);
+.view-menu-item.is-active {
+  color: var(--accent);
+  font-weight: 600;
 }
 
-.view-tab.is-active {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+/* The item under the pointer or the arrow keys: filled in the accent with
+   white text, like a system menu, so where you are is never in doubt (the
+   fill is 7:1 against the menu, the text 7:1 against the fill). The fill is
+   the focus mark; the outline would only double it. */
+.view-menu-item:hover,
+.view-menu-item:focus-visible,
+.col-menu-item:hover:not(:disabled),
+.col-menu-item:focus-visible {
+  outline: none;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.view-menu-item:hover .view-menu-count,
+.view-menu-item:focus-visible .view-menu-count {
+  color: var(--on-accent);
+}
+
+.view-menu-name {
+  flex: 1;
+  white-space: nowrap;
+}
+
+/* A check mark in front of each chosen category, and an empty slot in front
+   of the rest so the names line up: a menu, not a form, so no boxes. The
+   list stays open while you choose, which is what tells you several can be
+   chosen (the way GitHub's label picker, Notion and Apple's menus do it). */
+.view-menu-check {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   color: var(--accent);
 }
 
-/* The count rides the tile's top right corner, over its edge */
-.view-count {
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  min-width: 18px;
-  padding: 0 4px;
-  border: 1px solid var(--surface);
-  border-radius: 9px;
-  background: var(--surface-2);
-  color: var(--text-2);
-  font-size: 10px;
-  line-height: 16px;
-  text-align: center;
-}
-
-.view-tab:hover .view-count {
-  background: var(--border);
-}
-
-.view-tab.is-active .view-count {
-  background: var(--accent);
+.view-menu-item:hover .view-menu-check,
+.view-menu-item:focus-visible .view-menu-check {
   color: var(--on-accent);
+}
+
+.view-menu-placeholder {
+  color: var(--text-2);
+}
+
+.view-menu-count {
+  color: var(--text-2);
+  font-size: var(--text-xs);
+  font-weight: 400;
 }
 
 .controls {
@@ -812,8 +984,7 @@ section {
   border-bottom: 1px solid var(--border);
 }
 
-.table-card > .empty,
-.table-card > .list-empty {
+.table-card > .empty {
   padding: var(--s-4);
 }
 
@@ -898,6 +1069,190 @@ section {
 }
 
 /* The checkbox sits beside the select, not above it */
+/* Under the property form: what already exists, as help rather than
+   controls. The hint's size and grey, names as running text. */
+.known-props {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s-1) var(--s-3);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-xs);
+}
+
+.known-props dt {
+  font-weight: 600;
+}
+
+.known-props dd {
+  margin: 0;
+}
+
+/* Plus's menu hangs from the button's right edge, above the sticky card
+   head it opens from (the column menu's own level is under it) */
+.col-menu-list.add-menu {
+  z-index: 6;
+}
+
+/* Endre egenskaper: name, type, unit, categories, count and remove on one
+   line per property */
+.property-rows {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.property-row {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) 140px 90px minmax(0, 240px) max-content var(--row-h-sm);
+  gap: var(--s-2) var(--s-3);
+  align-items: center;
+}
+
+.property-row.is-removed input,
+.property-row.is-removed .property-scope span {
+  text-decoration: line-through;
+}
+
+.property-scope {
+  justify-content: space-between;
+  min-width: 0;
+  font-weight: 400;
+}
+
+.property-scope span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.property-scope-chevron {
+  flex: none;
+  transform: rotate(90deg);
+}
+
+.property-remove.is-active {
+  color: var(--danger);
+}
+
+/* The categories a property belongs to, as a checklist under its button */
+.scope-picker {
+  position: fixed;
+  z-index: 6;
+  display: grid;
+  min-width: 220px;
+  overflow-y: auto;
+  padding: var(--s-1) var(--s-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  font-size: var(--text-sm);
+}
+
+.scope-picker .check-option {
+  min-height: var(--row-h-sm);
+}
+
+/* Confirms what cannot be undone */
+.btn-danger-fill {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--on-accent);
+}
+
+.btn-danger-fill:hover {
+  background: #8a2525;
+}
+
+/* Endre kategorier: icon, name and count on one line per category */
+.category-rows {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-row {
+  display: grid;
+  grid-template-columns: var(--row-h-sm) minmax(0, 320px) max-content;
+  gap: var(--s-3);
+  align-items: center;
+}
+
+.category-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--row-h-sm);
+  height: var(--row-h-sm);
+  padding: 0;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.category-icon-btn:hover,
+.category-icon-btn[aria-expanded='true'] {
+  background: var(--hover);
+}
+
+/* The icon pack as a grid under the icon it replaces */
+.icon-picker {
+  position: fixed;
+  z-index: 6;
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-2);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 40px);
+  gap: var(--s-1);
+}
+
+.icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.icon-tile:hover,
+.icon-tile:focus-visible {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* The chosen one: ringed in the accent */
+.icon-tile.is-selected {
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.icon-picker-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 24px;
+  padding: var(--s-1) var(--s-1) 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--text-xs);
+}
+
 #print-form .print-shape .check-option {
   min-height: var(--row-h);
 }
@@ -924,6 +1279,11 @@ section {
   padding: 0 var(--s-4) 0 var(--s-1);
 }
 
+/* Columns past the right edge: the edge fades, so the cut reads as "more" */
+.table-wrap.has-more {
+  mask-image: linear-gradient(to right, #000 calc(100% - 64px), transparent);
+}
+
 /* Headers one step above the cells, not two (15 px until 20 September 2026) */
 .grid {
   table-layout: fixed;
@@ -937,8 +1297,9 @@ section {
   font-size: var(--text-cell);
 }
 
-/* A body row is exactly 48 px (the row window counts on it): a 44 px control,
-   2 px above, 1 px below and the 1 px hairline */
+/* A body row is exactly 36 px (the row window counts on it): a 32 px control,
+   2 px above, 1 px below and the 1 px hairline. A mouse at a desk, not a
+   thumb: the phone gets its own list with 56 px rows */
 .grid th,
 .grid td {
   padding: 2px 0 1px;
@@ -989,7 +1350,7 @@ section {
 
 .grid-input {
   width: 100%;
-  min-height: var(--row-h);
+  min-height: var(--row-h-table);
   padding: var(--s-2);
   border: 1px solid transparent;
   border-radius: 0;
@@ -1017,7 +1378,7 @@ section {
 .grid-cell {
   display: block;
   width: 100%;
-  min-height: var(--row-h);
+  min-height: var(--row-h-table);
   padding: var(--s-2);
   border: 1px solid transparent;
   background: transparent;
@@ -1038,6 +1399,13 @@ section {
 .grid td:nth-child(2) .grid-cell {
   width: calc(100% + var(--s-2));
   margin-left: calc(var(--s-2) * -1);
+}
+
+/* Numbers line up on the right, the header with them */
+.grid th.is-number,
+.grid .is-number .grid-cell,
+.grid .is-number .grid-input {
+  text-align: right;
 }
 
 /* Rows above and below the window: height only, no line */
@@ -1164,6 +1532,7 @@ section {
   .topbar,
   .summary,
   .search-bar,
+  .view-select,
   .btn,
   .col-resizer,
   .grid-check {
@@ -1541,10 +1910,6 @@ section {
   cursor: pointer;
 }
 
-.col-menu-item:hover:not(:disabled) {
-  background: var(--bg);
-}
-
 .col-menu-item:disabled {
   color: var(--text-2);
   opacity: 0.5;
@@ -1555,8 +1920,10 @@ section {
   color: var(--danger);
 }
 
-.col-menu-danger:hover:not(:disabled) {
-  background: var(--danger-bg);
+.col-menu-danger:hover:not(:disabled),
+.col-menu-danger:focus-visible {
+  background: var(--danger);
+  color: var(--on-accent);
 }
 
 @media (hover: none) {
@@ -1617,8 +1984,8 @@ section {
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  min-height: var(--row-h);
-  padding: var(--s-2);
+  min-height: var(--row-h-table);
+  padding: 0 var(--s-2);
   color: var(--text);
   text-decoration: none;
   overflow: hidden;
@@ -1635,8 +2002,8 @@ section {
 }
 
 .grid .thumb {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius);
   object-fit: cover;
 }
@@ -1707,8 +2074,10 @@ section {
   cursor: pointer;
 }
 
-.filter-option:hover {
-  background: var(--bg);
+/* A checkbox row: grey, not the accent, or a ticked box would vanish into it */
+.filter-option:hover,
+.filter-option:focus-within {
+  background: var(--hover);
 }
 
 /* Bryt tekst: values run onto more lines, rows grow, and the row window is
@@ -1786,11 +2155,13 @@ section {
   border-radius: var(--radius-lg);
 }
 
+
 /* A quiet band with a fact about the register: the table band's tint and
    hairline, the hint's size and grey, no icon and no title. It is not a
    warning; nothing is wrong, something is unfinished. */
-/* A setting: title and one line of explanation on the left, its control on
-   the right, on one line. What the control did, or asks, comes underneath. */
+/* A setting: title and one line of explanation on the left, its button on
+   the right, on one line. What the button did, or asks, comes underneath. A
+   choice is a checkbox with its sentence under the title. */
 .setting {
   display: grid;
   gap: var(--s-3);
@@ -1814,21 +2185,18 @@ section {
   flex: none;
 }
 
-/* The checkbox sits in the same 44 px square as an icon button */
-.setting-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: var(--row-h);
-  height: var(--row-h);
+/* A phone has no room beside the text: the button goes under it */
+@media (max-width: 599px) {
+  .setting-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+  }
 }
 
-.setting-check input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--accent);
+/* A danger action under a setting, text flush with the title above it */
+.setting-danger {
+  margin-left: calc(var(--s-4) * -1);
 }
 
 /* A setting: checkbox and its sentence on one 44 px line */
@@ -1994,7 +2362,7 @@ section {
   bottom: 0;
   z-index: 2;
   margin: 0 calc(var(--gutter) * -1);
-  padding: var(--s-3) var(--gutter);
+  padding: var(--s-3) var(--gutter) calc(var(--s-3) + env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid var(--border);
 }

@@ -48,3 +48,37 @@ export function pathsInUse(values: readonly (string | number)[]): string[] {
   }
   return [...seen].sort((a, b) => parsePath(a).length - parsePath(b).length || a.localeCompare(b, 'nb'))
 }
+
+const foldLevel = (s: string) => s.toLocaleLowerCase('nb')
+
+function levelsUnder(paths: readonly string[], base: readonly string[]): string[] {
+  if (base.length >= maxPathLevels) return []
+  const seen = new Map<string, string>()
+  for (const path of paths) {
+    const parts = parsePath(path)
+    if (parts.length <= base.length) continue
+    if (!base.every((b, i) => foldLevel(b) === foldLevel(parts[i] ?? ''))) continue
+    const next = parts[base.length] ?? ''
+    if (!seen.has(foldLevel(next))) seen.set(foldLevel(next), next)
+  }
+  return [...seen.values()]
+}
+
+// The places one level further in, so a place can be tapped together on a
+// phone rather than typed: the levels under what is typed when it is a place
+// in use. At the end of a place, the others beside it, so a thing can move
+// to the next shelf; while a level is being typed, the ones beside it that
+// start with it. `base` is the way in that the options continue.
+export function nextLevels(paths: readonly string[], value: string): { base: string[]; options: string[] } {
+  const levels = parsePath(value)
+  const under = levelsUnder(paths, levels)
+  if (under.length > 0 || levels.length === 0) return { base: levels, options: under }
+  const parent = levels.slice(0, -1)
+  const last = foldLevel(levels[levels.length - 1] ?? '')
+  const beside = levelsUnder(paths, parent)
+  const complete = beside.some((o) => foldLevel(o) === last)
+  return {
+    base: parent,
+    options: beside.filter((o) => foldLevel(o) !== last && (complete || foldLevel(o).startsWith(last))),
+  }
+}

@@ -113,3 +113,19 @@ export function applyFilters(items: readonly Item[], filters: Filters): Item[] {
 export function activeCount(filters: Filters): number {
   return Object.values(filters).filter((v) => v.length > 0).length
 }
+
+// Whether a column is worth a menu, judged over the whole register rather
+// than the rows in view: in one category of twenty things nearly every brand
+// is different, over three hundred the brands repeat. A date is always one
+// (it facets by year); anything else is when its values are few, or repeat
+// enough that a menu is shorter than the list. Prices and order numbers do
+// not: the search takes those (pris>1000).
+const facetShort = 12
+const facetMaxUnique = 0.6
+
+export function isFacet(all: readonly FilterValue[], unit: string | null): boolean {
+  if (all.length === 0) return false
+  if (isDateUnit(unit) || all.length <= facetShort) return true
+  const rows = all.reduce((n, v) => n + v.count, 0)
+  return all.length <= rows * facetMaxUnique
+}

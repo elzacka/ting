@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Item, Property } from '../db/schema'
-import { activeCount, levelId, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
+import { activeCount, isFacet, levelId, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
 import { isDateUnit } from '../lib/dates'
 import { columnId } from '../lib/grid'
 import { maxPathLevels, parsePath } from '../lib/paths'
@@ -24,22 +24,13 @@ type Def = { id: string; label: string; unit: string | null; values: FilterValue
 
 // Short menus show everything; long text menus the top twelve, the rest on
 // request, and a box to type in once opened up. Numbers and years are never
-// cut: they are few and their order carries meaning. A column whose values
-// are nearly all different (order numbers, prices, free text) is no facet at
-// all; the search is the way into those.
+// cut: their order carries meaning. Which columns get a menu at all is
+// isFacet in lib/filters.ts.
 const shortMenu = 12
 const searchable = 30
-const facetMaxUnique = 0.6
 
 function isNumeric(values: FilterValue[], unit: string | null): boolean {
   return isDateUnit(unit) || values.every((v) => parseNumber(v.label) !== null)
-}
-
-function isFacet(values: FilterValue[], unit: string | null): boolean {
-  if (values.length === 0) return false
-  if (values.length <= shortMenu || isNumeric(values, unit)) return true
-  const rows = values.reduce((n, v) => n + v.count, 0)
-  return values.length <= rows * facetMaxUnique
 }
 
 // One dropdown per filter, counting the rows the other filters and the search
@@ -89,7 +80,7 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
     // Alphabetical, numbers and years in their own order, as valuesFor delivers
     // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
     const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)
-    if (!isFacet(values, d.col.unit)) return []
+    if (values.length === 0 || !isFacet(valuesFor(items, d.col), d.col.unit)) return []
     return [{ id: d.id, label: d.col.key, unit: d.col.unit, values }]
   })
 

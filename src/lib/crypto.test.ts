@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { createVault, encryptBytes, decryptBytes, fromB64, openJson, rewrapVault, sealJson, toB64, unlockVault } from './crypto'
+import {
+  createVault,
+  encryptBytes,
+  decryptBytes,
+  fromB64,
+  keyFromSecret,
+  openJson,
+  randomBytes,
+  rewrapVault,
+  sealJson,
+  toB64,
+  unlockVault,
+  unwrapWith,
+  wrapWith,
+} from './crypto'
 
 // Tiny Argon2id parameters keep the tests fast; production uses kdfDefaults.
 const fast = { m: 256, t: 1, p: 1 }
@@ -44,5 +58,16 @@ describe('sealing', () => {
     const bytes = fromB64(sealed.data)
     bytes[0] = (bytes[0] ?? 0) ^ 1
     await expect(openJson(open.key, { ...sealed, data: toB64(bytes) })).rejects.toThrow()
+  })
+})
+
+describe('a key from a device secret', () => {
+  it('wraps the same data key, and opens it only with the same secret and label', async () => {
+    const { open } = await createVault('x', fast)
+    const secret = randomBytes(32)
+    const wrapped = await wrapWith(await keyFromSecret(secret, 'ting-passkey-1'), open)
+    expect((await unwrapWith(await keyFromSecret(secret, 'ting-passkey-1'), wrapped))?.dekId).toBe(open.dekId)
+    expect(await unwrapWith(await keyFromSecret(randomBytes(32), 'ting-passkey-1'), wrapped)).toBeNull()
+    expect(await unwrapWith(await keyFromSecret(secret, 'something else'), wrapped)).toBeNull()
   })
 })

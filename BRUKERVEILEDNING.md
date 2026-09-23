@@ -1,68 +1,84 @@
 # Brukerveiledning for Ting
 
 Ting holder orden på det du eier, og hvor du har det. Alt ligger kryptert på
-enheten din. Denne veiledningen tar deg gjennom første gang, og så de
-situasjonene du står i etterpå.
+enheten din. Veiledningen er ordnet etter det du vil gjøre: Legge til, endre,
+slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
 
 **Appen:** https://elzacka.github.io/ting/
 
 ## Innhold
 
-- [Første gang](#første-gang)
-  - [1. Installer appen](#1-installer-appen)
-  - [2. Velg et passord](#2-velg-et-passord)
-  - [3. Lag egenskapene dine](#3-lag-egenskapene-dine)
-  - [4. Legg til de første tingene](#4-legg-til-de-første-tingene)
-  - [5. Ta vare på alt](#5-ta-vare-på-alt)
-- [Situasjoner](#situasjoner)
-  - [Med kvitteringen foran deg](#med-kvitteringen-foran-deg)
-  - [Med tingen i hånden](#med-tingen-i-hånden)
-  - [Skanne strekkoden og hente navnet](#skanne-strekkoden-og-hente-navnet)
-  - [Finne igjen en ting](#finne-igjen-en-ting)
-  - [Rette noe](#rette-noe)
-  - [Mange ting på én gang](#mange-ting-på-én-gang)
-  - [Rapport og regneark](#rapport-og-regneark)
-  - [Mac og iPhone sammen](#mac-og-iphone-sammen)
-- [Oppslagsverk](#oppslagsverk)
-  - [Søk](#søk)
-  - [Egenskaper](#egenskaper)
-  - [Innstillinger](#innstillinger)
+- [Kom i gang](#kom-i-gang)
+- [Slik er appen bygd opp](#slik-er-appen-bygd-opp)
+- [Legge til](#legge-til)
+- [Endre](#endre)
+- [Slette](#slette)
+- [Finne igjen](#finne-igjen)
+- [Skrive ut og hente ut](#skrive-ut-og-hente-ut)
+- [Ta vare på dataene](#ta-vare-på-dataene)
+- [Bruke flere enheter](#bruke-flere-enheter)
+- [Oppslag](#oppslag)
 - [Hvis noe går galt](#hvis-noe-går-galt)
 - [Personvern](#personvern)
 
 ---
 
-## Første gang
+## Kom i gang
 
-### 1. Installer appen
+### 1. Åpne og installer appen
 
-Åpne adressen over. Appen virker i nettleseren, men som installert app får den
-eget ikon, starter uten adressefelt og tar bedre vare på dataene.
+Appen virker i nettleseren, men som installert app får den eget ikon, starter
+uten adressefelt og tar bedre vare på dataene. Mens du prøver appen, viser
+linja under topplinja hvordan du installerer den der du er. I Safari og på
+iPhone og iPad står linja også etter at du har valgt passord, helt til appen er
+installert. Der kan nettleseren slette dataene til en side du ikke har åpnet på
+sju dager.
 
 | Enhet | Slik |
 |---|---|
-| Mac eller PC med Chrome eller Edge | Klikk på installeringsikonet til høyre i adressefeltet |
+| Mac eller PC med Chrome eller Edge | Installeringsikonet til høyre i adressefeltet, eller «Installer appen» i linja øverst mens du prøver appen |
 | Mac med Safari | Del-ikonet i verktøylinjen › «Legg til i Dock» |
-| iPhone eller iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
+| iPhone | Åpne adressen i Safari › ••• ved adressefeltet › «Del» › «Legg til på Hjem-skjerm» |
+| iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
 | Android | «Installer» i varselet, eller «Installer app» i menyen |
 
-### 2. Velg et passord
+### 2. Prøv appen, og velg et passord for å beholde det
 
-Første gang spør appen etter et passord. Minst 12 tegn: En setning er lettere å
-huske enn en kode.
+Du kan prøve alt i appen uten passord. Det du legger inn da, blir borte når du
+lukker appen, og linja under topplinja minner deg om det. På iPhone kan
+systemet også lukke appen selv, for eksempel når du bytter til en annen app. Trykk på «Velg
+passord for å beholde det», så kommer du til Innstillinger. Alt du har lagt inn,
+blir med når du velger passordet.
+
+Passordet må ha minst 12 tegn. En setning er lettere å huske enn en kode.
+Passordbehandleren din kan lagre det under navnet Ting og fylle det inn når du
+låser opp.
 
 > [!WARNING]
 > Passordet er den eneste nøkkelen. Mister du det, er dataene tapt. Det finnes
 > ingen bakvei, ingen e-post og ingen konto å be om nytt passord fra.
 
-Appen åpner alltid låst, og låser seg selv etter 10 minutter uten bruk.
-Hengelåsen øverst låser med én gang.
+Har du en sikkerhetskopi fra før, gjenoppretter du den under Innstillinger i
+stedet for å velge et nytt passord. Da gjelder passordet kopien ble laget med.
 
-### 3. Lag egenskapene dine
+Når du har et passord, åpner appen alltid låst. Den låser seg selv etter 10
+minutter uten bruk, og hengelåsen øverst låser med én gang.
 
-En egenskap er en kolonne i tabellen. Bare «Navn» finnes fra start. Trykk på
-kolonneikonet øverst til høyre i tabellen («Legg til egenskap») og lag de du
-trenger. Et godt utgangspunkt:
+På iPhone lukker systemet appen når det trenger minnet. Da åpner den låst
+igjen, også når den automatiske låsen er av. Slå på «Lås opp med Face ID eller
+Touch ID på denne enheten» under Innstillinger › Lås, så låser du opp med
+Face ID eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
+trenger det for sikkerhetskopier og på andre enheter. Slår du valget av, kan du
+slette passnøkkelen «Ting» i Passord-appen.
+
+Valgene under Lås gjelder bare enheten du bruker. På iPhone har den installerte
+appen egne valg, atskilt fra Safari.
+
+### 3. Lag kategoriene og egenskapene du trenger
+
+En **egenskap** er en kolonne i tabellen. Bare «Navn» finnes fra start. En
+**kategori** er en verdi i egenskapen Kategori, og bestemmer hvilke ting og
+hvilke kolonner du ser. Et godt utgangspunkt:
 
 | Egenskap | Felttype | Alternativer eller enhet |
 |---|---|---|
@@ -72,40 +88,290 @@ trenger. Et godt utgangspunkt:
 | Kjøpsdato | Dato | |
 | Kommentar | Tekst | |
 
-Alt du senere trenger, lager du på samme måte. Ting har ingen faste felt for
-lån, tilstand eller antall: Det er egenskaper, se [Egenskaper](#egenskaper).
+Se [Legge til en egenskap](#en-egenskap) og [Legge til en
+kategori](#en-kategori). Ting har ingen faste felt for lån, tilstand eller
+antall: Det er egenskaper du lager selv, se [Egenskaper for det Ting ikke har
+egne funksjoner for](#egenskaper-for-det-ting-ikke-har-egne-funksjoner-for).
 
-> [!TIP]
-> Skriv hele veien inn, ikke bare rommet: `Loftsbod/Hylle 2/Boks 4`.
-> Skråstrek er lettest på mobilen; appen gjør den om til «›» selv. Da får du
-> ett filter per nivå: Ett klikk på «Loftsbod» henter alt på loftet, uansett
-> hvor dypt inne det står. Tre nivåer er nok til sted, sone og boks.
+### 4. Legg inn de første tingene
 
-Har du allerede en Valgliste med plasseringer, endrer du felttypen til Sti i
-kolonnemenyen. Verdiene blir stående som de er.
+Se [Legge til en ting](#en-ting). Det du ikke vet ennå, lar du stå tomt:
+`-har:kjøpesum` i søket finner tingene som mangler den senere.
 
-### 4. Legg til de første tingene
+### 5. Ta vare på dataene
 
-Klikk i «Legg til ting» nederst i tabellen, eller på plussikonet øverst til
-høyre. En ny rad åpner seg: Skriv navnet, fyll det du vet, klikk i «Legg til
-ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
+Velg en lagringsmappe eller ta en sikkerhetskopi, se [Ta vare på
+dataene](#ta-vare-på-dataene).
 
-Valglister, datoer og plasseringer arver verdien fra raden over. Det du ikke
-vet ennå, lar du stå tomt: `-has:kjøpesum` i søket finner tingene som mangler
-den senere.
+---
 
-### 5. Ta vare på alt
+## Slik er appen bygd opp
 
-Dataene ligger i nettleseren på enheten. Sletter du nettleserdata, eller mister
+| Del | Hvor | Gjør |
+|---|---|---|
+| Kategorifeltet | Øverst til venstre i registeret | Velger hvilke kategorier du ser. Uten valgt kategori vises ingen tabell |
+| Pluss | Øverst til høyre | «Legg til ting» eller «Legg til egenskap (kolonne)» |
+| Nedlasting og utskrift | Ved siden av pluss | Henter ut det du ser, se [Skrive ut og hente ut](#skrive-ut-og-hente-ut) |
+| Den grå linja | Under knappene | Hvor mange ting du ser, summer i kr, og «Vis n kolonner til» |
+| Tabellen | Under | Én rad per ting. Navnet åpner tingens side; en annen celle endrer raden |
+| Forstørrelsesglasset | Topplinja | Søk og filtre |
+| Tannhjulet | Topplinja | Innstillinger |
+
+Under 600 px bred, altså på mobilen, er appen laget for tre ting: Legge til én
+ting, finne en ting og se på en ting. Det gjelder også når du snur mobilen på
+siden. Kolonner, summer, utskrift og regneark hører til skrivebordet og vises
+ikke der. Søkefeltet og pluss for ny ting ligger nederst, der tommelen er.
+
+---
+
+## Legge til
+
+### En ting
+
+**Ved skrivebordet:** Klikk i «Legg til ting» nederst i tabellen, eller pluss ›
+«Legg til ting». En ny rad åpner seg. Skriv navnet og det du vet, og klikk i
+«Legg til ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
+En rad du ikke skriver noe i, forsvinner når du klikker et annet sted.
+
+Valglister, datoer og plasseringer arver verdien fra raden over. Står du i én
+kategori, får nye rader den kategorien.
+
+**Med kvitteringen foran deg:** Skriv navn, pris, butikk og dato på første
+rad. På neste rad står butikk og dato allerede der; skriv navn og pris. Gjenta
+for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
+
+**Med tingen i hånden, på mobilen:**
+
+1. Pluss nederst til høyre åpner «Ny ting».
+2. «Velg bilde» åpner kameraet eller bildene dine. «Legg til bilde» for neste,
+   for eksempel av etiketten.
+3. Skriv navnet. «Neste» på tastaturet går til neste felt.
+4. Kategori og plassering står igjen fra forrige ting. Vil du bytte, trykker
+   du på et forslag under feltet. Plassering velger du ett nivå om gangen:
+   «Bod», så «Hylle 2», så «Blå kasse».
+5. «Lagre» nederst. Skjermen er klar for neste ting.
+
+På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
+senere; `-har:pris` i søket henter fram de som står igjen.
+
+**Med strekkoden:** På «Ny ting» ligger feltet «Strekkode», nederst.
+
+| Vil du | Slik |
+|---|---|
+| Lese koden fra etiketten | Ta et bilde av etiketten med «Legg til bilde». Appen leser koden fra bildet og fyller inn feltet. Den leser EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, uten nett, også på iPhone. Står feltet tomt etter bildet, tar du et nytt nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
+| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene. Rett navnet før du lagrer |
+| Ta vare på et serienummer | Ta bilde av koden eller skriv den. Alt som ikke er en varekode, lagres som tekst |
+
+Bøker og matvarer finnes som regel i oppslagsverkene. Turutstyr og elektronikk
+finnes sjelden: Da sparer bildet av koden deg for å skrive nummeret, og navnet
+skriver du selv.
+
+### Mange ting
+
+Kopier radene i Excel, Numbers eller Google Sheets. Klikk i en celle i tabellen
+og lim inn. Blokken fyller mot høyre og nedover og lager nye rader. Lag
+kolonnene i samme rekkefølge som regnearket først, så treffer alt. «Lagre».
+
+### En egenskap
+
+Pluss › «Legg til egenskap (kolonne)». Skriv navnet og velg felttype, se
+[Felttyper](#felttyper). En valgliste kan få alternativer, et tall en enhet.
+
+Står du i én eller flere kategorier, kan egenskapen høre til bare dem: «Bruk
+bare i …» er huket av fra start. Under skjemaet ser du hva som finnes fra før:
+Egenskapene alle kategorier har, og dem kategorien din har i tillegg. Skriver du
+navnet på en egenskap en annen kategori har, tar appen den i bruk her også i
+stedet for å lage en til.
+
+### En kategori
+
+Skriv en ny verdi i Kategori-kolonnen når du legger inn en ting, så finnes
+kategorien. Vil du lage den før du har ting til den: Kategorifeltet › «Endre
+kategorier» › «Ny kategori». Gi den navn og symbol, og trykk «Lagre». Den står i
+lista med 0 ting til du legger noe i den.
+
+---
+
+## Endre
+
+### En ting
+
+| Hvor | Slik |
+|---|---|
+| I tabellen | Klikk i cellen og skriv. Raden får en grønn strek til venstre. «Lagre» nederst lagrer, <kbd>Esc</kbd> spør om du vil forkaste |
+| På tingens side | Trykk på navnet i tabellen, så på raden du vil endre. Under en valgliste eller en plassering står verdiene du alt bruker. Trykker du på én, lagrer appen den. <kbd>Enter</kbd> eller et trykk utenfor lagrer, <kbd>Esc</kbd> angrer. Siden viser plasseringen først, så egenskapene tingens kategori har |
+| Bilder | På tingens side: «Legg til bilde». Du kan velge flere. Trykk på et lite bilde for å gjøre det til hovedbilde; krysset fjerner det |
+
+### Mange ting
+
+Huk av tingene i tabellen. Avkrysningsboksen i overskriften huker av alle du
+ser. Linja øverst viser da **«n valgt · Endre verdi · Skriv ut · Last ned ·
+Slett · ×»**.
+
+«Endre verdi»: Velg egenskap og skriv verdien. Den kommer på alle tingene du har
+huket av. Radene viser hva som endres, og ingenting lagres før du trykker
+«Lagre». Et tomt felt fjerner verdien. Slik flytter du for eksempel ti ting til
+en ny plassering, eller til en annen kategori.
+
+Du kan også kopiere én celle og lime den inn nedover.
+
+### En egenskap
+
+Kolonnemenyen er pilen ved kolonnenavnet.
+
+| Vil du | Velg |
+|---|---|
+| Endre navn, felttype, alternativer eller enhet | «Endre» |
+| Flytte kolonnen | «Flytt til venstre» eller «Flytt til høyre» |
+| La den høre til kategorien du står i | «Bruk bare i …», «Bruk også i …» eller «Ikke bruk i …» (når én kategori er valgt) |
+
+Endrer du felttypen, blir verdiene stående som de er. Slik gjør du for eksempel
+en valgliste med plasseringer om til en Sti.
+
+### Mange egenskaper
+
+Pluss › «Legg til egenskap (kolonne)» › «Endre egenskaper». Hver egenskap står
+på én linje: Navn, felttype, enhet, kategoriene den hører til, og antall ting
+med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
+du under «Endre kategorier».
+
+En egenskap hører til alle kategorier til du sier noe annet. Knappen med
+kategoriene åpner en liste der du huker av dem den skal høre til. Ingen hake er
+alle kategorier.
+
+### Kategorier
+
+Kategorifeltet › «Endre kategorier» nederst i lista.
+
+| Vil du | Slik |
+|---|---|
+| Velge symbol | Trykk på symbolet. Velg i rutenettet; navnet på symbolet står nederst. «Velg ut fra navnet» går tilbake til forslaget |
+| Endre navn | Skriv det nye navnet. Alle tingene i kategorien og egenskapene som hører til den, følger med |
+| Slå sammen to | Gi den ene samme navn som den andre |
+
+Ingenting lagres før du trykker «Lagre». Til du velger et symbol selv, foreslår
+appen et ut fra ordene i navnet.
+
+---
+
+## Slette
+
+| Vil du slette | Slik |
+|---|---|
+| Én ting | På tingens side: «Slett» nederst |
+| Flere ting | Huk av tingene › «Slett» i linja øverst |
+| Én egenskap | Kolonnemenyen › «Fjern» |
+| Flere egenskaper | «Endre egenskaper» › søppelbøtta på hver linje › «Lagre» |
+| En kategori | Flytt tingene til en annen kategori med «Endre verdi», eller slå den sammen med en annen under «Endre kategorier» |
+
+Fjerner du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
+appen hvor mange ting det gjelder, og spør først. Det du sletter, kan du ikke
+få tilbake, utenom fra en sikkerhetskopi.
+
+---
+
+## Finne igjen
+
+### Velge kategorier
+
+Registeret åpner med «Velg kategori» og uten tabell. Trykk på feltet og velg én
+eller flere kategorier. Lista blir stående åpen, så du kan velge flere; de du
+har valgt, får en hake foran navnet. Trykk på en valgt kategori igjen for å ta
+den bort.
+
+| Valg | Gjør |
+|---|---|
+| En kategori | Tingene i den, og kolonnene som hører til den |
+| Flere kategorier | Tingene i alle, og kolonnene som hører til minst én av dem |
+| «Alle» | Alt, og lukker lista |
+| «Fjern alle valgte» | Skjuler tabellen igjen |
+
+<kbd>Esc</kbd> eller et klikk utenfor lukker lista, og piltastene flytter i
+den. Kategori-kolonnen er borte så lenge du står i én kategori: Der sier den det
+samme på hver rad.
+
+### Søke
+
+Trykk på forstørrelsesglasset, <kbd>⌘</kbd>+<kbd>K</kbd> på Mac eller
+<kbd>Ctrl</kbd>+<kbd>K</kbd> på PC, eller bare begynn å skrive. Søket tåler
+skrivefeil og forstår spørsmål som `pris>1000` og `plassering:loftsbod`.
+«Søketips» under feltet viser alle, med eksempler fra dine egne kolonner. Se
+[Søk](#søk).
+
+Trykk på forstørrelsesglasset igjen for å gjemme feltet og filtrene. Søket
+gjelder fortsatt: Ikonet lyser grønt, og linja øverst sier for eksempel «12 av
+304 ting». Tøm feltet med krysset, filtrene med «Fjern alle filtre», eller alt
+med «Vis alle ting».
+
+### Filtrere
+
+Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
+
+- Datoer filtreres per år.
+- En Sti får ett filter per nivå: «Plassering» er rommet, «Plassering 2» hylla,
+  «Plassering 3» boksen.
+- Egenskaper der nesten hver ting har sin egen verdi, som pris og ordrenummer,
+  får ikke filter. Bruk søket, for eksempel `pris>1000`.
+
+### Sortere og tilpasse tabellen
+
+| Vil du | Slik |
+|---|---|
+| Sortere | Klikk på kolonnenavnet: Stigende, synkende, av |
+| Endre bredde | Dra i kanten av kolonneoverskriften. Dobbeltklikk der for å tilpasse bredden til innholdet |
+| Se kolonner som er skjult | «Vis n kolonner til» på den grå linja |
+| Skjule en kolonne for godt | Innstillinger › Tilpass visning › «Egenskaper i tabellen» |
+| Se lange verdier i sin helhet | Innstillinger › Tilpass visning › «Bryt lang tekst over flere linjer» |
+
+Tabellen viser kolonnene kategorien din har, også de tomme: Det er dem du har
+igjen å fylle ut. Kolonner uten verdier der du står, og kolonner for alle
+kategorier med samme verdi på hver rad, er skjult; de skiller ikke tingene fra
+hverandre. Går tabellen lenger enn kortet, blekner høyre kant: Rull sidelengs.
+
+**På mobilen** svarer lista med plassering og kategori rett under navnet. En
+ting uten bilde viser ikonet til kategorien sin. Trykk på tingen for å se alt.
+
+---
+
+## Skrive ut og hente ut
+
+Snevre inn med kategori, søk eller filtre til det som skal med, eller huk av
+tingene.
+
+| Vil du | Slik |
+|---|---|
+| Utskrift eller PDF | Skriverikonet øverst til høyre, eller «Skriv ut» når du har huket av ting: Da kommer bare de med |
+| Regneark (CSV) | Nedlastingsikonet, eller «Last ned» for tingene du har huket av. Fila åpner rett i Excel og Numbers, med norske tall og datoer |
+
+I utskriften er kolonnene du ser, valgt fra start. Fjern hakene for dem som ikke
+skal med, og trykk «Skriv ut». Rapporten får tittel, dato og sidetall. To valg
+bestemmer formen:
+
+| Valg | Gjør |
+|---|---|
+| Grupper etter | En valgliste blant kolonnene du ser, for eksempel Kategori under «Alle». Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
+| Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
+
+Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
+tingene under hverandre, én blokk per ting. Summene følger det som kommer med.
+
+Utskrift og CSV er ukryptert og laget for å leses. De er ikke en sikkerhetskopi.
+
+---
+
+## Ta vare på dataene
+
+Dataene ligger i nettleseren på enheten. Sletter du nettstedsdata, eller mister
 enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 
 | Måte | Passer når | Slik |
 |---|---|---|
-| Mappe på maskinen | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | Pil ned laster ned fila. Pil opp henter den inn igjen |
+| Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Arkiver i Filer» eller send fila med AirDrop. «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har svart ja |
 
-Begge tar med alle ting, egenskaper, bilder og kolonneinnstillinger, er
-kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn.
+Begge tar med alle ting, egenskaper, kategorier, bilder og
+kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
+der du skriver det inn.
 
 <details>
 <summary>Mer om mappen</summary>
@@ -114,119 +380,23 @@ kryptert med passordet ditt og åpnes på enhver enhet der du skriver det inn.
 - Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde.
 - Deler flere enheter én mappe, bruk den fra én enhet om gangen. Den nyeste
   lagringen vinner; ingenting flettes.
-- Stopper lagringen til mappen, blir Innstillinger-ikonet brunt.
+- Stopper lagringen til mappen, blir tannhjulet i topplinja brunt.
 
 </details>
 
 ---
 
-## Situasjoner
-
-### Med kvitteringen foran deg
-
-Ved skrivebordet, flere ting fra samme butikk:
-
-1. Klikk i «Legg til ting» nederst i tabellen. Skriv navn, pris, butikk og
-   dato på første rad.
-2. Klikk i «Legg til ting» igjen. Butikk, dato og plassering står allerede
-   der; skriv navn og pris.
-3. Gjenta for hver linje på kvitteringen. «Lagre».
-
-Pris og tekst arves ikke: Hver rad har sin egen.
-
-### Med tingen i hånden
-
-I boden, med mobilen. Under 600 px bred er appen laget for akkurat dette.
-
-1. Plussikonet øverst til høyre åpner skjermen «Ny ting».
-2. «Ta bilde». Kameraet åpner seg direkte. «Ta ett bilde til» for neste, for
-   eksempel av etiketten eller serienummeret.
-3. Skriv navnet. Kategori og plassering står igjen fra forrige ting.
-4. «Lagre». Skjermen er klar for neste ting.
-
-Pris og resten fyller du inn ved skrivebordet senere. `-has:pris` i søket
-henter fram de som står igjen.
-
-> [!NOTE]
-> På mobilen lagres alt med én gang. Det finnes ingen «ulagrede endringer» der.
-
-### Skanne strekkoden og hente navnet
-
-På «Ny ting» ligger feltet «Strekkode».
-
-| Vil du | Slik |
-|---|---|
-| Lese koden fra etiketten | «Skann strekkode» tar et bilde av etiketten og leser koden: EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere. Leseren følger med appen og virker uten nett, også på iPhone. Har QR-koden på pakken en varekode (GS1), er det den som havner i feltet. Leser den ikke koden: Nærmere, rett forfra, uten refleks. Eller skriv tallene under streken |
-| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene for andre varer, kosmetikk og dyrefôr. Rett navnet før du lagrer |
-| Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
-
-Bøker og matvarer finnes som regel i oppslagsverkene. Turutstyr og elektronikk
-finnes sjelden: Da sparer skanningen deg for å skrive nummeret, og navnet skriver
-du selv.
-
-### Finne igjen en ting
-
-Trykk på forstørrelsesglasset, eller <kbd>⌘</kbd>+<kbd>K</kbd> på Mac. Søket
-tåler skrivefeil og forstår spørsmål som `komfort<0` og `plassering:loftsbod`;
-«Søketips» under feltet viser alle. Se [Søk](#søk). Filtrene ved siden av viser
-hver verdi med antall.
-
-Trykk på forstørrelsesglasset igjen for å gjemme feltet og filtrene. Søket
-gjelder fortsatt: Ikonet lyser, og linja øverst sier «12 av 304 ting». Tøm
-feltet med krysset, filtrene med «Fjern alle filtre», eller alt med «Vis alle
-ting».
-
-På mobilen svarer lista med kategori og plassering rett under navnet. Trykk på
-tingen for å se alt.
-
-### Rette noe
-
-| Hvor | Slik |
-|---|---|
-| I tabellen | Klikk i cellen, skriv, «Lagre» nederst |
-| På tingens side | Trykk på blyanten ved verdien. <kbd>Enter</kbd> eller et trykk utenfor lagrer, <kbd>Esc</kbd> angrer |
-| Samme verdi på mange | Kopier én celle, lim inn i første rad av det som skal endres |
-| Bilder | På tingens side: «Legg til bilde». Du kan velge flere på én gang, og legge til flere senere. Har tingen mer enn ett, står de som små ruter under det store: Trykk på en for å gjøre den til hovedbilde, krysset fjerner den |
-| Slette | På tingens side, eller huk av flere rader i tabellen: «Slett valgte» dukker opp øverst til høyre |
-
-### Mange ting på én gang
-
-Kopier radene i Excel, Numbers eller Google Sheets. Klikk i en celle i tabellen
-og lim inn. Blokken fyller mot høyre og nedover og lager nye rader. Lag
-kolonnene i samme rekkefølge som regnearket først, så treffer alt.
-
-### Rapport og regneark
-
-Snevre inn med søk eller filtre til det som skal med. Så:
-
-| Vil du | Slik |
-|---|---|
-| Utskrift eller PDF | Skriverikonet øverst til høyre i tabellen. Velg kolonnene som skal med («Velg alle», «Fjern alle»), så «Skriv ut». Rapporten får tittel, dato og sidetall |
-| Regneark | Nedlastingsikonet ved siden av. CSV-fila åpner rett i Excel og Numbers, med norske tall og datoer |
-
-To valg under kolonnene bestemmer formen på papiret:
-
-| Valg | Gjør |
-|---|---|
-| Grupper etter | Velg en valgliste, for eksempel Kategori. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum. Kolonnen du grupperer etter, gjentas ikke på hver ting |
-| Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler. Har tingen flere, er det bare det første som går på papiret |
-
-Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
-tingene under hverandre i stedet, én blokk per ting som ikke deles over to
-sider. Summene følger det du ser: Søk og filtre gjelder, og kolonner du ikke
-tar med, telles ikke.
-
-Rapporten er ukryptert og laget for å leses. Den er ikke en sikkerhetskopi.
-
-### Mac og iPhone sammen
+## Bruke flere enheter
 
 Appen synkroniserer ikke selv. Én enhet har sannheten om gangen, og en
-sikkerhetskopi flytter den.
+sikkerhetskopi flytter den. Et eksempel med Mac og iPhone:
 
-1. **På Mac:** Innstillinger › pil ned. AirDrop fila til iPhone.
-2. **På iPhone:** Innstillinger › pil opp, samme passord. Registrer i boden.
-3. **Tilbake på Mac:** Last ned sikkerhetskopi på iPhone, AirDrop den til Mac,
-   gjenopprett.
+1. **På Mac:** Innstillinger › «Last ned sikkerhetskopi». AirDrop fila til
+   iPhone.
+2. **På iPhone:** Innstillinger › «Gjenopprett fra sikkerhetskopi», og skriv
+   passordet. Registrer i boden.
+3. **Tilbake på Mac:** Trykk på «Del sikkerhetskopi» på iPhone, send fila med
+   AirDrop til Mac og gjenopprett.
 
 > [!IMPORTANT]
 > Gjenoppretting erstatter alt som ligger i appen. Ta alltid med den nyeste
@@ -235,7 +405,7 @@ sikkerhetskopi flytter den.
 
 ---
 
-## Oppslagsverk
+## Oppslag
 
 ### Søk
 
@@ -248,67 +418,30 @@ sikkerhetskopi flytter den.
 | `komfort<0`, `vekt>1000` | Mindre enn, større enn. Også `<=` og `>=` |
 | `farge=rød` | Nøyaktig lik |
 | `brensel:gass` | Inneholder |
+| `kategori:tur` | Kategori som inneholder |
 | `kjøpsdato<01.01.26` | Dato før |
-| `has:bilde`, `has:vekt` | Har minst ett bilde, har en verdi i Vekt |
+| `har:bilde`, `har:vekt` | Har minst ett bilde, har en verdi i Vekt |
+| `-har:vekt` | Mangler en verdi i Vekt |
 
-### Egenskaper
+Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
+`"kjøpt hvor":komplett`.
+
+### Felttyper
 
 | Felttype | Slik |
 |---|---|
 | Tekst | Fritekst. Lenker blir klikkbare på tingens side |
 | Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene skilles med komma |
-| Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Kolonner i kr summeres øverst |
+| Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Tallene står til høyre, med mellomrom mellom tusener. Kolonner i kr summeres på den grå linja når minst én ting har en verdi |
 | Dato | Skriv `19.09.26` |
-| Sti | Hele veien inn til en plass. Skriv `Loftsbod/Hylle 2/Boks 4` eller bruk `>` eller `›`: Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`. Feltet foreslår plassene du alt bruker, og veien inn til dem |
+| Sti | Hele veien inn til en plass: `Loftsbod/Hylle 2/Boks 4`, eller med `>` eller `›`. Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`, og foreslår plassene du alt bruker |
 
-Kolonnene er så brede som innholdet trenger, opp til en grense. Dra i kanten
-av en kolonneoverskrift for å sette bredden selv; dobbeltklikk der for å
-tilpasse den til innholdet igjen. Under Innstillinger › Tilpass visning velger
-du hvilke egenskaper tabellen viser, og om lange verdier skal brytes over
-flere linjer. Begge deler husker enheten.
+> [!TIP]
+> Skriv hele veien inn, ikke bare rommet. På mobilen trykker du deg inn ett
+> nivå om gangen i stedet for å skrive. Da får du ett filter per nivå: Ett klikk på «Loftsbod» henter alt på loftet,
+> uansett hvor dypt inne det står. Tre nivåer er nok til sted, sone og boks.
 
-Kolonnemenyen (pilen ved kolonnenavnet) endrer, flytter og fjerner en egenskap.
-Fjerner du en egenskap, forsvinner verdien fra alle ting. Navn står alltid
-først og blir stående når tabellen ruller sidelengs. Notat og Strekkode er
-egenskaper som alle andre.
-
-#### Kategorien bestemmer hva du ser
-
-Registeret åpner på kategoriene sine: små symboler med antallet på, Alle
-først, så én for hver kategori du har tatt i bruk. Hold pekeren over et symbol
-for å se navnet. Tabellen kommer når du velger en: du får tingene i
-kategorien, kolonnene som hører til den og filtrene som gjelder der.
-Kategori-kolonnen forsvinner så lenge du står i én kategori: der sier den det
-samme på hver rad.
-
-Når tabellen er framme, legger symbolene seg bort og etterlater en tynn strek
-øverst til venstre. Hold pekeren over streken, så kommer de fram igjen over
-tabellen. Trykk på symbolet du står i for å gå tilbake til kategoriene.
-
-Symbolet velges ut fra ordene i kategorinavnet. Kjenner appen ikke igjen noen
-av dem, får kategorien et nøytralt symbol. Navnet er det samme uansett.
-
-En egenskap hører til alle kategorier til du sier noe annet. Står du i én
-kategori, har kolonnemenyen valget «Bruk bare i <kategori>». Da følger
-kolonnen den kategorien, og bare den. Vil du ha den i en til, går du dit og
-velger «Bruk også i <kategori>». «Ikke bruk i <kategori>» tar den ut igjen, og
-er den ute av alle, hører den til alle igjen. Lager du en ny egenskap mens du
-står i en kategori, hører den til der med en gang.
-
-Verdier forsvinner aldri av dette. Endrer du kategori på en ting, blir det du
-har skrevet stående, og søket finner det fortsatt.
-
-Tabellen viser kolonnene kategorien spør etter, også de tomme — det er dem du
-har igjen å fylle ut. Resten er skjult: «Vis n kolonner til» på linja øverst
-henter fram alt.
-
-Filtrene under søkefeltet viser bare verdier som finnes i det som vises, med
-antall. Datoer filtreres per år. En Sti får ett filter per nivå: «Plassering»
-er rommet, «Plassering 2» hylla, «Plassering 3» boksen. Utskriften kan
-grupperes på samme måte.
-
-<details>
-<summary>Egenskaper for det Ting ikke har egne funksjoner for</summary>
+### Egenskaper for det Ting ikke har egne funksjoner for
 
 | Vil du | Lag egenskapen |
 |---|---|
@@ -318,19 +451,28 @@ grupperes på samme måte.
 | Merke tilstand | Valgliste «Status»: Ok, Skal repareres, Kast |
 | Skille kjøpesum fra verdi | Tall «Verdi» i kr ved siden av «Kjøpesum» |
 
-</details>
-
 ### Innstillinger
 
-Ikonet lengst til høyre i topplinja.
+Tannhjulet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Mappe på maskinen | Mappeikonet kobler til (Chrome og Edge), det overstrøkne lenkeikonet kobler fra |
-| Tilpass visning | Bryt lang tekst over flere linjer, og lista over egenskaper: Fjern haken for å ta en kolonne ut av tabellen. Navn vises alltid. Enheten husker valgene |
-| Sikkerhetskopi | Pil ned laster ned, pil opp gjenoppretter |
-| Automatisk lås | Slår låsen etter 10 minutter av eller på |
-| Passord | Nøkkelikonet bytter passord. Dataene krypteres på nytt; gamle kopier åpnes med det gamle passordet |
+| Velg et passord | Bare mens du prøver appen: Låser det du har lagt inn, så det blir med |
+| Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
+| Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt, og spør først |
+| Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |
+| Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
+| Passord | «Endre passord». Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned |
+
+### Hurtigtaster
+
+| Tast | Gjør |
+|---|---|
+| <kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Åpner og lukker søket |
+| En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
+| <kbd>Esc</kbd> | Tømmer søket, lukker en liste eller et panel, eller spør om du vil forkaste endringene i tabellen |
+| Piltastene | Flytter i lister og i rutenettet med symboler |
+| <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side |
 
 ---
 
@@ -339,11 +481,12 @@ Ikonet lengst til høyre i topplinja.
 | Du ser | Det betyr | Gjør |
 |---|---|---|
 | Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet |
-| Brunt Innstillinger-ikon | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
-| «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult fordi den er tom | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
-| «Fant ingen strekkode i bildet.» | Ingen av de to leserne fant en kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
+| Brunt tannhjul | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
+| «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
+| «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
+| «Strekkode» står tomt etter bildet av etiketten | Leseren fant ingen kode i bildet | Ta et nytt bilde nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
-| Appen er tom etter en stund på iPhone | Safari rydder nettleserdata som ikke er brukt på sju dager, også for apper på Hjem-skjermen i enkelte tilfeller | Gjenopprett fra sikkerhetskopien. Ta en ny kopi hver gang du har registrert noe på iPhone |
+| Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |
 
 ---
@@ -356,11 +499,11 @@ steder og bruker ingen KI.
 | Hva | Hvordan |
 |---|---|
 | Kryptering | AES-256-GCM i nettleseren (WebCrypto). Nøkkelen utledes fra passordet med Argon2id. Passordet lagres ingen steder |
-| Kryptert | Alle ting, egenskaper, innstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier |
+| Kryptert | Alle ting, egenskaper, kategorier, innstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier. Også mens du prøver appen uten passord |
 | Ukryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
 | Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
-| Lås | Appen åpner alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen |
+| Lås | Med passord åpner appen alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen. Er Face ID eller Touch ID slått på, er enhetens egen lås også appens lås på den enheten. Kopier og lagringsmappen krever fortsatt passordet |
 | Ut av enheten | Bare sifrene i en strekkode, bare når du trykker på «Slå opp på nett», til Nasjonalbiblioteket, Open Library eller Open Food Facts med søsterkatalogene. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
 
-Alt du skriver inn, skanner eller får tilbake fra et oppslag behandles som
+Alt du skriver inn, skanner eller får tilbake fra et oppslag, behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

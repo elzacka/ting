@@ -107,3 +107,32 @@ export async function rewrapVault(passphrase: string, open: OpenKey, params: Kdf
   const kdf: KdfParams = { name: 'argon2id', ...params, salt: toB64(randomBytes(16)) }
   return wrapDek(passphrase, kdf, open)
 }
+
+// A second way to the same data key, on one device: a secret the device's own
+// authenticator hands over only after Face ID or Touch ID (a passkey's PRF
+// output), stretched by HKDF into a wrapping key. The label keeps this key
+// apart from anything else the same secret might one day be used for.
+export async function keyFromSecret(secret: Uint8Array, label: string): Promise<CryptoKey> {
+  const base = await subtle.importKey('raw', secret as BufferSource, 'HKDF', false, ['deriveKey'])
+  return subtle.deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: new TextEncoder().encode(label) },
+    base,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  )
+}
+
+export async function wrapWith(kek: CryptoKey, open: OpenKey): Promise<Sealed> {
+  const { iv, data } = await encryptBytes(kek, open.dek)
+  return { iv: toB64(iv), data: toB64(data) }
+}
+
+// A wrong key surfaces as a failed GCM tag check; that is turned into null.
+export async function unwrapWith(kek: CryptoKey, wrapped: Sealed): Promise<OpenKey | null> {
+  try {
+    return await openKeyFrom(await decryptBytes(kek, fromB64(wrapped.iv), fromB64(wrapped.data)))
+  } catch {
+    return null
+  }
+}

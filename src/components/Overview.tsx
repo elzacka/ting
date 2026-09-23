@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { createPortal, flushSync } from 'react-dom'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { formatDate, formatNumber } from '../lib/format'
@@ -12,6 +12,7 @@ import {
   removeProperty,
   renameProperty,
   saveBatch,
+  saveCategories,
   setColumnOrder,
   setFieldSettings,
   setPropertyCategories,
@@ -34,15 +35,20 @@ import { parseDateInput } from '../lib/dates'
 import { maxPathLevels, parsePath, pathsInUse } from '../lib/paths'
 import { cellsFrom, columnId, inputFrom, type Column } from '../lib/grid'
 import { searchItems } from '../lib/search'
-import { applyFilters, levelId, valuesFor, withoutFilter, type Filters } from '../lib/filters'
+import { searchTips } from '../lib/searchTips'
+import { applyFilters, levelId, valueKey, valuesFor, withoutFilter, type Filters } from '../lib/filters'
 import { FilterPanel } from './FilterPanel'
-import { Grid } from './Grid'
+import { Grid, isNumberColumn } from './Grid'
 import { PrintReport } from './PrintReport'
 import { parseBlock } from '../lib/paste'
 import { sortItems, type Sort } from '../lib/sort'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
-import { allCategoriesIcon, categoryIcon } from '../lib/categoryIcons'
+import { allCategoriesIcon, categoryIconFor, otherCategoryIcon } from '../lib/categoryIcons'
+import { CategoryIcon } from './CategoryIcon'
+import { CategoryEditor } from './CategoryEditor'
+import { PropertyEditor, type PropertyRow } from './PropertyEditor'
+import type { CategoryEdit } from '../lib/categories'
 import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
@@ -101,6 +107,10 @@ type Props = {
   wrap: boolean
 }
 
+// "Interiør, Kjøkken og Bøker"
+const listFormat = new Intl.ListFormat('nb', { type: 'conjunction' })
+const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
+
 // Every field type a column can have, in the order the menus offer them.
 const propertyTypes: readonly PropertyType[] = ['text', 'choice', 'number', 'date', 'path']
 
@@ -145,6 +155,12 @@ export function Overview({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [addingColumn, setAddingColumn] = useState(false)
+  const [editingCategories, setEditingCategories] = useState(false)
+  const [editingProperties, setEditingProperties] = useState(false)
+  // Endre verdi for the ticked things: which property, and the value it gets
+  const [bulk, setBulk] = useState<{ defId: string; value: string } | null>(null)
+  // Skriv ut from the selection: the things that go on paper, nothing else
+  const [printOnly, setPrintOnly] = useState<Set<string> | null>(null)
   // Shown inside the column form: the page's error line sits under the table
   const [columnError, setColumnError] = useState<string | null>(null)
   // Columns the view leaves out are hidden; this shows every one of them anyway
@@ -193,6 +209,7 @@ export function Overview({
   )
   const effectiveWidths = useMemo(() => ({ ...fitted, ...widths }), [fitted, widths])
   const names = useMemo(() => distinct(items, (i) => i.name), [items])
+  const tips = useMemo(() => searchTips(properties, items, new Date().getFullYear()), [properties, items])
   // Edited rows stay visible even when they stop matching the query.
   const searched = useMemo(() => searchItems(items, query), [items, query])
   const visible = useMemo(() => {
@@ -205,14 +222,31 @@ export function Overview({
   // columns, the filters and what a new row is born with. The chosen keys are
   // folded the way the filters fold them; the labels come from the values.
   const categoryDef = useMemo(() => defs.find((d) => d.id === categoryColumnId), [defs])
-  const categoryValues = useMemo(
-    () =>
-      categoryDef?.kind === 'prop'
-        ? valuesFor(withoutFilter(searched, filters, categoryColumnId), categoryDef.col)
-        : [],
-    [categoryDef, searched, filters],
-  )
+  // The categories in the dropdown: those things have, counted over what the
+  // search and the other filters leave, and the ones made in Endre kategorier
+  // before any thing has them, at 0
+  const categoryValues = useMemo(() => {
+    if (categoryDef?.kind !== 'prop') return []
+    const inUse = valuesFor(withoutFilter(searched, filters, categoryColumnId), categoryDef.col)
+    const known = new Set(valuesFor(items, categoryDef.col).map((v) => v.key))
+    const empty = (categoryDef.property?.options ?? [])
+      .filter((o) => !known.has(valueKey(o)))
+      .map((o) => ({ key: valueKey(o), label: o, count: 0 }))
+    return [...inUse, ...empty].sort((a, b) => collator.compare(a.label, b.label))
+  }, [categoryDef, searched, filters, items])
+  // Every category with every thing it holds, for Endre kategorier
+  const allCategories = useMemo(() => {
+    if (categoryDef?.kind !== 'prop') return []
+    const inUse = valuesFor(items, categoryDef.col)
+    const known = new Set(inUse.map((v) => v.key))
+    const empty = (categoryDef.property?.options ?? [])
+      .filter((o) => !known.has(valueKey(o)))
+      .map((o) => ({ key: valueKey(o), label: o, count: 0 }))
+    return [...inUse, ...empty].sort((a, b) => collator.compare(a.label, b.label))
+  }, [categoryDef, items])
   const cats = useMemo(() => filters[categoryColumnId] ?? [], [filters])
+  // The icons chosen for categories, carried by the Kategori property
+  const chosenIcons = categoryDef?.kind === 'prop' ? categoryDef.property?.icons : undefined
   // The label to write, and to hand a new row, while exactly one is in view.
   // Read from every thing, not from what is on screen: a search that leaves
   // none of them must not turn Bok back into the folded key.
@@ -220,6 +254,116 @@ export function Overview({
     if (cats.length !== 1 || categoryDef?.kind !== 'prop') return null
     return valuesFor(items, categoryDef.col).find((v) => v.key === cats[0])?.label ?? null
   }, [cats, categoryDef, items])
+  // Every chosen category as written, the same way: for the field, the
+  // property form and a new property's categories
+  const catLabels = useMemo(() => {
+    if (categoryDef?.kind !== 'prop') return []
+    const all = valuesFor(items, categoryDef.col)
+    return cats.map((k) => all.find((v) => v.key === k)?.label ?? k)
+  }, [cats, categoryDef, items])
+
+  // The category dropdown. Several categories can be ticked at once, and
+  // ticking keeps it open; Alle and Velg kategori close it.
+  const [picking, setPicking] = useState(false)
+  // Fixed to the window, under the button, so the card's clipping cannot cut it
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(
+    null,
+  )
+  const currentRef = useRef<HTMLButtonElement>(null)
+  const pickerRef = useRef<HTMLDivElement>(null)
+  const currentLabel = cats.length === 0 ? t.view.all : catLabels.join(', ')
+  // Measured, not 100vh: the list ends a gutter above the window's real
+  // bottom edge and scrolls inside itself when the categories need more room
+  function placePicker() {
+    const r = currentRef.current?.getBoundingClientRect()
+    if (!r) return
+    const top = r.bottom + 4
+    setPickerPos({ top, left: r.left, width: r.width, maxHeight: Math.max(160, window.innerHeight - top - 16) })
+  }
+  function openPicker() {
+    placePicker()
+    setPicking(true)
+  }
+  function closePicker() {
+    setPicking(false)
+    requestAnimationFrame(() => currentRef.current?.focus())
+  }
+  function pickCategory(key: string | null) {
+    onFiltersChange({ ...filters, [categoryColumnId]: key === null ? [] : [key] })
+    onViewPickedChange(true)
+    closePicker()
+  }
+  // Ticks or unticks one category. None left is no category and no table.
+  function toggleCategory(key: string) {
+    const next = cats.includes(key) ? cats.filter((k) => k !== key) : [...cats, key]
+    onFiltersChange({ ...filters, [categoryColumnId]: next })
+    onViewPickedChange(next.length > 0)
+  }
+  // Velg kategori: back to no category and no table
+  function unpickCategory() {
+    onFiltersChange({ ...filters, [categoryColumnId]: [] })
+    onViewPickedChange(false)
+    closePicker()
+  }
+  // Open: the chosen one has focus, the arrows move through the list, a
+  // click anywhere else closes it (Escape is in the key handler below)
+  useEffect(() => {
+    if (!picking) return
+    const menu = pickerRef.current
+    ;(menu?.querySelector<HTMLButtonElement>('[aria-checked="true"]') ?? menu?.querySelector('button'))?.focus()
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return
+      if (menu?.contains(e.target) || currentRef.current?.contains(e.target)) return
+      setPicking(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('resize', placePicker)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('resize', placePicker)
+    }
+  }, [picking])
+  // The arrows, Home and End move through a menu's buttons
+  function onMenuKey(e: ReactKeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return
+    e.preventDefault()
+    const items = [...e.currentTarget.querySelectorAll<HTMLButtonElement>('button')]
+    const at = items.indexOf(document.activeElement as HTMLButtonElement)
+    const next =
+      e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (at + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
+    items[next]?.focus()
+  }
+
+  // Plus asks what to add: a thing, or a property. Fixed to the window under
+  // the button, right edges together, since the button sits at the card's edge.
+  const addRef = useRef<HTMLButtonElement>(null)
+  const addMenuRef = useRef<HTMLDivElement>(null)
+  const [addMenu, setAddMenu] = useState<{ top: number; right: number } | null>(null)
+  function openAddMenu() {
+    const r = addRef.current?.getBoundingClientRect()
+    if (r) setAddMenu({ top: r.bottom + 4, right: window.innerWidth - r.right })
+  }
+  function closeAddMenu() {
+    setAddMenu(null)
+    requestAnimationFrame(() => addRef.current?.focus())
+  }
+  useEffect(() => {
+    if (!addMenu) return
+    const menu = addMenuRef.current
+    menu?.querySelector('button')?.focus()
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return
+      if (menu?.contains(e.target) || addRef.current?.contains(e.target)) return
+      setAddMenu(null)
+    }
+    const onResize = () => setAddMenu(null)
+    document.addEventListener('mousedown', onDown)
+    window.addEventListener('resize', onResize)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('resize', onResize)
+    }
+  }, [addMenu])
 
   // A column earns its place twice over: it must belong to every category in
   // view, and then either be one those categories ask for or hold a value for
@@ -232,20 +376,49 @@ export function Overview({
     for (const item of visible) for (const s of item.specs) used.add(columnId({ key: s.key, unit: s.unit }))
     for (const row of newRows) for (const [id, v] of Object.entries(row.cells)) if (v.trim() !== '') used.add(id)
     for (const [id, values] of Object.entries(filters)) if (values.length > 0) used.add(id)
+    // One value on every row says nothing about any of them, the same way
+    // Kategori says nothing inside one category. Not while rows are being
+    // typed or changed: then the column is where the change goes.
+    const uniform = new Set<string>()
+    if (visible.length > 1 && newRows.length === 0 && Object.keys(edits).length === 0) {
+      for (const d of defs) {
+        if (d.kind !== 'prop') continue
+        const first = baseCells.get(visible[0]?.id ?? '')?.[d.id] ?? ''
+        if (first !== '' && visible.every((i) => (baseCells.get(i.id)?.[d.id] ?? '') === first)) uniform.add(d.id)
+      }
+    }
+    // A category's own columns stay even when every row says the same: they
+    // are its work list. Only the ones that belong everywhere give way.
     const fits = (d: ColumnDef) =>
-      d.kind === 'name' || (appliesTo(d.property, cats) && (claimedBy(d.property, cats) || used.has(d.id)))
+      d.kind === 'name' ||
+      (appliesTo(d.property, cats) && (claimedBy(d.property, cats) || (used.has(d.id) && !uniform.has(d.id))))
     // With one category in view its own column says the same on every row
     const chosen = defs.filter(
       (d) => d.kind === 'name' || (!hidden.has(d.id) && !(cats.length === 1 && d.id === categoryColumnId)),
     )
     const extra = items.length === 0 ? 0 : chosen.filter((d) => !fits(d)).length
     return { shown: showAllCols || items.length === 0 ? chosen : chosen.filter(fits), extra }
-  }, [defs, visible, newRows, filters, showAllCols, items.length, hidden, cats])
+  }, [defs, visible, newRows, edits, baseCells, filters, showAllCols, items.length, hidden, cats])
+
+  // The column form's help: the properties for every category, and the ones
+  // the category in view has on top of those
+  const knownAll = useMemo(
+    () => defs.flatMap((d) => (d.kind === 'prop' && !(d.property?.categories?.length) ? [d.col.key] : [])),
+    [defs],
+  )
+  const knownOwn = useMemo(
+    () =>
+      catLabels.map((label) => ({
+        label,
+        keys: defs.flatMap((d) => (d.kind === 'prop' && claimedBy(d.property, [label]) ? [d.col.key] : [])),
+      })),
+    [defs, catLabels],
+  )
 
   // Skriv ut asks which columns go on paper; Navn always does, and the form
-  // starts with Navn alone. Chosen once per session, null before that:
-  // everything on screen (Cmd+P without a choice). While the browser takes
-  // its snapshot the table itself narrows to the choice.
+  // starts with what is on screen, the same as Cmd+P without a choice. The
+  // choice holds for the session. While the browser takes its snapshot the
+  // table itself narrows to it.
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
@@ -261,16 +434,87 @@ export function Overview({
   // row can stick right under it whatever the head line wraps to
   const cardRef = useRef<HTMLDivElement>(null)
   const headRef = useRef<HTMLDivElement>(null)
+  const [headHeight, setHeadHeight] = useState(0)
   useEffect(() => {
     const head = headRef.current
     const card = cardRef.current
     if (!head || !card) return
-    const set = () => card.style.setProperty('--head-h', `${head.getBoundingClientRect().height}px`)
+    const set = () => {
+      const h = head.getBoundingClientRect().height
+      card.style.setProperty('--head-h', `${h}px`)
+      setHeadHeight(h)
+    }
     set()
     const ro = new ResizeObserver(set)
     ro.observe(head)
     return () => ro.disconnect()
   }, [])
+  // One band at a time: the print form, the columns, or the search (whose
+  // state lives in App). Opening one closes the others.
+  function openPanel(which: 'print' | 'print-selected' | 'columns' | 'categories' | 'properties' | 'bulk' | null) {
+    setAddingColumn(which === 'columns')
+    setEditingCategories(which === 'categories')
+    setEditingProperties(which === 'properties')
+    setBulk(which === 'bulk' ? { defId: bulkDefs[0]?.id ?? categoryColumnId, value: '' } : null)
+    setPrintOnly(which === 'print-selected' ? new Set(selected) : null)
+    if (which === 'print' || which === 'print-selected') {
+      setDraftGroup(printGroup)
+      setDraftPhotos(printPhotos)
+      setPrintPick(new Set(printCols ?? shownAll.map((d) => d.id)))
+    } else {
+      setPrintPick(null)
+    }
+    if (which !== null && searchOpen) onSearchClose()
+  }
+  useEffect(() => {
+    if (!searchOpen) return
+    setAddingColumn(false)
+    setPrintPick(null)
+    setEditingCategories(false)
+    setEditingProperties(false)
+    setBulk(null)
+  }, [searchOpen])
+
+  // What Endre verdi offers: the properties of the categories in view, and
+  // Kategori always, since moving things between categories is the common case
+  const bulkDefs = useMemo(
+    () =>
+      defs.flatMap((d) =>
+        d.kind === 'prop' && (d.id === categoryColumnId || appliesTo(d.property, cats)) ? [d] : [],
+      ),
+    [defs, cats],
+  )
+  // The same value into one property of every ticked thing, as edits: the
+  // rows show what changes, and nothing is stored before Lagre
+  function applyBulk() {
+    if (!bulk) return
+    for (const id of selected) editItem(id, { cells: { [bulk.defId]: bulk.value.trim() } })
+    setBulk(null)
+  }
+  // The rows the table shows, or while printing from the selection, the ticked ones
+  const listed = useMemo(
+    () => (printing && printOnly ? visible.filter((i) => printOnly.has(i.id)) : visible),
+    [printing, printOnly, visible],
+  )
+
+  // Endre kategorier stored: a category renamed while it is ticked stays ticked
+  async function saveCategoryEdit(edit: CategoryEdit) {
+    try {
+      await saveCategories(edit)
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.error.saveFailed)
+      return
+    }
+    if (cats.length > 0) {
+      const next = cats.map((k) => {
+        const hit = edit.renames.find(([from]) => valueKey(from) === k)
+        return hit ? valueKey(hit[1]) : k
+      })
+      onFiltersChange({ ...filters, [categoryColumnId]: [...new Set(next)] })
+    }
+    openPanel(null)
+  }
   const shown = useMemo(
     () => (printing && printCols ? shownAll.filter((d) => d.kind === 'name' || printCols.has(d.id)) : shownAll),
     [shownAll, printing, printCols],
@@ -289,14 +533,16 @@ export function Overview({
     [reportColumns],
   )
   const reportGroups = useMemo(
-    () => (reporting ? groupItems(visible, printGroup) : []),
-    [reporting, visible, printGroup],
+    () => (reporting ? groupItems(listed, printGroup) : []),
+    [reporting, listed, printGroup],
   )
   // Few enough values to head a page: a Valgliste, or a place at one of its
-  // levels — by room, by shelf, by box.
+  // levels — by room, by shelf, by box. Only the columns on screen, the same
+  // ones the form offers for the paper: a column of another category, or
+  // Kategori inside one, would put everything under one heading.
   const groupChoices = useMemo(
     () =>
-      defs.flatMap((d) => {
+      shownAll.flatMap((d) => {
         if (d.kind !== 'prop') return []
         if (d.type === 'choice') return [{ id: d.id, label: d.col.key }]
         if (d.type !== 'path') return []
@@ -312,7 +558,7 @@ export function Overview({
           label: t.filters.level(d.col.key, i + 1),
         }))
       }),
-    [defs, items],
+    [shownAll, items],
   )
   const groupLabel = useMemo(
     () => groupChoices.find((d) => d.id === printGroup)?.label ?? null,
@@ -375,7 +621,9 @@ export function Overview({
     // In a category's own view that is what a new thing is; otherwise the
     // Kategori of the newest thing, which is what the last batch was.
     if (oneCategory !== null) return { [categoryColumnId]: oneCategory }
-    const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
+    // Several chosen: the newest thing among them, so the row stays in view
+    const pool = cats.length > 1 ? visible : items
+    const newest = pool.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
     const value = newest ? (baseCells.get(newest.id)?.[categoryColumnId] ?? '') : ''
     return value === '' ? {} : { [categoryColumnId]: value }
   }
@@ -447,8 +695,9 @@ export function Overview({
 
   const addRow = useCallback(() => {
     setNewRows((prev) => [...prev, blankRow(inherited(prev[prev.length - 1]))])
-    // inherited reads items, baseCells and defs; baseCells changes together with items
-  }, [items, defs])
+    // inherited reads items, baseCells and defs (baseCells changes together
+    // with items) and the categories in view
+  }, [items, defs, oneCategory, cats, visible])
 
   // Printing needs every row on the page, not the windowed ones. Cmd+P and the
   // link both go through the same state; flushSync so the rows exist before
@@ -493,6 +742,28 @@ export function Overview({
     const col = { key, unit }
     const id = columnId(col)
     if (columns.some((c) => columnId(c) === id)) {
+      // A property another category uses: this one uses it too, rather than
+      // two properties with one name
+      const existing = defs.find((d) => d.id === id)
+      const missing =
+        existing?.kind === 'prop' && existing.property ? catLabels.filter((c) => !appliesTo(existing.property, [c])) : []
+      if (existing?.kind === 'prop' && existing.property && missing.length > 0) {
+        const property = existing.property
+        try {
+          await setPropertyCategories(
+            property,
+            missing.reduce<string[]>((acc, c) => withCategory({ ...property, categories: acc }, c, true), property.categories ?? []),
+          )
+        } catch (err) {
+          console.error(errorText(err))
+          setColumnError(t.error.saveFailed)
+          return
+        }
+        setColumnError(null)
+        setColumnDraft({ key: '', unit: '', type: 'text', options: '', onlyHere: true })
+        openPanel(null)
+        return
+      }
       // The column may exist and be hidden for holding no value; show it
       // beside the message, so the message can be checked
       setColumnError(t.error.columnExists)
@@ -501,7 +772,7 @@ export function Overview({
     }
     setColumnError(null)
     const options = columnDraft.type === 'choice' ? parseOptions(columnDraft.options) : []
-    const only = oneCategory !== null && columnDraft.onlyHere ? [oneCategory] : []
+    const only = columnDraft.onlyHere ? catLabels : []
     try {
       await addProperty({
         id,
@@ -606,6 +877,81 @@ export function Overview({
     setRenaming(null)
   }
 
+  // Every property but Kategori, as Endre egenskaper edits it
+  function propertyRows(): PropertyRow[] {
+    return defs.flatMap((d) => {
+      if (d.kind !== 'prop' || d.id === categoryColumnId) return []
+      const unit = d.type === 'number' ? (d.col.unit ?? '') : ''
+      const categories = d.property?.categories ?? []
+      return [
+        {
+          id: d.id,
+          key: d.col.key,
+          type: d.type,
+          unit,
+          categories,
+          remove: false,
+          count: usedBy(d.col),
+          was: { key: d.col.key, type: d.type, unit, categories },
+        },
+      ]
+    })
+  }
+
+  // Endre egenskaper stored: removals first, then names, types and units
+  // (renameProperty carries every thing's value along), then categories
+  async function savePropertyEdit(rows: PropertyRow[]) {
+    if (dirtyCount > 0) {
+      setError(t.properties.dirtyFirst)
+      return
+    }
+    const kept = rows.filter((r) => !r.remove)
+    const nextIds = kept.map((r) => columnId({ key: r.key.trim() || r.was.key, unit: unitFor(r.type, r.unit) }))
+    const taken = new Set(columns.map((c) => columnId(c)).filter((id) => !rows.some((r) => r.id === id)))
+    if (nextIds.some((id, i) => taken.has(id) || nextIds.indexOf(id) !== i)) {
+      setError(t.error.columnExists)
+      return
+    }
+    setError(null)
+    try {
+      for (const r of rows.filter((x) => x.remove)) {
+        await removeProperty(r.id, (s) => columnId({ key: s.key, unit: s.unit }) === r.id)
+      }
+      for (const [i, r] of kept.entries()) {
+        const def = defs.find((d) => d.id === r.id)
+        if (def?.kind !== 'prop') continue
+        const key = r.key.trim() || r.was.key
+        const unit = unitFor(r.type, r.unit)
+        const id = nextIds[i] ?? r.id
+        const options = def.property?.options ?? []
+        if (key !== r.was.key || r.type !== r.was.type || r.unit.trim() !== r.was.unit) {
+          await renameProperty(r.id, { id, key, unit, type: r.type, options }, (s) => columnId({ key: s.key, unit: s.unit }) === r.id)
+        }
+        const sameCats =
+          r.categories.length === r.was.categories.length && r.categories.every((c) => r.was.categories.includes(c))
+        if (!sameCats) {
+          await setPropertyCategories(
+            {
+              id,
+              key,
+              unit,
+              type: r.type,
+              createdAt: def.property?.createdAt ?? Date.now(),
+              ...(def.property?.order !== undefined ? { order: def.property.order } : {}),
+              ...(options.length > 0 ? { options } : {}),
+            },
+            r.categories,
+          )
+        }
+      }
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.error.saveFailed)
+      return
+    }
+    openPanel(null)
+  }
+
   function usedBy(col: Column): number {
     const id = columnId(col)
     return items.filter((i) => i.specs.some((s) => columnId({ key: s.key, unit: s.unit }) === id)).length
@@ -645,7 +991,8 @@ export function Overview({
       return
     }
     for (const def of defs) {
-      if (def.kind !== 'prop' || def.type === 'text' || def.type === 'choice') continue
+      // Numbers and dates are checked; a place, like text, is whatever was typed
+      if (def.kind !== 'prop' || def.type === 'text' || def.type === 'choice' || def.type === 'path') continue
       const values = [
         ...added.map((r) => r.cells[def.id] ?? ''),
         ...dirtyIds.map((id) => edits[id]?.cells?.[def.id] ?? ''),
@@ -707,10 +1054,14 @@ export function Overview({
     setRemovingColumn(null)
     setSelected(new Set())
     setAddingColumn(false)
+    setEditingCategories(false)
+    setEditingProperties(false)
+    setBulk(null)
     setColumnDraft({ key: '', unit: '', type: 'text', options: '', onlyHere: true })
     setConfirmingDelete(false)
     setConfirmingDiscard(false)
     setError(null)
+    setActive(null)
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
   }
 
@@ -738,6 +1089,14 @@ export function Overview({
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       if (e.target instanceof HTMLElement && e.target.id === 'search') return
+      if (picking) {
+        closePicker()
+        return
+      }
+      if (addMenu) {
+        closeAddMenu()
+        return
+      }
       if (renaming) {
         setRenaming(null)
         return
@@ -759,29 +1118,229 @@ export function Overview({
     <div className="stack">
       <div className={`table-card${reporting ? ' is-report' : ''}`} ref={cardRef}>
         <div className="overview-head" ref={headRef}>
-          {/* Every action on the register, header style: add, add a column, and
-              the two reports, which take what is on screen */}
-          <div className="row">
-            {selected.size > 0 && !confirmingDelete && (
-              <button type="button" className="btn btn-danger" onClick={() => setConfirmingDelete(true)}>
-                <Icon name="delete" size={20} />
-                {t.table.deleteSelected(selected.size)}
+          <div className="head-row">
+          {/* Kategori is the view, not a filter menu: one click changes the rows,
+              the columns and the filters under them. Only worth a control
+              once there is more than one category to choose between. One
+              button says which category this is, or Velg kategori until one
+              is picked, and opens the choice as a dropdown under it: Alle,
+              then every category with its glyph and count, and once a table
+              shows, Velg kategori above them as the way back to none. */}
+          {categoryValues.length > 1 && (
+            <>
+              {/* Drawn as the app's own select field, in both states: the
+                  same box, border and chevron as Grupper etter, so it reads as
+                  a choice and not as a heading */}
+              <button
+                type="button"
+                ref={currentRef}
+                className={`select view-select${showTable ? '' : ' is-placeholder'}`}
+                aria-haspopup="menu"
+                aria-expanded={picking}
+                aria-label={showTable ? t.view.change(currentLabel) : t.view.label}
+                onClick={() => (picking ? closePicker() : openPicker())}
+              >
+                {showTable &&
+                  (cats.length === 0 ? (
+                    <Icon name={allCategoriesIcon} size={20} />
+                  ) : (
+                    <CategoryIcon
+                      id={cats.length === 1 ? categoryIconFor(currentLabel, chosenIcons) : otherCategoryIcon}
+                      size={20}
+                    />
+                  ))}
+                <span>{showTable ? currentLabel : t.view.label}</span>
               </button>
-            )}
-            <button type="button" className="btn btn-icon" aria-label={t.table.addRow} onClick={addRow}>
-              <Icon name="add" />
-            </button>
+              {picking &&
+                pickerPos &&
+                createPortal(
+                  <div
+                    ref={pickerRef}
+                    className="view-menu"
+                    role="menu"
+                    aria-label={t.view.label}
+                    style={{ top: pickerPos.top, left: pickerPos.left, minWidth: pickerPos.width, maxHeight: pickerPos.maxHeight }}
+                    onKeyDown={onMenuKey}
+                  >
+                    {/* Clears every tick: back to Velg kategori and no table.
+                        Only once something is chosen */}
+                    {showTable && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="view-menu-item view-menu-placeholder"
+                        onClick={unpickCategory}
+                      >
+                        <span className="view-menu-name">{t.view.clear}</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={showTable && cats.length === 0}
+                      className={`view-menu-item${showTable && cats.length === 0 ? ' is-active' : ''}`}
+                      onClick={() => pickCategory(null)}
+                    >
+                      <span className="view-menu-check" aria-hidden="true">
+                        {showTable && cats.length === 0 && <Icon name="check" size={18} />}
+                      </span>
+                      <Icon name={allCategoriesIcon} size={20} />
+                      <span className="view-menu-name">{t.view.all}</span>
+                      <span className="view-menu-count num">{searched.length}</span>
+                    </button>
+                    {categoryValues.map((v) => {
+                      const on = cats.includes(v.key)
+                      return (
+                        <button
+                          key={v.key}
+                          type="button"
+                          role="menuitemcheckbox"
+                          aria-checked={on}
+                          className={`view-menu-item${on ? ' is-active' : ''}`}
+                          onClick={() => toggleCategory(v.key)}
+                        >
+                          <span className="view-menu-check" aria-hidden="true">
+                            {on && <Icon name="check" size={18} />}
+                          </span>
+                          <CategoryIcon id={categoryIconFor(v.label, chosenIcons)} />
+                          <span className="view-menu-name">{v.label}</span>
+                          <span className="view-menu-count num">{v.count}</span>
+                        </button>
+                      )
+                    })}
+                    {/* Names, icons and new categories: the panel in the band */}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="view-menu-item view-menu-edit"
+                      onClick={() => {
+                        setPicking(false)
+                        openPanel('categories')
+                      }}
+                    >
+                      <span className="view-menu-check" aria-hidden="true" />
+                      <Icon name="edit" size={20} />
+                      <span className="view-menu-name">{t.categories.edit}</span>
+                    </button>
+                  </div>,
+                  document.body,
+                )}
+            </>
+          )}
+          {/* Every action on the register, header style: add (a thing or a
+              property, from a menu), and the two reports, which take what is
+              on screen. Only add while no table is showing: the reports act
+              on a table that is not there. */}
+          {selected.size > 0 ? (
+            /* Ticked things: what can be done with all of them at once, in
+               place of the register's own actions until the ticks go */
+            <div className="row head-actions selection-bar" role="toolbar" aria-label={t.selection.count(selected.size)}>
+              <span className="selection-count num">{t.selection.count(selected.size)}</span>
+              <button
+                type="button"
+                className={`btn${bulk ? ' is-active' : ''}`}
+                aria-expanded={bulk !== null}
+                aria-controls="bulk-form"
+                onClick={() => openPanel(bulk ? null : 'bulk')}
+              >
+                {t.selection.edit}
+              </button>
+              <button
+                type="button"
+                className={`btn${printPick && printOnly ? ' is-active' : ''}`}
+                aria-expanded={printPick !== null && printOnly !== null}
+                aria-controls="print-form"
+                onClick={() => openPanel(printPick && printOnly ? null : 'print-selected')}
+              >
+                {t.selection.print}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() =>
+                  downloadText(
+                    exportFilename('csv'),
+                    toCsv(
+                      visible.filter((i) => selected.has(i.id)),
+                      properties,
+                      fields,
+                    ),
+                    'text/csv;charset=utf-8',
+                  )
+                }
+              >
+                {t.selection.csv}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={confirmingDelete}
+                onClick={() => setConfirmingDelete(true)}
+              >
+                <Icon name="delete" size={20} />
+                {t.selection.delete}
+              </button>
+              <button
+                type="button"
+                className="btn btn-icon"
+                aria-label={t.selection.clear}
+                onClick={() => {
+                  setSelected(new Set())
+                  openPanel(null)
+                }}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+          ) : (
+          <div className="row head-actions">
             <button
               type="button"
-              className={`btn btn-icon${addingColumn ? ' is-active' : ''}`}
-              aria-label={t.table.addColumn}
-              aria-expanded={addingColumn}
-              aria-controls="column-form"
-              onClick={() => setAddingColumn((v) => !v)}
+              ref={addRef}
+              className={`btn btn-icon${addMenu || addingColumn ? ' is-active' : ''}`}
+              aria-label={t.table.add}
+              aria-haspopup="menu"
+              aria-expanded={addMenu !== null}
+              onClick={() => (addMenu ? closeAddMenu() : openAddMenu())}
             >
-              <Icon name="viewColumn" />
+              <Icon name="add" />
             </button>
-            {items.length > 0 && (
+            {addMenu &&
+              createPortal(
+                <div
+                  ref={addMenuRef}
+                  className="col-menu-list add-menu"
+                  role="menu"
+                  aria-label={t.table.add}
+                  style={{ top: addMenu.top, right: addMenu.right }}
+                  onKeyDown={onMenuKey}
+                >
+                  <button
+                    type="button"
+                    className="col-menu-item"
+                    role="menuitem"
+                    onClick={() => {
+                      setAddMenu(null)
+                      addRow()
+                    }}
+                  >
+                    {t.table.addRow}
+                  </button>
+                  <button
+                    type="button"
+                    className="col-menu-item"
+                    role="menuitem"
+                    onClick={() => {
+                      setAddMenu(null)
+                      openPanel('columns')
+                    }}
+                  >
+                    {t.table.addColumnMenu}
+                  </button>
+                </div>,
+                document.body,
+              )}
+            {showTable && items.length > 0 && (
               <button
                 type="button"
                 className="btn btn-icon"
@@ -791,72 +1350,21 @@ export function Overview({
                 <Icon name="download" />
               </button>
             )}
-            {items.length > 0 && (
+            {showTable && items.length > 0 && (
               <button
                 type="button"
                 className={`btn btn-icon${printPick ? ' is-active' : ''}`}
                 aria-label={t.report.print}
                 aria-expanded={printPick !== null}
                 aria-controls="print-form"
-                onClick={() => {
-                  setDraftGroup(printGroup)
-                  setDraftPhotos(printPhotos)
-                  setPrintPick((p) => (p ? null : new Set(printCols ?? [])))
-                }}
+                onClick={() => openPanel(printPick ? null : 'print')}
               >
                 <Icon name="print" />
               </button>
             )}
           </div>
-          {/* Kategori is the view, not a filter menu: one click changes the rows,
-              the columns and the filters under them. Only worth a line once
-              there is more than one category to choose between. */}
-          {categoryValues.length > 1 && (
-            <div className={`view-pick${showTable ? ' is-folded' : ''}`}>
-              {/* A glyph per category with its count on it. Seventeen names
-                  wrapped onto two lines of text; seventeen glyphs are one
-                  line you can scan. The name is the button's label, which the
-                  stylesheet shows under it on hover, like every other icon
-                  button here. Once the table has the card the row folds to a
-                  strip and comes back over it on hover, so the head's height
-                  never moves under the sticky header (elzacka, 23 September
-                  2026). */}
-              <div className="view-tabs" role="group" aria-label={t.view.label}>
-              <button
-                type="button"
-                className={`view-tab${viewPicked && cats.length === 0 ? ' is-active' : ''}`}
-                aria-label={t.view.all}
-                aria-pressed={viewPicked && cats.length === 0}
-                onClick={() => {
-                  onFiltersChange({ ...filters, [categoryColumnId]: [] })
-                  onViewPickedChange(!(viewPicked && cats.length === 0))
-                }}
-              >
-                <Icon name={allCategoriesIcon} size={22} />
-                <span className="view-count num">{searched.length}</span>
-              </button>
-              {categoryValues.map((v) => {
-                const on = viewPicked && cats.length === 1 && cats[0] === v.key
-                return (
-                  <button
-                    key={v.key}
-                    type="button"
-                    className={`view-tab${on ? ' is-active' : ''}`}
-                    aria-label={v.label}
-                    aria-pressed={on}
-                    onClick={() => {
-                      onFiltersChange({ ...filters, [categoryColumnId]: on ? [] : [v.key] })
-                      onViewPickedChange(!on)
-                    }}
-                  >
-                    <Icon name={categoryIcon(v.label)} size={22} />
-                    <span className="view-count num">{v.count}</span>
-                  </button>
-                )
-              })}
-              </div>
-            </div>
           )}
+          </div>
           {showTable && (
           <p className="summary">
             {/* What is on screen and the whole register */}
@@ -879,7 +1387,7 @@ export function Overview({
           )}
         </div>
 
-        {(printPick || searchOpen || addingColumn) && (
+        {(printPick || searchOpen || addingColumn || editingCategories || editingProperties || bulk) && (
         <div className="controls">
 
           {printPick && (
@@ -901,17 +1409,24 @@ export function Overview({
               }}
             >
               <p className="field-label">{t.report.pick}</p>
+              {printOnly && <p className="hint">{t.selection.printing(printOnly.size)}</p>}
+              {/* Only the link that would change something: Velg alle while a
+                  column is left out, Fjern alle while one is in */}
               <div className="row toolbar">
-                <button
-                  type="button"
-                  className="summary-link"
-                  onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
-                >
-                  {t.report.pickAll}
-                </button>
-                <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
-                  {t.report.pickNone}
-                </button>
+                {shownAll.some((d) => d.kind !== 'name' && !printPick.has(d.id)) && (
+                  <button
+                    type="button"
+                    className="summary-link"
+                    onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
+                  >
+                    {t.report.pickAll}
+                  </button>
+                )}
+                {shownAll.some((d) => d.kind !== 'name' && printPick.has(d.id)) && (
+                  <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
+                    {t.report.pickNone}
+                  </button>
+                )}
               </div>
               <div className="row toolbar">
                 {shownAll.map((def) => (
@@ -982,13 +1497,85 @@ export function Overview({
           )}
 
 
+          {bulk && (
+            <form
+              id="bulk-form"
+              className="stack-sm"
+              onSubmit={(e) => {
+                e.preventDefault()
+                applyBulk()
+              }}
+            >
+              <p className="field-label">{t.selection.editTitle(selected.size)}</p>
+              <div className="row toolbar">
+                <div className="field">
+                  <label htmlFor="bulk-prop">{t.selection.property}</label>
+                  <select
+                    id="bulk-prop"
+                    className="select input-key"
+                    value={bulk.defId}
+                    onChange={(e) => setBulk({ ...bulk, defId: e.target.value })}
+                  >
+                    {bulkDefs.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.col.key}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="bulk-value">{t.selection.value}</label>
+                  <input
+                    id="bulk-value"
+                    className="input input-key"
+                    list={
+                      bulkDefs.find((d) => d.id === bulk.defId && (d.type === 'choice' || d.type === 'path'))
+                        ? choiceListId(bulk.defId)
+                        : undefined
+                    }
+                    value={bulk.value}
+                    onChange={(e) => setBulk({ ...bulk, value: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+                <div className="field field-actions">
+                  <button type="submit" className="btn btn-primary">
+                    {t.selection.apply}
+                  </button>
+                  <button type="button" className="btn" onClick={() => openPanel(null)}>
+                    {t.action.cancel}
+                  </button>
+                </div>
+              </div>
+              <p className="hint">{t.selection.editHint}</p>
+            </form>
+          )}
+
+          {editingProperties && (
+            <PropertyEditor
+              rows={propertyRows()}
+              categories={allCategories.map((c) => c.label)}
+              onSave={savePropertyEdit}
+              onClose={() => openPanel(null)}
+            />
+          )}
+
+          {editingCategories && (
+            <CategoryEditor
+              categories={allCategories}
+              icons={chosenIcons}
+              onSave={saveCategoryEdit}
+              onClose={() => openPanel(null)}
+            />
+          )}
+
           {searchOpen && (
             <div className="search-bar">
               <SearchField
                 value={query}
                 onChange={onQueryChange}
                 onClose={onSearchClose}
-                listTip={t.search.tipsTableText}
+                tips={tips}
               />
               <FilterPanel
                 items={items}
@@ -1011,6 +1598,7 @@ export function Overview({
                 void addColumn()
               }}
             >
+              <p className="field-label">{t.table.addColumn}</p>
               <div className="row toolbar">
                 <div className="field">
                   <label htmlFor="col-key">{t.table.columnKey}</label>
@@ -1065,7 +1653,7 @@ export function Overview({
                     />
                   </div>
                 )}
-                {oneCategory !== null && (
+                {catLabels.length > 0 && (
                   <div className="field">
                     <label className="check-option">
                       <input
@@ -1073,7 +1661,7 @@ export function Overview({
                         checked={columnDraft.onlyHere}
                         onChange={(e) => setColumnDraft({ ...columnDraft, onlyHere: e.target.checked })}
                       />
-                      <span>{t.table.onlyIn(oneCategory)}</span>
+                      <span>{t.table.onlyIn(listFormat.format(catLabels))}</span>
                     </label>
                   </div>
                 )}
@@ -1081,8 +1669,8 @@ export function Overview({
                   <button type="submit" className="btn btn-primary">
                     {t.table.columnAdd}
                   </button>
-                  <button type="button" className="btn" onClick={() => setAddingColumn(false)}>
-                    {t.action.cancel}
+                  <button type="button" className="btn" onClick={() => openPanel(null)}>
+                    {t.action.close}
                   </button>
                 </div>
               </div>
@@ -1091,6 +1679,27 @@ export function Overview({
                   {columnError}
                 </p>
               )}
+              {/* What already exists where this one would go, as help and
+                  not as controls: the properties every category has, and
+                  inside one category those it has on top of them */}
+              <dl className="known-props">
+                <dt>{t.table.knownAll}</dt>
+                <dd>{[nameLabel, ...knownAll].join(', ')}</dd>
+                {knownOwn.map(
+                  (k) =>
+                    k.keys.length > 0 && (
+                      <Fragment key={k.label}>
+                        <dt>{t.table.knownOnly(k.label)}</dt>
+                        <dd>{k.keys.join(', ')}</dd>
+                      </Fragment>
+                    ),
+                )}
+              </dl>
+              <div className="row">
+                <button type="button" className="summary-link" onClick={() => openPanel('properties')}>
+                  {t.properties.edit}
+                </button>
+              </div>
             </form>
           )}
         </div>
@@ -1098,7 +1707,7 @@ export function Overview({
 
         <div className="print-only">
           <h1 className="title">{t.report.docTitle}</h1>
-          <p className="hint">{t.report.subtitle(formatDate(Date.now()), visible.length)}</p>
+          <p className="hint">{t.report.subtitle(formatDate(Date.now()), listed.length)}</p>
         </div>
 
         {reporting && (
@@ -1227,8 +1836,10 @@ export function Overview({
             hasSelection={selected.size > 0}
             allRows={printing}
             wrap={wrap}
+            headHeight={headHeight}
             label={labelOf}
             onPaste={onPaste}
+            onLeave={() => setNewRows((prev) => (prev.every(touched) ? prev : prev.filter(touched)))}
             headerCheck={
               <>
                 {allIds.length > 0 && !editing && (
@@ -1348,7 +1959,7 @@ export function Overview({
                               role="menuitem"
                               onClick={() => void scopeColumn(def, oneCategory)}
                             >
-                              <Icon name="viewColumn" size={16} />
+                              <Icon name="label" size={16} />
                               {claimedBy(def.property, cats)
                                 ? t.table.notIn(oneCategory)
                                 : (def.property?.categories?.length ?? 0) > 0
@@ -1394,9 +2005,9 @@ export function Overview({
                 )}
               </>
             )}
-            rowCount={visible.length}
+            rowCount={listed.length}
             row={(i) => {
-              const item = visible[i]
+              const item = listed[i]
               if (!item) return null
               return (
                 <tr key={item.id} className={dirtyIds.includes(item.id) ? 'is-dirty' : undefined}>
@@ -1420,23 +2031,25 @@ export function Overview({
                         </td>
                       )
                     }
+                    const numeric = isNumberColumn(def)
                     if (active?.row !== item.id) {
+                      const n = numeric ? parseNumber(text) : null
                       return (
-                        <td key={def.id}>
+                        <td key={def.id} className={numeric ? 'is-number' : undefined}>
                           <button
                             type="button"
                             className={def.kind === 'prop' ? 'grid-cell num' : 'grid-cell'}
                             aria-label={label}
                             onFocus={() => setActive({ row: item.id, col: def.id })}
                           >
-                            {text}
+                            {n === null ? text : formatNumber(n)}
                           </button>
                         </td>
                       )
                     }
                     const focus = active.col === def.id ? focusWithoutScroll : undefined
                     return (
-                      <td key={def.id}>
+                      <td key={def.id} className={numeric ? 'is-number' : undefined}>
                         <input
                           className={def.kind === 'prop' ? 'grid-input num' : 'grid-input'}
                           list={def.kind === 'name' ? 'name-options' : def.type === 'choice' || def.type === 'path' ? choiceListId(def.id) : undefined}
@@ -1475,7 +2088,7 @@ export function Overview({
                           />
                         </td>
                       ) : (
-                        <td key={def.id}>
+                        <td key={def.id} className={isNumberColumn(def) ? 'is-number' : undefined}>
                           <input
                             className="grid-input num"
                             list={def.type === 'choice' || def.type === 'path' ? choiceListId(def.id) : undefined}
@@ -1525,7 +2138,7 @@ export function Overview({
         </p>
       )}
 
-      {editing && (
+      {dirtyCount > 0 && (
         <div className="row save-bar">
           <button type="button" className="btn btn-primary" onClick={save} disabled={saving}>
             {t.action.save}

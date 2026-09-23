@@ -11,20 +11,24 @@ function isMoney(unit: string | null): unit is string {
   return unit !== null && unit.trim().toLocaleLowerCase('nb') === 'kr'
 }
 
-// One sum per number property in kr.
+// One sum per number property in kr that any of the things has a value in:
+// a total of nothing is not 0 kr, it is no total.
 export function totals(items: readonly Item[], properties: readonly Property[]): Total[] {
   return properties
     .filter((p) => isMoney(p.unit))
-    .map((p) => {
+    .flatMap((p) => {
       const id = p.id
       let sum = 0
+      let any = false
       for (const item of items) {
         for (const s of item.specs) {
           if (columnId({ key: s.key, unit: s.unit }) !== id) continue
           const n = parseNumber(s.value)
-          if (n !== null) sum += n
+          if (n === null) continue
+          sum += n
+          any = true
         }
       }
-      return { key: p.key, unit: p.unit as string, sum }
+      return any ? [{ key: p.key, unit: p.unit as string, sum }] : []
     })
 }

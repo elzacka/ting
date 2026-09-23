@@ -80,9 +80,10 @@ describe('appliesTo', () => {
     expect(appliesTo(column(['Bok']), ['Elektronikk'])).toBe(false)
   })
 
-  it('needs every category in view, not just one of them', () => {
+  it('belongs to a view of several categories when one of them has it', () => {
     expect(appliesTo(column(['Bok', 'Tegneserie']), ['Bok', 'Tegneserie'])).toBe(true)
-    expect(appliesTo(column(['Bok']), ['Bok', 'Tegneserie'])).toBe(false)
+    expect(appliesTo(column(['Bok']), ['Bok', 'Tegneserie'])).toBe(true)
+    expect(appliesTo(column(['Bok']), ['Elektronikk', 'Tegneserie'])).toBe(false)
   })
 })
 
@@ -93,6 +94,10 @@ describe('claimedBy', () => {
     // Belongs everywhere, so no category asked for it in particular
     expect(claimedBy(column(), ['Bok'])).toBe(false)
     expect(claimedBy(column(['Bok']), [])).toBe(false)
+  })
+
+  it('is asked for by a view of several categories when one of them asks', () => {
+    expect(claimedBy(column(['Bok']), ['Bok', 'Elektronikk'])).toBe(true)
   })
 })
 

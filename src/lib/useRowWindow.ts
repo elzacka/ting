@@ -7,8 +7,8 @@ export type RowWindow = { start: number; end: number; topPad: number; bottomPad:
 
 const overscan = 12
 
-// Both tables: a 44 px control plus 2 px cell padding above and below
-export const rowHeight = 48
+// The desk table: a 32 px cell, 3 px of padding and the 1 px hairline
+export const rowHeight = 36
 
 // `all` renders every row: printing needs the whole table on the page.
 export function useRowWindow<E extends HTMLElement = HTMLTableSectionElement>(

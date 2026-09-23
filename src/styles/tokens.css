@@ -2,6 +2,7 @@
   --bg: #fbfbfa;
   --surface: #ffffff;
   --surface-2: #f3f3f0; /* the controls band, one step off the page */
+  --hover: #e6e6e1; /* a hovered button or checkbox row: plainly visible on white and on the band */
   --text: #1a1a1a;
   --text-2: #5f5f5c;
   --border: #ddddd9;
@@ -35,9 +36,10 @@
   --max-w: 720px; /* reading width for prose and forms; lists and tables use the full width */
   --gutter: 16px;
   --row-h: 44px;
-  --topbar-h: 56px;
+  --topbar-h: calc(56px + env(safe-area-inset-top)); /* an installed app on an iPhone draws under the status bar */
   --head-h: 0px; /* the register card's head, measured by Overview so the table header can follow under it */
-  --row-h-sm: 36px; /* controls in the register's band, one step under the table's rows */
+  --row-h-sm: 36px; /* controls in the register's band */
+  --row-h-table: 32px; /* a cell in the desk table; the row adds 4 px of padding and hairline */
   --duration: 120ms;
 }
 

@@ -47,6 +47,11 @@ export const propertySchema = z.object({
   // The Kategori values this column belongs to. Missing or empty means it
   // belongs to every category: that is what a column is until it is narrowed.
   categories: z.array(z.string().trim().min(1)).optional(),
+  // On the Kategori property only: the icon chosen for a category, keyed by
+  // the category as written, valued by an id from the icon pack. A category
+  // without one shows the icon guessed from its name. Ids are plain words, so
+  // nothing from a file can become anything but a lookup key.
+  icons: z.record(z.string().trim().min(1).max(200), z.string().regex(/^[a-z0-9_]{1,64}$/)).optional(),
 })
 
 export type PropertyType = 'text' | 'choice' | 'number' | 'date' | 'path'
