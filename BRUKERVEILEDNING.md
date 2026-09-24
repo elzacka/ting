@@ -8,20 +8,41 @@ slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
 
 ## Innhold
 
-- [Kom i gang](#kom-i-gang)
-- [Slik er appen bygd opp](#slik-er-appen-bygd-opp)
-- [Legge til](#legge-til)
-- [Endre](#endre)
-- [Slette](#slette)
-- [Finne igjen](#finne-igjen)
-- [Skrive ut og hente ut](#skrive-ut-og-hente-ut)
-- [Ta vare på dataene](#ta-vare-på-dataene)
-- [Bruke flere enheter](#bruke-flere-enheter)
-- [Oppslag](#oppslag)
-- [Hvis noe går galt](#hvis-noe-går-galt)
-- [Personvern](#personvern)
-
----
+- [[#Kom i gang|Kom i gang]]
+	- [[#Kom i gang#1. Åpne og installer appen|1. Åpne og installer appen]]
+	- [[#Kom i gang#2. Prøv appen, og velg et passord for å beholde det|2. Prøv appen, og velg et passord for å beholde det]]
+	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
+	- [[#Kom i gang#4. Legg inn de første tingene|4. Legg inn de første tingene]]
+	- [[#Kom i gang#5. Ta vare på dataene|5. Ta vare på dataene]]
+- [[#Slik er appen bygd opp|Slik er appen bygd opp]]
+- [[#Legge til|Legge til]]
+	- [[#Legge til#En ting|En ting]]
+	- [[#Legge til#Mange ting|Mange ting]]
+	- [[#Legge til#En egenskap|En egenskap]]
+	- [[#Legge til#En kategori|En kategori]]
+- [[#Endre|Endre]]
+	- [[#Endre#En ting|En ting]]
+	- [[#Endre#Mange ting|Mange ting]]
+	- [[#Endre#En egenskap|En egenskap]]
+	- [[#Endre#Mange egenskaper|Mange egenskaper]]
+	- [[#Endre#Kategorier|Kategorier]]
+- [[#Slette|Slette]]
+- [[#Finne igjen|Finne igjen]]
+	- [[#Finne igjen#Velge kategorier|Velge kategorier]]
+	- [[#Finne igjen#Søke|Søke]]
+	- [[#Finne igjen#Filtrere|Filtrere]]
+	- [[#Finne igjen#Sortere og tilpasse tabellen|Sortere og tilpasse tabellen]]
+- [[#Skrive ut og hente ut|Skrive ut og hente ut]]
+- [[#Ta vare på dataene|Ta vare på dataene]]
+- [[#Bruke flere enheter|Bruke flere enheter]]
+- [[#Oppslag|Oppslag]]
+	- [[#Oppslag#Søk|Søk]]
+	- [[#Oppslag#Felttyper|Felttyper]]
+	- [[#Oppslag#Egenskaper for det Ting ikke har egne funksjoner for|Egenskaper for det Ting ikke har egne funksjoner for]]
+	- [[#Oppslag#Innstillinger|Innstillinger]]
+	- [[#Oppslag#Hurtigtaster|Hurtigtaster]]
+- [[#Hvis noe går galt|Hvis noe går galt]]
+- [[#Personvern|Personvern]]
 
 ## Kom i gang
 
@@ -154,16 +175,21 @@ for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
 senere; `-har:pris` i søket henter fram de som står igjen.
 
+**En bok, på mobilen:** Appen kan slå opp bøker. Velg kategorien «Bøker» på
+«Ny ting», trykk «Skann strekkode» og ta bilde av strekkoden bak på boka. Trykk
+«Slå opp på nett», så fyller appen inn tittel og forfatter i «Navn». Rett det
+som er feil før du lagrer.
+
 **Med strekkoden:** På «Ny ting» ligger feltet «Strekkode», nederst.
 
-| Vil du | Slik |
-|---|---|
-| Lese koden fra etiketten | «Skann strekkode» åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Leser den ikke koden, tar du et nytt bilde nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
-| Hente navnet på en bok eller vare | Med en ISBN, EAN eller UPC i feltet: «Slå opp på nett». Bøker slås opp i Nasjonalbiblioteket og Open Library, varer i Open Food Facts og søsterkatalogene. Rett navnet før du lagrer |
-| Ta vare på et serienummer | Skann eller skriv det. Alt som ikke er en varekode, lagres som tekst |
+| Vil du                            | Slik                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lese koden fra etiketten          | «Skann strekkode» åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Leser den ikke koden, tar du et nytt bilde nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
+| Slå opp en bok                    | Knappen «Slå opp på nett» vises når kategorien har symbolet «Bok» og feltet har en ISBN. En kategori med «bok» eller «bøker» i navnet får symbolet av seg selv. Appen henter tittel og forfatter fra Nasjonalbiblioteket eller Open Library |
+| Ta vare på et serienummer eller en QR-kode | Skann eller skriv inn koden. Appen lagrer den som tekst og slår den ikke opp |
 
-Bøker og matvarer finnes som regel i oppslagsverkene. Turutstyr og elektronikk
-finnes sjelden: Da sparer skanningen deg for å skrive nummeret, og navnet
+Appen slår bare opp bøker, fordi det ikke finnes noen god, åpen katalog for
+andre ting. For dem sparer skanningen deg for å skrive nummeret, og navnet
 skriver du selv.
 
 ### Mange ting
@@ -503,7 +529,7 @@ steder og bruker ingen KI.
 | Ukryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
 | Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
 | Lås | Med passord åpner appen alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen. Er Face ID eller Touch ID slått på, er enhetens egen lås også appens lås på den enheten. Kopier og lagringsmappen krever fortsatt passordet |
-| Ut av enheten | Bare sifrene i en strekkode, bare når du trykker på «Slå opp på nett», til Nasjonalbiblioteket, Open Library eller Open Food Facts med søsterkatalogene. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
+| Ut av enheten | Bare sifrene i en ISBN, bare når du trykker på «Slå opp på nett», til Nasjonalbiblioteket eller Open Library. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
 
 Alt du skriver inn, skanner eller får tilbake fra et oppslag, behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

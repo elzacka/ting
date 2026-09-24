@@ -37,9 +37,9 @@ export function digitsOf(code: string): string {
   return code.replace(/[\s-]/g, '')
 }
 
-// Retail codes with a valid check digit get a kind; everything else (serial
-// numbers, Code 128 labels, QR content without a GS1 code) is 'other' and is
-// never looked up.
+// Retail codes with a valid check digit get a kind and are stored as digits;
+// everything else (serial numbers, Code 128 labels, QR content without a GS1
+// code) is 'other' and is stored as read. Only an ISBN is ever looked up.
 export function classify(code: string): CodeKind {
   const d = digitsOf(code)
   if (!/^\d+$/.test(d)) return 'other'

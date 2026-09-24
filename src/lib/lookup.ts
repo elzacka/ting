@@ -2,18 +2,14 @@ import { z } from 'zod'
 import { classify, digitsOf } from './barcode'
 
 // The one place the app talks to the network, and only when the user presses
-// "Slå opp på nett": the digits of a retail code go to a public catalogue and
-// a name comes back for the user to review. Nothing else leaves the device:
-// no cookies, no referrer, no key, no cache. The hosts used here are the
-// whole connect-src list in vite.config.ts; change both together.
+// "Slå opp på nett": the digits of an ISBN go to a library catalogue and a
+// title comes back for the user to review. Nothing else leaves the device: no
+// cookies, no referrer, no key, no cache. Other codes are only stored: the
+// open catalogue for goods other than food is small, and the large ones need
+// a key the app has no server to keep. The hosts used here are the whole
+// connect-src list in vite.config.ts; change both together.
 
-export type Source =
-  | 'Nasjonalbiblioteket'
-  | 'Open Library'
-  | 'Open Food Facts'
-  | 'Open Products Facts'
-  | 'Open Beauty Facts'
-  | 'Open Pet Food Facts'
+export type Source = 'Nasjonalbiblioteket' | 'Open Library'
 
 export type Lookup =
   | { kind: 'found'; name: string; source: Source }
@@ -48,30 +44,13 @@ const openLibrary = z.object({
   docs: z.array(z.object({ title: z.string().optional(), author_name: z.array(z.string()).optional() })),
 })
 
-// The Open Food Facts family is one store with four fronts; product_type says
-// which one answered
-const factsSources: Record<string, Source> = {
-  food: 'Open Food Facts',
-  product: 'Open Products Facts',
-  beauty: 'Open Beauty Facts',
-  petfood: 'Open Pet Food Facts',
-}
-
-const facts = z.object({
-  status: z.string().optional(),
-  product: z
-    .object({ product_name: z.string().optional(), brands: z.string().optional(), product_type: z.string().optional() })
-    .partial()
-    .optional(),
-})
-
-async function fetchJson(url: string, signal: AbortSignal, redirect: RequestRedirect = 'error'): Promise<unknown> {
+async function fetchJson(url: string, signal: AbortSignal): Promise<unknown> {
   const res = await fetch(url, {
     mode: 'cors',
     credentials: 'omit',
     referrerPolicy: 'no-referrer',
     cache: 'no-store',
-    redirect,
+    redirect: 'error',
     headers: { Accept: 'application/json' },
     signal,
   })
@@ -111,40 +90,16 @@ async function fromOpenLibrary(isbn: string, signal: AbortSignal): Promise<Looku
   return name === '' ? { kind: 'notFound' } : { kind: 'found', name, source: 'Open Library' }
 }
 
-// One request: product_type=all makes the food host redirect to whichever of
-// the four holds the code, so this call follows redirects. The CSP still
-// limits where it may land.
-async function fromFacts(code: string, signal: AbortSignal): Promise<Lookup> {
-  const raw = await fetchJson(
-    `https://world.openfoodfacts.org/api/v3/product/${code}?product_type=all&fields=product_name,brands,product_type`,
-    signal,
-    'follow',
-  )
-  const parsed = facts.safeParse(raw)
-  if (!parsed.success || parsed.data.status !== 'success') return { kind: 'notFound' }
-  const product = text(parsed.data.product?.product_name ?? '')
-  // Brands come as a list; the first one the product name does not already say
-  const brand = (parsed.data.product?.brands ?? '')
-    .split(',')
-    .map(text)
-    .find((b) => b !== '' && !product.toLocaleLowerCase().includes(b.toLocaleLowerCase()))
-  const name = text([brand, product].filter(Boolean).join(' '))
-  const source = factsSources[parsed.data.product?.product_type ?? ''] ?? 'Open Food Facts'
-  return name === '' ? { kind: 'notFound' } : { kind: 'found', name, source }
-}
-
-// Books to the two library catalogues, the Norwegian one first for a
-// Norwegian ISBN (group 82); other retail codes to the Open Food Facts family.
-// Serial numbers and QR content are never sent.
+// An ISBN to the two library catalogues, the Norwegian one first for a
+// Norwegian ISBN (group 82). Other codes, serial numbers and QR content are
+// never sent.
 export async function lookup(code: string): Promise<Lookup> {
-  const kind = classify(code)
-  if (kind === 'other') return { kind: 'notFound' }
+  if (classify(code) !== 'isbn') return { kind: 'notFound' }
   if (!navigator.onLine) return { kind: 'offline' }
   const digits = digitsOf(code)
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    if (kind !== 'isbn') return await fromFacts(digits, controller.signal)
     const norwegian = digits.startsWith('97882')
     const first = await (norwegian ? fromNasjonalbiblioteket : fromOpenLibrary)(digits, controller.signal)
     if (first.kind === 'found') return first

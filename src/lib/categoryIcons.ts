@@ -36,6 +36,13 @@ export function categoryIconFor(label: string, chosen?: Readonly<Record<string, 
   return hit !== undefined && hasPackIcon(hit) ? hit : guessCategoryIcon(label)
 }
 
+// Books are the one kind of thing with an open catalogue to look a code up
+// in. A category is about books when its icon is the book, chosen or guessed
+// from the name, so «Bøker og leker» counts and a renamed Bøker keeps it.
+export function isBookCategory(label: string, chosen?: Readonly<Record<string, string>>): boolean {
+  return categoryIconFor(label, chosen) === 'menu_book'
+}
+
 // Only the explicit choice, or null while the guess stands
 export function chosenIcon(label: string, chosen?: Readonly<Record<string, string>>): string | null {
   const key = fold(label)

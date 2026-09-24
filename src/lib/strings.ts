@@ -169,6 +169,7 @@ export const t = {
     scanning: 'Leser…',
     read: (format: string) => `Lest som ${format}.`,
     none: 'Fant ingen strekkode i bildet. Ta bildet nærmere, rett forfra.',
+    bookHint: 'Skann strekkoden på boka, så kan du hente tittel og forfatter på nett.',
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Navnet er hentet fra ${source}. Rett det som er feil før du lagrer.`,

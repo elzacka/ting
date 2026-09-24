@@ -3,6 +3,7 @@ import { addItem, addProperty } from '../db/db'
 import { asImage } from '../lib/backup'
 import { classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
 import type { Item, Property } from '../db/schema'
+import { isBookCategory } from '../lib/categoryIcons'
 import { errorText } from '../lib/errors'
 import { recentValues } from '../lib/filter'
 import {
@@ -73,8 +74,12 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const url = useObjectUrl(photos[0] ?? null)
-  // The barcode: scanned from a photo of the label or typed from it. What
-  // the last scan or lookup said is one line under the field.
+  // The barcode, serial number or QR code: scanned from a photo of the label
+  // or typed from it. Only an ISBN in a book category can be looked up, since
+  // books are what an open catalogue holds. What the last scan or lookup said
+  // is one line under the field; in a book category, until there is an ISBN
+  // to look up, that line says the lookup is there.
+  const books = isBookCategory(category, properties.find((p) => p.id === categoryColumnId)?.icons)
   const [code, setCode] = useState('')
   const [codeNote, setCodeNote] = useState<string | null>(null)
   const [busy, setBusy] = useState<'scan' | 'lookup' | null>(null)
@@ -266,14 +271,14 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
             <Icon name="photoCamera" size={20} />
             {busy === 'scan' ? t.barcode.scanning : t.barcode.scan}
           </button>
-          {classify(code) !== 'other' && (
+          {books && classify(code) === 'isbn' && (
             <button type="button" className="btn" disabled={busy !== null} onClick={() => void lookUp()}>
               {busy === 'lookup' ? t.barcode.looking : t.barcode.lookup}
             </button>
           )}
         </div>
         <p className="hint" aria-live="polite">
-          {codeNote ?? ''}
+          {codeNote ?? (books && classify(code) !== 'isbn' ? t.barcode.bookHint : '')}
         </p>
       </div>
       {error && (

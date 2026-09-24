@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { categoryIconFor, chosenIcon, guessCategoryIcon, otherCategoryIcon } from './categoryIcons'
+import { categoryIconFor, chosenIcon, guessCategoryIcon, isBookCategory, otherCategoryIcon } from './categoryIcons'
 
 describe('guessCategoryIcon', () => {
   it('reads the words in the register elzacka actually keeps', () => {
@@ -65,5 +65,19 @@ describe('categoryIconFor', () => {
   it('tells an explicit choice from a guess', () => {
     expect(chosenIcon('Kjøkken', { Kjøkken: 'chair' })).toBe('chair')
     expect(chosenIcon('Kjøkken', {})).toBeNull()
+  })
+})
+
+describe('isBookCategory', () => {
+  it('knows books by the book icon, guessed from the name', () => {
+    expect(isBookCategory('Bøker')).toBe(true)
+    expect(isBookCategory('Bøker og leker')).toBe(true)
+    expect(isBookCategory('Kjøkken')).toBe(false)
+    expect(isBookCategory('')).toBe(false)
+  })
+
+  it('follows the icon chosen in Endre kategorier', () => {
+    expect(isBookCategory('Litteratur', { Litteratur: 'menu_book' })).toBe(true)
+    expect(isBookCategory('Bøker', { Bøker: 'chair' })).toBe(false)
   })
 })
