@@ -64,8 +64,10 @@ async function secretFrom(credentialId: Uint8Array, salt: Uint8Array): Promise<U
       publicKey: {
         challenge: randomBytes(32) as BufferSource,
         // The passkey was made on this device's own authenticator. Saying so,
-        // and preferring it, sends the browser straight to Face ID or Touch ID
-        // rather than a chooser that offers a security key or a phone first.
+        // and preferring it, keeps the browser from offering a security key or
+        // a phone first. A password manager that saved the passkey (1Password)
+        // answers before Face ID or Touch ID whatever this asks: the page has
+        // no say in which provider holds a passkey or answers for it.
         allowCredentials: [{ type: 'public-key', id: credentialId as BufferSource, transports: ['internal'] }],
         hints: ['client-device'],
         userVerification: 'required',
