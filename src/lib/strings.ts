@@ -280,12 +280,12 @@ export const t = {
   trial: {
     notice: 'Du bruker appen i prøvemodus. Det du legger inn, blir borte når du lukker den.',
     // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger inn blir borte når appen lukkes.',
+    noticePhone: 'Det du legger inn, blir borte når appen lukkes.',
     setPassword: 'Velg passord for å bevare det',
-    why: 'Passordet krypterer alt du legger inn; på enheten og i sikkerhetskopier. Uten passord blir det borte når du lukker appen.',
-    lost: 'Mister du passordet er dataene tapt.',
+    why: 'Passordet krypterer alt du legger inn, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
+    lost: 'Mister du passordet, er dataene tapt.',
     folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
-    done: 'Passord valgt. Alt du har lagt inn er bevart.',
+    done: 'Passord valgt. Alt du har lagt inn, er bevart.',
   },
   storage: {
     title: 'Innstillinger',
