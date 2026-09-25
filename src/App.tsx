@@ -19,7 +19,7 @@ import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { hasKey, initVault, lock, setupVault, startTrial, unlock, unlockWithKey, useVault } from './lib/vault'
-import { openWithPasskey, passkeySupported, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
+import { exposedPasskey, openWithPasskey, passkeySupported, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
 import { categoryColumnId, type FieldSettings } from './lib/fields'
 import type { Filters } from './lib/filters'
 import { usePlainPaste } from './lib/plainPaste'
@@ -82,7 +82,8 @@ export function App() {
 
   // Face ID or Touch ID, where this device has it set up for this vault. A
   // copy wrapping another data key (a restore or a folder took over another
-  // vault) opens nothing, so it goes.
+  // vault) opens nothing, and one wrapped under an empty secret opens for
+  // anyone; both go.
   // undefined while not yet known: the lock screen waits for it, so the
   // passphrase field does not take the focus (and raise a phone's keyboard)
   // over the Face ID sheet
@@ -96,8 +97,9 @@ export function App() {
     let live = true
     void (async () => {
       const record = await readPasskey()
-      if (record && record.dekId !== lockedVault.dekId) await deletePasskey()
-      const usable = record && record.dekId === lockedVault.dekId && (await passkeySupported()) ? record : null
+      const kept = record && record.dekId === lockedVault.dekId && !(await exposedPasskey(record)) ? record : null
+      if (record && !kept) await deletePasskey()
+      const usable = kept && (await passkeySupported()) ? kept : null
       if (live) setPasskey(usable)
     })()
     return () => {
