@@ -68,7 +68,7 @@ sju dager.
 Du kan prøve alt i appen uten passord. Det du legger inn da, blir borte når du
 lukker appen, og linja under topplinja minner deg om det. På iPhone kan
 systemet også lukke appen selv, for eksempel når du bytter til en annen app. Trykk på «Velg
-passord for å beholde det», så kommer du til Innstillinger. Alt du har lagt inn,
+passord for å bevare det», så kommer du til Innstillinger. Alt du har lagt inn,
 blir med når du velger passordet.
 
 Passordet må ha minst 12 tegn. En setning er lettere å huske enn en kode.

@@ -278,14 +278,14 @@ export const t = {
   },
   // Before a passphrase: the line under the top bar
   trial: {
-    notice: 'Du prøver appen. Det du legger inn, blir borte når du lukker den.',
+    notice: 'Du bruker appen i prøvemodus. Det du legger inn, blir borte når du lukker den.',
     // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger inn, blir borte når appen lukkes.',
-    setPassword: 'Velg passord for å beholde det',
-    why: 'Passordet krypterer alt du legger inn, på enheten og i kopiene. Uten passord blir det borte når du lukker appen. Du trenger det hver gang du åpner appen.',
-    lost: 'Mister du passordet, er dataene tapt. Det finnes ingen bakvei.',
+    noticePhone: 'Det du legger inn blir borte når appen lukkes.',
+    setPassword: 'Velg passord for å bevare det',
+    why: 'Passordet krypterer alt du legger inn; på enheten og i sikkerhetskopier. Uten passord blir det borte når du lukker appen.',
+    lost: 'Mister du passordet er dataene tapt.',
     folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
-    done: 'Passordet er valgt. Alt du har lagt inn, er tatt vare på.',
+    done: 'Passord valgt. Alt du har lagt inn er bevart.',
   },
   storage: {
     title: 'Innstillinger',
