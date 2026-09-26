@@ -469,7 +469,8 @@ export function Overview({
     setEditingCategories(which === 'categories')
     setEditingProperties(which === 'properties')
     setOptionsFor(null)
-    setBulk(which === 'bulk' ? { defId: bulkDefs[0]?.id ?? categoryColumnId, value: '' } : null)
+    const bulkDefault = bulkDefs.find((d) => d.id === categoryColumnId) ?? bulkDefs[0]
+    setBulk(which === 'bulk' ? { defId: bulkDefault?.id ?? categoryColumnId, value: '' } : null)
     setPrintOnly(which === 'print-selected' ? new Set(selected) : null)
     if (which === 'print' || which === 'print-selected') {
       setDraftGroup(printGroup)
@@ -489,13 +490,16 @@ export function Overview({
     setBulk(null)
   }, [searchOpen])
 
-  // What Endre verdi offers: the properties of the categories in view, and
-  // Kategori always, since moving things between categories is the common case
+  // What Endre verdi offers, alphabetical: the properties of the categories in
+  // view, and Kategori always, since moving things between categories is the
+  // common case (and so the one chosen when the form opens)
   const bulkDefs = useMemo(
     () =>
-      defs.flatMap((d) =>
-        d.kind === 'prop' && (d.id === categoryColumnId || appliesTo(d.property, cats)) ? [d] : [],
-      ),
+      defs
+        .flatMap((d) =>
+          d.kind === 'prop' && (d.id === categoryColumnId || appliesTo(d.property, cats)) ? [d] : [],
+        )
+        .sort((a, b) => collator.compare(a.col.key, b.col.key)),
     [defs, cats],
   )
   // The same value into one property of every ticked thing, as edits: the
