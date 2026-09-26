@@ -4,7 +4,7 @@ import { activeCount, isFacet, levelId, valuesFor, withoutFilter, type Filters, 
 import { isDateUnit } from '../lib/dates'
 import { columnId } from '../lib/grid'
 import { maxPathLevels, parsePath } from '../lib/paths'
-import { parseNumber } from '../lib/filter'
+import { parseNumber } from '../lib/values'
 import { appliesTo, categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'

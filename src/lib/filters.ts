@@ -1,12 +1,12 @@
 import type { Item } from '../db/schema'
 import { isDateUnit } from './dates'
 import { isPathUnit, pathPrefix } from './paths'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 import { columnId, type Column } from './grid'
 
 // One filter per column: the set of accepted values (empty = no filter).
 // Values are compared by their normalised text so "5" and 5 are the same.
-// A place column has one filter per level, keyed "<column>#1", "<column>#2":
+// A path column has one filter per level, keyed "<column>#1", "<column>#2":
 // the level is in the id, so nothing downstream needs to know the types.
 export type Filters = Record<string, string[]>
 
@@ -64,7 +64,7 @@ function labelOf(value: string | number, unit: string | null, level: number | nu
 }
 
 // Distinct values present for a column with how many things carry each,
-// numeric-aware sort. A level narrows a place column to its first n steps.
+// numeric-aware sort. A level narrows a path column to its first n steps.
 export function valuesFor(items: readonly Item[], col: Column, level: number | null = null): FilterValue[] {
   const seen = new Map<string, FilterValue>()
   const add = (k: string, label: string) => {

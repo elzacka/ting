@@ -16,9 +16,10 @@ import {
   setColumnOrder,
   setFieldSettings,
   setPropertyCategories,
+  setPropertyOptions,
 } from '../db/db'
 import type { Item, Property, PropertyType } from '../db/schema'
-import { distinct, parseNumber } from '../lib/filter'
+import { distinct, parseNumber } from '../lib/values'
 import { autoWidths } from '../lib/columnWidths'
 import {
   appliesTo,
@@ -50,6 +51,7 @@ import { CategoryIcon } from './CategoryIcon'
 import { CategoryEditor } from './CategoryEditor'
 import { PropertyEditor, type PropertyRow } from './PropertyEditor'
 import type { CategoryEdit } from '../lib/categories'
+import { isEmptyEdit, optionEdit, optionValues } from '../lib/options'
 import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
@@ -100,8 +102,8 @@ type Props = {
   onFiltersChange: (f: Filters) => void
   // Whether a category has been chosen at all. Until one is, the card shows
   // its categories and nothing else.
-  viewPicked: boolean
-  onViewPickedChange: (picked: boolean) => void
+  categoryPicked: boolean
+  onCategoryPickedChange: (picked: boolean) => void
   // Columns taken out of the table on Innstillinger; Navn is never among them
   hidden: Set<string>
   // Long values run onto more lines instead of ending in an ellipsis (Innstillinger)
@@ -135,8 +137,8 @@ export function Overview({
   onDirtyChange,
   filters,
   onFiltersChange,
-  viewPicked,
-  onViewPickedChange,
+  categoryPicked,
+  onCategoryPickedChange,
   hidden,
   wrap,
 }: Props) {
@@ -148,7 +150,6 @@ export function Overview({
     key: string
     unit: string
     type: PropertyType
-    options: string
   } | null>(null)
   // The open column menu is fixed to the window so the table's scroll box cannot clip it.
   const [menuPos, setMenuPos] = useState<{ id: string; top: number; left: number } | null>(null)
@@ -158,6 +159,8 @@ export function Overview({
   const [addingColumn, setAddingColumn] = useState(false)
   const [editingCategories, setEditingCategories] = useState(false)
   const [editingProperties, setEditingProperties] = useState(false)
+  // The Valgliste whose alternatives Endre egenskaper opens on, from its column menu
+  const [optionsFor, setOptionsFor] = useState<string | null>(null)
   // Endre verdi for the ticked things: which property, and the value it gets
   const [bulk, setBulk] = useState<{ defId: string; value: string } | null>(null)
   // Skriv ut from the selection: the things that go on paper, nothing else
@@ -272,17 +275,17 @@ export function Overview({
   )
   const currentRef = useRef<HTMLButtonElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
-  const currentLabel = cats.length === 0 ? t.view.all : catLabels.join(', ')
+  const currentLabel = cats.length === 0 ? t.categoryPicker.all : catLabels.join(', ')
   // Measured, not 100vh: the list ends a gutter above the window's real
   // bottom edge and scrolls inside itself when the categories need more room
-  function placePicker() {
+  function positionPicker() {
     const r = currentRef.current?.getBoundingClientRect()
     if (!r) return
     const top = r.bottom + 4
     setPickerPos({ top, left: r.left, width: r.width, maxHeight: Math.max(160, window.innerHeight - top - 16) })
   }
   function openPicker() {
-    placePicker()
+    positionPicker()
     setPicking(true)
   }
   function closePicker() {
@@ -291,19 +294,19 @@ export function Overview({
   }
   function pickCategory(key: string | null) {
     onFiltersChange({ ...filters, [categoryColumnId]: key === null ? [] : [key] })
-    onViewPickedChange(true)
+    onCategoryPickedChange(true)
     closePicker()
   }
   // Ticks or unticks one category. None left is no category and no table.
   function toggleCategory(key: string) {
     const next = cats.includes(key) ? cats.filter((k) => k !== key) : [...cats, key]
     onFiltersChange({ ...filters, [categoryColumnId]: next })
-    onViewPickedChange(next.length > 0)
+    onCategoryPickedChange(next.length > 0)
   }
   // Velg kategori: back to no category and no table
   function unpickCategory() {
     onFiltersChange({ ...filters, [categoryColumnId]: [] })
-    onViewPickedChange(false)
+    onCategoryPickedChange(false)
     closePicker()
   }
   // Open: the chosen one has focus, the arrows move through the list, a
@@ -318,10 +321,10 @@ export function Overview({
       setPicking(false)
     }
     document.addEventListener('mousedown', onDown)
-    window.addEventListener('resize', placePicker)
+    window.addEventListener('resize', positionPicker)
     return () => {
       document.removeEventListener('mousedown', onDown)
-      window.removeEventListener('resize', placePicker)
+      window.removeEventListener('resize', positionPicker)
     }
   }, [picking])
   // The arrows, Home and End move through a menu's buttons
@@ -465,6 +468,7 @@ export function Overview({
     setAddingColumn(which === 'columns')
     setEditingCategories(which === 'categories')
     setEditingProperties(which === 'properties')
+    setOptionsFor(null)
     setBulk(which === 'bulk' ? { defId: bulkDefs[0]?.id ?? categoryColumnId, value: '' } : null)
     setPrintOnly(which === 'print-selected' ? new Set(selected) : null)
     if (which === 'print' || which === 'print-selected') {
@@ -751,7 +755,7 @@ export function Overview({
   // between in the first place. The chooser itself is only drawn from two
   // categories up, and a table nobody can reach would be a trap.
   const showTable =
-    viewPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
+    categoryPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
   const hasRows = showTable && (items.length > 0 || newRows.length > 0)
   const allIds = visible.map((i) => i.id)
   const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id))
@@ -879,7 +883,7 @@ export function Overview({
         key,
         unit,
         type: renaming.type,
-        options: renaming.type === 'choice' ? parseOptions(renaming.options) : [],
+        options: renaming.type === 'choice' && def.property?.options ? def.property.options : [],
       },
       (s) => columnId({ key: s.key, unit: s.unit }) === fromId,
     )
@@ -898,12 +902,22 @@ export function Overview({
     setRenaming(null)
   }
 
-  // Every property but Kategori, as Endre egenskaper edits it
+  // Every property but Kategori, as Endre egenskaper edits it. Every one
+  // carries its values as alternatives, so a column turned into a Valgliste
+  // there shows what its alternatives will be.
   function propertyRows(): PropertyRow[] {
     return defs.flatMap((d) => {
       if (d.kind !== 'prop' || d.id === categoryColumnId) return []
       const unit = d.type === 'number' ? (d.col.unit ?? '') : ''
       const categories = d.property?.categories ?? []
+      const options = optionValues(items, d.id, d.property?.options).map((o) => ({
+        key: o.label,
+        from: o.label,
+        name: o.label,
+        count: o.count,
+        mixed: o.mixed,
+        remove: false,
+      }))
       return [
         {
           id: d.id,
@@ -911,6 +925,7 @@ export function Overview({
           type: d.type,
           unit,
           categories,
+          options,
           remove: false,
           count: usedBy(d.col),
           was: { key: d.col.key, type: d.type, unit, categories },
@@ -920,7 +935,8 @@ export function Overview({
   }
 
   // Endre egenskaper stored: removals first, then names, types and units
-  // (renameProperty carries every thing's value along), then categories
+  // (renameProperty carries every thing's value along), then categories,
+  // then a Valgliste's alternatives, on the things and in its list
   async function savePropertyEdit(rows: PropertyRow[]) {
     if (dirtyCount > 0) {
       setError(t.properties.dirtyFirst)
@@ -964,12 +980,30 @@ export function Overview({
             r.categories,
           )
         }
+        const optEdit = optionEdit(r.options)
+        if (r.type === 'choice' && !isEmptyEdit(optEdit)) await setPropertyOptions(id, optEdit)
       }
     } catch (err) {
       console.error(errorText(err))
       setError(t.error.saveFailed)
       return
     }
+    // A filter on a renamed alternative follows it; one on a removed alternative goes
+    let nextFilters = filters
+    for (const r of kept) {
+      const chosen = filters[r.id]
+      const optEdit = optionEdit(r.options)
+      if (!chosen || chosen.length === 0 || r.type !== 'choice' || isEmptyEdit(optEdit)) continue
+      const gone = new Set(optEdit.removed.map(valueKey))
+      const next = chosen
+        .filter((k) => !gone.has(k))
+        .map((k) => {
+          const hit = optEdit.renames.find(([from]) => valueKey(from) === k)
+          return hit ? valueKey(hit[1]) : k
+        })
+      nextFilters = { ...nextFilters, [r.id]: [...new Set(next)] }
+    }
+    if (nextFilters !== filters) onFiltersChange(nextFilters)
     openPanel(null)
   }
 
@@ -1154,10 +1188,10 @@ export function Overview({
               <button
                 type="button"
                 ref={currentRef}
-                className={`select view-select${showTable ? '' : ' is-placeholder'}`}
+                className={`select category-select${showTable ? '' : ' is-placeholder'}`}
                 aria-haspopup="menu"
                 aria-expanded={picking}
-                aria-label={showTable ? t.view.change(currentLabel) : t.view.label}
+                aria-label={showTable ? t.categoryPicker.change(currentLabel) : t.categoryPicker.label}
                 onClick={() => (picking ? closePicker() : openPicker())}
               >
                 {showTable &&
@@ -1169,16 +1203,16 @@ export function Overview({
                       size={20}
                     />
                   ))}
-                <span>{showTable ? currentLabel : t.view.label}</span>
+                <span>{showTable ? currentLabel : t.categoryPicker.label}</span>
               </button>
               {picking &&
                 pickerPos &&
                 createPortal(
                   <div
                     ref={pickerRef}
-                    className="view-menu"
+                    className="category-menu"
                     role="menu"
-                    aria-label={t.view.label}
+                    aria-label={t.categoryPicker.label}
                     style={{ top: pickerPos.top, left: pickerPos.left, minWidth: pickerPos.width, maxHeight: pickerPos.maxHeight }}
                     onKeyDown={onMenuKey}
                   >
@@ -1188,25 +1222,25 @@ export function Overview({
                       <button
                         type="button"
                         role="menuitem"
-                        className="view-menu-item view-menu-placeholder"
+                        className="category-menu-item category-menu-placeholder"
                         onClick={unpickCategory}
                       >
-                        <span className="view-menu-name">{t.view.clear}</span>
+                        <span className="category-menu-name">{t.categoryPicker.clear}</span>
                       </button>
                     )}
                     <button
                       type="button"
                       role="menuitemradio"
                       aria-checked={showTable && cats.length === 0}
-                      className={`view-menu-item${showTable && cats.length === 0 ? ' is-active' : ''}`}
+                      className={`category-menu-item${showTable && cats.length === 0 ? ' is-active' : ''}`}
                       onClick={() => pickCategory(null)}
                     >
-                      <span className="view-menu-check" aria-hidden="true">
+                      <span className="category-menu-check" aria-hidden="true">
                         {showTable && cats.length === 0 && <Icon name="check" size={18} />}
                       </span>
                       <Icon name={allCategoriesIcon} size={20} />
-                      <span className="view-menu-name">{t.view.all}</span>
-                      <span className="view-menu-count num">{searched.length}</span>
+                      <span className="category-menu-name">{t.categoryPicker.all}</span>
+                      <span className="category-menu-count num">{searched.length}</span>
                     </button>
                     {categoryValues.map((v) => {
                       const on = cats.includes(v.key)
@@ -1216,15 +1250,15 @@ export function Overview({
                           type="button"
                           role="menuitemcheckbox"
                           aria-checked={on}
-                          className={`view-menu-item${on ? ' is-active' : ''}`}
+                          className={`category-menu-item${on ? ' is-active' : ''}`}
                           onClick={() => toggleCategory(v.key)}
                         >
-                          <span className="view-menu-check" aria-hidden="true">
+                          <span className="category-menu-check" aria-hidden="true">
                             {on && <Icon name="check" size={18} />}
                           </span>
                           <CategoryIcon id={categoryIconFor(v.label, chosenIcons)} />
-                          <span className="view-menu-name">{v.label}</span>
-                          <span className="view-menu-count num">{v.count}</span>
+                          <span className="category-menu-name">{v.label}</span>
+                          <span className="category-menu-count num">{v.count}</span>
                         </button>
                       )
                     })}
@@ -1232,15 +1266,15 @@ export function Overview({
                     <button
                       type="button"
                       role="menuitem"
-                      className="view-menu-item view-menu-edit"
+                      className="category-menu-item category-menu-edit"
                       onClick={() => {
                         setPicking(false)
                         openPanel('categories')
                       }}
                     >
-                      <span className="view-menu-check" aria-hidden="true" />
+                      <span className="category-menu-check" aria-hidden="true" />
                       <Icon name="edit" size={20} />
-                      <span className="view-menu-name">{t.categories.edit}</span>
+                      <span className="category-menu-name">{t.categories.edit}</span>
                     </button>
                   </div>,
                   document.body,
@@ -1573,8 +1607,10 @@ export function Overview({
 
           {editingProperties && (
             <PropertyEditor
+              key={optionsFor ?? ''}
               rows={propertyRows()}
               categories={allCategories.map((c) => c.label)}
+              open={optionsFor}
               onSave={savePropertyEdit}
               onClose={() => openPanel(null)}
             />
@@ -1823,18 +1859,12 @@ export function Overview({
               )
             }
             if (def.type !== 'choice') return null
+            // The same list Endre alternativer shows: alphabetical, one line
+            // per value however it was typed
             return (
               <datalist key={def.id} id={choiceListId(def.id)}>
-                {[
-                  ...new Set([
-                    ...(def.property?.options ?? []),
-                    ...distinct(items, (i) => {
-                      const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-                      return spec ? String(spec.value) : ''
-                    }),
-                  ]),
-                ].map((v) => (
-                  <option key={v} value={v} />
+                {optionValues(items, def.id, def.property?.options).map((o) => (
+                  <option key={o.label} value={o.label} />
                 ))}
               </datalist>
             )
@@ -1902,14 +1932,6 @@ export function Overview({
                         ))}
                       </select>
                     )}
-                    {def.kind === 'prop' && renaming.type === 'choice' && (
-                      <input
-                        className="input"
-                        aria-label={t.table.columnOptions}
-                        value={renaming.options}
-                        onChange={(e) => setRenaming({ ...renaming, options: e.target.value })}
-                      />
-                    )}
                     {def.kind === 'prop' && renaming.type === 'number' && (
                       <input
                         className="input input-narrow"
@@ -1964,13 +1986,31 @@ export function Overview({
                                 key: labelOf(def),
                                 unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
                                 type: def.kind === 'prop' ? def.type : 'text',
-                                options: def.kind === 'prop' ? (def.property?.options ?? []).join(', ') : '',
                               })
                             }}
                           >
                             <Icon name="edit" size={16} />
                             {t.table.renameColumn}
                           </button>
+                          {def.kind === 'prop' && def.type === 'choice' && (
+                            <button
+                              type="button"
+                              className="col-menu-item"
+                              role="menuitem"
+                              onClick={() => {
+                                closeMenu()
+                                if (def.id === categoryColumnId) {
+                                  openPanel('categories')
+                                  return
+                                }
+                                openPanel('properties')
+                                setOptionsFor(def.id)
+                              }}
+                            >
+                              <Icon name="list" size={16} />
+                              {def.id === categoryColumnId ? t.categories.edit : t.options.edit}
+                            </button>
+                          )}
                           {oneCategory !== null && def.kind === 'prop' && def.id !== categoryColumnId && (
                             <button
                               type="button"

@@ -1,6 +1,6 @@
 import type { Item } from '../db/schema'
 import { isDateUnit, parseDateInput } from './dates'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 // Query syntax, kept deliberately small:
 //   sovepose            word, typo-tolerant

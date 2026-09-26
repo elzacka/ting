@@ -1,7 +1,7 @@
 import type { Spec } from '../db/schema'
 import { formatStoredDate, isDateUnit } from './dates'
 import { formatPath, isPathUnit, parsePath } from './paths'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 const numberFormat = new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2 })
 const dateFormat = new Intl.DateTimeFormat('nb-NO', { day: '2-digit', month: '2-digit', year: '2-digit' })

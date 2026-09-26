@@ -40,7 +40,7 @@ export function categoryIconFor(label: string, chosen?: Readonly<Record<string, 
 // in. A category is about books when its icon is the book, chosen or guessed
 // from the name, so «Bøker og leker» counts and a renamed Bøker keeps it.
 export function isBookCategory(label: string, chosen?: Readonly<Record<string, string>>): boolean {
-  return categoryIconFor(label, chosen) === 'menu_book'
+  return categoryIconFor(label, chosen) === 'book'
 }
 
 // Only the explicit choice, or null while the guess stands

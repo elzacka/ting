@@ -6,7 +6,7 @@ import { parseDateInput } from '../lib/dates'
 import { pathsInUse } from '../lib/paths'
 import { errorText } from '../lib/errors'
 import { appliesTo, categoryColumnId, columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
-import { parseNumber, recentValues } from '../lib/filter'
+import { parseNumber, recentValues } from '../lib/values'
 import { formatValue } from '../lib/format'
 import { cellsFrom, columnId, inputFrom } from '../lib/grid'
 import { href, navigate } from '../lib/route'
@@ -135,7 +135,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     }
   }
 
-  // The values in use, for tapping: a Valgliste's, the one used last first,
+  // The values in use, for tapping: a choice column's, the one used last first,
   // or every place on the way to one
   function valuesFor(def: PropDef): string[] {
     const value = (i: Item) => {
@@ -222,9 +222,9 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
       <PhotoStrip photos={item.photos} name={item.name} onFirst={makeFirst} onRemove={dropPhoto} />
 
       <section className="stack-sm">
-        <h2 className="section-label">{t.detail.specs}</h2>
+        <h2 className="section-label">{t.detail.properties}</h2>
         {props.length === 0 ? (
-          <p className="hint">{t.detail.noSpecs}</p>
+          <p className="hint">{t.detail.noProperties}</p>
         ) : (
           <dl className="specs">
             {props.map((def) => {

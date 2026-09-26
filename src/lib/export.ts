@@ -2,7 +2,7 @@ import type { Item, Property } from '../db/schema'
 import { columnDefs, type FieldSettings } from './fields'
 import { columnId, columnsFrom, type Column } from './grid'
 import { formatStoredDate, isDateUnit } from './dates'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 const dateFormat = new Intl.DateTimeFormat('nb-NO', { day: '2-digit', month: '2-digit', year: '2-digit' })
 

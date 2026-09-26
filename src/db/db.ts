@@ -14,6 +14,7 @@ import {
 } from '../lib/fields'
 import { errorText } from '../lib/errors'
 import { applyCategoryEdit, type CategoryEdit } from '../lib/categories'
+import { applyOptionEdit, type OptionEdit } from '../lib/options'
 import { currentKey, subscribeVault, vaultState } from '../lib/vault'
 
 // Every record is stored sealed under the session key: an item is one sealed
@@ -340,6 +341,22 @@ export async function saveCategories(edit: CategoryEdit): Promise<void> {
   await db.transaction('rw', db.properties, db.items, db.settings, async () => {
     await db.items.bulkPut(itemRows)
     await db.properties.bulkPut(propRows)
+    await touch()
+  })
+}
+
+// The alternatives of one Valgliste in one go: renamed and removed on every
+// thing that holds them, and the list the property offers.
+export async function setPropertyOptions(id: string, edit: OptionEdit): Promise<void> {
+  const property = (await readProperties()).find((p) => p.id === id)
+  if (!property) throw new Error(`Property ${id} not found`)
+  const out = applyOptionEdit(await readItems(), property, edit)
+  const now = Date.now()
+  const itemRows = await Promise.all(out.items.map((i) => sealItem(itemSchema.parse({ ...i, updatedAt: now }))))
+  const propRow = await sealProperty(propertySchema.parse(out.property))
+  await db.transaction('rw', db.properties, db.items, db.settings, async () => {
+    await db.items.bulkPut(itemRows)
+    await db.properties.put(propRow)
     await touch()
   })
 }

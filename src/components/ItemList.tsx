@@ -30,7 +30,7 @@ const rowHeight = 56
 export function ItemList({ items, properties, fields, query, onQueryChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   // The line under the name: the place first, since that is what a phone is
-  // asked, then the Valgliste values
+  // asked, then the choice values
   const metaIds = useMemo(
     () => [
       ...defs.flatMap((d) => (d.kind === 'prop' && d.type === 'path' ? [d.id] : [])),

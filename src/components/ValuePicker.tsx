@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes } from 'react'
-import { suggest } from '../lib/filter'
+import { suggest } from '../lib/values'
 import { formatPath, nextLevels, parsePath } from '../lib/paths'
 import { t } from '../lib/strings'
 
@@ -7,7 +7,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> &
   id: string
   label: string
   kind: 'choice' | 'path'
-  // A Valgliste: its values, the one used last first. A place: every place in use
+  // A choice column: its values, the one used last first. A place: every place in use
   values: readonly string[]
   value: string
   onChange: (value: string) => void
@@ -18,7 +18,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> &
 const limit = 12
 
 // A field with the values already in use under it, to tap rather than type:
-// a Valgliste offers its values, a place the next level in, so Bod, Hylle 2
+// a choice column offers its values, a place the next level in, so Bod, Hylle 2
 // and Blå kasse are three taps. Typing narrows what is offered, and a new
 // value is typed as before. The suggestions never take the focus from the
 // field, so the keyboard stays where it is.

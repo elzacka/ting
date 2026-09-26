@@ -33,7 +33,7 @@ type Props = {
   onWrapChange: (on: boolean) => void
 }
 
-export function StoragePage({
+export function SettingsPage({
   items,
   properties,
   fields,
@@ -56,9 +56,9 @@ export function StoragePage({
   const [adopting, setAdopting] = useState<{ vault: Envelope['vault']; open: OpenKey } | null>(null)
   const [setupPass, setSetupPass] = useState('')
   const [setupRepeat, setSetupRepeat] = useState('')
-  const [foreignCopy, setForeignCopy] = useState<Envelope | null>(null)
-  const [copyPass, setCopyPass] = useState('')
-  const [copyError, setCopyError] = useState<string | null>(null)
+  const [foreignBackup, setForeignBackup] = useState<Envelope | null>(null)
+  const [backupPass, setBackupPass] = useState('')
+  const [backupError, setBackupError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [folderPass, setFolderPass] = useState('')
   const [oldPass, setOldPass] = useState('')
@@ -134,8 +134,8 @@ export function StoragePage({
 
   async function onFile(file: File | undefined) {
     setMessage(null)
-    setCopyError(null)
-    setForeignCopy(null)
+    setBackupError(null)
+    setForeignBackup(null)
     if (!file) return
     try {
       const parsed = parseAnyFile(await file.text())
@@ -143,27 +143,27 @@ export function StoragePage({
         setPending(await itemsFromDataFile(parsed.file))
       } else {
         const opened = await openEnvelope(parsed.envelope, currentKey())
-        if (opened === 'foreign') setForeignCopy(parsed.envelope)
+        if (opened === 'foreign') setForeignBackup(parsed.envelope)
         else if (opened !== 'wrong-passphrase') setPending(await itemsFromDataFile(opened.file))
       }
     } catch (err) {
       console.error(errorText(err))
-      setMessage(t.storage.restoreFailed)
+      setMessage(t.settings.restoreFailed)
     }
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  async function openForeignCopy(e: FormEvent) {
+  async function openForeignBackup(e: FormEvent) {
     e.preventDefault()
-    if (!foreignCopy) return
-    const opened = await openEnvelope(foreignCopy, currentKey(), copyPass)
+    if (!foreignBackup) return
+    const opened = await openEnvelope(foreignBackup, currentKey(), backupPass)
     if (opened === 'wrong-passphrase' || opened === 'foreign') {
-      setCopyError(t.vault.wrong)
+      setBackupError(t.vault.wrong)
       return
     }
-    if (trial) setAdopting({ vault: foreignCopy.vault, open: opened.open })
-    setForeignCopy(null)
-    setCopyPass('')
+    if (trial) setAdopting({ vault: foreignBackup.vault, open: opened.open })
+    setForeignBackup(null)
+    setBackupPass('')
     setPending(await itemsFromDataFile(opened.file))
   }
 
@@ -176,7 +176,7 @@ export function StoragePage({
     }
     requestFullPhotoWrite()
     await replaceAll(pending.items, pending.properties, pending.fields)
-    setMessage(t.storage.restoreDone(pending.items.length))
+    setMessage(t.settings.restoreDone(pending.items.length))
     setPending(null)
   }
 
@@ -211,24 +211,24 @@ export function StoragePage({
   const folderLine = trial
     ? t.trial.folderFirst
     : status.kind === 'none'
-      ? t.storage.folderNone
+      ? t.settings.folderNone
       : status.kind === 'connected'
-        ? `${t.storage.connected(status.name)} ${status.lastWrittenAt ? t.storage.lastWritten(formatTime(status.lastWrittenAt)) : t.storage.loaded}`
+        ? `${t.settings.connected(status.name)} ${status.lastWrittenAt ? t.settings.lastWritten(formatTime(status.lastWrittenAt)) : t.settings.loaded}`
         : status.kind === 'checking'
-          ? t.storage.checking
+          ? t.settings.checking
           : status.kind === 'unsupported'
-            ? t.storage.unsupported
+            ? t.settings.unsupported
             : null
 
   const disconnectButton = (
     <button type="button" className="btn" onClick={disconnect}>
-      {t.storage.disconnect}
+      {t.settings.disconnect}
     </button>
   )
 
   return (
     <div className="stack narrow">
-      <h1 className="title">{t.storage.title}</h1>
+      <h1 className="title">{t.settings.title}</h1>
 
       {trial && (
         <section className="setting">
@@ -240,7 +240,7 @@ export function StoragePage({
           <form className="stack-sm" onSubmit={(e) => void onSetup(e)}>
             <KeychainName />
             <div className="field">
-              <label htmlFor="setup-pass">{t.vault.password}</label>
+              <label htmlFor="setup-pass">{t.vault.passphrase}</label>
               <input
                 id="setup-pass"
                 className="input"
@@ -280,13 +280,13 @@ export function StoragePage({
         <section className="setting">
           <div className="setting-head">
             <div>
-              <h2 className="section-label">{t.storage.folderTitle}</h2>
+              <h2 className="section-label">{t.settings.folderTitle}</h2>
               {folderLine && <p className="hint num">{folderLine}</p>}
             </div>
             <div className="row">
               {!trial && (status.kind === 'none' || status.kind === 'error') && (
                 <button type="button" className="btn" onClick={connect}>
-                  {t.storage.choose}
+                  {t.settings.choose}
                 </button>
               )}
               {(status.kind === 'connected' || status.kind === 'error') && disconnectButton}
@@ -294,10 +294,10 @@ export function StoragePage({
           </div>
           {status.kind === 'needs-permission' && (
             <div className="stack-sm">
-              <p>{t.storage.needsPermission(status.name)}</p>
+              <p>{t.settings.needsPermission(status.name)}</p>
               <div className="row">
                 <button type="button" className="btn btn-primary" onClick={grant}>
-                  {t.storage.grant}
+                  {t.settings.grant}
                 </button>
                 {disconnectButton}
               </div>
@@ -313,7 +313,7 @@ export function StoragePage({
             >
               <p>{t.vault.folderForeign(status.name)}</p>
               <div className="field">
-                <label htmlFor="folder-pass">{t.vault.password}</label>
+                <label htmlFor="folder-pass">{t.vault.passphrase}</label>
                 <input
                   id="folder-pass"
                   className="input"
@@ -339,14 +339,14 @@ export function StoragePage({
           {status.kind === 'conflict' && (
             <div className="confirm" role="alertdialog" aria-labelledby="folder-conflict">
               <p id="folder-conflict">
-                {t.storage.conflict(status.name, status.folderCount, formatDate(status.folderAt), status.localCount)}
+                {t.settings.conflict(status.name, status.folderCount, formatDate(status.folderAt), status.localCount)}
               </p>
               <div className="row toolbar">
                 <button type="button" className="btn" onClick={() => void useFolderSide()}>
-                  {t.storage.useFolder}
+                  {t.settings.useFolder}
                 </button>
                 <button type="button" className="btn" onClick={() => void useLocalSide()}>
-                  {t.storage.useLocal}
+                  {t.settings.useLocal}
                 </button>
                 <button type="button" className="btn" onClick={disconnect}>
                   {t.action.cancel}
@@ -356,7 +356,7 @@ export function StoragePage({
           )}
           {status.kind === 'error' && (
             <p className="error" role="alert">
-              {t.storage.error(status.name)}
+              {t.settings.error(status.name)}
             </p>
           )}
         </section>
@@ -365,12 +365,12 @@ export function StoragePage({
       <section className="setting">
         <div className="setting-head">
           <div>
-            <h2 className="section-label">{t.storage.copyTitle}</h2>
-            <p className="hint">{t.storage.copyWhat}</p>
+            <h2 className="section-label">{t.settings.backupTitle}</h2>
+            <p className="hint">{t.settings.backupWhat}</p>
           </div>
           {!trial && (
             <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
-              {shareable ? t.storage.share : t.storage.download}
+              {shareable ? t.settings.share : t.settings.download}
             </button>
           )}
         </div>
@@ -385,34 +385,34 @@ export function StoragePage({
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
           <button type="button" className="btn btn-danger setting-danger" onClick={() => fileRef.current?.click()}>
-            {t.storage.restore}
+            {t.settings.restore}
           </button>
         </div>
-        {foreignCopy && (
-          <form className="stack-sm" onSubmit={openForeignCopy}>
-            <p>{t.vault.copyForeign}</p>
+        {foreignBackup && (
+          <form className="stack-sm" onSubmit={openForeignBackup}>
+            <p>{t.vault.backupForeign}</p>
             <div className="field">
-              <label htmlFor="copy-pass">{t.vault.password}</label>
+              <label htmlFor="backup-pass">{t.vault.passphrase}</label>
               <input
-                id="copy-pass"
+                id="backup-pass"
                 className="input"
                 type="password"
                 autoComplete="current-password"
-                value={copyPass}
-                onChange={(e) => setCopyPass(e.target.value)}
+                value={backupPass}
+                onChange={(e) => setBackupPass(e.target.value)}
                 autoFocus
               />
             </div>
-            {copyError && (
+            {backupError && (
               <p className="error" role="alert">
-                {copyError}
+                {backupError}
               </p>
             )}
             <div className="row">
               <button type="submit" className="btn btn-primary">
                 {t.vault.unlock}
               </button>
-              <button type="button" className="btn" onClick={() => setForeignCopy(null)}>
+              <button type="button" className="btn" onClick={() => setForeignBackup(null)}>
                 {t.action.cancel}
               </button>
             </div>
@@ -420,10 +420,10 @@ export function StoragePage({
         )}
         {pending && (
           <div className="confirm" role="alertdialog" aria-labelledby="restore-text">
-            <p id="restore-text">{t.storage.restoreConfirm(pending.items.length)}</p>
+            <p id="restore-text">{t.settings.restoreConfirm(pending.items.length)}</p>
             <div className="row">
               <button type="button" className="btn btn-danger" onClick={() => void restore()} autoFocus>
-                {t.storage.replace}
+                {t.settings.replace}
               </button>
               <button type="button" className="btn" onClick={() => setPending(null)}>
                 {t.action.cancel}
@@ -442,7 +442,7 @@ export function StoragePage({
           target, and the box sits right beside what it switches */}
       {!narrow && (
         <section className="setting">
-          <h2 className="section-label">{t.storage.viewTitle}</h2>
+          <h2 className="section-label">{t.settings.columnsTitle}</h2>
           <label className="check-option">
             <input type="checkbox" checked={wrap} onChange={(e) => onWrapChange(e.target.checked)} />
             <span>{t.table.wrap}</span>
@@ -450,9 +450,9 @@ export function StoragePage({
           {columns.length > 0 && (
             <details className="disclosure">
               <summary>
-                <span>{t.storage.viewList}</span>
+                <span>{t.settings.columnsList}</span>
                 <span className="disclosure-meta">
-                  {t.storage.viewShown(visibleCount, columns.length)}
+                  {t.settings.columnsShown(visibleCount, columns.length)}
                   <Icon name="chevronRight" size={16} className="disclosure-chevron" />
                 </span>
               </summary>

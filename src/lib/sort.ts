@@ -1,7 +1,7 @@
 import type { Item } from '../db/schema'
 import { isDateUnit } from './dates'
 import { columnId, type Column } from './grid'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 export type Sort = { id: string; dir: 'asc' | 'desc' }
 

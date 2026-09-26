@@ -1,11 +1,11 @@
 // All user-facing text. Norwegian (nb-NO), klarspråk, du-form.
 export const t = {
   appName: 'ting',
-  nav: { home: 'Til forsiden', list: 'Oversikt', storage: 'Innstillinger', storageStalled: 'Innstillinger. Lagring til mappen har stoppet' },
+  nav: { home: 'Til forsiden', list: 'Oversikt', settings: 'Innstillinger', settingsStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
   vault: {
     setupTitle: 'Velg et passord',
-    password: 'Passord',
+    passphrase: 'Passord',
     show: 'Vis passord',
     hide: 'Skjul passord',
     repeat: 'Gjenta passordet',
@@ -13,7 +13,7 @@ export const t = {
     mismatch: 'Passordene er ikke like. Skriv det samme i begge feltene.',
     create: 'Krypter og fortsett',
     unlockTitle: 'Appen er låst',
-    autoLocked: 'Appen låste seg etter 10 minutter uten aktivitet.',
+    autoLocked: 'Appen låste seg etter 10 minutter uten bruk.',
     unlock: 'Lås opp',
     wrong: 'Feil passord.',
     working: 'Låser opp…',
@@ -27,7 +27,7 @@ export const t = {
     passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID.',
     changeTitle: 'Passord',
     changeWhat:
-      'Passordet krypterer alt du registrerer, på enheten, i lagringsmappen og i sikkerhetskopiene. Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned.',
+      'Passordet krypterer alt du legger til, på enheten, i lagringsmappen og i sikkerhetskopiene. Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned.',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',
@@ -35,7 +35,7 @@ export const t = {
     folderForeign: (name: string) =>
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
-    copyForeign: 'Kopien er kryptert med et annet passord. Skriv det inn for å lese den.',
+    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv det inn for å åpne den.',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
   },
@@ -50,7 +50,7 @@ export const t = {
     showAll: 'Vis alle ting',
   },
   // The category line over the table: which categories the register shows
-  view: {
+  categoryPicker: {
     label: 'Velg kategori',
     all: 'Alle',
     change: (current: string) => `Kategori: ${current}. Velg en annen`,
@@ -73,6 +73,19 @@ export const t = {
       `${keys} har verdier på ${n === 1 ? '1 ting' : `${n} ting`}. Verdiene forsvinner fra alle. Du kan ikke angre.`,
     removeAndSave: 'Fjern og lagre',
     dirtyFirst: 'Lagre eller forkast endringene i tabellen først.',
+  },
+  // A Valgliste's alternatives, opened from its line in Endre egenskaper
+  options: {
+    edit: 'Endre alternativer',
+    count: (n: number) => (n === 0 ? 'Ingen alternativer' : n === 1 ? '1 alternativ' : `${n} alternativer`),
+    button: (count: string, key: string) => `${count} for ${key}`,
+    title: (key: string) => `Alternativer for ${key}`,
+    hint: 'Endrer du et alternativ, endres det på alle ting som har det. Gir du to alternativer samme navn, blir de ett.',
+    name: 'Navn på alternativ',
+    add: 'Nytt alternativ',
+    newRow: 'Nytt',
+    confirmRemove: (values: string, n: number) =>
+      `${n === 1 ? '1 ting' : `${n} ting`} har ${values}. Verdien forsvinner fra ${n === 1 ? 'den' : 'dem'}. Du kan ikke angre.`,
   },
   // Ticked things: what can be done with all of them at once
   selection: {
@@ -146,7 +159,6 @@ export const t = {
     delete: 'Slett',
     back: 'Tilbake',
     choosePhoto: 'Velg bilde',
-    changePhoto: 'Bytt bilde',
     removePhoto: 'Fjern bilde',
     // Several photos per thing: the first is the one the table and the report
     // show, and any of them can be made the first.
@@ -178,9 +190,9 @@ export const t = {
     failed: 'Oppslaget feilet. Prøv på nytt.',
   },
   detail: {
-    specs: 'Egenskaper',
+    properties: 'Egenskaper',
     photos: 'Bilder',
-    noSpecs: 'Ingen egenskaper',
+    noProperties: 'Ingen egenskaper',
     notFound: 'Fant ikke denne tingen',
     photoAlt: (name: string) => `Bilde av ${name}`,
     edit: (label: string) => `Endre ${label.toLocaleLowerCase('nb')}`,
@@ -212,14 +224,14 @@ export const t = {
         `«${key}» finnes i ${where}. Legger du den til, får ${here} den samme egenskapen.`,
       types: {
         text: 'Fritekst, som en kommentar eller et serienummer. Lenker blir klikkbare på tingens side.',
-        choice: 'Faste verdier å velge mellom, som Status eller Farge. Du kan filtrere på dem og gruppere dem før utskrift.',
+        choice: 'Faste verdier å velge mellom, som Status eller Farge. Du kan filtrere på dem og gruppere utskriften etter dem.',
         number: 'Skriv bare tallet i cellene. Enheten velger du i neste felt.',
         date: 'En dato, som 19.09.26. Filteret viser årene.',
-        path: 'Hele veien frem til der tingen finnes, som Loftsbod › Hylle 2 › Boks 4. Du får ett filter per nivå.',
+        path: 'Hele veien inn til plassen, som Loftsbod › Hylle 2 › Boks 4. Du får ett filter per nivå.',
       },
       options: 'Skriv alternativene adskilt med komma: «Bøker, Film, Musikk». Med eller uten mellomrom etter komma.',
       unit: 'Velg i lista eller skriv din egen. Kolonner i kr får en sum.',
-      scope: 'Uten hake: Egenskapen knyttes til alle kategoriene.',
+      scope: 'Uten hake hører egenskapen til alle kategorier.',
     },
     wrap: 'Bryt lang tekst over flere linjer',
     columnKey: 'Navn på egenskap',
@@ -259,12 +271,10 @@ export const t = {
     resize: (key: string) => `Endre bredde på ${key}`,
     resizeHint: 'Dra for å endre bredde. Dobbeltklikk for å tilpasse bredden til innholdet.',
     renameColumn: 'Endre',
-    nameCannotGo: 'Du kan ikke fjerne Navn. Denne egenskapen er hva appen må ha som minimum for å vise hva du har lagt til.',
     renameSave: 'Lagre navn',
     renameCancel: 'Avbryt',
     moveLeft: 'Flytt til venstre',
     moveRight: 'Flytt til høyre',
-    removeRow: 'Fjern rad',
     unsaved: (n: number) => (n === 1 ? '1 endring ikke lagret' : `${n} endringer ikke lagret`),
     cell: (name: string, col: string) => `${col} for ${name === '' ? 'ny rad' : name}`,
   },
@@ -296,25 +306,25 @@ export const t = {
   trial: {
     notice: 'Du bruker appen i prøvemodus. Det du legger til, blir borte når du lukker den.',
     // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger til blir borte når appen lukkes.',
-    setPassword: 'Velg passord for å bevare det',
+    noticePhone: 'Det du legger til, blir borte når appen lukkes.',
+    setPassphrase: 'Velg passord for å bevare det',
     why: 'Passordet krypterer alt du legger til, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
     lost: 'Mister du passordet, er dataene tapt.',
     folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
-    done: 'Passord valgt. Alt du har lagt til er bevart.',
+    done: 'Passord valgt. Alt du har lagt til, er bevart.',
   },
-  storage: {
+  settings: {
     title: 'Innstillinger',
-    viewTitle: 'Tilpass visning',
-    viewList: 'Egenskaper i tabellen',
-    viewShown: (shown: number, total: number) => `${shown} av ${total} vises`,
+    columnsTitle: 'Tilpass visning',
+    columnsList: 'Egenskaper i tabellen',
+    columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
     folderNone:
-      'Du har ikke valgt en mappe for automatisk lagring. Alt du registrerer, ligger bare i denne nettleseren. Sletter du nettstedsdata i nettleseren, blir det borte.',
+      'Du har ikke valgt en mappe for automatisk lagring. Alt du legger til, ligger bare i denne nettleseren. Sletter du nettstedsdata i nettleseren, blir det borte.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
     checking: 'Sjekker mappen…',
-    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Fram til da lagrer appen bare i nettleseren.`,
+    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare i nettleseren.`,
     grant: 'Gi tilgang',
     connected: (name: string) => `Appen lagrer i mappen «${name}».`,
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
@@ -325,8 +335,8 @@ export const t = {
     useFolder: 'Bruk mappen',
     useLocal: 'Skriv over mappen',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
-    copyTitle: 'Sikkerhetskopi',
-    copyWhat: 'Manuelt: Én kryptert fil med alt du har lagt til. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
+    backupTitle: 'Sikkerhetskopi',
+    backupWhat: 'Manuelt: Én kryptert fil med alt du har lagt til. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
     download: 'Last ned sikkerhetskopi',
     // A phone saves the file through the share sheet: Filer, AirDrop, e-post
     share: 'Del sikkerhetskopi',

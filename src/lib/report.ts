@@ -11,7 +11,7 @@ export type ReportGroup = { label: string | null; items: Item[] }
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
-// A place column can be grouped at one of its levels: the id carries which,
+// A path column can be grouped at one of its levels: the id carries which,
 // the same way a filter id does.
 function valueIn(item: Item, filterId: string): string | null {
   const { id, level } = splitLevel(filterId)

@@ -1,6 +1,6 @@
 import type { Item, Property } from '../db/schema'
 import { columnId } from './grid'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 // The line above the table: how much there is and what it is worth. Nothing
 // that needs a property the user may not have.

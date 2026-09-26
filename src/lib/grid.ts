@@ -1,7 +1,7 @@
 import type { Item, ItemInput, Spec } from '../db/schema'
 import { formatStoredDate, isDateUnit, parseDateInput } from './dates'
 import { formatPath, isPathUnit, parsePath } from './paths'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 
 // A column is one spec key with one unit. The same key with two different
 // units becomes two columns, which keeps every cell a plain value.

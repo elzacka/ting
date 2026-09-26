@@ -10,7 +10,7 @@ slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
 
 - [[#Kom i gang|Kom i gang]]
 	- [[#Kom i gang#1. Åpne og installer appen|1. Åpne og installer appen]]
-	- [[#Kom i gang#2. Prøv appen, og velg et passord for å beholde det|2. Prøv appen, og velg et passord for å beholde det]]
+	- [[#Kom i gang#2. Prøv appen, og velg et passord for å bevare det|2. Prøv appen, og velg et passord for å bevare det]]
 	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
 	- [[#Kom i gang#4. Legg til de første tingene|4. Legg til de første tingene]]
 	- [[#Kom i gang#5. Ta vare på dataene|5. Ta vare på dataene]]
@@ -63,7 +63,7 @@ sju dager.
 | iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
 | Android | «Installer» i varselet, eller «Installer app» i menyen |
 
-### 2. Prøv appen, og velg et passord for å beholde det
+### 2. Prøv appen, og velg et passord for å bevare det
 
 Du kan prøve alt i appen uten passord. Det du legger til da, blir borte når du
 lukker appen, og linja under topplinja minner deg om det. På iPhone kan
@@ -173,7 +173,7 @@ for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
 5. «Lagre» nederst. Skjermen er klar for neste ting.
 
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
-senere; `-har:pris` i søket henter fram de som står igjen.
+senere; `-har:pris` i søket henter frem de som står igjen.
 
 **En bok, på mobilen:** Appen kan slå opp bøker. Velg kategorien «Bøker» på
 «Ny ting», trykk «Skann strekkode» og ta bilde av strekkoden bak på boka. Trykk
@@ -217,32 +217,30 @@ kategorier» › «Ny kategori». Gi den navn og symbol, og trykk «Lagre». Den
 lista med 0 ting til du legger noe i den.
 
 **Eksempel: En kategori med typer.** Ting har ingen underkategorier. Vil du dele
-Underholdning i bøker, film, musikk og spill, gir du kategorien en valgliste med
-typene. Leker blir en egen kategori.
+Underholdning i film, musikk og spill, gir du kategorien en valgliste med
+typene. Bøker og Leker blir egne kategorier. Bare en kategori med symbolet «Bok»
+kan slå opp bøker på nett.
 
 1. Kategorifeltet › «Endre kategorier». Trykk på «Ny kategori» og skriv
-   `Underholdning`. Gjør det samme for `Leker` og trykk «Lagre». Leker får
-   symbolet «Leker» av seg selv.
+   `Underholdning`. Gjør det samme for `Bøker` og `Leker`. Trykk «Lagre». Hver
+   av dem får symbolet sitt av seg selv, og Bøker får «Bok».
 2. Velg Underholdning i kategorifeltet. Pluss › «Legg til egenskap (kolonne)».
 3. Fyll ut skjemaet og trykk «Legg til»:
    - Navn på egenskap: `Type`
    - Felttype: Valgliste
-   - Alternativer: `Bøker, Film, Musikk, CD, Brettspill, Dataspill`
+   - Alternativer: `Film, Musikk, CD, Brettspill, Dataspill`
 
 «Bruk bare i Underholdning» er huket av, så Type hører bare til Underholdning.
 Står du i Underholdning, får du en kolonne og et filter for Type. På «Ny ting»
 på mobilen står typene som forslag under Type når kategorien er Underholdning. I
 utskriften kan du gruppere etter Type.
 
-Vil du fortsatt slå opp bøker på nett, gir du Underholdning symbolet «Bok» under
-«Endre kategorier».
-
-**Har du allerede kategorier som Bøker og Film,** gir du tingene en type før du
+**Har du allerede kategorier som Film og Musikk,** gir du tingene en type før du
 slår kategoriene sammen:
 
-1. Velg Bøker og legg til Type som over.
-2. Huk av alle tingene › «Endre verdi» › Type: `Bøker` › «Lagre».
-3. Gjør det samme for Film og de andre. Appen lager ikke en ny Type, men bruker
+1. Velg Film og legg til Type som over.
+2. Huk av alle tingene › «Endre verdi» › Type: `Film` › «Lagre».
+3. Gjør det samme for Musikk og de andre. Appen lager ikke en ny Type, men bruker
    den du har.
 4. «Endre kategorier»: Gi hver av dem navnet `Underholdning`. De blir én
    kategori, og Type følger med.
@@ -278,7 +276,8 @@ Kolonnemenyen er pilen ved kolonnenavnet.
 
 | Vil du | Velg |
 |---|---|
-| Endre navn, felttype, alternativer eller enhet | «Endre» |
+| Endre navn, felttype eller enhet | «Endre» |
+| Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
 | Flytte kolonnen | «Flytt til venstre» eller «Flytt til høyre» |
 | La den høre til kategorien du står i | «Bruk bare i …», «Bruk også i …» eller «Ikke bruk i …» (når én kategori er valgt) |
 
@@ -288,13 +287,31 @@ en valgliste med plasseringer om til en Sti.
 ### Mange egenskaper
 
 Pluss › «Legg til egenskap (kolonne)» › «Endre egenskaper». Hver egenskap står
-på én linje: Navn, felttype, enhet, kategoriene den hører til, og antall ting
-med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
+på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
+til, og antall ting med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
 du under «Endre kategorier».
 
 En egenskap hører til alle kategorier til du sier noe annet. Knappen med
 kategoriene åpner en liste der du huker av dem den skal høre til. Ingen hake er
 alle kategorier.
+
+### Alternativer
+
+Kolonnemenyen › «Endre alternativer», eller knappen «n alternativer» på linja
+til en valgliste under «Endre egenskaper». Lista viser alle alternativene og
+hvor mange ting som har hvert av dem, også dem med 0 ting.
+
+| Vil du | Slik |
+|---|---|
+| Endre et alternativ | Skriv det nye navnet. Alle tingene som har det, følger med |
+| Slå sammen to | Gi det ene samme navn som det andre |
+| Legge til et alternativ | «Nytt alternativ» |
+| Fjerne et alternativ | Søppelbøtta. Har ting det, sier appen hvor mange og spør først |
+
+Ingenting lagres før du trykker «Lagre». Har du skrevet et alternativ på flere
+måter, for eksempel «Bøker» og «bøker», står det én gang i lista. Når du
+lagrer, får alle tingene skrivemåten som står der. Kategori har egne
+alternativer under «Endre kategorier».
 
 ### Kategorier
 
@@ -319,6 +336,7 @@ appen et ut fra ordene i navnet.
 | Flere ting | Huk av tingene › «Slett» i linja øverst |
 | Én egenskap | Kolonnemenyen › «Fjern» |
 | Flere egenskaper | «Endre egenskaper» › søppelbøtta på hver linje › «Lagre» |
+| Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › søppelbøtta › «Lagre» |
 | En kategori | Flytt tingene til en annen kategori med «Endre verdi», eller slå den sammen med en annen under «Endre kategorier» |
 
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
@@ -386,7 +404,7 @@ kategorier med samme verdi på hver rad, er skjult; de skiller ikke tingene fra
 hverandre. Går tabellen lenger enn kortet, blekner høyre kant: Rull sidelengs.
 
 **På mobilen** svarer lista med plassering og kategori rett under navnet. En
-ting uten bilde viser ikonet til kategorien sin. Trykk på tingen for å se alt.
+ting uten bilde viser symbolet til kategorien sin. Trykk på tingen for å se alt.
 
 ---
 
@@ -406,7 +424,7 @@ bestemmer formen:
 
 | Valg | Gjør |
 |---|---|
-| Grupper etter | En valgliste blant kolonnene du ser, for eksempel Kategori under «Alle». Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
+| Grupper etter | En valgliste eller ett nivå i en Sti blant kolonnene du ser, for eksempel Kategori under «Alle» eller «Plassering 2» for hylla. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
 | Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
 
 Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
@@ -451,7 +469,7 @@ sikkerhetskopi flytter den. Et eksempel med Mac og iPhone:
 1. **På Mac:** Innstillinger › «Last ned sikkerhetskopi». AirDrop fila til
    iPhone.
 2. **På iPhone:** Innstillinger › «Gjenopprett fra sikkerhetskopi», og skriv
-   passordet. Registrer i boden.
+   passordet. Legg til tingene i boden.
 3. **Tilbake på Mac:** Trykk på «Del sikkerhetskopi» på iPhone, send fila med
    AirDrop til Mac og gjenopprett.
 

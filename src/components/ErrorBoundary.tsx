@@ -3,7 +3,7 @@ import { errorText } from '../lib/errors'
 import { t } from '../lib/strings'
 
 // A render error shows a message instead of a blank page. Data is untouched:
-// every write is a completed transaction, and the folder copy is only written
+// every write is a completed transaction, and the folder is only written
 // from a successful read.
 type State = { crashed: boolean }
 

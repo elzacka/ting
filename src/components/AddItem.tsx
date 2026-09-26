@@ -5,7 +5,7 @@ import { classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
 import type { Item, Property } from '../db/schema'
 import { isBookCategory } from '../lib/categoryIcons'
 import { errorText } from '../lib/errors'
-import { recentValues } from '../lib/filter'
+import { recentValues } from '../lib/values'
 import {
   appliesTo,
   barcodeColumnId,
@@ -41,9 +41,9 @@ function domId(prefix: string, id: string): string {
 }
 
 // One thing at a time, for a phone with the thing in hand: the photos, the
-// name and the Valgliste and place columns, which say what it is and where it
+// name and the choice and path columns, which say what it is and where it
 // goes, then the barcode, which few things need. Prices and the rest are desk
-// work in the table. The Valgliste values stay for the next thing, so the
+// work in the table. The choice values stay for the next thing, so the
 // second thing on the same shelf is a photo and a name.
 export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])

@@ -3,7 +3,9 @@ import { categoryIconFor, chosenIcon, guessCategoryIcon, isBookCategory, otherCa
 
 describe('guessCategoryIcon', () => {
   it('reads the words in the register elzacka actually keeps', () => {
-    expect(guessCategoryIcon('Bøker og leker')).toBe('menu_book')
+    expect(guessCategoryIcon('Bøker')).toBe('book')
+    expect(guessCategoryIcon('Leker')).toBe('child_hat')
+    expect(guessCategoryIcon('Underholdning')).toBe('person_play')
     expect(guessCategoryIcon('Data og kontor')).toBe('computer')
     expect(guessCategoryIcon('Hobby og håndarbeid')).toBe('palette')
     expect(guessCategoryIcon('Hvitevarer')).toBe('local_laundry_service')
@@ -46,8 +48,11 @@ describe('guessCategoryIcon', () => {
 
   it('takes the first word it knows, so a two-word name settles on one glyph', () => {
     // "Bøker og leker" is books before it is toys
-    expect(guessCategoryIcon('Bøker og leker')).toBe('menu_book')
-    expect(guessCategoryIcon('Leker og spill')).toBe('toys')
+    expect(guessCategoryIcon('Bøker og leker')).toBe('book')
+    expect(guessCategoryIcon('Leker og spill')).toBe('child_hat')
+    // Books stay the book, which is what shows the ISBN lookup
+    expect(guessCategoryIcon('Bøker og film')).toBe('book')
+    expect(guessCategoryIcon('Film og musikk')).toBe('person_play')
   })
 })
 
@@ -77,7 +82,7 @@ describe('isBookCategory', () => {
   })
 
   it('follows the icon chosen in Endre kategorier', () => {
-    expect(isBookCategory('Litteratur', { Litteratur: 'menu_book' })).toBe(true)
+    expect(isBookCategory('Litteratur', { Litteratur: 'book' })).toBe(true)
     expect(isBookCategory('Bøker', { Bøker: 'chair' })).toBe(false)
   })
 })

@@ -1,8 +1,7 @@
 import { parseSvg, type SvgShape } from './svg'
 
 // The category icon pack: what a user can choose for a category, and what the
-// app guesses from a category's name until they do. How to add or change an
-// icon: README.md in this folder.
+// app guesses from a category's name until they do.
 //
 // One SVG per icon in ./category, the file named by the icon's id. One entry
 // per icon below: the Norwegian name the picker shows and reads out, and the
@@ -17,8 +16,9 @@ type Entry = {
 }
 
 const manifest: readonly Entry[] = [
-  { id: 'menu_book', name: 'Bok', keywords: ['bok', 'bøk'] },
-  { id: 'toys', name: 'Leker', keywords: ['lek', 'barn'] },
+  { id: 'book', name: 'Bok', keywords: ['bok', 'bøk'] },
+  { id: 'person_play', name: 'Underholdning', keywords: ['underholdning', 'film', 'musikk'] },
+  { id: 'child_hat', name: 'Leker', keywords: ['lek', 'barn'] },
   { id: 'devices', name: 'Elektronikk', keywords: ['elektronikk'] },
   { id: 'computer', name: 'Datamaskin', keywords: ['data', 'kontor', 'pc'] },
   { id: 'palette', name: 'Hobby', keywords: ['hobby', 'håndarbeid', 'kunst'] },

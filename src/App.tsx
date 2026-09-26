@@ -36,7 +36,7 @@ import { ItemList } from './components/ItemList'
 import { ItemDetail } from './components/ItemDetail'
 import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
-import { StoragePage } from './components/StoragePage'
+import { SettingsPage } from './components/SettingsPage'
 import { UpdateButton } from './components/UpdateButton'
 import { InstallBanner, TrialBanner } from './components/TrialBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -130,7 +130,7 @@ export function App() {
   // The register opens on its categories alone: the table waits for one to be
   // picked. Kept here rather than in Overview so opening a thing and coming
   // back does not send you to the start (elzacka, 23 September 2026).
-  const [viewPicked, setViewPicked] = useState(false)
+  const [categoryPicked, setCategoryPicked] = useState(false)
   const [sort, setSort] = useState<Sort | null>(null)
   const { widths, setWidth } = useColumnWidths()
   const [autoLock, setAutoLock] = useState(readAutoLock)
@@ -191,10 +191,10 @@ export function App() {
   // choice is waiting on Innstillinger. Said on the icon, since that is the
   // only place the header can say it.
   const folderStalled = ['needs-permission', 'needs-passphrase', 'conflict', 'error'].includes(folder.status.kind)
-  const storageLabel = folderStalled ? t.nav.storageStalled : t.nav.storage
+  const settingsLabel = folderStalled ? t.nav.settingsStalled : t.nav.settings
 
   // Locked: only the wordmark, whatever the route.
-  const isTop = !unlocked || route.view === 'list' || route.view === 'storage'
+  const isTop = !unlocked || route.view === 'list' || route.view === 'settings'
 
   // The table holds unsaved edits in memory; leaving it drops them.
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
@@ -253,10 +253,10 @@ export function App() {
             )}
             {unlocked && (
               <a
-                className={`btn btn-icon${route.view === 'storage' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
-                href={href.storage}
-                aria-label={storageLabel}
-                aria-current={route.view === 'storage' ? 'page' : undefined}
+                className={`btn btn-icon${route.view === 'settings' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
+                href={href.settings}
+                aria-label={settingsLabel}
+                aria-current={route.view === 'settings' ? 'page' : undefined}
                 onClick={guardNav}
               >
                 <Icon name="settings" />
@@ -266,7 +266,7 @@ export function App() {
         )}
       </header>
 
-      {trial && <TrialBanner onSettings={route.view === 'storage'} />}
+      {trial && <TrialBanner onSettings={route.view === 'settings'} />}
       {vault.status === 'open' && isTop && <InstallBanner />}
 
       <main className="stack">
@@ -294,8 +294,8 @@ export function App() {
               onSearchClose={closeSearch}
               filters={filters}
               onFiltersChange={setFilters}
-              viewPicked={viewPicked}
-              onViewPickedChange={setViewPicked}
+              categoryPicked={categoryPicked}
+              onCategoryPickedChange={setCategoryPicked}
               sort={sort}
               onSortChange={setSort}
               widths={widths}
@@ -328,8 +328,8 @@ type ScreenProps = {
   onSearchClose: () => void
   filters: Filters
   onFiltersChange: (f: Filters) => void
-  viewPicked: boolean
-  onViewPickedChange: (picked: boolean) => void
+  categoryPicked: boolean
+  onCategoryPickedChange: (picked: boolean) => void
   sort: Sort | null
   onSortChange: (s: Sort | null) => void
   widths: Record<string, number>
@@ -356,8 +356,8 @@ function Screen({
   onSearchClose,
   filters,
   onFiltersChange,
-  viewPicked,
-  onViewPickedChange,
+  categoryPicked,
+  onCategoryPickedChange,
   sort,
   onSortChange,
   widths,
@@ -384,8 +384,8 @@ function Screen({
         {...search}
         filters={filters}
         onFiltersChange={onFiltersChange}
-        viewPicked={viewPicked}
-        onViewPickedChange={onViewPickedChange}
+        categoryPicked={categoryPicked}
+        onCategoryPickedChange={onCategoryPickedChange}
         sort={sort}
         onSortChange={onSortChange}
         widths={widths}
@@ -396,9 +396,9 @@ function Screen({
       />
     )
   }
-  if (route.view === 'storage') {
+  if (route.view === 'settings') {
     return (
-      <StoragePage
+      <SettingsPage
         items={items}
         properties={properties}
         fields={fields}

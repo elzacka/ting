@@ -1,7 +1,7 @@
 import type { Item, Property } from '../db/schema'
 import { isDateUnit } from './dates'
 import { categoryColumnId } from './fields'
-import { parseNumber } from './filter'
+import { parseNumber } from './values'
 import { columnId } from './grid'
 import { isPathUnit } from './paths'
 

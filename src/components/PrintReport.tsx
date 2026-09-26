@@ -76,7 +76,7 @@ export function PrintReport({ groups, columns, properties, photos, groupId, grou
   // The heading already says it; saying it again on every line is noise. A
   // place grouped at one of its levels is the exception and keeps its column:
   // the heading names the room, the line says where in it (the level is in
-  // groupId, so a place column's own id never matches and it stays).
+  // groupId, so a path column's own id never matches and it stays).
   const shown = columns.filter((d) => d.id !== groupId)
   return (
     <div className="print-report">

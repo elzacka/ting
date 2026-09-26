@@ -86,7 +86,7 @@ export function LockScreen(props: Props) {
         </div>
       )}
       <div className="field">
-        <label htmlFor="pass">{t.vault.password}</label>
+        <label htmlFor="pass">{t.vault.passphrase}</label>
         <div className="input-reveal">
           <input
             id="pass"

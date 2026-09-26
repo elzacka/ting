@@ -14,8 +14,8 @@ export function TrialBanner({ onSettings }: { onSettings: boolean }) {
     <div className="trial-banner" role="note">
       <span>{narrow ? t.trial.noticePhone : t.trial.notice}</span>
       {!onSettings && (
-        <a className="trial-link" href={href.storage}>
-          {t.trial.setPassword}
+        <a className="trial-link" href={href.settings}>
+          {t.trial.setPassphrase}
         </a>
       )}
       {install?.kind === 'prompt' && (

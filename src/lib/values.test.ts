@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { parseNumber, recentValues, suggest } from './filter'
+import { parseNumber, recentValues, suggest } from './values'
 
 describe('parseNumber', () => {
   it('handles Norwegian and unicode forms', () => {

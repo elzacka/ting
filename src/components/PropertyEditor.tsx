@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { PropertyType } from '../db/schema'
+import { isEmptyEdit, optionEdit, type OptionRow } from '../lib/options'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
 // Endre egenskaper: every property but Kategori (that one is Endre
 // kategorier) on one line each, so several can be changed or removed at once:
-// the name, the field type, the unit of a number, the categories it belongs
-// to, and a mark to remove it. Nothing is stored before Lagre, and removing
-// values from things asks first. One property at a time stays in the column
-// menu.
+// the name, the field type, the unit of a number or the alternatives of a
+// Valgliste, the categories it belongs to, and a mark to remove it. The
+// alternatives open under their line: the values things hold and the ones
+// offered before any thing holds them, each renamed, removed or added there.
+// Nothing is stored before Lagre, and removing values from things asks first.
+// One property at a time stays in the column menu.
 export type PropertyRow = {
   id: string
   key: string
   type: PropertyType
   unit: string
   categories: string[]
+  options: OptionRow[]
   remove: boolean
   count: number
   was: { key: string; type: PropertyType; unit: string; categories: string[] }
@@ -24,6 +28,8 @@ export type PropertyRow = {
 type Props = {
   rows: PropertyRow[]
   categories: readonly string[]
+  // The property whose alternatives are open from the start
+  open?: string | null
   onSave: (rows: PropertyRow[]) => Promise<void>
   onClose: () => void
 }
@@ -31,21 +37,57 @@ type Props = {
 const types: readonly PropertyType[] = ['text', 'choice', 'number', 'date', 'path']
 const fold = (s: string) => s.trim().toLocaleLowerCase('nb')
 const listFormat = new Intl.ListFormat('nb', { type: 'conjunction' })
+const orFormat = new Intl.ListFormat('nb', { type: 'disjunction' })
+
+// The alternatives count only on a line that stays a Valgliste
+const hasOptionEdit = (r: PropertyRow) => !r.remove && r.type === 'choice' && !isEmptyEdit(optionEdit(r.options))
 
 export function changed(r: PropertyRow): boolean {
   const sameCats =
     r.categories.length === r.was.categories.length && r.categories.every((c) => r.was.categories.some((w) => fold(w) === fold(c)))
-  return r.remove || r.key.trim() !== r.was.key || r.type !== r.was.type || r.unit.trim() !== r.was.unit || !sameCats
+  return (
+    r.remove || r.key.trim() !== r.was.key || r.type !== r.was.type || r.unit.trim() !== r.was.unit || !sameCats || hasOptionEdit(r)
+  )
 }
 
-export function PropertyEditor({ rows: initial, categories, onSave, onClose }: Props) {
+export function PropertyEditor({ rows: initial, categories, open: openFirst = null, onSave, onClose }: Props) {
   const [rows, setRows] = useState(initial)
   const [scope, setScope] = useState<{ id: string; anchor: DOMRect } | null>(null)
+  const [expanded, setExpanded] = useState<string | null>(openFirst)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
+  const idBase = useId()
+  const listRef = useRef<HTMLDivElement>(null)
   const edit = (id: string, patch: Partial<PropertyRow>) => setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+  const editOption = (id: string, key: string, patch: Partial<OptionRow>) =>
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, options: r.options.map((o) => (o.key === key ? { ...o, ...patch } : o)) } : r)),
+    )
+
+  function addOption(id: string) {
+    const key = crypto.randomUUID()
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, options: [...r.options, { key, from: null, name: '', count: null, mixed: false, remove: false }] } : r)),
+    )
+    requestAnimationFrame(() => listRef.current?.querySelector<HTMLInputElement>(`[data-option="${key}"]`)?.focus())
+  }
+
+  // Opened from a column's menu: straight to its alternatives
+  useEffect(() => {
+    if (openFirst === null) return
+    const at = initial.findIndex((r) => r.id === openFirst)
+    const group = document.getElementById(`${idBase}-options-${at}`)
+    group?.scrollIntoView({ block: 'nearest' })
+    group?.querySelector<HTMLElement>('input, button')?.focus()
+    // Once, as the editor opens
+  }, [])
 
   const losing = rows.filter((r) => r.remove && r.count > 0)
+  // Alternatives taken off things, on the lines that stay a Valgliste
+  const losingOptions = rows.flatMap((r) =>
+    r.remove || r.type !== 'choice' ? [] : r.options.filter((o) => o.remove && o.from !== null && (o.count ?? 0) > 0),
+  )
+  const confirmNeeded = losing.length > 0 || losingOptions.length > 0
 
   async function store() {
     setSaving(true)
@@ -56,7 +98,7 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
   function submit(e: FormEvent) {
     e.preventDefault()
     // Values leave things only after a yes
-    if (losing.length > 0 && !confirming) setConfirming(true)
+    if (confirmNeeded && !confirming) setConfirming(true)
     else void store()
   }
 
@@ -66,9 +108,12 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
     <form id="property-form" className="stack-sm" onSubmit={submit}>
       <p className="field-label">{t.properties.title}</p>
       <p className="hint">{t.properties.hint}</p>
-      <div className="property-rows" role="list">
-        {rows.map((r) => {
+      <div className="property-rows" role="list" ref={listRef}>
+        {rows.map((r, i) => {
           const where = r.categories.length === 0 ? t.properties.scopeAll : listFormat.format(r.categories)
+          const optionsId = `${idBase}-options-${i}`
+          const optionsOpen = expanded === r.id && r.type === 'choice' && !r.remove
+          const optionCount = t.options.count(r.options.filter((o) => !o.remove && (o.from !== null || o.name.trim() !== '')).length)
           return (
             <div key={r.id} role="listitem" className={`property-row${r.remove ? ' is-removed' : ''}`}>
               <input
@@ -101,6 +146,19 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
                   disabled={r.remove}
                   onChange={(e) => edit(r.id, { unit: e.target.value })}
                 />
+              ) : r.type === 'choice' ? (
+                <button
+                  type="button"
+                  className="btn property-scope"
+                  aria-label={t.options.button(optionCount, r.was.key)}
+                  aria-expanded={optionsOpen}
+                  aria-controls={optionsId}
+                  disabled={r.remove}
+                  onClick={() => setExpanded(optionsOpen ? null : r.id)}
+                >
+                  <span>{optionCount}</span>
+                  <Icon name="chevronRight" size={16} className="property-scope-chevron" />
+                </button>
               ) : (
                 <span />
               )}
@@ -129,18 +187,71 @@ export function PropertyEditor({ rows: initial, categories, onSave, onClose }: P
               >
                 <Icon name={r.remove ? 'close' : 'delete'} size={24} />
               </button>
+              {optionsOpen && (
+                <div id={optionsId} className="option-rows" role="group" aria-label={t.options.title(r.was.key)}>
+                  <p className="hint option-hint">{t.options.hint}</p>
+                  {r.options.map((o) => {
+                    const label = o.name.trim() || o.from || t.options.add
+                    return (
+                      <div key={o.key} className={`option-row${o.remove ? ' is-removed' : ''}`}>
+                        <input
+                          className="input"
+                          data-option={o.key}
+                          aria-label={t.options.name}
+                          placeholder={o.from ?? t.options.add}
+                          value={o.name}
+                          disabled={o.remove}
+                          onChange={(e) => editOption(r.id, o.key, { name: e.target.value })}
+                        />
+                        <span className="hint num property-count">
+                          {o.count === null ? t.options.newRow : t.summary.things(o.count)}
+                        </span>
+                        <button
+                          type="button"
+                          className={`btn btn-icon property-remove${o.remove ? ' is-active' : ''}`}
+                          aria-label={o.remove ? t.properties.keep(label) : t.properties.remove(label)}
+                          aria-pressed={o.from === null ? undefined : o.remove}
+                          onClick={() => {
+                            // A new one nothing holds just goes
+                            if (o.from === null) edit(r.id, { options: r.options.filter((x) => x.key !== o.key) })
+                            else editOption(r.id, o.key, { remove: !o.remove })
+                            setConfirming(false)
+                          }}
+                        >
+                          <Icon name={o.remove ? 'close' : 'delete'} size={24} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                  <div className="option-add">
+                    <button type="button" className="summary-link" onClick={() => addOption(r.id)}>
+                      {t.options.add}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
-      {confirming && losing.length > 0 && (
+      {confirming && confirmNeeded && (
         <div className="confirm" role="alertdialog" aria-labelledby="property-confirm">
-          <p id="property-confirm">
-            {t.properties.confirmRemove(
-              listFormat.format(losing.map((r) => r.was.key)),
-              losing.reduce((n, r) => n + r.count, 0),
-            )}
-          </p>
+          {losing.length > 0 && (
+            <p id="property-confirm">
+              {t.properties.confirmRemove(
+                listFormat.format(losing.map((r) => r.was.key)),
+                losing.reduce((n, r) => n + r.count, 0),
+              )}
+            </p>
+          )}
+          {losingOptions.length > 0 && (
+            <p {...(losing.length === 0 ? { id: 'property-confirm' } : {})}>
+              {t.options.confirmRemove(
+                orFormat.format(losingOptions.map((o) => `«${o.from}»`)),
+                losingOptions.reduce((n, o) => n + (o.count ?? 0), 0),
+              )}
+            </p>
+          )}
         </div>
       )}
       <div className="row">

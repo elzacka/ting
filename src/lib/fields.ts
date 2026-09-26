@@ -16,7 +16,7 @@ export const defaultFieldSettings: FieldSettings = {
   name: { label: null },
 }
 
-// The property Kategori: first column, a Valgliste, created when things carry
+// The property Kategori: first column, a choice column, created when things carry
 // one from before it was a property.
 export const categoryKey = 'Kategori'
 export const categoryColumnId = columnId({ key: categoryKey, unit: '' })

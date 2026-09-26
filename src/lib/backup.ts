@@ -3,8 +3,8 @@ import { itemSchema, propertySchema, type Item, type Property } from '../db/sche
 import { openJson, sealJson, unlockVault, type OpenKey, type Sealed, type Vault } from './crypto'
 import { categoryKey, type FieldSettings } from './fields'
 
-// One JSON document describes the whole catalogue. The folder store keeps
-// photos as files next to it; the download copy embeds them as data URLs.
+// One JSON document describes the whole register. The folder store keeps
+// photos as files next to it; the downloaded backup embeds them as data URLs.
 // On disk the document travels inside an envelope: the vault (wrapped key,
 // salt, parameters) in the clear, the document itself sealed under the data
 // key. Files written before encryption are plain documents and still load.
@@ -62,6 +62,7 @@ function extensionFor(blob: Blob): string {
 }
 
 // bilder/<id>-1.<ext>, numbered from one in the order the thing carries them.
+// The sealed folder write names them <id>-1.bin instead (folderStore.ts).
 // Flat, so the folder keeps one directory and the sweep that deletes what no
 // thing claims any more keeps working (elzacka, 22 September 2026).
 export function photoFileNames(item: Item): string[] {

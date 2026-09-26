@@ -18,7 +18,7 @@ export type CategoryEdit = {
 const fold = (s: string) => s.trim().toLocaleLowerCase('nb')
 
 // One entry per category however it was typed, the first spelling kept
-function unique(values: readonly string[]): string[] {
+export function unique(values: readonly string[]): string[] {
   const seen = new Set<string>()
   return values.filter((v) => {
     const k = fold(v)
