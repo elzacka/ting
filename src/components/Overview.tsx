@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { createPortal, flushSync } from 'react-dom'
 import { downloadText, exportFilename, toCsv } from '../lib/export'
 import { formatDate, formatNumber } from '../lib/format'
@@ -249,19 +249,19 @@ export function Overview({
   // The icons chosen for categories, carried by the Kategori property
   const chosenIcons = categoryDef?.kind === 'prop' ? categoryDef.property?.icons : undefined
   // The label to write, and to hand a new row, while exactly one is in view.
-  // Read from every thing, not from what is on screen: a search that leaves
-  // none of them must not turn Bok back into the folded key.
+  // Read from every thing and the categories made in Endre kategorier, not
+  // from what is on screen: a search that leaves none of them, or a category
+  // no thing has yet, must not turn Bok back into the folded key.
   const oneCategory = useMemo(() => {
     if (cats.length !== 1 || categoryDef?.kind !== 'prop') return null
-    return valuesFor(items, categoryDef.col).find((v) => v.key === cats[0])?.label ?? null
-  }, [cats, categoryDef, items])
+    return allCategories.find((v) => v.key === cats[0])?.label ?? null
+  }, [cats, categoryDef, allCategories])
   // Every chosen category as written, the same way: for the field, the
   // property form and a new property's categories
   const catLabels = useMemo(() => {
     if (categoryDef?.kind !== 'prop') return []
-    const all = valuesFor(items, categoryDef.col)
-    return cats.map((k) => all.find((v) => v.key === k)?.label ?? k)
-  }, [cats, categoryDef, items])
+    return cats.map((k) => allCategories.find((v) => v.key === k)?.label ?? k)
+  }, [cats, categoryDef, allCategories])
 
   // The category dropdown. Several categories can be ticked at once, and
   // ticking keeps it open; Alle and Velg kategori close it.
@@ -401,20 +401,29 @@ export function Overview({
     return { shown: showAllCols || items.length === 0 ? chosen : chosen.filter(fits), extra }
   }, [defs, visible, newRows, edits, baseCells, filters, showAllCols, items.length, hidden, cats])
 
-  // The column form's help: the properties for every category, and the ones
-  // the category in view has on top of those
-  const knownAll = useMemo(
-    () => defs.flatMap((d) => (d.kind === 'prop' && !(d.property?.categories?.length) ? [d.col.key] : [])),
-    [defs],
-  )
-  const knownOwn = useMemo(
-    () =>
-      catLabels.map((label) => ({
-        label,
-        keys: defs.flatMap((d) => (d.kind === 'prop' && claimedBy(d.property, [label]) ? [d.col.key] : [])),
-      })),
-    [defs, catLabels],
-  )
+  // The column form's help follows the field in use. For the name it is the
+  // properties that start with what is typed: a name in use is taken into
+  // this category rather than made twice, so the help says where it is.
+  const [columnFocus, setColumnFocus] = useState<'key' | 'type' | 'options' | 'unit' | 'scope'>('key')
+  function columnHelp(): string | null {
+    const h = t.table.columnHelp
+    if (columnFocus === 'type') return h.types[columnDraft.type]
+    if (columnFocus === 'options') return h.options
+    if (columnFocus === 'unit') return h.unit
+    if (columnFocus === 'scope') return h.scope
+    const typed = columnDraft.key.trim().toLocaleLowerCase('nb')
+    if (typed === '') return null
+    const matches = defs.filter((d) => labelOf(d).toLocaleLowerCase('nb').startsWith(typed))
+    const exact = matches.find((d) => labelOf(d).toLocaleLowerCase('nb') === typed)
+    if (!exact) return matches.length > 0 ? `${h.similar}: ${matches.map(labelOf).join(', ')}` : null
+    const key = labelOf(exact)
+    const own = exact.kind === 'prop' ? (exact.property?.categories ?? []) : []
+    if (own.length === 0) return h.everywhere(key)
+    const where = listFormat.format(own)
+    if (catLabels.length === 0) return h.elsewhere(key, where)
+    const missing = catLabels.filter((c) => !appliesTo(exact.kind === 'prop' ? exact.property : null, [c]))
+    return missing.length === 0 ? h.here(key, listFormat.format(catLabels)) : h.shared(key, where, listFormat.format(missing))
+  }
 
   // Skriv ut asks which columns go on paper; Navn always does, and the form
   // starts with what is on screen, the same as Cmd+P without a choice. The
@@ -1615,6 +1624,8 @@ export function Overview({
                   <label htmlFor="col-key">{t.table.columnKey}</label>
                   <input
                     id="col-key"
+                    aria-describedby="column-help"
+                    onFocus={() => setColumnFocus('key')}
                     className="input input-key"
                     value={columnDraft.key}
                     onChange={(e) => {
@@ -1628,6 +1639,8 @@ export function Overview({
                   <label htmlFor="col-type">{t.table.columnType}</label>
                   <select
                     id="col-type"
+                    aria-describedby="column-help"
+                    onFocus={() => setColumnFocus('type')}
                     className="select input-narrow"
                     value={columnDraft.type}
                     onChange={(e) => setColumnDraft({ ...columnDraft, type: e.target.value as PropertyType })}
@@ -1644,6 +1657,8 @@ export function Overview({
                     <label htmlFor="col-options">{t.table.columnOptions}</label>
                     <input
                       id="col-options"
+                      aria-describedby="column-help"
+                      onFocus={() => setColumnFocus('options')}
                       className="input input-key"
                       value={columnDraft.options}
                       onChange={(e) => setColumnDraft({ ...columnDraft, options: e.target.value })}
@@ -1657,6 +1672,8 @@ export function Overview({
                     </label>
                     <input
                       id="col-unit"
+                      aria-describedby="column-help"
+                      onFocus={() => setColumnFocus('unit')}
                       className="input input-narrow"
                       list="unit-options"
                       value={columnDraft.unit}
@@ -1669,6 +1686,8 @@ export function Overview({
                     <label className="check-option">
                       <input
                         type="checkbox"
+                        aria-describedby="column-help"
+                        onFocus={() => setColumnFocus('scope')}
                         checked={columnDraft.onlyHere}
                         onChange={(e) => setColumnDraft({ ...columnDraft, onlyHere: e.target.checked })}
                       />
@@ -1690,22 +1709,9 @@ export function Overview({
                   {columnError}
                 </p>
               )}
-              {/* What already exists where this one would go, as help and
-                  not as controls: the properties every category has, and
-                  inside one category those it has on top of them */}
-              <dl className="known-props">
-                <dt>{t.table.knownAll}</dt>
-                <dd>{[nameLabel, ...knownAll].join(', ')}</dd>
-                {knownOwn.map(
-                  (k) =>
-                    k.keys.length > 0 && (
-                      <Fragment key={k.label}>
-                        <dt>{t.table.knownOnly(k.label)}</dt>
-                        <dd>{k.keys.join(', ')}</dd>
-                      </Fragment>
-                    ),
-                )}
-              </dl>
+              <p id="column-help" className="hint column-help">
+                {columnHelp()}
+              </p>
               <div className="row">
                 <button type="button" className="summary-link" onClick={() => openPanel('properties')}>
                   {t.properties.edit}

@@ -12,7 +12,7 @@ slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
 	- [[#Kom i gang#1. Åpne og installer appen|1. Åpne og installer appen]]
 	- [[#Kom i gang#2. Prøv appen, og velg et passord for å beholde det|2. Prøv appen, og velg et passord for å beholde det]]
 	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
-	- [[#Kom i gang#4. Legg inn de første tingene|4. Legg inn de første tingene]]
+	- [[#Kom i gang#4. Legg til de første tingene|4. Legg til de første tingene]]
 	- [[#Kom i gang#5. Ta vare på dataene|5. Ta vare på dataene]]
 - [[#Slik er appen bygd opp|Slik er appen bygd opp]]
 - [[#Legge til|Legge til]]
@@ -65,10 +65,10 @@ sju dager.
 
 ### 2. Prøv appen, og velg et passord for å beholde det
 
-Du kan prøve alt i appen uten passord. Det du legger inn da, blir borte når du
+Du kan prøve alt i appen uten passord. Det du legger til da, blir borte når du
 lukker appen, og linja under topplinja minner deg om det. På iPhone kan
 systemet også lukke appen selv, for eksempel når du bytter til en annen app. Trykk på «Velg
-passord for å bevare det», så kommer du til Innstillinger. Alt du har lagt inn,
+passord for å bevare det», så kommer du til Innstillinger. Alt du har lagt til,
 blir med når du velger passordet.
 
 Passordet må ha minst 12 tegn. En setning er lettere å huske enn en kode.
@@ -114,7 +114,7 @@ kategori](#en-kategori). Ting har ingen faste felt for lån, tilstand eller
 antall: Det er egenskaper du lager selv, se [Egenskaper for det Ting ikke har
 egne funksjoner for](#egenskaper-for-det-ting-ikke-har-egne-funksjoner-for).
 
-### 4. Legg inn de første tingene
+### 4. Legg til de første tingene
 
 Se [Legge til en ting](#en-ting). Det du ikke vet ennå, lar du stå tomt:
 `-har:kjøpesum` i søket finner tingene som mangler den senere.
@@ -204,17 +204,48 @@ Pluss › «Legg til egenskap (kolonne)». Skriv navnet og velg felttype, se
 [Felttyper](#felttyper). En valgliste kan få alternativer, et tall en enhet.
 
 Står du i én eller flere kategorier, kan egenskapen høre til bare dem: «Bruk
-bare i …» er huket av fra start. Under skjemaet ser du hva som finnes fra før:
-Egenskapene alle kategorier har, og dem kategorien din har i tillegg. Skriver du
-navnet på en egenskap en annen kategori har, tar appen den i bruk her også i
-stedet for å lage en til.
+bare i …» er huket av fra start. Under skjemaet står en hjelpetekst for feltet
+du er i. Mens du skriver navnet, viser den egenskapene som begynner med det du
+har skrevet, og hvor de finnes. Skriver du navnet på en egenskap en annen
+kategori har, tar appen den i bruk her også i stedet for å lage en til.
 
 ### En kategori
 
-Skriv en ny verdi i Kategori-kolonnen når du legger inn en ting, så finnes
+Skriv en ny verdi i Kategori-kolonnen når du legger til en ting, så finnes
 kategorien. Vil du lage den før du har ting til den: Kategorifeltet › «Endre
 kategorier» › «Ny kategori». Gi den navn og symbol, og trykk «Lagre». Den står i
 lista med 0 ting til du legger noe i den.
+
+**Eksempel: En kategori med typer.** Ting har ingen underkategorier. Vil du dele
+Underholdning i bøker, film, musikk og spill, gir du kategorien en valgliste med
+typene. Leker blir en egen kategori.
+
+1. Kategorifeltet › «Endre kategorier». Trykk på «Ny kategori» og skriv
+   `Underholdning`. Gjør det samme for `Leker` og trykk «Lagre». Leker får
+   symbolet «Leker» av seg selv.
+2. Velg Underholdning i kategorifeltet. Pluss › «Legg til egenskap (kolonne)».
+3. Fyll ut skjemaet og trykk «Legg til»:
+   - Navn på egenskap: `Type`
+   - Felttype: Valgliste
+   - Alternativer: `Bøker, Film, Musikk, CD, Brettspill, Dataspill`
+
+«Bruk bare i Underholdning» er huket av, så Type hører bare til Underholdning.
+Står du i Underholdning, får du en kolonne og et filter for Type. På «Ny ting»
+på mobilen står typene som forslag under Type når kategorien er Underholdning. I
+utskriften kan du gruppere etter Type.
+
+Vil du fortsatt slå opp bøker på nett, gir du Underholdning symbolet «Bok» under
+«Endre kategorier».
+
+**Har du allerede kategorier som Bøker og Film,** gir du tingene en type før du
+slår kategoriene sammen:
+
+1. Velg Bøker og legg til Type som over.
+2. Huk av alle tingene › «Endre verdi» › Type: `Bøker` › «Lagre».
+3. Gjør det samme for Film og de andre. Appen lager ikke en ny Type, men bruker
+   den du har.
+4. «Endre kategorier»: Gi hver av dem navnet `Underholdning`. De blir én
+   kategori, og Type følger med.
 
 ---
 
@@ -476,6 +507,7 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 | Telle forbruksvarer | Tall «Antall» med enhet stk; `antall<2` finner det som er tomt |
 | Merke tilstand | Valgliste «Status»: Ok, Skal repareres, Kast |
 | Skille kjøpesum fra verdi | Tall «Verdi» i kr ved siden av «Kjøpesum» |
+| Dele en kategori i typer | Valgliste «Type» som bare hører til kategorien, se [eksemplet](#en-kategori) |
 
 ### Innstillinger
 
@@ -483,7 +515,7 @@ Tannhjulet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Velg et passord | Bare mens du prøver appen: Låser det du har lagt inn, så det blir med |
+| Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt, og spør først |
 | Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |

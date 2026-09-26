@@ -1071,23 +1071,12 @@ section {
 }
 
 /* The checkbox sits beside the select, not above it */
-/* Under the property form: what already exists, as help rather than
-   controls. The hint's size and grey, names as running text. */
-.known-props {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: var(--s-1) var(--s-3);
+/* Under the property form: help for the field in use. One line is kept
+   while there is none, so the form does not jump as the name is typed */
+.column-help {
   margin: 0;
-  color: var(--text-2);
-  font-size: var(--text-xs);
-}
-
-.known-props dt {
-  font-weight: 600;
-}
-
-.known-props dd {
-  margin: 0;
+  min-height: 1lh;
+  max-width: 60ch;
 }
 
 /* Plus's menu hangs from the button's right edge, above the sticky card

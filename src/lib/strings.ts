@@ -201,10 +201,26 @@ export const t = {
     // Plus opens a menu: a thing (a row) or a property (a column)
     add: 'Legg til',
     addColumnMenu: 'Legg til egenskap (kolonne)',
-    // Under the column form, as help: what exists where the new one would go
-    knownAll: 'Finnes i alle kategorier',
-    // Not for every category, but for this one (and maybe others)
-    knownOnly: (category: string) => `I tillegg i ${category}`,
+    // Under the column form: help for the field in use. For the name, the
+    // properties that already exist and start with what is typed
+    columnHelp: {
+      similar: 'Finnes fra før',
+      everywhere: (key: string) => `«${key}» finnes i alle kategorier.`,
+      here: (key: string, where: string) => `«${key}» finnes allerede i ${where}.`,
+      elsewhere: (key: string, where: string) => `«${key}» finnes i ${where}.`,
+      shared: (key: string, where: string, here: string) =>
+        `«${key}» finnes i ${where}. Legger du den til, får ${here} den samme egenskapen.`,
+      types: {
+        text: 'Fritekst, som en kommentar eller et serienummer. Lenker blir klikkbare på tingens side.',
+        choice: 'Faste verdier å velge mellom, som Status eller Farge. Du kan filtrere på dem og gruppere dem før utskrift.',
+        number: 'Skriv bare tallet i cellene. Enheten velger du i neste felt.',
+        date: 'En dato, som 19.09.26. Filteret viser årene.',
+        path: 'Hele veien frem til der tingen finnes, som Loftsbod › Hylle 2 › Boks 4. Du får ett filter per nivå.',
+      },
+      options: 'Skriv alternativene adskilt med komma: «Bøker, Film, Musikk». Med eller uten mellomrom etter komma.',
+      unit: 'Velg i lista eller skriv din egen. Kolonner i kr får en sum.',
+      scope: 'Uten hake: Egenskapen knyttes til alle kategoriene.',
+    },
     wrap: 'Bryt lang tekst over flere linjer',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
@@ -243,7 +259,7 @@ export const t = {
     resize: (key: string) => `Endre bredde på ${key}`,
     resizeHint: 'Dra for å endre bredde. Dobbeltklikk for å tilpasse bredden til innholdet.',
     renameColumn: 'Endre',
-    nameCannotGo: 'Du kan ikke fjerne Navn. Det er slik du finner tingen igjen.',
+    nameCannotGo: 'Du kan ikke fjerne Navn. Denne egenskapen er hva appen må ha som minimum for å vise hva du har lagt til.',
     renameSave: 'Lagre navn',
     renameCancel: 'Avbryt',
     moveLeft: 'Flytt til venstre',
@@ -254,7 +270,7 @@ export const t = {
   },
   error: {
     saveFailed: 'Kunne ikke lagre. Prøv på nytt.',
-    crashed: 'Noe gikk galt. Dataene dine er trygge. Last siden på nytt for å fortsette.',
+    crashed: 'Noe gikk galt, men dataene dine er bevart. Last siden på nytt for å fortsette.',
     reload: 'Last på nytt',
     rowsMissingName: (n: number) => (n === 1 ? '1 rad mangler navn.' : `${n} rader mangler navn.`),
     columnExists: 'Denne egenskapen finnes allerede.',
@@ -274,18 +290,18 @@ export const t = {
     macSafari: 'Installer: Del › Legg til i Dock',
     // With a passphrase: why installing matters in a browser that clears
     // the data of a site nobody opens
-    evict: 'Nettleseren kan slette det du har lagt inn hvis du ikke åpner appen på sju dager.',
+    evict: 'Nettleseren kan slette det du har lagt til hvis du ikke åpner appen på sju dager.',
   },
   // Before a passphrase: the line under the top bar
   trial: {
-    notice: 'Du bruker appen i prøvemodus. Det du legger inn, blir borte når du lukker den.',
+    notice: 'Du bruker appen i prøvemodus. Det du legger til, blir borte når du lukker den.',
     // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger inn, blir borte når appen lukkes.',
+    noticePhone: 'Det du legger til blir borte når appen lukkes.',
     setPassword: 'Velg passord for å bevare det',
-    why: 'Passordet krypterer alt du legger inn, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
+    why: 'Passordet krypterer alt du legger til, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
     lost: 'Mister du passordet, er dataene tapt.',
     folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
-    done: 'Passord valgt. Alt du har lagt inn, er bevart.',
+    done: 'Passord valgt. Alt du har lagt til er bevart.',
   },
   storage: {
     title: 'Innstillinger',
@@ -310,7 +326,7 @@ export const t = {
     useLocal: 'Skriv over mappen',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
     copyTitle: 'Sikkerhetskopi',
-    copyWhat: 'Manuelt: Én kryptert fil med alt du har lagt inn. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
+    copyWhat: 'Manuelt: Én kryptert fil med alt du har lagt til. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
     download: 'Last ned sikkerhetskopi',
     // A phone saves the file through the share sheet: Filer, AirDrop, e-post
     share: 'Del sikkerhetskopi',
