@@ -131,7 +131,7 @@ Every mutation in `db.ts` bumps `localChangedAt`; loading from a file or folder 
 
 A thing carries a list of photos, and the first is the one shown wherever there is room for only one: the table, the phone list, the report block. `ItemDetail` and `AddItem` set them; with more than one, `PhotoStrip` draws the lot and any of them can be made the first. Rows and files written before a thing could carry several hold one `photo` and read as a list of one (`sealedPhotos` in `db.ts`, `storedPhotos` in `backup.ts`); nothing is migrated in place, a row takes the new shape the next time it is written. Decided by elzacka, 22 September 2026.
 
-Photos are stored as `Blob`, never base64. A downloaded copy embeds them as data URLs, encoded and decoded by hand rather than through `FileReader` and `fetch`: `connect-src 'self'` blocks fetching a `data:` URL, which used to fail every restore that carried a photo.
+Photos are stored as `Blob`, never base64. A downloaded copy embeds them as data URLs, encoded and decoded by hand rather than through `FileReader` and `fetch`: `connect-src 'self'` blocks fetching a `data:` URL, so a restore with a photo would fail.
 
 Strekkode is a text property created the first time a code is saved from the phone form (`barcodeProperty` in `fields.ts`); retail codes are stored as digits.
 
@@ -139,10 +139,6 @@ Kategori is a property like any other (a Valgliste, first column by default), no
 
 ## Conventions
 
-- Language in code, comments, commits: English. Language in UI: Norwegian (nb-NO), klarspråk, du-form
-- Norwegian text: always a capital letter after a colon, also when a fragment follows. Overrides the klarsprak-norsk skill on that point. Decided by elzacka, 19 September 2026
-- No emoji anywhere
-- Commit format `type: description` (feat, fix, docs, refactor, test, chore)
 - Commit only after the change has been run locally and verified by elzacka. Never push
 - A change to the data model or its logic holds for every use at once: registering (the table, the phone form), viewing (the table, the thing's page, the phone list), searching and filtering, and choosing for print, report and CSV. One rule, such as which properties belong to a category, gives the same answer on all of them. It also keeps the app distraction-free, clean, intuitive and efficient. Decided by elzacka, 23 September 2026
 - Design decisions: `dev_only/designsystem.md`. Follow it. One accent colour, no shadows, no illustrations, 44 px targets, visible labels
