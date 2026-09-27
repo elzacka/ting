@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-Project rules for Ting. Global rules in `~/.claude/CLAUDE.md` apply on top.
+# Ting
 
 ## What this is
 
@@ -53,6 +51,9 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - `Overview`: choosing a category changes rows, columns and filters together — it is the view, not a filter. The register opens on "velg kategori", no table, until a category is picked or an action implies "show me things" (a new row, a search, fewer than two categories to choose from).
 - Column visibility is one rule everywhere it applies (table, filters, print, CSV): a column renders if it belongs to a category in view or holds a value on a visible row; with exactly one category in view, that category's own column drops since it says the same on every row. A change here must hold across table, phone list, search/filter and print/CSV at once.
 - `PropertyEditor`: removing a value asks for confirmation naming it and counting the affected things.
+- Filter menus count the rows every other filter and the search leave (`withoutFilter`).
+- A new row inherits the Valgliste and date values of the row above, never numbers or text; the first row takes the Kategori of the newest thing.
+- Printing with photos: await `img.decode()` before `window.print()`, or photos print blank.
 - Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there.
 - `AddItem`: "Slå opp på nett" (ISBN lookup) shows only for a book category; other scanned codes are stored, never looked up.
 
@@ -60,7 +61,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 
 AES-256-GCM (WebCrypto) under a random data key (DEK), wrapped by a key derived from the passphrase with Argon2id (`@noble/hashes`, m=64 MiB, t=3, p=1). `lib/crypto.ts` holds the primitives, `lib/vault.ts` the session key — memory only, zeroed on lock.
 
-Before a passphrase exists, the app runs as a trial: a DEK nothing wraps, sealing everything as usual, cleared at the next start once a real passphrase is set up. Face ID / Touch ID can stand in for the passphrase on one device via a platform passkey (`lib/passkey.ts`, opt-in, off by default): its PRF output through HKDF wraps a second copy of the DEK. The PRF output must be exactly 32 bytes from a real credential; anything else — including a valid-looking empty secret — is rejected, and the copy it would open is deleted rather than used. A record whose `dekId` does not match the vault's is deleted rather than opened (`unlockWithKey`).
+Before a passphrase exists, the app runs as a trial: a DEK nothing wraps, sealing everything as usual. `setupVault` wraps the trial's own DEK, so what was made stays; a restore during a trial adopts the copy's vault; if no passphrase was set, the next start clears what the unwrapped key sealed (`clearTrialRows`). Rows from before encryption skip the trial and go to the setup screen (`hasPlainRows`). A file sealed on another device opens with the passphrase and its key is adopted, so devices converge on one DEK. Plain files and rows still load and are sealed on the first unlock. Face ID / Touch ID can stand in for the passphrase on one device via a platform passkey (`lib/passkey.ts`, opt-in, off by default): its PRF output through HKDF wraps a second copy of the DEK. The passkey is asked for as `internal` with the `client-device` hint, so the browser does not offer a security key first. The PRF output is used only as exactly 32 bytes (`prfBytes` accepts an ArrayBuffer, a view, or the plain array 1Password's extension returns); read as an empty secret it would give a fixed key, so anything else fails, and a copy that opens under that fixed key is deleted at the lock screen. Log what arrived as type and length, never the value. A record whose `dekId` does not match the vault's is deleted rather than opened (`unlockWithKey`).
 
 Only ids, the folder handle, `localChangedAt` and the vault itself (wrapped key, salt, parameters) are ever unencrypted. `db.ts` seals every row (items, properties, field settings); backup files keep the vault in the clear and everything else sealed. Photos in the folder are `bilder/<id>-1.bin`, flat and numbered from one, each 12-byte nonce + ciphertext.
 
@@ -72,7 +73,7 @@ Everything typed, pasted, restored from a file, or read from a folder is data, n
 
 ## Data model
 
-Dexie version 4, tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place. `Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in.
+Dexie version 4, tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place. `Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in. Changing a column's type to Sti changes its specs' unit marker, never their values. Units stay out of table headers and filter labels (detail page, print and CSV show them). `createdAt`/`updatedAt` live in the data and CSV, never on screen or in print. Retail barcodes are stored as digits in the Strekkode text property.
 
 Adding a non-indexed field needs no version bump; changing an index or renaming a field does — add a new `db.version()` with an `upgrade`, never edit an existing version.
 
@@ -84,7 +85,7 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 
 ## Conventions
 
-- Commit only once elzacka has run and verified the change locally (differs from global's commit-on-passing-tests default). Never push.
+- Commit only once elzacka has run and verified the change locally (differs from global).
 - A rule about the data model or its logic (e.g. which properties belong to a category) must give the same answer everywhere it applies: registering, viewing, searching/filtering, printing/CSV.
 - Design decisions: `dev_only/designsystem.md`. One accent colour, no shadows, no illustrations, 44 px targets, visible labels.
 - The lock is the passphrase: once one exists the app always opens locked; before one exists it opens as an unlocked trial, no lock button, no idle lock.
