@@ -8,8 +8,9 @@ coverage/
 .env
 .env.*
 
-# Tool and editor state, never the app
-.claude/
+# Tool and editor state, never the app; Claude path rules are tracked
+.claude/*
+!.claude/rules/
 .obsidian/
 .vscode/
 .idea/
