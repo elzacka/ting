@@ -367,7 +367,7 @@ export const t = {
     option: 'Les tekst på kvitteringer',
     what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB. Etterpå leser den kvitteringer på enheten, også uten nett.',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Klar, også uten nett.',
+    ready: 'Lastet ned og integrert i appen.',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
   // Om appen: the last section of Innstillinger
