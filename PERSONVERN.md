@@ -31,10 +31,11 @@ eller oppdateres, slik alle nettsteder ser den.
 
 ## Kvitteringer og KI
 
-Appen leser teksten på kvitteringer med KI: Små modeller som er trent til å
-kjenne igjen bokstaver og tall (PP-OCRv5). Modellene kjører på enheten, også
-uten nett. De lærer ingenting av dataene dine og skriver ingen tekst selv.
-Appen bruker ingen KI-tjeneste på nett og ingen språkmodell.
+Appen leser teksten på kvitteringer med KI: To små modeller fra PaddlePaddle
+(PP-OCRv5), der den ene finner teksten på kvitteringen og den andre leser
+bokstavene og tallene. Modellene kjører på enheten, også uten nett. De lærer
+ingenting av dataene dine og skriver ingen tekst selv. Appen bruker ingen
+KI-tjeneste på nett og ingen språkmodell.
 
 Bildet av kvitteringen lagres kryptert sammen med tingene du kjøpte. Teksten
 appen leste, lagres ikke. Bare navn, pris, dato og butikk blir med, og du ser
