@@ -11,6 +11,7 @@ import { formatValue } from '../lib/format'
 import { cellsFrom, columnId, inputFrom } from '../lib/grid'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
+import { domId } from './ChoiceFields'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 import { PhotoStrip } from './PhotoStrip'
@@ -20,10 +21,6 @@ import { splitLinks } from '../lib/paste'
 type Props = { item: Item; items: Item[]; properties: Property[]; fields: FieldSettings }
 
 type PropDef = Extract<ColumnDef, { kind: 'prop' }>
-
-function domId(prefix: string, id: string): string {
-  return `${prefix}-${encodeURIComponent(id)}`
-}
 
 // A thing, every column as a row, each stored the moment it is left. Nothing
 // here waits for Lagre: on a phone this is the way to correct a thing.
@@ -221,6 +218,27 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
 
       <PhotoStrip photos={item.photos} name={item.name} onFirst={makeFirst} onRemove={dropPhoto} />
 
+      <div className="row toolbar">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="visually-hidden"
+          onChange={(e) => addPhotos(e.target.files)}
+        />
+        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+          <Icon name="photoCamera" size={20} />
+          {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
+        </button>
+        {/* With several, each tile carries its own way out */}
+        {item.photos.length === 1 && (
+          <button type="button" className="btn" onClick={() => dropPhoto(0)}>
+            {t.action.removePhoto}
+          </button>
+        )}
+      </div>
+
       <section className="stack-sm">
         <h2 className="section-label">{t.detail.properties}</h2>
         {props.length === 0 ? (
@@ -253,27 +271,6 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
           </p>
         )}
       </section>
-
-      <div className="row toolbar">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="visually-hidden"
-          onChange={(e) => addPhotos(e.target.files)}
-        />
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-          <Icon name="photoCamera" size={20} />
-          {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
-        </button>
-        {/* With several, each tile carries its own way out */}
-        {item.photos.length === 1 && (
-          <button type="button" className="btn" onClick={() => dropPhoto(0)}>
-            {t.action.removePhoto}
-          </button>
-        )}
-      </div>
 
       {/* At the foot, on its own: nowhere near the buttons used every day */}
       {confirming ? (
