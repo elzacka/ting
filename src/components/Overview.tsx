@@ -251,10 +251,9 @@ export function Overview({
   const cats = useMemo(() => filters[categoryColumnId] ?? [], [filters])
   // The icons chosen for categories, carried by the Kategori property
   const chosenIcons = categoryDef?.kind === 'prop' ? categoryDef.property?.icons : undefined
-  // The label to write, and to hand a new row, while exactly one is in view.
-  // Read from every thing and the categories made in Endre kategorier, not
-  // from what is on screen: a search that leaves none of them, or a category
-  // no thing has yet, must not turn Bok back into the folded key.
+  // The label for a new row while exactly one category is in view, read from every thing and
+  // Endre kategorier, not the screen: a search leaving none, or an empty category, must not
+  // turn Bok back into the folded key.
   const oneCategory = useMemo(() => {
     if (cats.length !== 1 || categoryDef?.kind !== 'prop') return null
     return allCategories.find((v) => v.key === cats[0])?.label ?? null
@@ -369,12 +368,9 @@ export function Overview({
     }
   }, [addMenu])
 
-  // A column earns its place twice over: it must belong to every category in
-  // view, and then either be one those categories ask for or hold a value for
-  // a row on screen (or a new row, or an active filter). Navn always.
-  // Everything else is noise for the view at hand: a sleeping-bag column in a
-  // list of books. Inside one category its own columns stay even when empty —
-  // there they are the work list, not noise.
+  // A column shows if it belongs to the categories in view and either they ask for it or a row,
+  // new row or filter holds a value in it; Navn always. Not a sleeping-bag column among books.
+  // Inside one category its own columns stay even when empty: they are the work list.
   const { shown: shownAll, extra } = useMemo(() => {
     const used = new Set<string>()
     for (const item of visible) for (const s of item.specs) used.add(columnId({ key: s.key, unit: s.unit }))
@@ -428,17 +424,13 @@ export function Overview({
     return missing.length === 0 ? h.here(key, listFormat.format(catLabels)) : h.shared(key, where, listFormat.format(missing))
   }
 
-  // Skriv ut asks which columns go on paper; Navn always does, and the form
-  // starts with what is on screen, the same as Cmd+P without a choice. The
-  // choice holds for the session. While the browser takes its snapshot the
-  // table itself narrows to it.
+  // Skriv ut asks which columns go on paper, starting from what is on screen as Cmd+P does;
+  // Navn always. The choice holds for the session, and the table narrows to it while printing.
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
-  // Two choices that change the shape of the paper rather than its contents:
-  // the column the things are grouped under, and whether each carries its
-  // photo. Either one turns the table into the report layout; neither leaves
-  // the table printing itself, as it always has.
+  // The shape of the paper: a column to group under, and photos. Either one prints the report
+  // layout; neither prints the table itself.
   const [printGroup, setPrintGroup] = useState<string | null>(null)
   const [printPhotos, setPrintPhotos] = useState(false)
   const [draftGroup, setDraftGroup] = useState<string | null>(null)
@@ -554,10 +546,9 @@ export function Overview({
     () => (reporting ? groupItems(listed, printGroup) : []),
     [reporting, listed, printGroup],
   )
-  // Few enough values to head a page: a Valgliste, or a place at one of its
-  // levels — by room, by shelf, by box. Only the columns on screen, the same
-  // ones the form offers for the paper: a column of another category, or
-  // Kategori inside one, would put everything under one heading.
+  // Columns with few enough values to head a page: a Valgliste, or a place at one of its levels.
+  // Only those on screen: another category's column, or Kategori inside one, would put
+  // everything under one heading.
   const groupChoices = useMemo(
     () =>
       shownAll.flatMap((d) => {
@@ -622,10 +613,9 @@ export function Overview({
     return item[field]
   }
 
-  // A new row inherits what describes the batch from the row above: every
-  // Valgliste, date and place (a shop and a purchase date carry down a
-  // receipt, a place carries down a shelf). Prices, texts and numbers are
-  // the row's own. The first row inherits only the Kategori of the newest thing.
+  // A new row inherits the batch from the row above: every Valgliste, date and place (a shop and
+  // a date down a receipt, a place down a shelf), never prices, texts or numbers. The first row
+  // takes only the Kategori of the newest thing.
   function inherited(prev?: NewRow): Record<string, string> {
     if (prev) {
       const cells: Record<string, string> = {}
@@ -742,10 +732,8 @@ export function Overview({
     if (editing) setSelected(new Set())
   }, [editing])
   const lastNewId = newRows[newRows.length - 1]?.tempId
-  // A new row comes after every other. Added from the foot it is already
-  // where the pointer is and stays put; added from the head, with hundreds of
-  // things above it, it is brought to the middle of the screen, or nothing
-  // would seem to happen.
+  // A new row comes last. Added from the head, with hundreds of things above it, it is brought
+  // to the middle of the screen, or nothing would seem to happen.
   useEffect(() => {
     if (!lastNewId) return
     const input = document.querySelector<HTMLElement>(`input[data-row="${lastNewId}"]`)
@@ -753,11 +741,8 @@ export function Overview({
     const { top, bottom } = input.getBoundingClientRect()
     if (top < 0 || bottom > window.innerHeight - 2 * rowHeight) input.scrollIntoView({ block: 'center', inline: 'nearest' })
   }, [lastNewId])
-  // The table waits for a category. Until one is picked the card is its
-  // categories and nothing else — but anything that means "show me things"
-  // opens it too: a new row, a search, or having no categories to pick
-  // between in the first place. The chooser itself is only drawn from two
-  // categories up, and a table nobody can reach would be a trap.
+  // The table waits for a category, or anything meaning "show me things": a new row, a search,
+  // or fewer than two categories, since the chooser needs two and an unreachable table is a trap.
   const showTable =
     categoryPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
   const hasRows = showTable && (items.length > 0 || newRows.length > 0)

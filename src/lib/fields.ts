@@ -86,12 +86,9 @@ function foldCategory(value: string): string {
   return value.trim().toLocaleLowerCase('nb')
 }
 
-// A column belongs in the view when it belongs to at least one category in
-// view: with Kjøkken and Interiør chosen together, Kjøkken's own Rom stays
-// for the Kjøkken things, empty on the others, rather than hide what they
-// hold (elzacka, 23 September 2026). A column that names no category belongs
-// to all of them, so it always does. With no category chosen the view is
-// every category at once, which leaves the columns that belong everywhere.
+// A column belongs when any category in view has it, so Kjøkken's Rom stays beside Interiør
+// (elzacka, 2026-09-23). A column naming no category belongs everywhere; with none chosen,
+// only those do.
 export function appliesTo(property: Property | null, categories: readonly string[]): boolean {
   const own = property?.categories
   if (!own || own.length === 0) return true
