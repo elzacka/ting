@@ -422,7 +422,7 @@ function Screen({
     return <AddItem items={items} properties={properties} fields={fields} onDirtyChange={onDirtyChange} />
   }
   if (route.view === 'receipt') {
-    return <ReceiptAdd items={items} properties={properties} onDirtyChange={onDirtyChange} />
+    return <ReceiptAdd items={items} properties={properties} fields={fields} onDirtyChange={onDirtyChange} />
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>

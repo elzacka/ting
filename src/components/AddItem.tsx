@@ -1,45 +1,33 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { addItem, addProperty, getSetting } from '../db/db'
+import { addItem, addProperty } from '../db/db'
 import { asImage } from '../lib/backup'
 import { classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
 import type { Item, Property } from '../db/schema'
 import { isBookCategory } from '../lib/categoryIcons'
 import { errorText } from '../lib/errors'
-import { recentValues } from '../lib/values'
 import {
-  appliesTo,
   barcodeColumnId,
   barcodeKey,
   barcodeProperty,
   categoryColumnId,
+  choiceDefs,
   columnDefs,
   propColumns,
-  type ColumnDef,
   type FieldSettings,
 } from '../lib/fields'
 import { columnId, inputFrom } from '../lib/grid'
-import { pathsInUse } from '../lib/paths'
 import { lookup } from '../lib/lookup'
-import { receiptReadingKey } from '../lib/receiptItems'
-import { href } from '../lib/route'
 import { t } from '../lib/strings'
+import { ChoiceFields, firstCells } from './ChoiceFields'
 import { Icon } from './Icons'
-import { useObjectUrl } from './useObjectUrl'
 import { PhotoStrip } from './PhotoStrip'
-import { ValuePicker } from './ValuePicker'
+import { PhotoPicker } from './ThumbMenu'
 
 type Props = {
   items: Item[]
   properties: Property[]
   fields: FieldSettings
   onDirtyChange: (dirty: boolean) => void
-}
-
-type ChoiceDef = Extract<ColumnDef, { kind: 'prop' }>
-
-// Column ids are JSON; encoded they are safe as element ids
-function domId(prefix: string, id: string): string {
-  return `${prefix}-${encodeURIComponent(id)}`
 }
 
 // One thing at a time, for a phone with the thing in hand: photos, name, the choice and path
@@ -49,31 +37,13 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const nameLabel = fields.name.label ?? t.table.name
   const [name, setName] = useState('')
-  // The first thing starts with the Kategori of the newest thing, like a new row in the table
-  const [cells, setCells] = useState<Record<string, string>>(() => {
-    const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
-    const spec = newest?.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId)
-    return spec ? { [categoryColumnId]: String(spec.value) } : {}
-  })
-  // Kategori comes first and decides the rest: once it says Bok the form asks
-  // what a book needs, not what a sleeping bag needs.
+  const [cells, setCells] = useState<Record<string, string>>(() => firstCells(items))
   const category = cells[categoryColumnId]?.trim() ?? ''
-  const choices = useMemo(
-    () =>
-      defs.filter(
-        (d): d is ChoiceDef =>
-          d.kind === 'prop' &&
-          (d.type === 'choice' || d.type === 'path') &&
-          appliesTo(d.property, category === '' ? [] : [category]),
-      ),
-    [defs, category],
-  )
+  const choices = useMemo(() => choiceDefs(defs, category), [defs, category])
   const [photos, setPhotos] = useState<Blob[]>([])
   const [saved, setSaved] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const url = useObjectUrl(photos[0] ?? null)
   // The barcode, serial number or QR code: scanned from a photo of the label or typed. Only an
   // ISBN in a book category can be looked up, since an open catalogue holds books. A line under
   // the field shows the last scan or lookup; in a book category it says the lookup is there.
@@ -82,11 +52,10 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [codeNote, setCodeNote] = useState<string | null>(null)
   const [busy, setBusy] = useState<'scan' | 'lookup' | null>(null)
   const scanRef = useRef<HTMLInputElement>(null)
-
-  const [receipts, setReceipts] = useState(false)
-  useEffect(() => {
-    void getSetting<boolean>(receiptReadingKey).then((on) => setReceipts(on === true))
-  }, [])
+  const nameRef = useRef<HTMLInputElement>(null)
+  // What the field says now, for a read of a photo that finishes after the user typed a code
+  const typed = useRef('')
+  typed.current = code
 
   const dirty = name.trim() !== '' || photos.length > 0 || code !== ''
   useEffect(() => {
@@ -94,45 +63,41 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   }, [dirty, onDirtyChange])
   useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
-  function valuesFor(def: ChoiceDef): string[] {
-    const value = (i: Item) => {
-      const spec = i.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === def.id)
-      return spec ? String(spec.value) : ''
+  // The first code found in the pictures fills Strekkode, unless a code was typed meanwhile.
+  // The line under the field says it was read; nothing found says so only for a scan.
+  async function readCode(images: Blob[], scanned: boolean) {
+    setBusy('scan')
+    setCodeNote(null)
+    try {
+      for (const image of images) {
+        const found = await decodeImage(image)
+        if (!found) continue
+        if (!scanned && typed.current !== '') return
+        setCode(found.value)
+        setCodeNote(t.barcode.read(classify(found.value) === 'isbn' ? 'ISBN' : found.format))
+        return
+      }
+      if (scanned) setCodeNote(t.barcode.none)
+    } catch (err) {
+      console.error(errorText(err))
+      if (scanned) setCodeNote(t.barcode.none)
+    } finally {
+      setBusy(null)
     }
-    // A place offers the way in as well as the places themselves
-    if (def.type === 'path') return pathsInUse(items.map(value))
-    return recentValues(items, value, def.property?.options ?? [])
-  }
-
-  // The camera or the photo library, as the phone offers
-  function addPhotos(files: FileList | null) {
-    const added = [...(files ?? [])].map(asImage).filter((b): b is Blob => b !== null)
-    if (fileRef.current) fileRef.current.value = ''
-    if (added.length > 0) setPhotos((p) => [...p, ...added])
   }
 
   // Skann strekkode: the camera straight away, and the picture is only read,
   // never kept as a photo of the thing
-  async function scan(file: File | undefined) {
+  function scan(file: File | undefined) {
     if (scanRef.current) scanRef.current.value = ''
     const image = asImage(file)
-    if (!image) return
-    setBusy('scan')
-    setCodeNote(null)
-    try {
-      const found = await decodeImage(image)
-      if (found) {
-        setCode(found.value)
-        setCodeNote(t.barcode.read(classify(found.value) === 'isbn' ? 'ISBN' : found.format))
-      } else {
-        setCodeNote(t.barcode.none)
-      }
-    } catch (err) {
-      console.error(errorText(err))
-      setCodeNote(t.barcode.none)
-    } finally {
-      setBusy(null)
-    }
+    if (image) void readCode([image], true)
+  }
+
+  // A photo of the label is read too, so the label is not photographed twice
+  function addPhotos(added: Blob[]) {
+    setPhotos((p) => [...p, ...added])
+    if (code === '' && busy === null) void readCode(added, false)
   }
 
   // The one network call in the app, on this button alone
@@ -144,6 +109,9 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
     if (result.kind === 'found') {
       setName(result.name)
       setCodeNote(t.barcode.found(result.source))
+      // The name is at the top of the form: bring it into view to be checked
+      nameRef.current?.focus({ preventScroll: true })
+      nameRef.current?.scrollIntoView({ block: 'center' })
     } else {
       setCodeNote(t.barcode[result.kind])
     }
@@ -179,7 +147,9 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
       }
       // A retail code is stored as the scanner reads it: digits only
       const stored = classify(code) === 'other' ? code : digitsOf(code)
-      await addItem(inputFrom({ name, cells: { ...cells, [barcodeColumnId]: stored }, photos }, columns))
+      // Only the fields on screen: a value kept from a thing in another category waits for the next one
+      const shown = Object.fromEntries(choices.map((d) => [d.id, cells[d.id] ?? '']))
+      await addItem(inputFrom({ name, cells: { ...shown, [barcodeColumnId]: stored }, photos }, columns))
       setSaved(name.trim())
       setName('')
       setPhotos([])
@@ -196,60 +166,43 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   return (
     <form className="stack narrow" onSubmit={(e) => void save(e)} onKeyDown={nextOnEnter}>
       <h1 className="title">{t.add.title}</h1>
-      {url && <img className="photo" src={url} alt={t.add.photoAlt} />}
-      {/* The thing, then its label: each photo is added the same way */}
+      {/* The thing and its name side by side; the thumbnail adds the thing, then its label */}
+      <div className="add-head">
+        <PhotoPicker
+          photos={photos}
+          label={t.add.photos(name.trim() === '' ? t.add.thing : name.trim(), photos.length)}
+          large
+          onAdd={addPhotos}
+          onClear={() => setPhotos([])}
+        />
+        <div className="field">
+          <label htmlFor="add-name">{nameLabel}</label>
+          <input
+            ref={nameRef}
+            id="add-name"
+            className="input"
+            enterKeyHint="next"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value)
+              setError(null)
+            }}
+          />
+        </div>
+      </div>
       <PhotoStrip
         photos={photos}
         name={name.trim() === '' ? t.add.title : name}
         onFirst={(i) => setPhotos((p) => [p[i] as Blob, ...p.filter((_, n) => n !== i)])}
         onRemove={(i) => setPhotos((p) => p.filter((_, n) => n !== i))}
       />
-      <div className="row">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="visually-hidden"
-          onChange={(e) => addPhotos(e.target.files)}
-        />
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-          <Icon name="photoCamera" size={20} />
-          {photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
-        </button>
-        {receipts && !dirty && (
-          <a className="btn" href={href.receipt}>
-            {t.receipt.fromReceipt}
-          </a>
-        )}
-      </div>
-      <div className="field">
-        <label htmlFor="add-name">{nameLabel}</label>
-        <input
-          id="add-name"
-          className="input"
-          enterKeyHint="next"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value)
-            setError(null)
-          }}
-        />
-      </div>
-      {choices.map((def) => (
-        <div key={def.id} className="field">
-          <label htmlFor={domId('add', def.id)}>{def.col.key}</label>
-          <ValuePicker
-            id={domId('add', def.id)}
-            label={def.col.key}
-            kind={def.type === 'path' ? 'path' : 'choice'}
-            values={valuesFor(def)}
-            value={cells[def.id] ?? ''}
-            onChange={(v) => setCells((prev) => ({ ...prev, [def.id]: v }))}
-            enterKeyHint="next"
-          />
-        </div>
-      ))}
+      <ChoiceFields
+        items={items}
+        choices={choices}
+        cells={cells}
+        prefix="add"
+        onChange={(id, v) => setCells((prev) => ({ ...prev, [id]: v }))}
+      />
       <div className="field">
         <label htmlFor="add-code">{t.barcode.label}</label>
         <div className="row toolbar">
@@ -273,11 +226,16 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
             accept="image/*"
             capture="environment"
             className="visually-hidden"
-            onChange={(e) => void scan(e.target.files?.[0])}
+            onChange={(e) => scan(e.target.files?.[0])}
           />
-          <button type="button" className="btn" disabled={busy !== null} onClick={() => scanRef.current?.click()}>
-            <Icon name="photoCamera" size={20} />
-            {busy === 'scan' ? t.barcode.scanning : t.barcode.scan}
+          <button
+            type="button"
+            className="btn btn-icon"
+            aria-label={t.barcode.scan}
+            disabled={busy !== null}
+            onClick={() => scanRef.current?.click()}
+          >
+            <Icon name="barcodeScanner" />
           </button>
           {books && classify(code) === 'isbn' && (
             <button type="button" className="btn" disabled={busy !== null} onClick={() => void lookUp()}>
@@ -286,7 +244,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
           )}
         </div>
         <p className="hint" aria-live="polite">
-          {codeNote ?? (books && classify(code) !== 'isbn' ? t.barcode.bookHint : '')}
+          {busy === 'scan' ? t.barcode.scanning : codeNote ?? (books && classify(code) !== 'isbn' ? t.barcode.bookHint : '')}
         </p>
       </div>
       {error && (
@@ -295,7 +253,8 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
         </p>
       )}
       <div className="row form-bar">
-        <button type="submit" className="btn btn-primary" disabled={saving}>
+        {/* Not while a code is read or looked up: the answer would land on the next thing */}
+        <button type="submit" className="btn btn-primary" disabled={saving || busy !== null}>
           {t.action.save}
         </button>
         <span className="hint" aria-live="polite">

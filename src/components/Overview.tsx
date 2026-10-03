@@ -389,9 +389,11 @@ export function Overview({
     }
     // A category's own columns stay even when every row says the same: they
     // are its work list. Only the ones that belong everywhere give way.
+    // A new row's Kategori brings its columns too, as on the phone form.
+    const inView = [...cats, ...newRows.map((r) => r.cells[categoryColumnId]?.trim() ?? '').filter((c) => c !== '')]
     const fits = (d: ColumnDef) =>
       d.kind === 'name' ||
-      (appliesTo(d.property, cats) && (claimedBy(d.property, cats) || (used.has(d.id) && !uniform.has(d.id))))
+      (appliesTo(d.property, inView) && (claimedBy(d.property, inView) || (used.has(d.id) && !uniform.has(d.id))))
     // With one category in view its own column says the same on every row
     const chosen = defs.filter(
       (d) => d.kind === 'name' || (!hidden.has(d.id) && !(cats.length === 1 && d.id === categoryColumnId)),
@@ -706,6 +708,27 @@ export function Overview({
     // inherited reads items, baseCells and defs (baseCells changes together
     // with items) and the categories in view
   }, [items, defs, oneCategory, cats, visible])
+
+  // Enter in a new row starts the next, so a receipt is typed line by line without the mouse.
+  // Not on an empty row, nor on the Enter that picks a suggestion the arrow keys moved to;
+  // a pick by mouse changes the value and clears that.
+  const arrowed = useRef(false)
+  function onNewRowKey(e: ReactKeyboardEvent<HTMLInputElement>, row: NewRow) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      arrowed.current = true
+      return
+    }
+    const picked = arrowed.current
+    arrowed.current = false
+    if (e.key !== 'Enter' || picked || e.nativeEvent.isComposing || !touched(row)) return
+    e.preventDefault()
+    // From an earlier row, an empty row already waiting at the foot takes the cursor
+    const last = newRows[newRows.length - 1]
+    const waiting = last && last !== row && !touched(last) ? document.querySelector<HTMLInputElement>(`input[data-row="${last.tempId}"]`) : null
+    if (!waiting) return addRow()
+    focusWithoutScroll(waiting)
+    waiting.scrollIntoView({ block: 'nearest' })
+  }
 
   // Printing needs every row on the page, not the windowed ones. Cmd+P and the
   // link both go through the same state; flushSync so the rows exist before
@@ -2129,7 +2152,11 @@ export function Overview({
                             list="name-options"
                             aria-label={t.table.cell(row.name, nameLabel)}
                             value={row.name}
-                            onChange={(e) => editNew(row.tempId, { name: e.target.value })}
+                            onChange={(e) => {
+                              arrowed.current = false
+                              editNew(row.tempId, { name: e.target.value })
+                            }}
+                            onKeyDown={(e) => onNewRowKey(e, row)}
                             data-row={row.tempId}
                             data-col={def.id}
                             ref={row.tempId === lastNewId && shown[0]?.kind === 'name' ? focusWithoutScroll : undefined}
@@ -2142,7 +2169,11 @@ export function Overview({
                             list={def.type === 'choice' || def.type === 'path' ? choiceListId(def.id) : undefined}
                             aria-label={t.table.cell(row.name, def.col.key)}
                             value={row.cells[def.id] ?? ''}
-                            onChange={(e) => editNew(row.tempId, { cells: { [def.id]: e.target.value } })}
+                            onChange={(e) => {
+                              arrowed.current = false
+                              editNew(row.tempId, { cells: { [def.id]: e.target.value } })
+                            }}
+                            onKeyDown={(e) => onNewRowKey(e, row)}
                             data-row={row.tempId}
                             data-col={def.id}
                             ref={row.tempId === lastNewId && shown[0]?.id === def.id ? focusWithoutScroll : undefined}

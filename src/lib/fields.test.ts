@@ -3,6 +3,7 @@ import type { Item } from '../db/schema'
 import {
   appliesTo,
   categoryProperty,
+  choiceDefs,
   claimedBy,
   columnDefs,
   defaultFieldSettings,
@@ -112,5 +113,36 @@ describe('withCategory', () => {
 
   it('does not list the same category twice', () => {
     expect(withCategory(column(['Bok']), 'bok', true)).toEqual(['bok'])
+  })
+})
+
+describe('choiceDefs', () => {
+  const prop = (key: string, order: number, type: 'choice' | 'path' | 'text', categories?: string[]) => ({
+    id: columnId({ key, unit: null }),
+    key,
+    unit: null,
+    createdAt: 0,
+    order,
+    type,
+    ...(categories ? { categories } : {}),
+  })
+  // Moved on the desk: Type and Plassering left of Kategori, a text column among them
+  const properties = [
+    prop('Type', 0, 'choice', ['Bøker']),
+    prop('Plassering', 1, 'path'),
+    prop('Notat', 2, 'text'),
+    { ...categoryProperty(), order: 3 },
+    prop('Rom', 4, 'choice'),
+  ]
+  const ids = (category: string) =>
+    choiceDefs(columnDefs(defaultFieldSettings, properties, []), category).map((d) => d.col.key)
+
+  it('puts Kategori first, then places, then the other lists, whatever the column order', () => {
+    expect(ids('Bøker')).toEqual(['Kategori', 'Plassering', 'Type', 'Rom'])
+  })
+
+  it('leaves out the lists another category owns', () => {
+    expect(ids('Klær')).toEqual(['Kategori', 'Plassering', 'Rom'])
+    expect(ids('')).toEqual(['Kategori', 'Plassering', 'Rom'])
   })
 })

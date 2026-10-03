@@ -159,7 +159,9 @@ export const t = {
     delete: 'Slett',
     back: 'Tilbake',
     choosePhoto: 'Velg bilde',
+    takePhoto: 'Ta bilde',
     removePhoto: 'Fjern bilde',
+    removePhotos: 'Fjern bildene',
     // Several photos per thing: the first is the one the table and the report
     // show, and any of them can be made the first.
     addPhoto: 'Legg til bilde',
@@ -169,7 +171,10 @@ export const t = {
   },
   add: {
     title: 'Ny ting',
-    photoAlt: 'Bildet du tok',
+    // The photo thumbnail, named for the thing it shows
+    thing: 'tingen',
+    photos: (name: string, n: number) =>
+      n === 0 ? `Legg til bilde av ${name}` : n === 1 ? `Bilde av ${name}` : `${n} bilder av ${name}`,
     saved: (name: string) => `«${name}» er lagret.`,
     missingName: 'Tingen må ha et navn.',
     // The values to tap under a field, named for the field
@@ -347,7 +352,8 @@ export const t = {
     title: 'Ny fra kvittering',
     pick: 'Ta bilde av kvitteringen',
     reading: 'Leser kvitteringen…',
-    imageAlt: 'Kvitteringen, rettet opp',
+    thumb: 'Kvitteringen',
+    retake: 'Ta nytt bilde',
     adjust: 'Juster hjørnene',
     adjustHint: 'Dra hvert hjørne ut til kanten av kvitteringen.',
     useCorners: 'Bruk hjørnene',
@@ -355,13 +361,13 @@ export const t = {
     things: 'Ting på kvitteringen',
     include: (name: string) => `Ta med ${name === '' ? 'denne' : name}`,
     lineName: (n: number) => `Navn på ting ${n}`,
+    lineThing: (n: number) => `ting ${n}`,
     linePrice: (n: number) => `Pris for ting ${n}, i kroner`,
     addLine: 'Legg til en ting',
     unbalanced: (sum: string, total: string) => `Prisene blir ${sum} til sammen, men kvitteringen sier ${total}. Sjekk prisene.`,
     noLines: 'Fant ingen varer. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
     failed: 'Kunne ikke lese kvitteringen. Ta et nytt bilde rett ovenfra, med godt lys.',
     save: (n: number) => (n === 1 ? 'Lagre 1 ting' : `Lagre ${n} ting`),
-    saved: (n: number) => `${n === 1 ? '1 ting' : `${n} ting`} er lagret.`,
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',

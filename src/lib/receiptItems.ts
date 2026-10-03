@@ -1,7 +1,6 @@
 import type { ItemInput, Property, Spec } from '../db/schema'
 import { dateUnit } from './dates'
 import { columnId } from './grid'
-import { categoryKey } from './fields'
 import { parseNumber } from './values'
 
 // Which columns a receipt fills: the register's own where one fits by type and
@@ -46,16 +45,16 @@ export function receiptColumns(properties: readonly Property[], now: number): Re
   }
 }
 
-export type ReceiptRow = { include: boolean; name: string; price: string }
+export type ReceiptRow = { include: boolean; name: string; price: string; photos: Blob[] }
 
-// One thing per ticked row with a name, each carrying the receipt as its photo
+// One thing per ticked row with a name: the shared values (Kategori, a place) in `more`,
+// its own photos first so one of them is the main photo, then the receipt
 export function receiptInputs(
   rows: readonly ReceiptRow[],
   cols: ReceiptColumns,
-  shared: { store: string; date: string | null; category: string; photo: Blob },
+  shared: { store: string; date: string | null; more: readonly Spec[]; receipt: Blob },
 ): ItemInput[] {
-  const common: Spec[] = []
-  if (shared.category.trim() !== '') common.push({ key: categoryKey, value: shared.category.trim(), unit: '' })
+  const common: Spec[] = [...shared.more]
   if (shared.store.trim() !== '') common.push({ key: cols.store.key, value: shared.store.trim(), unit: cols.store.unit })
   if (shared.date) common.push({ key: cols.date.key, value: shared.date, unit: cols.date.unit })
   return rows
@@ -63,8 +62,14 @@ export function receiptInputs(
     .map((r) => {
       const price = parseNumber(r.price)
       const specs = price === null ? common : [...common, { key: cols.price.key, value: price, unit: cols.price.unit }]
-      return { name: r.name.trim(), specs, photos: [shared.photo] }
+      return { name: r.name.trim(), specs, photos: [...r.photos, shared.receipt] }
     })
+}
+
+// What the read prices add up to, ticked or not: it is checked against the receipt's total,
+// and a line left out on purpose is not a misread price
+export function linesSum(rows: readonly ReceiptRow[]): number {
+  return rows.reduce((a, r) => a + (parseNumber(r.price) ?? 0), 0)
 }
 
 // OCR reads ø as o or e in bold print: "Bjerkely Vestby" is the "Bjørkely

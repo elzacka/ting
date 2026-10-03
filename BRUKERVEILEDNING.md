@@ -150,22 +150,27 @@ ikke der. Søkefeltet og pluss for ny ting ligger nederst, der tommelen er.
 ### En ting
 
 **Ved skrivebordet:** Klikk i «Legg til ting» nederst i tabellen, eller pluss ›
-«Legg til ting». En ny rad åpner seg. Skriv navnet og det du vet, og klikk i
-«Legg til ting» igjen for neste. «Lagre» nederst lagrer alle radene på én gang.
+«Legg til ting». En ny rad åpner seg. Skriv navnet og det du vet. Trykk
+<kbd>Enter</kbd> eller klikk i «Legg til ting» igjen for neste rad. «Lagre»
+nederst lagrer alle radene på én gang.
 En rad du ikke skriver noe i, forsvinner når du klikker et annet sted.
 
 Valglister, datoer og plasseringer arver verdien fra raden over. Står du i én
 kategori, får nye rader den kategorien.
 
-**Med kvitteringen foran deg, ved skrivebordet:** Skriv navn, pris, butikk og dato på første
-rad. På neste rad står butikk og dato allerede der; skriv navn og pris. Gjenta
-for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
+**Med kvitteringen foran deg, ved skrivebordet:** Skriv navn, pris, butikk og
+dato på første rad og trykk <kbd>Enter</kbd>. På neste rad står butikk og dato
+allerede der; skriv navn og pris. Gjenta for hver linje på kvitteringen, og
+trykk «Lagre». Pris og tekst arves ikke.
 
 **Med tingen i hånden, på mobilen:**
 
 1. Pluss nederst til høyre åpner «Ny ting».
-2. «Velg bilde» åpner kameraet eller bildene dine. «Legg til bilde» for neste,
-   for eksempel av etiketten.
+2. Trykk på bildefeltet ved siden av navnet. «Ta bilde» åpner kameraet, og
+   «Legg til bilde» åpner bildene dine. Gjenta for flere bilder, for eksempel
+   av etiketten. Tallet på bildefeltet viser hvor mange bilder tingen har.
+   Appen leser strekkoden på bildene og fyller inn «Strekkode» hvis feltet er
+   tomt.
 3. Skriv navnet. «Neste» på tastaturet går til neste felt.
 4. Kategori og plassering står igjen fra forrige ting. Vil du bytte, trykker
    du på et forslag under feltet. Plassering velger du ett nivå om gangen:
@@ -179,27 +184,35 @@ senere; `-har:pris` i søket henter frem de som står igjen.
 Innstillinger › Kvitteringer først. Appen laster da ned tekstgjenkjenningen,
 omtrent 27 MB, og leser kvitteringer også uten nett.
 
-1. Pluss nederst til høyre, og så «Fra kvittering».
-2. «Ta bilde av kvitteringen». Legg den flatt, og ta bildet rett ovenfra med
+1. Trykk på kvitteringssymbolet ved siden av pluss nederst. Kameraet åpner
+   seg.
+2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
    godt lys.
-3. Appen retter opp bildet og fyller ut Kategori, Kjøpt hos, Kjøpsdato og én
-   rad per ting med navn og pris.
-4. Rett det som er feil, og fjern haken på det du ikke vil ha med. Trykk på
-   «Lagre».
+3. Appen retter opp bildet og fyller ut Kjøpt hos, Kjøpsdato og én rad per
+   ting med navn og pris.
+4. Rett det som er feil, og fjern haken på det du ikke vil ha med.
+5. Trykk på bildefeltet foran en ting for å ta bilde av den eller legge til
+   bilder du har.
+6. Velg kategori. Fyll ut plassering og de andre feltene kategorien har. De
+   gjelder alle tingene på kvitteringen.
+7. Trykk på «Lagre». Du kommer tilbake til listen.
 
 - Prisen er det du betalte for hver ting, med mva og etter rabatt. To like ting
   blir to rader, med hver sin del av prisen.
-- Hver ting får bildet av kvitteringen som kjøpsbevis.
+- Hver ting får bildet av kvitteringen som kjøpsbevis, etter sine egne bilder.
+  Bildet av tingen blir hovedbildet.
 - Appen husker navnet du ga butikken, og bruker det på neste kvittering derfra.
 - Appen lager egenskapene Kjøpt hos, Kjøpsdato og Pris hvis registeret mangler
   dem. Har du en egen egenskap for butikk, kjøpsdato eller pris i kr, bruker
   appen den.
-- Trykk på «Juster hjørnene» hvis bildet er skjevt eller kuttet, og dra
-  hjørnene ut til kantene av kvitteringen.
-- Appen sier fra når prisene ikke stemmer med totalen på kvitteringen.
+- Trykk på det lille bildet av kvitteringen hvis bildet er skjevt eller
+  kuttet. Velg «Juster hjørnene», og dra hjørnene ut til kantene av
+  kvitteringen. «Ta nytt bilde» åpner kameraet igjen.
+- Appen sier fra når summen av alle linjene ikke stemmer med totalen på
+  kvitteringen. Linjer uten hake teller med.
 
 **En bok, på mobilen:** Appen kan slå opp bøker. Velg kategorien «Bøker» på
-«Ny ting», trykk «Skann strekkode» og ta bilde av strekkoden bak på boka. Trykk
+«Ny ting», trykk på strekkodesymbolet og ta bilde av strekkoden bak på boka. Trykk
 «Slå opp på nett», så fyller appen inn tittel og forfatter i «Navn». Rett det
 som er feil før du lagrer.
 
@@ -207,7 +220,7 @@ som er feil før du lagrer.
 
 | Vil du                            | Slik                                                                                                                                                                                                                                                                                                                                                                         |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lese koden fra etiketten          | «Skann strekkode» åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Leser den ikke koden, tar du et nytt bilde nærmere, rett forfra og uten refleks. Eller skriv tallene under streken |
+| Lese koden fra etiketten          | Strekkodesymbolet ved feltet åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Appen leser også strekkoden på bildene av tingen og fyller inn feltet hvis det er tomt. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Ta et nytt bilde nærmere, rett forfra og uten refleks, hvis leseren ikke finner koden. Eller skriv tallene under streken |
 | Slå opp en bok                    | Knappen «Slå opp på nett» vises når kategorien har symbolet «Bok» og feltet har en ISBN. En kategori med «bok» eller «bøker» i navnet får symbolet av seg selv. Appen henter tittel og forfatter fra Nasjonalbiblioteket eller Open Library |
 | Ta vare på et serienummer eller en QR-kode | Skann eller skriv inn koden. Appen lagrer den som tekst og slår den ikke opp |
 
@@ -571,7 +584,7 @@ Tannhjulet lengst til høyre i topplinja.
 | Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Egne enheter | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser «Fra kvittering» på «Ny ting». Nedlastingen slettes når du slår det av |
+| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser kvitteringssymbolet ved siden av pluss nederst. Nedlastingen slettes når du slår det av |
 | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt på denne enheten, og spør først |
 | Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |
 | Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
@@ -586,7 +599,7 @@ Tannhjulet lengst til høyre i topplinja.
 | En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
 | <kbd>Esc</kbd> | Tømmer søket, lukker en liste eller et panel, eller spør om du vil forkaste endringene i tabellen |
 | Piltastene | Flytter i lister og i rutenettet med symboler |
-| <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side |
+| <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side og legger til neste rad når du skriver i en ny rad i tabellen |
 
 ---
 
@@ -604,7 +617,7 @@ Tannhjulet lengst til høyre i topplinja.
 | Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Hent fra den andre enheten, eller gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
-| «Fant ingen varer.» eller feil pris etter «Fra kvittering» | Bildet er skjevt, uskarpt eller kuttet | Trykk på «Juster hjørnene», eller ta et nytt bilde rett ovenfra med godt lys. Du kan også skrive radene selv |
+| «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |
 
 ---

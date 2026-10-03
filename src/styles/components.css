@@ -2416,11 +2416,80 @@ section {
   margin-bottom: var(--s-1);
 }
 
+/* A photo as a thumbnail that opens its choices under it (ThumbMenu) */
+.thumb-menu {
+  position: relative;
+  flex: none;
+}
+
+.thumb-pick {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--row-h);
+  height: var(--row-h);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-2);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.thumb-menu-lg .thumb-pick {
+  width: 72px;
+  height: 72px;
+}
+
+.thumb-pick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb-count {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  line-height: 18px;
+  text-align: center;
+}
+
+.thumb-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 6;
+}
+
+/* Plus on the phone: the menu stands above the bar, right edges together */
+.thumb-menu-list .col-menu-item {
+  min-height: var(--row-h);
+  text-decoration: none;
+}
+
+/* Ny ting: the thumbnail beside the name */
+.add-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: var(--s-3);
+}
+
 /* Ny fra kvittering */
 
-.receipt-scan {
-  max-height: 50vh;
-  align-self: center;
+.receipt-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--s-3);
 }
 
 /* The receipt photo with its four corner handles; dragging must not scroll */
@@ -2461,7 +2530,7 @@ section {
 
 .receipt-line {
   display: grid;
-  grid-template-columns: var(--row-h) 1fr 6.5rem;
+  grid-template-columns: var(--row-h) var(--row-h) minmax(0, 1fr) 6.5rem;
   align-items: center;
   gap: var(--s-2);
 }

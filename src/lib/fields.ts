@@ -76,6 +76,20 @@ export function columnDefs(_fields: FieldSettings, properties: readonly Property
   return defs.sort((a, b) => a.order - b.order)
 }
 
+export type ChoiceDef = Extract<ColumnDef, { kind: 'prop' }>
+
+// The phone form's choice and path columns (what it is, where it goes). Kategori comes first
+// whatever the column order, since it decides the rest; then the places, then the other lists.
+export function choiceDefs(defs: readonly ColumnDef[], category: string): ChoiceDef[] {
+  const rank = (d: ChoiceDef) => (d.id === categoryColumnId ? 0 : d.type === 'path' ? 1 : 2)
+  return defs
+    .filter(
+      (d): d is ChoiceDef =>
+        d.kind === 'prop' && (d.type === 'choice' || d.type === 'path') && appliesTo(d.property, category === '' ? [] : [category]),
+    )
+    .sort((a, b) => rank(a) - rank(b))
+}
+
 export function propColumns(defs: readonly ColumnDef[]): Column[] {
   return defs.flatMap((d) => (d.kind === 'prop' ? [d.col] : []))
 }

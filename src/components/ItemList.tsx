@@ -1,10 +1,13 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { getSetting } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { categoryIconFor } from '../lib/categoryIcons'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { formatValue } from '../lib/format'
 import { columnId } from '../lib/grid'
-import { href } from '../lib/route'
+import { handOverReceipt } from '../lib/receiptImage'
+import { receiptReadingKey } from '../lib/receiptItems'
+import { href, navigate } from '../lib/route'
 import { searchItems } from '../lib/search'
 import { t } from '../lib/strings'
 import { useRowWindow } from '../lib/useRowWindow'
@@ -42,6 +45,21 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
   const hits = useMemo(() => searchItems(items, query), [items, query])
   const { ref, window: win } = useRowWindow<HTMLUListElement>(hits.length, rowHeight)
 
+  // With receipt reading on, the receipt button beside plus opens the camera on that one tap,
+  // and the photo goes on to the receipt screen; plus stays one tap to Ny ting
+  const [receipts, setReceipts] = useState(false)
+  useEffect(() => {
+    void getSetting<boolean>(receiptReadingKey).then((on) => setReceipts(on === true))
+  }, [])
+  const receiptRef = useRef<HTMLInputElement>(null)
+  function receiptTaken(input: HTMLInputElement) {
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) return
+    handOverReceipt(file)
+    navigate(href.receipt)
+  }
+
   return (
     <div className="phone-list">
       {items.length === 0 ? (
@@ -57,6 +75,27 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
       )}
       <div className="phone-bar">
         <SearchField value={query} onChange={onQueryChange} autoFocus={false} />
+        {receipts && (
+          <>
+            <input
+              ref={receiptRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="visually-hidden"
+              tabIndex={-1}
+              onChange={(e) => receiptTaken(e.target)}
+            />
+            <button
+              type="button"
+              className="btn btn-icon"
+              aria-label={t.receipt.fromReceipt}
+              onClick={() => receiptRef.current?.click()}
+            >
+              <Icon name="receiptLong" />
+            </button>
+          </>
+        )}
         <a className="btn btn-icon btn-round" href={href.add} aria-label={t.table.addRow}>
           <Icon name="add" />
         </a>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Property } from '../db/schema'
-import { closestValue, receiptColumns, receiptInputs } from './receiptItems'
+import { closestValue, linesSum, receiptColumns, receiptInputs } from './receiptItems'
 
 const photo = new Blob(['k'], { type: 'image/jpeg' })
 
@@ -33,14 +33,19 @@ describe('receiptColumns', () => {
 
 describe('receiptInputs', () => {
   const cols = receiptColumns([], 7)
-  const shared = { store: 'Butikken Sentrum', date: '2026-01-15', category: 'Hjem', photo }
+  const shared = {
+    store: 'Butikken Sentrum',
+    date: '2026-01-15',
+    more: [{ key: 'Kategori', value: 'Hjem', unit: '' }],
+    receipt: photo,
+  }
 
   it('makes one thing per ticked, named row with the shared values and its own price', () => {
     const out = receiptInputs(
       [
-        { include: true, name: 'Lampe', price: '1 299,50' },
-        { include: false, name: 'Pose', price: '2,00' },
-        { include: true, name: ' ', price: '10' },
+        { include: true, name: 'Lampe', price: '1 299,50', photos: [] },
+        { include: false, name: 'Pose', price: '2,00', photos: [] },
+        { include: true, name: ' ', price: '10', photos: [] },
       ],
       cols,
       shared,
@@ -57,8 +62,14 @@ describe('receiptInputs', () => {
   })
 
   it('leaves out a price that is not a number and a missing date', () => {
-    const out = receiptInputs([{ include: true, name: 'Lampe', price: 'ukjent' }], cols, { ...shared, date: null })
+    const out = receiptInputs([{ include: true, name: 'Lampe', price: 'ukjent', photos: [] }], cols, { ...shared, date: null })
     expect(out[0]?.specs.map((s) => s.key)).toEqual(['Kategori', 'Kjøpt hos'])
+  })
+
+  it('puts the thing’s own photos before the receipt, so one of them is the main photo', () => {
+    const own = new Blob(['p'], { type: 'image/jpeg' })
+    const out = receiptInputs([{ include: true, name: 'Lampe', price: '10', photos: [own] }], cols, shared)
+    expect(out[0]?.photos).toEqual([own, photo])
   })
 })
 
@@ -69,5 +80,16 @@ describe('closestValue', () => {
   it('keeps the suggestion when nothing is close', () => {
     expect(closestValue('Nordlys Sentrum', ['Bjørkely Vestby'])).toBe('Nordlys Sentrum')
     expect(closestValue('Kid', ['Kad'])).toBe('Kid')
+  })
+})
+
+describe('linesSum', () => {
+  it('counts a line left out, since the receipt total includes it', () => {
+    const rows = [
+      { include: true, name: 'Dyne', price: '499,00', photos: [] },
+      { include: false, name: 'Bærepose', price: '2,50', photos: [] },
+      { include: true, name: '', price: '', photos: [] },
+    ]
+    expect(linesSum(rows)).toBeCloseTo(501.5)
   })
 })

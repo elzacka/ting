@@ -32,3 +32,17 @@ export async function rgbaToJpeg(img: Rgba, quality: number): Promise<Blob> {
   ctx.putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0)
   return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('encode failed'))), 'image/jpeg', quality))
 }
+
+// The receipt photo taken from the list's receipt button, waiting for the receipt screen.
+// The camera opens on the tap itself, since iOS opens it from a tap only.
+let handed: File | null = null
+
+export function handOverReceipt(file: File): void {
+  handed = file
+}
+
+export function takeReceipt(): File | null {
+  const file = handed
+  handed = null
+  return file
+}

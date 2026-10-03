@@ -3,24 +3,28 @@ import { addProperty, getSealedSetting, saveBatch, setSealedSetting } from '../d
 import type { Item, Property } from '../db/schema'
 import { asImage } from '../lib/backup'
 import { errorText } from '../lib/errors'
-import { categoryColumnId, categoryKey } from '../lib/fields'
+import { categoryColumnId, choiceDefs, columnDefs, propColumns, type FieldSettings } from '../lib/fields'
 import { findCorners, scanLook, warp, type Quad, type Rgba } from '../lib/flatten'
 import { formatNumber } from '../lib/format'
-import { columnId } from '../lib/grid'
+import { columnId, specsFrom } from '../lib/grid'
 import { readText } from '../lib/ocr'
 import { parseReceipt, splitAmount, storeKey } from '../lib/receipt'
-import { fileToRgba, rgbaToJpeg } from '../lib/receiptImage'
-import { closestValue, receiptColumns, receiptInputs, type ReceiptRow } from '../lib/receiptItems'
+import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
+import { closestValue, linesSum, receiptColumns, receiptInputs, type ReceiptRow } from '../lib/receiptItems'
+import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
-import { parseNumber, recentValues } from '../lib/values'
+import { recentValues } from '../lib/values'
+import { ChoiceFields, firstCells } from './ChoiceFields'
 import { CornerEditor } from './CornerEditor'
 import { Icon } from './Icons'
+import { PhotoPicker, ThumbMenu } from './ThumbMenu'
 import { useObjectUrl } from './useObjectUrl'
 import { ValuePicker } from './ValuePicker'
 
 type Props = {
   items: Item[]
   properties: Property[]
+  fields: FieldSettings
   onDirtyChange: (dirty: boolean) => void
 }
 
@@ -40,27 +44,23 @@ function specValue(item: Item, id: string): string {
 }
 
 // Ny fra kvittering: a photo of the receipt, read on the device, becomes one
-// thing per item bought, each with the store, the date, its price and the
-// receipt itself as the proof of purchase.
-export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
+// thing per item bought, each with the store, the date, its price, its own
+// photos and the receipt itself as the proof of purchase.
+export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>('pick')
   const [source, setSource] = useState<{ img: Rgba; preview: Blob } | null>(null)
   const [quad, setQuad] = useState<Quad | null>(null)
   const [scan, setScan] = useState<Blob | null>(null)
-  const scanUrl = useObjectUrl(scan)
   const previewUrl = useObjectUrl(source?.preview ?? null)
   const [rows, setRows] = useState<ReceiptRow[]>([])
   const [store, setStore] = useState('')
   const [date, setDate] = useState('')
-  const [category, setCategory] = useState(() => {
-    const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
-    return newest ? specValue(newest, categoryColumnId) : ''
-  })
+  // Kategori and the choice and path columns it asks for, shared by every thing on the receipt
+  const [cells, setCells] = useState<Record<string, string>>(() => firstCells(items))
   const [total, setTotal] = useState<number | null>(null)
   const [key, setKey] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
-  const [saved, setSaved] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
 
   const cols = useMemo(() => receiptColumns(properties, Date.now()), [properties])
@@ -68,10 +68,10 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
     () => recentValues(items, (i) => specValue(i, cols.store.id), cols.store.options ?? []),
     [items, cols.store],
   )
-  const categoryValues = useMemo(
-    () => recentValues(items, (i) => specValue(i, categoryColumnId), properties.find((p) => p.id === categoryColumnId)?.options ?? []),
-    [items, properties],
-  )
+  const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
+  const category = cells[categoryColumnId]?.trim() ?? ''
+  // The store is filled above from the receipt, so it is not asked twice
+  const choices = useMemo(() => choiceDefs(defs, category).filter((d) => d.id !== cols.store.id), [defs, category, cols.store.id])
 
   const dirty = stage === 'review' || stage === 'corners'
   useEffect(() => {
@@ -79,11 +79,16 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
   }, [dirty, onDirtyChange])
   useEffect(() => () => onDirtyChange(false), [onDirtyChange])
 
+  // The photo taken from the list's receipt button, once on arrival
+  useEffect(() => {
+    const file = takeReceipt()
+    if (file) void pick(file)
+  }, [])
+
   async function pick(file: File | undefined) {
     if (fileRef.current) fileRef.current.value = ''
     const image = asImage(file)
     if (!image) return
-    setSaved(null)
     setNote(null)
     setStage('reading')
     try {
@@ -113,9 +118,9 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
     setTotal(r.total)
     // One thing per unit: two duvets are two things, each with its share
     const next: ReceiptRow[] = r.lines.flatMap((line) =>
-      splitAmount(line.amount, line.quantity).map((price) => ({ include: true, name: line.name, price: formatNumber(price) })),
+      splitAmount(line.amount, line.quantity).map((price) => ({ include: true, name: line.name, price: formatNumber(price), photos: [] })),
     )
-    setRows(next.length > 0 ? next : [{ include: true, name: '', price: '' }])
+    setRows(next.length > 0 ? next : [{ include: true, name: '', price: '', photos: [] }])
     setNote(next.length > 0 ? null : t.receipt.noLines)
     setStage('review')
   }
@@ -136,7 +141,7 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
   }
 
   const chosen = rows.filter((r) => r.include && r.name.trim() !== '')
-  const sum = rows.filter((r) => r.include).reduce((a, r) => a + (parseNumber(r.price) ?? 0), 0)
+  const sum = linesSum(rows)
   const unbalanced = total !== null && Math.abs(sum - total) > 0.005
 
   async function save(e: FormEvent) {
@@ -145,20 +150,17 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
     setSaving(true)
     try {
       for (const p of cols.missing) await addProperty(p)
-      await saveBatch(receiptInputs(rows, cols, { store, date: date || null, category, photo: scan }), [])
+      const more = specsFrom(cells, propColumns(choices))
+      await saveBatch(receiptInputs(rows, cols, { store, date: date || null, more, receipt: scan }), [])
       if (key && store.trim() !== '') {
         const known = (await getSealedSetting<Record<string, string>>(storesKey)) ?? {}
         await setSealedSetting(storesKey, { ...known, [key]: store.trim() })
       }
-      setSaved(chosen.length)
-      setRows([])
-      setScan(null)
-      setSource(null)
-      setStage('pick')
+      onDirtyChange(false)
+      navigate(href.list)
     } catch (err) {
       console.error(errorText(err))
       setNote(t.error.saveFailed)
-    } finally {
       setSaving(false)
     }
   }
@@ -169,18 +171,18 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
         ref={fileRef}
         type="file"
         accept="image/*"
+        capture="environment"
         className="visually-hidden"
         onChange={(e) => void pick(e.target.files?.[0])}
       />
-      <button
-        type="button"
-        className={`btn${stage === 'pick' ? ' btn-primary' : ''}`}
-        disabled={stage === 'reading'}
-        onClick={() => fileRef.current?.click()}
-      >
-        <Icon name="photoCamera" size={20} />
-        {t.receipt.pick}
-      </button>
+      {stage === 'pick' && (
+        <div className="row">
+          <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
+            <Icon name="photoCamera" size={20} />
+            {t.receipt.pick}
+          </button>
+        </div>
+      )}
     </>
   )
 
@@ -205,15 +207,7 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
   return (
     <form className="stack narrow" onSubmit={(e) => void save(e)}>
       <h1 className="title">{t.receipt.title}</h1>
-      {stage === 'review' && scanUrl && <img className="photo receipt-scan" src={scanUrl} alt={t.receipt.imageAlt} />}
-      <div className="row toolbar">
-        {pickButton}
-        {stage === 'review' && (
-          <button type="button" className="btn" onClick={() => setStage('corners')}>
-            {t.receipt.adjust}
-          </button>
-        )}
-      </div>
+      {pickButton}
       {stage === 'reading' && (
         <p className="hint" role="status">
           {t.receipt.reading}
@@ -224,24 +218,29 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
           {note}
         </p>
       )}
-      {saved !== null && (
-        <p className="hint" role="status">
-          {t.receipt.saved(saved)}
-        </p>
-      )}
       {stage === 'review' && (
         <>
-          <div className="field">
-            <label htmlFor="receipt-category">{categoryKey}</label>
-            <ValuePicker id="receipt-category" label={categoryKey} kind="choice" values={categoryValues} value={category} onChange={setCategory} />
-          </div>
-          <div className="field">
-            <label htmlFor="receipt-store">{cols.store.key}</label>
-            <ValuePicker id="receipt-store" label={cols.store.key} kind="choice" values={storeValues} value={store} onChange={setStore} />
-          </div>
-          <div className="field">
-            <label htmlFor="receipt-date">{cols.date.key}</label>
-            <input id="receipt-date" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          {/* What the receipt says first, then what it cannot say: the category, the place */}
+          <div className="receipt-head">
+            <ThumbMenu
+              photo={scan}
+              label={t.receipt.thumb}
+              large
+              actions={[
+                { label: t.receipt.retake, onSelect: () => fileRef.current?.click() },
+                { label: t.receipt.adjust, onSelect: () => setStage('corners') },
+              ]}
+            />
+            <div className="stack-sm">
+              <div className="field">
+                <label htmlFor="receipt-store">{cols.store.key}</label>
+                <ValuePicker id="receipt-store" label={cols.store.key} kind="choice" values={storeValues} value={store} onChange={setStore} />
+              </div>
+              <div className="field">
+                <label htmlFor="receipt-date">{cols.date.key}</label>
+                <input id="receipt-date" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              </div>
+            </div>
           </div>
           <fieldset className="receipt-lines">
             <legend className="section-label">{t.receipt.things}</legend>
@@ -252,6 +251,12 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
                   checked={row.include}
                   aria-label={t.receipt.include(row.name)}
                   onChange={(e) => setRow(i, { include: e.target.checked })}
+                />
+                <PhotoPicker
+                  photos={row.photos}
+                  label={t.add.photos(row.name.trim() === '' ? t.receipt.lineThing(i + 1) : row.name.trim(), row.photos.length)}
+                  onAdd={(added) => setRow(i, { photos: [...row.photos, ...added] })}
+                  onClear={() => setRow(i, { photos: [] })}
                 />
                 <input
                   className="input"
@@ -269,7 +274,7 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
               </div>
             ))}
             <div className="row">
-              <button type="button" className="btn" onClick={() => setRows((prev) => [...prev, { include: true, name: '', price: '' }])}>
+              <button type="button" className="btn" onClick={() => setRows((prev) => [...prev, { include: true, name: '', price: '', photos: [] }])}>
                 {t.receipt.addLine}
               </button>
             </div>
@@ -279,6 +284,13 @@ export function ReceiptAdd({ items, properties, onDirtyChange }: Props) {
               {t.receipt.unbalanced(formatNumber(sum), formatNumber(total))}
             </p>
           )}
+          <ChoiceFields
+            items={items}
+            choices={choices}
+            cells={cells}
+            prefix="receipt"
+            onChange={(id, v) => setCells((prev) => ({ ...prev, [id]: v }))}
+          />
           <div className="row form-bar">
             <button type="submit" className="btn btn-primary" disabled={saving || chosen.length === 0}>
               {t.receipt.save(chosen.length)}
