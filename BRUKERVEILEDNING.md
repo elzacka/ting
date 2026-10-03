@@ -1,8 +1,8 @@
 # Brukerveiledning for Ting
 
 Ting holder orden på det du eier, og hvor du har det. Alt ligger kryptert på
-enheten din. Veiledningen er ordnet etter det du vil gjøre: Legge til, endre,
-slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
+enheten din. Veiledningen følger en typisk flyt: Legge til, endre,
+slette, finne og hente ut. Nederst står annet å finne ved behov.
 
 **Appen:** https://elzacka.github.io/ting/
 
@@ -49,7 +49,7 @@ slette, finne og hente ut. Bakerst står oppslag du slår opp i ved behov.
 ### 1. Åpne og installer appen
 
 Appen virker i nettleseren, men som installert app får den eget ikon, starter
-uten adressefelt og tar bedre vare på dataene. Mens du prøver appen, viser
+uten et adressefelt som forstyrrer og tar bedre vare på dataene. Mens du prøver appen, viser
 linja under topplinja hvordan du installerer den der du er. I Safari og på
 iPhone og iPad står linja også etter at du har valgt passord, helt til appen er
 installert. Der kan nettleseren slette dataene til en side du ikke har åpnet på
@@ -157,7 +157,7 @@ En rad du ikke skriver noe i, forsvinner når du klikker et annet sted.
 Valglister, datoer og plasseringer arver verdien fra raden over. Står du i én
 kategori, får nye rader den kategorien.
 
-**Med kvitteringen foran deg:** Skriv navn, pris, butikk og dato på første
+**Med kvitteringen foran deg, ved skrivebordet:** Skriv navn, pris, butikk og dato på første
 rad. På neste rad står butikk og dato allerede der; skriv navn og pris. Gjenta
 for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
 
@@ -174,6 +174,29 @@ for hver linje på kvitteringen, og trykk «Lagre». Pris og tekst arves ikke.
 
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
 senere; `-har:pris` i søket henter frem de som står igjen.
+
+**Fra kvittering, på mobilen:** Slå på «Les tekst på kvitteringer» under
+Innstillinger › Kvitteringer først. Appen laster da ned tekstgjenkjenningen,
+omtrent 27 MB, og leser kvitteringer også uten nett.
+
+1. Pluss nederst til høyre, og så «Fra kvittering».
+2. «Ta bilde av kvitteringen». Legg den flatt, og ta bildet rett ovenfra med
+   godt lys.
+3. Appen retter opp bildet og fyller ut Kategori, Kjøpt hos, Kjøpsdato og én
+   rad per ting med navn og pris.
+4. Rett det som er feil, og fjern haken på det du ikke vil ha med. Trykk på
+   «Lagre».
+
+- Prisen er det du betalte for hver ting, med mva og etter rabatt. To like ting
+  blir to rader, med hver sin del av prisen.
+- Hver ting får bildet av kvitteringen som kjøpsbevis.
+- Appen husker navnet du ga butikken, og bruker det på neste kvittering derfra.
+- Appen lager egenskapene Kjøpt hos, Kjøpsdato og Pris hvis registeret mangler
+  dem. Har du en egen egenskap for butikk, kjøpsdato eller pris i kr, bruker
+  appen den.
+- Trykk på «Juster hjørnene» hvis bildet er skjevt eller kuttet, og dra
+  hjørnene ut til kantene av kvitteringen.
+- Appen sier fra når prisene ikke stemmer med totalen på kvitteringen.
 
 **En bok, på mobilen:** Appen kan slå opp bøker. Velg kategorien «Bøker» på
 «Ny ting», trykk «Skann strekkode» og ta bilde av strekkoden bak på boka. Trykk
@@ -442,7 +465,7 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Arkiver i Filer» eller send fila med AirDrop. «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har svart ja |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Lagre i Filer» eller send fila med AirDrop. «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har svart ja |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
@@ -452,9 +475,9 @@ der du skriver det inn.
 <summary>Mer om mappen</summary>
 
 - Velg en tom mappe. Appen rydder selv i undermappen `bilder`.
-- Har både mappen og nettleseren ting fra før, spør appen hva du vil beholde.
-- Deler flere enheter én mappe, bruk den fra én enhet om gangen. Den nyeste
-  lagringen vinner; ingenting flettes.
+- Appen slår sammen mappen og det som ligger i nettleseren når du kobler til,
+  og hver gang appen starter. Ingenting går tapt, se [Bruke flere
+  enheter](#bruke-flere-enheter).
 - Stopper lagringen til mappen, blir tannhjulet i topplinja brunt.
 
 </details>
@@ -463,20 +486,32 @@ der du skriver det inn.
 
 ## Bruke flere enheter
 
-Appen synkroniserer ikke selv. Én enhet har sannheten om gangen, og en
-sikkerhetskopi flytter den. Et eksempel med Mac og iPhone:
+Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Egne enheter på
+begge enhetene. Du sender registeret med AirDrop, og den andre enheten henter
+det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
+iPhone og en pris du retter på Mac, kommer med på begge enhetene.
 
-1. **På Mac:** Innstillinger › «Last ned sikkerhetskopi». AirDrop fila til
-   iPhone.
-2. **På iPhone:** Innstillinger › «Gjenopprett fra sikkerhetskopi», og skriv
-   passordet. Legg til tingene i boden.
-3. **Tilbake på Mac:** Trykk på «Del sikkerhetskopi» på iPhone, send fila med
-   AirDrop til Mac og gjenopprett.
+1. **På iPhone:** Trykk på «Send til en annen enhet», og velg Mac under
+   AirDrop.
+2. **På Mac:** Fila havner i Nedlastinger. Dra den inn i Innstillinger i Ting,
+   eller trykk på «Hent fra en annen enhet» og velg den.
+3. **Tilbake til iPhone:** Send fra Mac på samme måte. Trykk på «Hent fra en
+   annen enhet» på iPhone, og velg fila i Filer.
 
-> [!IMPORTANT]
-> Gjenoppretting erstatter alt som ligger i appen. Ta alltid med den nyeste
-> kopien i den retningen du går, og ikke endre på begge enhetene mellom to
-> overføringer.
+Etter hentingen sier appen hvor mange ting som er nye, endret og slettet.
+
+- Første gang ber appen om passordet fra den andre enheten. Fra da av bruker
+  begge enhetene det passordet.
+- Appen beholder den nyeste endringen hvis du har endret det samme feltet på
+  begge enhetene, og sier fra om det.
+- En ting du sletter, forsvinner også fra den andre enheten. Den blir likevel
+  værende hvis du har endret den der etter at du slettet den.
+- En gammel fil gjør ingen skade. Appen sier «Ingenting nytt» når fila ikke har
+  noe du mangler.
+- Et nytt passord følger med fila. Bruk det nye passordet neste gang du låser
+  opp den andre enheten.
+- Oppdater appen på begge enhetene. En eldre versjon henter ikke filer fra en
+  nyere.
 
 ---
 
@@ -535,10 +570,13 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt, og spør først |
+| Egne enheter | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
+| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser «Fra kvittering» på «Ny ting». Nedlastingen slettes når du slår det av |
+| Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt på denne enheten, og spør først |
 | Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |
 | Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
 | Passord | «Endre passord». Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned |
+| Om appen | «Personvern» og «Kildekode» åpner dokumentene på GitHub. Linja under viser versjonen |
 
 ### Hurtigtaster
 
@@ -563,24 +601,25 @@ Tannhjulet lengst til høyre i topplinja.
 | «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID på denne enheten» av og på igjen under Innstillinger › Lås |
-| Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
+| Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Hent fra den andre enheten, eller gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
+| «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
+| «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
+| «Fant ingen varer.» eller feil pris etter «Fra kvittering» | Bildet er skjevt, uskarpt eller kuttet | Trykk på «Juster hjørnene», eller ta et nytt bilde rett ovenfra med godt lys. Du kan også skrive radene selv |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |
 
 ---
 
 ## Personvern
 
-Appen har ingen server, ingen konto og ingen sporing, laster ingenting fra andre
-steder og bruker ingen KI.
+Hva appen lagrer, hva som forlater enheten og rettighetene dine står i
+[PERSONVERN.md](PERSONVERN.md). Den finnes også under Innstillinger › Om
+appen.
 
-| Hva | Hvordan |
-|---|---|
-| Kryptering | AES-256-GCM i nettleseren (WebCrypto). Nøkkelen utledes fra passordet med Argon2id. Passordet lagres ingen steder |
-| Kryptert | Alle ting, egenskaper, kategorier, innstillinger og bilder i nettleseren, `ting.json` og bildene i mappen, og nedlastede kopier. Også mens du prøver appen uten passord |
-| Ukryptert | CSV og utskrift, som du lager for å lese dem. Antall ting og tidspunkt for siste endring |
-| Datoer | Når en ting ble opprettet, ligger i `ting.json` og i CSV, men vises ikke i appen |
-| Lås | Med passord åpner appen alltid låst. Hengelåsen sletter nøkkelen fra minnet; det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i tabellen. Er Face ID eller Touch ID slått på, er enhetens egen lås også appens lås på den enheten. Kopier og lagringsmappen krever fortsatt passordet |
-| Ut av enheten | Bare sifrene i en ISBN, bare når du trykker på «Slå opp på nett», til Nasjonalbiblioteket eller Open Library. De ser da koden og IP-adressen din. Ingenting annet sendes noen gang |
+Med passord åpner appen alltid låst. Hengelåsen sletter nøkkelen fra minnet;
+det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede
+endringer i tabellen. Er Face ID eller Touch ID slått på, er enhetens egen lås
+også appens lås på den enheten. Kopier og lagringsmappen krever fortsatt
+passordet.
 
 Alt du skriver inn, skanner eller får tilbake fra et oppslag, behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

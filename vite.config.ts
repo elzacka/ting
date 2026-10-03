@@ -7,6 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // "Slå opp på nett" (src/lib/lookup.ts): the digits of an ISBN to one of
 // the library catalogues below. The CSP says so to the browser, which also
 // helps Android browsers treat the app as safe to install.
+// Same name as ocrCacheName in src/lib/ocr/models.ts.
+const ocrCacheName = 'ting-ocr-v1'
+
 const lookupOrigins = ['https://api.nb.no', 'https://openlibrary.org']
 
 const productionCsp = [
@@ -80,6 +83,16 @@ export default defineConfig(({ command, isPreview }) => {
           globPatterns: ['**/*.{js,css,html,svg,png,wasm}'],
           // The barcode reader is about 1 MB; Workbox's default cap is 2 MiB, this keeps headroom
           maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+          // Receipt reading downloads its models and runtime when the user turns it on (prefetchOcr), not with the app.
+          globIgnores: ['**/ort-wasm*'],
+          runtimeCaching: [
+            {
+              // A RegExp only matches another origin from index 0, so this stays on our own.
+              urlPattern: new RegExp(`${base}(models/|assets/ort-wasm[^/]*\\.wasm$)`),
+              handler: 'CacheFirst',
+              options: { cacheName: ocrCacheName, cacheableResponse: { statuses: [200] } },
+            },
+          ],
         },
       }),
     ],

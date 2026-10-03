@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { itemSchema, propertySchema, type Item, type Property } from '../db/schema'
 import { openJson, sealJson, unlockVault, type OpenKey, type Sealed, type Vault } from './crypto'
 import { categoryKey, type FieldSettings } from './fields'
+import type { Tombstones } from './merge'
 
 // One JSON document describes the whole register. The folder store keeps
 // photos as files next to it; the downloaded backup embeds them as data URLs.
@@ -9,7 +10,9 @@ import { categoryKey, type FieldSettings } from './fields'
 // salt, parameters) in the clear, the document itself sealed under the data
 // key. Files written before encryption are plain documents and still load.
 
-export const fileFormat = 1
+// 2 adds what merging needs: field stamps, tombstones, the device and the vault.
+// A file from a newer app is refused, or this one would drop what it cannot read.
+export const fileFormat = 2
 export const dataFileName = 'ting.json'
 export const photoDirName = 'bilder'
 
@@ -38,9 +41,30 @@ const fieldSettingsSchema = z.object({
   name: z.object({ label: z.string().nullable() }),
 })
 
+const tombstonesSchema = z.object({
+  items: z.record(z.string(), z.number()),
+  properties: z.record(z.string(), z.number()),
+})
+
+const sealedSchema = z.object({ iv: z.string(), data: z.string() })
+// The parameters come from the file, so they are bounded: a crafted file must
+// not be able to ask for gigabytes of memory before the passphrase is checked.
+const vaultSchema = z.object({
+  kdf: z.object({
+    name: z.literal('argon2id'),
+    m: z.int().min(8).max(262144),
+    t: z.int().min(1).max(10),
+    p: z.int().min(1).max(4),
+    salt: z.string(),
+  }),
+  wrappedDek: sealedSchema,
+  dekId: z.string(),
+  changedAt: z.number().optional(),
+})
+
 export const dataFileSchema = z.object({
   app: z.literal('ting'),
-  format: z.literal(fileFormat),
+  format: z.union([z.literal(1), z.literal(fileFormat)]),
   exportedAt: z.number(),
   items: z.array(storedItemSchema),
   // Optional so files written before properties existed still load.
@@ -49,7 +73,31 @@ export const dataFileSchema = z.object({
   // Optional: files from before 20 September 2026 have none and leave
   // the device's own settings alone.
   fields: fieldSettingsSchema.optional(),
+  fieldsAt: z.number().optional(),
+  tombstones: tombstonesSchema.optional(),
+  // Which device wrote the file, for the line after a merge
+  deviceId: z.string().max(64).optional(),
+  deviceName: z.string().max(40).optional(),
+  // When the writing device last took in another copy: a field changed on both
+  // sides only counts as edited twice if both changes came after this
+  mergedAt: z.number().optional(),
+  // The vault again, inside the seal: the copy in the clear can be swapped,
+  // this one cannot, so only this one may replace a device's passphrase
+  vault: vaultSchema.optional(),
 })
+
+export class NewerFileError extends Error {
+  constructor() {
+    super('newer file format')
+    this.name = 'NewerFileError'
+  }
+}
+
+function parseDoc(json: unknown): DataFile {
+  const format = (json as { format?: unknown } | null)?.format
+  if (typeof format === 'number' && format > fileFormat) throw new NewerFileError()
+  return dataFileSchema.parse(json)
+}
 
 export { storedItemSchema }
 export type StoredPhoto = z.infer<typeof storedPhotoSchema>
@@ -105,34 +153,22 @@ export function legacyAsSpecs(
   return out
 }
 
+export type FileExtras = Pick<DataFile, 'fieldsAt' | 'tombstones' | 'deviceId' | 'deviceName' | 'mergedAt' | 'vault'>
+
 export function toDataFile(
   items: readonly Item[],
   properties: readonly Property[],
   fields: FieldSettings,
   exportedAt = Date.now(),
+  extras: FileExtras = {},
 ): DataFile {
-  return { app: 'ting', format: fileFormat, exportedAt, items: items.map(toStored), properties: [...properties], fields }
+  return { app: 'ting', format: fileFormat, exportedAt, items: items.map(toStored), properties: [...properties], fields, ...extras }
 }
 
 export function fromStored(stored: StoredItem, photos: Blob[]): Item {
   const { photos: _photos, photoFile: _file, photoData: _data, photoType: _type, note, category, ...rest } = stored
   return itemSchema.parse({ ...rest, specs: legacyAsSpecs(rest.specs, { note, category }), photos })
 }
-
-const sealedSchema = z.object({ iv: z.string(), data: z.string() })
-// The parameters come from the file, so they are bounded: a crafted file must
-// not be able to ask for gigabytes of memory before the passphrase is checked.
-const vaultSchema = z.object({
-  kdf: z.object({
-    name: z.literal('argon2id'),
-    m: z.int().min(8).max(262144),
-    t: z.int().min(1).max(10),
-    p: z.int().min(1).max(4),
-    salt: z.string(),
-  }),
-  wrappedDek: sealedSchema,
-  dekId: z.string(),
-})
 
 export const envelopeSchema = z.object({
   app: z.literal('ting'),
@@ -145,7 +181,7 @@ export const envelopeSchema = z.object({
 export type Envelope = z.infer<typeof envelopeSchema>
 
 export function parseDataFile(text: string): DataFile {
-  return dataFileSchema.parse(JSON.parse(text))
+  return parseDoc(JSON.parse(text))
 }
 
 export type ParsedFile = { kind: 'plain'; file: DataFile } | { kind: 'sealed'; envelope: Envelope }
@@ -156,7 +192,7 @@ export function parseAnyFile(text: string): ParsedFile {
   if (typeof json === 'object' && json !== null && 'enc' in json) {
     return { kind: 'sealed', envelope: envelopeSchema.parse(json) }
   }
-  return { kind: 'plain', file: dataFileSchema.parse(json) }
+  return { kind: 'plain', file: parseDoc(json) }
 }
 
 export async function sealDataFile(open: OpenKey, vault: Vault, file: DataFile): Promise<Envelope> {
@@ -179,7 +215,7 @@ export async function openEnvelope(
     if (!other) return 'wrong-passphrase'
     key = other
   }
-  return { file: dataFileSchema.parse(await openJson(key.key, env.sealed)), open: key }
+  return { file: parseDoc(await openJson(key.key, env.sealed)), open: key }
 }
 
 // The mirror of dataUrlToBlob, and encoded by hand for the same reason: no
@@ -230,8 +266,9 @@ export async function toBackupJson(
   fields: FieldSettings,
   open: OpenKey,
   vault: Vault,
+  extras: FileExtras = {},
 ): Promise<string> {
-  const file = toDataFile(items, properties, fields)
+  const file = toDataFile(items, properties, fields, Date.now(), extras)
   const withPhotos = await Promise.all(
     file.items.map(async (stored, i) => {
       const photos = items[i]?.photos ?? []
@@ -246,7 +283,17 @@ export async function toBackupJson(
   return JSON.stringify(await sealDataFile(open, vault, { ...file, items: withPhotos }), null, 2)
 }
 
-export type Loaded = { items: Item[]; properties: Property[]; fields: FieldSettings | undefined }
+export type Loaded = {
+  items: Item[]
+  properties: Property[]
+  fields: FieldSettings | undefined
+  fieldsAt: number
+  tombstones: Tombstones | undefined
+  exportedAt: number
+  deviceName: string | undefined
+  mergedAt: number
+  vault: Vault | undefined
+}
 
 export async function itemsFromDataFile(file: DataFile): Promise<Loaded> {
   const items = await Promise.all(
@@ -255,13 +302,15 @@ export async function itemsFromDataFile(file: DataFile): Promise<Loaded> {
       return fromStored(s, photos.filter((b): b is Blob => b !== null))
     }),
   )
-  return { items, properties: file.properties, fields: file.fields }
-}
-
-// Whether two item sets are the same things (by id), whatever their content.
-// Same things: one side is the other's mirror and newest-wins is safe.
-export function sameItemSet(a: readonly { id: string }[], b: readonly { id: string }[]): boolean {
-  if (a.length !== b.length) return false
-  const ids = new Set(b.map((i) => i.id))
-  return a.every((i) => ids.has(i.id))
+  return {
+    items,
+    properties: file.properties,
+    fields: file.fields,
+    fieldsAt: file.fieldsAt ?? 0,
+    tombstones: file.tombstones,
+    exportedAt: file.exportedAt,
+    deviceName: file.deviceName,
+    mergedAt: file.mergedAt ?? 0,
+    vault: file.vault,
+  }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { addItem, addProperty } from '../db/db'
+import { addItem, addProperty, getSetting } from '../db/db'
 import { asImage } from '../lib/backup'
 import { classify, cleanCode, decodeImage, digitsOf } from '../lib/barcode'
 import type { Item, Property } from '../db/schema'
@@ -20,6 +20,8 @@ import {
 import { columnId, inputFrom } from '../lib/grid'
 import { pathsInUse } from '../lib/paths'
 import { lookup } from '../lib/lookup'
+import { receiptReadingKey } from '../lib/receiptItems'
+import { href } from '../lib/route'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
@@ -84,6 +86,11 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [codeNote, setCodeNote] = useState<string | null>(null)
   const [busy, setBusy] = useState<'scan' | 'lookup' | null>(null)
   const scanRef = useRef<HTMLInputElement>(null)
+
+  const [receipts, setReceipts] = useState(false)
+  useEffect(() => {
+    void getSetting<boolean>(receiptReadingKey).then((on) => setReceipts(on === true))
+  }, [])
 
   const dirty = name.trim() !== '' || photos.length > 0 || code !== ''
   useEffect(() => {
@@ -214,6 +221,11 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
           <Icon name="photoCamera" size={20} />
           {photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
         </button>
+        {receipts && !dirty && (
+          <a className="btn" href={href.receipt}>
+            {t.receipt.fromReceipt}
+          </a>
+        )}
       </div>
       <div className="field">
         <label htmlFor="add-name">{nameLabel}</label>

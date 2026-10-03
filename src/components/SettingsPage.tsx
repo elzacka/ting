@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { deletePasskey, readPasskey, replaceAll, writePasskey, writeVault } from '../db/db'
+import { deletePasskey, readPasskey, readRegister, replaceAll, writePasskey, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import { columnDefs, type FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
-import { formatDate } from '../lib/format'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import type { OpenKey } from '../lib/crypto'
@@ -13,6 +12,10 @@ import { errorText } from '../lib/errors'
 import { folderSupported, requestFullPhotoWrite } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
 import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
+import { fileExtras } from '../lib/sync'
+import { AboutApp } from './AboutApp'
+import { DeviceSync } from './DeviceSync'
+import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
 
@@ -45,7 +48,7 @@ export function SettingsPage({
   wrap,
   onWrapChange,
 }: Props) {
-  const { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide } = folder
+  const { status, connect, grant, adopt, disconnect } = folder
   const trial = useVault().status === 'trial'
   const columns = columnDefs(fields, properties, items).filter((d) => d.kind === 'prop')
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
@@ -118,7 +121,8 @@ export function SettingsPage({
     const v = currentVault()
     if (!v) return
     const name = exportFilename('json')
-    const json = await toBackupJson(items, properties, fields, currentKey(), v)
+    const register = await readRegister()
+    const json = await toBackupJson(items, properties, fields, currentKey(), v, await fileExtras(register, v))
     if (shareable) {
       try {
         await navigator.share({ files: [new File([json], name, { type: 'application/json' })] })
@@ -175,7 +179,7 @@ export function SettingsPage({
       setAdopting(null)
     }
     requestFullPhotoWrite()
-    await replaceAll(pending.items, pending.properties, pending.fields)
+    await replaceAll(pending.items, pending.properties, pending.fields, pending.tombstones)
     setMessage(t.settings.restoreDone(pending.items.length))
     setPending(null)
   }
@@ -213,7 +217,7 @@ export function SettingsPage({
     : status.kind === 'none'
       ? t.settings.folderNone
       : status.kind === 'connected'
-        ? `${t.settings.connected(status.name)} ${status.lastWrittenAt ? t.settings.lastWritten(formatTime(status.lastWrittenAt)) : t.settings.loaded}`
+        ? `${t.settings.connected(status.name)} ${t.settings.lastWritten(formatTime(status.lastWrittenAt))}`
         : status.kind === 'checking'
           ? t.settings.checking
           : status.kind === 'unsupported'
@@ -336,24 +340,6 @@ export function SettingsPage({
               </div>
             </form>
           )}
-          {status.kind === 'conflict' && (
-            <div className="confirm" role="alertdialog" aria-labelledby="folder-conflict">
-              <p id="folder-conflict">
-                {t.settings.conflict(status.name, status.folderCount, formatDate(status.folderAt), status.localCount)}
-              </p>
-              <div className="row toolbar">
-                <button type="button" className="btn" onClick={() => void useFolderSide()}>
-                  {t.settings.useFolder}
-                </button>
-                <button type="button" className="btn" onClick={() => void useLocalSide()}>
-                  {t.settings.useLocal}
-                </button>
-                <button type="button" className="btn" onClick={disconnect}>
-                  {t.action.cancel}
-                </button>
-              </div>
-            </div>
-          )}
           {status.kind === 'error' && (
             <p className="error" role="alert">
               {t.settings.error(status.name)}
@@ -361,6 +347,11 @@ export function SettingsPage({
           )}
         </section>
       )}
+
+      {!trial && <DeviceSync />}
+
+      {/* Receipts are read from the phone's add screen */}
+      {narrow && <ReceiptSettings />}
 
       <section className="setting">
         <div className="setting-head">
@@ -575,6 +566,8 @@ export function SettingsPage({
           )}
         </section>
       )}
+
+      <AboutApp />
     </div>
   )
 }

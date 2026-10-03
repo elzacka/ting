@@ -101,12 +101,13 @@ export function lock(reason?: 'idle'): void {
 export async function changePassphrase(oldPass: string, newPass: string): Promise<Vault | null> {
   if (state.status !== 'open') return null
   if (!(await unlockVault(oldPass, state.vault))) return null
-  const vault = await rewrapVault(newPass, state.open)
+  const vault = { ...(await rewrapVault(newPass, state.open)), changedAt: Date.now() }
   set({ status: 'open', vault, open: state.open })
   return vault
 }
 
-// Adopts a vault from a file written elsewhere, once its passphrase opened it.
+// Adopts a vault from a file written elsewhere, once its passphrase opened it,
+// or a newer wrapping of this same key: the passphrase changed on another device.
 export function adoptVault(vault: Vault, open: OpenKey): void {
   set({ status: 'open', vault, open })
 }

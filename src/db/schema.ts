@@ -18,6 +18,9 @@ export const itemSchema = z.object({
   photos: z.array(z.instanceof(Blob)),
   createdAt: z.number(),
   updatedAt: z.number(),
+  // When each field last changed, for merging copies (`lib/merge.ts`). A field
+  // missing here changed at `updatedAt`.
+  stamps: z.record(z.string(), z.number()).optional(),
 })
 
 export type Spec = z.infer<typeof specSchema>
@@ -38,6 +41,8 @@ export const propertySchema = z.object({
   key: z.string().trim().min(1),
   unit: z.string().trim().nullable(),
   createdAt: z.number(),
+  // Last change, for merging copies. Missing on rows from before: createdAt.
+  updatedAt: z.number().optional(),
   // Position among columns. Missing on rows written before ordering existed.
   order: z.number().optional(),
   // Field type. Missing on older rows: dates are recognised by their unit marker, the rest is text.

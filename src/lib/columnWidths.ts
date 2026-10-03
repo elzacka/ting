@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { getSealedSetting, setSealedSetting } from '../db/db'
+import { errorText } from './errors'
 import type { ColumnDef } from './fields'
 
-const storageKey = 'ting.columnWidths'
+const legacyKey = 'ting.columnWidths'
+const widthsKey = 'columnWidths'
 export const minColumnWidth = 56
 const headerPadding = 20 // th padding left and right
 const headerExtra = 28 // menu chevron and sort arrow
@@ -69,35 +72,53 @@ export function autoWidths(
   return out
 }
 
-// Anything from localStorage is untrusted: keep only finite numbers in range.
-function read(): Widths {
+// Stored or legacy, it is untrusted: keep only finite numbers in range.
+function clean(parsed: unknown): Widths {
+  if (typeof parsed !== 'object' || parsed === null) return {}
+  const out: Widths = {}
+  for (const [k, v] of Object.entries(parsed)) {
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = Math.min(2000, Math.max(minColumnWidth, v))
+  }
+  return out
+}
+
+// Keyed by column id, which names the property: sealed, and moved out of
+// localStorage where an earlier version kept them in the clear.
+async function load(): Promise<Widths> {
+  const sealed = await getSealedSetting<unknown>(widthsKey)
+  if (sealed !== undefined) return clean(sealed)
   try {
-    const raw = localStorage.getItem(storageKey)
-    const parsed: unknown = raw ? JSON.parse(raw) : {}
-    if (typeof parsed !== 'object' || parsed === null) return {}
-    const out: Widths = {}
-    for (const [k, v] of Object.entries(parsed)) {
-      if (typeof v === 'number' && Number.isFinite(v)) out[k] = Math.min(2000, Math.max(minColumnWidth, v))
-    }
-    return out
+    const legacy = localStorage.getItem(legacyKey)
+    if (legacy === null) return {}
+    const widths = clean(JSON.parse(legacy))
+    await setSealedSetting(widthsKey, widths)
+    localStorage.removeItem(legacyKey)
+    return widths
   } catch {
     return {}
   }
 }
 
 // Column widths chosen by the user, per column id, shared by both tables.
-export function useColumnWidths(): { widths: Widths; setWidth: (id: string, w: number | null) => void } {
-  const [widths, setWidths] = useState<Widths>(read)
+// Read once a key is open; dropped again on lock.
+export function useColumnWidths(unlocked: boolean): { widths: Widths; setWidth: (id: string, w: number | null) => void } {
+  const [widths, setWidths] = useState<Widths>({})
+  useEffect(() => {
+    if (!unlocked) return setWidths({})
+    let live = true
+    load()
+      .then((w) => live && setWidths(w))
+      .catch((err: unknown) => console.error(errorText(err)))
+    return () => {
+      live = false
+    }
+  }, [unlocked])
   const setWidth = useCallback((id: string, w: number | null) => {
     setWidths((prev) => {
       const next = { ...prev }
       if (w === null) delete next[id]
       else next[id] = Math.max(minColumnWidth, Math.round(w))
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next))
-      } catch {
-        // Widths simply do not persist.
-      }
+      setSealedSetting(widthsKey, next).catch((err: unknown) => console.error(errorText(err)))
       return next
     })
   }, [])

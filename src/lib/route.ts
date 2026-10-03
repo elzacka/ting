@@ -5,6 +5,7 @@ export type Route =
   | { view: 'list' }
   | { view: 'settings' }
   | { view: 'add' }
+  | { view: 'receipt' }
   | { view: 'detail'; id: string }
 
 export function parseHash(hash: string): Route {
@@ -13,6 +14,7 @@ export function parseHash(hash: string): Route {
   if (parts[0] === 'oversikt' || parts[0] === 'registrer') return { view: 'list' }
   if (parts[0] === 'innstillinger') return { view: 'settings' }
   if (parts[0] === 'ting' && parts[1] === 'ny') return { view: 'add' }
+  if (parts[0] === 'ting' && parts[1] === 'kvittering') return { view: 'receipt' }
   if (parts[0] === 'ting' && parts[1]) {
     return { view: 'detail', id: parts[1] }
   }
@@ -23,6 +25,7 @@ export const href = {
   list: '#/oversikt',
   settings: '#/innstillinger',
   add: '#/ting/ny',
+  receipt: '#/ting/kvittering',
   detail: (id: string) => `#/ting/${id}`,
 }
 

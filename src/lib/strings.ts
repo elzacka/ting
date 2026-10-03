@@ -328,12 +328,7 @@ export const t = {
     grant: 'Gi tilgang',
     connected: (name: string) => `Appen lagrer i mappen «${name}».`,
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
-    loaded: 'Lastet fra mappen.',
     disconnect: 'Koble fra',
-    conflict: (name: string, folderCount: number, folderDate: string, localCount: number) =>
-      `Mappen «${name}» inneholder ${folderCount === 1 ? '1 ting' : `${folderCount} ting`} fra ${folderDate}. I nettleseren ligger ${localCount === 1 ? '1 ting' : `${localCount} ting`}. Velg hva du vil beholde.`,
-    useFolder: 'Bruk mappen',
-    useLocal: 'Skriv over mappen',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
     backupTitle: 'Sikkerhetskopi',
     backupWhat: 'Manuelt: Én kryptert fil med alt du har lagt til. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
@@ -345,5 +340,70 @@ export const t = {
     restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}.`,
     restoreFailed: 'Denne filen er ikke en sikkerhetskopi fra Ting. Velg en fil som slutter på .json.',
     replace: 'Erstatt',
+  },
+  // Ny fra kvittering: the photo of a receipt read on the device into things
+  receipt: {
+    fromReceipt: 'Fra kvittering',
+    title: 'Ny fra kvittering',
+    pick: 'Ta bilde av kvitteringen',
+    reading: 'Leser kvitteringen…',
+    imageAlt: 'Kvitteringen, rettet opp',
+    adjust: 'Juster hjørnene',
+    adjustHint: 'Dra hvert hjørne ut til kanten av kvitteringen.',
+    useCorners: 'Bruk hjørnene',
+    corner: (n: number) => `Hjørne ${n}. Flytt det med piltastene`,
+    things: 'Ting på kvitteringen',
+    include: (name: string) => `Ta med ${name === '' ? 'denne' : name}`,
+    lineName: (n: number) => `Navn på ting ${n}`,
+    linePrice: (n: number) => `Pris for ting ${n}, i kroner`,
+    addLine: 'Legg til en ting',
+    unbalanced: (sum: string, total: string) => `Prisene blir ${sum} til sammen, men kvitteringen sier ${total}. Sjekk prisene.`,
+    noLines: 'Fant ingen varer. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
+    failed: 'Kunne ikke lese kvitteringen. Ta et nytt bilde rett ovenfra, med godt lys.',
+    save: (n: number) => (n === 1 ? 'Lagre 1 ting' : `Lagre ${n} ting`),
+    saved: (n: number) => `${n === 1 ? '1 ting' : `${n} ting`} er lagret.`,
+    // Innstillinger: receipt reading is a download, so it is switched on first
+    settingsTitle: 'Kvitteringer',
+    option: 'Les tekst på kvitteringer',
+    what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB, og leser kvitteringen på enheten. Ingenting sendes videre.',
+    downloading: 'Laster ned tekstgjenkjenning…',
+    ready: 'Klar, også uten nett.',
+    downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
+  },
+  // Om appen: the last section of Innstillinger
+  about: {
+    title: 'Om appen',
+    privacy: 'Personvern',
+    source: 'Kildekode',
+    line: (version: string) => `Versjon ${version}. Laget av elzacka.`,
+  },
+  // Sync between one person's own devices: a file sent with AirDrop and merged in
+  sync: {
+    title: 'Egne enheter',
+    option: 'Synkroniser mellom enhetene dine',
+    what: 'Send registeret til den andre enheten din med AirDrop, og hent det tilbake når du har endret noe der. Appen tar vare på endringene fra begge enhetene.',
+    send: 'Send til en annen enhet',
+    fetch: 'Hent fra en annen enhet',
+    sent: (date: string, time: string) => `Sist sendt ${date} kl. ${time}.`,
+    fetched: (date: string, time: string) => `Sist hentet ${date} kl. ${time}.`,
+    // After a merge: where the file came from, when it was made, what changed
+    from: (device: string | undefined, date: string, time: string) =>
+      device ? `Hentet fra ${device}, laget ${date} kl. ${time}` : `Hentet fil laget ${date} kl. ${time}`,
+    counts: (added: number, changed: number, deleted: number) =>
+      [
+        added > 0 ? `${added} ${added === 1 ? 'ny' : 'nye'}` : null,
+        changed > 0 ? `${changed} endret` : null,
+        deleted > 0 ? `${deleted} slettet` : null,
+      ]
+        .filter(Boolean)
+        .join(', '),
+    layout: 'Egenskapene er oppdatert.',
+    both: (n: number) => `${n === 1 ? '1 ting' : `${n} ting`} var endret på begge enhetene. Den nyeste endringen er beholdt.`,
+    nothing: (date: string, time: string) => `Ingenting nytt. Fila er laget ${date} kl. ${time}.`,
+    future: 'Klokka på den andre enheten går mer enn ett døgn foran. Sjekk dato og klokkeslett der.',
+    passphraseChanged: 'Passordet er endret på den andre enheten. Bruk det nye passordet når du låser opp.',
+    newer: 'Fila er laget av en nyere versjon av Ting. Oppdater appen og prøv på nytt.',
+    notTing: 'Denne fila er ikke fra Ting. Velg en fil som slutter på .json.',
+    foreign: 'Fila er låst med et annet passord. Skriv det inn for å hente den. Fra nå av låser du opp appen med det passordet.',
   },
 } as const

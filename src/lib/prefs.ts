@@ -1,10 +1,8 @@
-// Per-device choices, kept in localStorage: they describe how this device is
-// used, not the data, so they stay out of the vault and the folder.
-//
-// autoLock: whether the app locks itself after ten minutes without input.
-// hiddenColumns: column ids the user has taken out of the table on this
-// device (Tilpass visning on Innstillinger). Navn is never among them.
-// wrap: whether long values in the table run onto more lines (off by default).
+import { getSealedSetting, setSealedSetting } from '../db/db'
+import { errorText } from './errors'
+
+// Per-device choices, outside the vault file and the folder. Flags (autoLock,
+// wrap) live in localStorage; hidden columns name properties, so they are sealed.
 
 const keys = { autoLock: 'ting.autoLock', hiddenColumns: 'ting.hiddenColumns', wrap: 'ting.wrap' } as const
 
@@ -30,21 +28,31 @@ export const writeAutoLock = (on: boolean) => writeFlag(keys.autoLock, on)
 export const readWrap = () => readFlag(keys.wrap, false)
 export const writeWrap = (on: boolean) => writeFlag(keys.wrap, on)
 
-// Anything from localStorage is untrusted: keep only strings, bounded.
-export function readHiddenColumns(): Set<string> {
+// Stored or legacy, it is untrusted: keep only strings, bounded.
+function cleanIds(parsed: unknown): Set<string> {
+  if (!Array.isArray(parsed)) return new Set()
+  return new Set(parsed.filter((v): v is string => typeof v === 'string' && v.length <= 200).slice(0, 200))
+}
+
+const hiddenKey = 'hiddenColumns'
+
+// Read after unlock. A list an earlier version left in localStorage in the
+// clear is sealed once and removed.
+export async function loadHiddenColumns(): Promise<Set<string>> {
+  const sealed = await getSealedSetting<unknown>(hiddenKey)
+  if (sealed !== undefined) return cleanIds(sealed)
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(keys.hiddenColumns) ?? '[]')
-    if (!Array.isArray(parsed)) return new Set()
-    return new Set(parsed.filter((v): v is string => typeof v === 'string' && v.length <= 200).slice(0, 200))
+    const legacy = localStorage.getItem(keys.hiddenColumns)
+    if (legacy === null) return new Set()
+    const ids = cleanIds(JSON.parse(legacy))
+    await setSealedSetting(hiddenKey, [...ids])
+    localStorage.removeItem(keys.hiddenColumns)
+    return ids
   } catch {
     return new Set()
   }
 }
 
-export function writeHiddenColumns(ids: ReadonlySet<string>): void {
-  try {
-    localStorage.setItem(keys.hiddenColumns, JSON.stringify([...ids]))
-  } catch {
-    // Private mode or blocked storage: the choice lasts for this page load only.
-  }
+export function saveHiddenColumns(ids: ReadonlySet<string>): void {
+  setSealedSetting(hiddenKey, [...ids]).catch((err: unknown) => console.error(errorText(err)))
 }

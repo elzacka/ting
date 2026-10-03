@@ -1,15 +1,5 @@
-import {
-  deleteSetting,
-  getSetting,
-  localChangedAt,
-  readFieldSettings,
-  readItems,
-  readProperties,
-  replaceAll,
-  setSetting,
-} from '../db/db'
-import type { Item, Property } from '../db/schema'
-import type { FieldSettings } from './fields'
+import { deleteSetting, getSetting, readRegister, setSetting } from '../db/db'
+import type { Item } from '../db/schema'
 import {
   dataFileName,
   fromStored,
@@ -21,10 +11,14 @@ import {
   toDataFile,
   type DataFile,
   type Envelope,
+  type Loaded,
   type StoredPhoto,
 } from './backup'
 import { decryptBytes, encryptBytes, type OpenKey, type Vault } from './crypto'
 import { asImage } from './backup'
+import type { Register } from './merge'
+import { fileExtras, mergeIn, type MergeResult } from './sync'
+import { currentKey, currentVault } from './vault'
 
 // The File System Access API is not fully typed in lib.dom yet.
 type PermissionState = 'granted' | 'denied' | 'prompt'
@@ -140,15 +134,7 @@ export type FolderRead =
   | { kind: 'empty' }
   | { kind: 'foreign'; envelope: Envelope }
   | { kind: 'wrong-passphrase' }
-  | {
-      kind: 'data'
-      exportedAt: number
-      items: Item[]
-      properties: Property[]
-      fields: FieldSettings | undefined
-      open: OpenKey
-      vault: Vault | null
-    }
+  | { kind: 'data'; loaded: Loaded; open: OpenKey; vault: Vault | null }
 
 // Reads the folder. A file sealed under another data key needs the passphrase
 // once; the key that opened it comes back so the caller can adopt it. A photo
@@ -181,25 +167,29 @@ export async function readFolder(
   const items = await Promise.all(
     file.items.map(async (s) => fromStored(s, await readAllPhotos(photos, s, key, localPhotos.get(s.id) ?? []))),
   )
-  return { kind: 'data', exportedAt: file.exportedAt, items, properties: file.properties, fields: file.fields, open: key, vault }
+  const loaded: Loaded = {
+    items,
+    properties: file.properties,
+    fields: file.fields,
+    fieldsAt: file.fieldsAt ?? 0,
+    tombstones: file.tombstones,
+    exportedAt: file.exportedAt,
+    deviceName: file.deviceName,
+    mergedAt: file.mergedAt ?? 0,
+    vault: file.vault,
+  }
+  return { kind: 'data', loaded, open: key, vault }
 }
 
 // Writes ting.json as an envelope and photos as sealed .bin files. A photo is
 // written when its item changed after the file on disk was last written, and
 // gets a fresh nonce each time; unchanged photos are left alone, so a save
 // costs what changed, not the whole folder. Removed items lose their file.
-export async function writeFolder(
-  dir: DirHandle,
-  items: readonly Item[],
-  properties: readonly Property[],
-  fields: FieldSettings,
-  open: OpenKey,
-  vault: Vault,
-): Promise<number> {
+export async function writeFolder(dir: DirHandle, register: Register, open: OpenKey, vault: Vault): Promise<number> {
   const exportedAt = Date.now()
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle
-
-  const file = toDataFile(items, properties, fields, exportedAt)
+  const { items, properties, fields } = register
+  const file = toDataFile(items, properties, fields, exportedAt, await fileExtras(register, vault))
   const wanted = new Set<string>()
   const all = writeAllPhotos
   writeAllPhotos = false
@@ -231,21 +221,20 @@ export async function writeFolder(
   return exportedAt
 }
 
-export type SyncResult = 'loaded' | 'written' | 'foreign'
-
-// Newer side wins: a file written after the last local edit is loaded,
-// otherwise the local copy is written out.
-export async function reconcile(dir: DirHandle, open: OpenKey, vault: Vault): Promise<SyncResult> {
-  const local = await readItems()
-  const onDisk = await readFolder(dir, open, undefined, localPhotoMap(local))
-  if (onDisk.kind === 'foreign') return 'foreign'
-  const changedAt = await localChangedAt()
-  if (onDisk.kind === 'data' && onDisk.exportedAt > changedAt) {
-    await replaceAll(onDisk.items, onDisk.properties, onDisk.fields)
-    return 'loaded'
-  }
-  await writeFolder(dir, local, await readProperties(), await readFieldSettings(), open, vault)
-  return 'written'
+// The folder is one more copy: merged in the same way as a file from another
+// device, then written back with whatever this side added.
+export async function reconcile(
+  dir: DirHandle,
+  open: OpenKey,
+  passphrase?: string,
+): Promise<MergeResult | 'empty' | 'foreign' | 'wrong-passphrase'> {
+  const local = await readRegister()
+  const onDisk = await readFolder(dir, open, passphrase, localPhotoMap(local.items))
+  if (onDisk.kind === 'foreign' || onDisk.kind === 'wrong-passphrase') return onDisk.kind
+  const result = onDisk.kind === 'data' ? await mergeIn(onDisk.loaded, onDisk.open, onDisk.vault, { recordFetch: false }) : 'empty'
+  const vault = currentVault()
+  if (vault) await writeFolder(dir, await readRegister(), currentKey(), vault)
+  return result
 }
 
 export function localPhotoMap(items: readonly Item[]): Map<string, Blob[]> {

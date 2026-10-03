@@ -11,12 +11,13 @@ Each document has one reader and one job; a fact lives in the document whose rea
 | File | Reader | Holds | Never holds |
 |---|---|---|---|
 | `README.md` | Anyone who finds the repo (Norwegian) | What Ting is, the link to the app, which document to read, licences | How to use, run, change or administer the app |
-| `BRUKERVEILEDNING.md` | People using the app (Norwegian, klarspråk) | Every task in the app, privacy in plain words, what to do when something goes wrong | Code, files, repository settings |
+| `BRUKERVEILEDNING.md` | People using the app (Norwegian, klarspråk) | Every task in the app, what to do when something goes wrong | Code, files, repository settings |
+| `PERSONVERN.md` | People using the app (Norwegian, klarspråk), linked from Innstillinger › Om appen | What is stored where, what leaves the device, rights, contact | How to use the app, threat model |
 | `SECURITY.md` | Security reviewers and reporters | Threat model, OWASP mapping, residual risks, how to report | How to use the app |
 | `CLAUDE.md` | Whoever changes the code | Stack, commands, deployment, structure, data model, conventions; encryption in `.claude/rules/encryption.md` | Step-by-step guides for the owner |
 | `dev_only/adminguide.md` | elzacka as owner (Norwegian, gitignored) | Changing texts, category icons and the look without reading the code; the GitHub settings | What a user or a developer needs |
 
-A change a user can see updates the guide in the same commit; a change to how texts, icons or the look are changed updates the admin guide. The plan, the design system and research notes are also in `dev_only/`.
+A change a user can see updates the guide in the same commit, and `PERSONVERN.md` when it changes what is stored or sent; a change to how texts, icons or the look are changed updates the admin guide. The plan, the design system and research notes are also in `dev_only/`.
 
 ## Version
 
@@ -32,7 +33,7 @@ Security scope: OWASP ASVS L2 (latest released edition), Top 10, WSTG, CI/CD Top
 
 ## Stack
 
-React + TypeScript strict + Vite (versions in `package.json`), Dexie (IndexedDB) with Zod validation at every boundary, Vitest for pure logic only (`src/**/*.test.ts`), plain CSS with tokens in `src/styles/tokens.css`, self-hosted SVG icons (no icon library). No CSS framework, no router library, no search library, no external fonts or CDNs — keep it that way rather than adding one.
+React + TypeScript strict + Vite (versions in `package.json`), Dexie (IndexedDB) with Zod validation at every boundary, `onnxruntime-web` (WASM, one thread) for on-device receipt OCR, Vitest for pure logic only (`src/**/*.test.ts`), plain CSS with tokens in `src/styles/tokens.css`, self-hosted SVG icons (no icon library). No CSS framework, no router library, no search library, no external fonts or CDNs — keep it that way rather than adding one.
 
 Production build injects `default-src 'self'`; `connect-src` adds the two lookup hosts, matched to `src/lib/lookup.ts`. `vite.config.ts` sets `base: '/ting/'` for builds only — the dev server stays at `/`. The PWA manifest and service worker run in dev too (`devOptions.enabled`), so Chrome offers install on localhost. Deploys to GitHub Pages on every push to `main` (`deploy-pages.yml`).
 
@@ -44,10 +45,12 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - Facet menus (`lib/filters.ts`, `isFacet`): a date column always facets; others only with a dozen or fewer distinct values or values that repeat, and never price or order-number columns — judged over the whole register, not the rows in view.
 - CSV export (`lib/export.ts`): `;` delimiter, BOM, comma decimals — nb-NO, not the RFC default.
 - `lib/lookup.ts` is the one network call: an ISBN's digits go to Nasjonalbiblioteket first for a Norwegian ISBN (group 82), else Open Library first, with the other as fallback. Every other code is stored, never looked up — no server exists to hold a key for a larger catalogue.
+- Receipts (`ReceiptAdd`, phone only, switch `receiptReading`): `lib/flatten.ts` warps the paper flat (pure TS, no OpenCV), `lib/ocr/` runs PP-OCRv5 in a module worker, `lib/receipt.ts` parses by rule, `lib/receiptItems.ts` fills the register's own store/date/kr columns or makes Kjøpt hos, Kjøpsdato, Pris. Price is per unit, incl. MVA, after discount. OCR text is never stored; the scan is each thing's photo.
+- OCR models: `public/models/`, SHA-256 pinned in `ocr/models.ts`, fetched only when the switch goes on, runtime-cached (`ting-ocr-v1`), never precached; off deletes the cache. No generative model. `csp.test.ts` fails if a new origin or `fetch` appears.
 - `lib/barcode.ts`: the browser's `BarcodeDetector` first, `zxing-wasm` as fallback, bundled in `dist/`, never from a CDN (`'wasm-unsafe-eval'` in the CSP is for it).
 - `src/icons/`: one SVG per icon plus one line in `pack.ts`; a file and its line share the id, and `pack.test.ts` keeps them in step. An icon not from Material Symbols carries `source` and a matching line in README's licence section.
-- `lib/backup.ts`: `ting.json`, version in `fileFormat`. The folder keeps photos as files in `bilder/`; the downloaded backup embeds them as data URLs.
-- `lib/folderStore.ts` / `useFolderSync.ts`: reconcile is newer-side-wins; sync is debounced (`writeDelayMs`) and skips the emission right after a reconcile.
+- `lib/backup.ts`: `ting.json`, version in `fileFormat`; a file from a newer format is refused (`NewerFileError`), since Zod would drop what it cannot read and the next send would erase it. The folder keeps photos as files in `bilder/`; the downloaded backup embeds them as data URLs.
+- `lib/merge.ts` / `lib/sync.ts`: one merge for every copy, per field newest-wins, tombstones for deletes, symmetric and idempotent. Egne enheter sends the whole register as a sealed file (share sheet, so AirDrop) and merges what comes back; the folder (`folderStore.ts` `reconcile`) is merged the same way on connect and start, then written back (debounced, `writeDelayMs`). Gjenopprett is the one path that replaces, and revives restored things over their tombstones.
 - `lib/errors.ts`: log an error's name and message only, never the object — logging must not leak sealed content.
 
 ## Components
@@ -77,7 +80,9 @@ Adding a non-indexed field needs no version bump; changing an index or renaming 
 
 Renaming a category or a Valgliste value onto an existing name merges the two, across every thing that holds it, rather than erroring or duplicating.
 
-`localChangedAt` is bumped by every mutation in `db.ts`, never by loading from a file or folder — `reconcile` compares it against the folder's `exportedAt`. `readItems` caches opened items by id and by the nonce of their sealed parts, so only a row whose seal changed is re-opened; the items query watches primary keys, not row content.
+Every write in `db.ts` stamps what it changed: `stampChanges` per item field (`stamps`), `updatedAt` per property only when its content changed, `fieldsChangedAt` for field settings, a sealed tombstone per deleted item or property. A write that changes nothing keeps its times, or it would outrank a delete.
+
+Stamps come from `stampNow`, never behind the newest stamp seen from another device. Loading or merging never stamps. `readItems` caches opened items by id and by the nonce of their sealed parts, so only a row whose seal changed is re-opened; the items query watches primary keys, not row content.
 
 A thing holds a list of photos as `Blob`, never base64; a downloaded backup embeds them as data URLs (`connect-src 'self'` blocks fetching a `data:` URL, so a fetch-based restore would fail — encode/decode by hand). Old rows/files with a single `photo` field read as a one-photo list, never migrated in place.
 

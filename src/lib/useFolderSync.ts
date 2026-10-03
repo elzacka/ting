@@ -1,21 +1,17 @@
 import { liveQuery } from 'dexie'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { db, readFieldSettings, readItems, readProperties, replaceAll, writeVault } from '../db/db'
+import { db, readRegister } from '../db/db'
 import {
   folderSupported,
   forgetFolder,
-  localPhotoMap,
   pickFolder,
   queryPermission,
-  readFolder,
   reconcile,
   requestPermission,
   savedFolder,
   writeFolder,
 } from './folderStore'
-import type { FolderRead } from './folderStore'
-import { sameItemSet } from './backup'
-import { adoptVault, currentKey, currentVault, useVault } from './vault'
+import { currentKey, currentVault, useVault } from './vault'
 import { errorText } from './errors'
 
 type Handle = Awaited<ReturnType<typeof pickFolder>>
@@ -26,8 +22,7 @@ export type FolderStatus =
   | { kind: 'checking' }
   | { kind: 'needs-permission'; name: string }
   | { kind: 'needs-passphrase'; name: string; wrong: boolean }
-  | { kind: 'connected'; name: string; lastWrittenAt: number | null }
-  | { kind: 'conflict'; name: string; folderCount: number; folderAt: number; localCount: number }
+  | { kind: 'connected'; name: string; lastWrittenAt: number }
   | { kind: 'error'; name: string }
 
 const writeDelayMs = 500
@@ -37,7 +32,6 @@ export function useFolderSync() {
   const unlocked = vault.status === 'open'
   const [status, setStatus] = useState<FolderStatus>(folderSupported ? { kind: 'checking' } : { kind: 'unsupported' })
   const handleRef = useRef<Handle | null>(null)
-  const conflictRef = useRef<Extract<FolderRead, { kind: 'data' }> | null>(null)
   const unsubscribe = useRef<() => void>(() => {})
 
   // What went wrong is logged; the screen says what to do.
@@ -62,14 +56,7 @@ export function useFolderSync() {
           try {
             const v = currentVault()
             if (!v) return
-            const at = await writeFolder(
-              handle,
-              await readItems(),
-              await readProperties(),
-              await readFieldSettings(),
-              currentKey(),
-              v,
-            )
+            const at = await writeFolder(handle, await readRegister(), currentKey(), v)
             setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
           } catch (err) {
             fail(handle.name, err)
@@ -84,18 +71,19 @@ export function useFolderSync() {
     }
   }, [fail])
 
+  // Merges the folder in and writes back what this side adds. A folder sealed
+  // on another device needs its passphrase once; its key then becomes this
+  // device's key, so both sides share one from then on.
   const activate = useCallback(
-    async (handle: Handle) => {
+    async (handle: Handle, passphrase?: string) => {
       handleRef.current = handle
-      const v = currentVault()
-      if (!v) return
       try {
-        const result = await reconcile(handle, currentKey(), v)
-        if (result === 'foreign') {
-          setStatus({ kind: 'needs-passphrase', name: handle.name, wrong: false })
+        const result = await reconcile(handle, currentKey(), passphrase)
+        if (result === 'foreign' || result === 'wrong-passphrase') {
+          setStatus({ kind: 'needs-passphrase', name: handle.name, wrong: result === 'wrong-passphrase' })
           return
         }
-        setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: result === 'written' ? Date.now() : null })
+        setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: Date.now() })
         startWatching(handle)
       } catch (err) {
         fail(handle.name, err)
@@ -126,76 +114,15 @@ export function useFolderSync() {
     }
   }, [activate, unlocked])
 
-  // Both sides hold items and they are not the same set: neither may silently
-  // replace the other, so the user picks. Same set means the folder is this
-  // data's own mirror and newest-wins is right.
-  const differs = useCallback(async (handle: Handle, folder: FolderRead): Promise<boolean> => {
-    if (folder.kind !== 'data' || folder.items.length === 0) return false
-    const local = await readItems()
-    if (local.length === 0) return false
-    if (sameItemSet(local, folder.items)) return false
-    conflictRef.current = folder
-    setStatus({
-      kind: 'conflict',
-      name: handle.name,
-      folderCount: folder.items.length,
-      folderAt: folder.exportedAt,
-      localCount: local.length,
-    })
-    return true
-  }, [])
-
   // Must run from a click: the browser shows its picker or permission prompt.
   const connect = useCallback(async () => {
     try {
-      const handle = await pickFolder()
-      handleRef.current = handle
-      const folder = await readFolder(handle, currentKey(), undefined, localPhotoMap(await readItems()))
-      if (await differs(handle, folder)) return
-      await activate(handle)
+      await activate(await pickFolder())
     } catch (err) {
       if ((err as { name?: string }).name === 'AbortError') return
       fail('', err)
     }
-  }, [activate, differs, fail])
-
-  const useFolderSide = useCallback(async () => {
-    const handle = handleRef.current
-    const folder = conflictRef.current
-    if (!handle || !folder) return
-    conflictRef.current = null
-    // Read under the old key before adopting: the settings row must be sealed
-    // again under the new one, or it cannot be opened at the next unlock.
-    const fields = folder.fields ?? (await readFieldSettings())
-    if (folder.vault && folder.open !== currentKey()) {
-      adoptVault(folder.vault, folder.open)
-      await writeVault(folder.vault)
-    }
-    await replaceAll(folder.items, folder.properties, fields)
-    setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
-    startWatching(handle)
-  }, [startWatching])
-
-  const useLocalSide = useCallback(async () => {
-    const handle = handleRef.current
-    const v = currentVault()
-    if (!handle || !v) return
-    conflictRef.current = null
-    try {
-      const at = await writeFolder(
-        handle,
-        await readItems(),
-        await readProperties(),
-        await readFieldSettings(),
-        currentKey(),
-        v,
-      )
-      setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: at })
-      startWatching(handle)
-    } catch (err) {
-      fail(handle.name, err)
-    }
-  }, [fail, startWatching])
+  }, [activate, fail])
 
   const grant = useCallback(async () => {
     const handle = handleRef.current
@@ -204,37 +131,20 @@ export function useFolderSync() {
     if (perm === 'granted') await activate(handle)
   }, [activate])
 
-  // A folder sealed on another device: its passphrase opens it, and its key
-  // becomes this device's key so both sides share one from now on.
   const adopt = useCallback(
     async (passphrase: string) => {
       const handle = handleRef.current
-      if (!handle) return
-      const result = await readFolder(handle, currentKey(), passphrase, localPhotoMap(await readItems()))
-      if (result.kind === 'wrong-passphrase' || result.kind === 'foreign') {
-        setStatus({ kind: 'needs-passphrase', name: handle.name, wrong: true })
-        return
-      }
-      if (await differs(handle, result)) return
-      if (result.kind === 'data' && result.vault) {
-        const fields = result.fields ?? (await readFieldSettings())
-        adoptVault(result.vault, result.open)
-        await writeVault(result.vault)
-        await replaceAll(result.items, result.properties, fields)
-      }
-      setStatus({ kind: 'connected', name: handle.name, lastWrittenAt: null })
-      startWatching(handle)
+      if (handle) await activate(handle, passphrase)
     },
-    [differs, startWatching],
+    [activate],
   )
 
   const disconnect = useCallback(async () => {
     unsubscribe.current()
     handleRef.current = null
-    conflictRef.current = null
     await forgetFolder()
     setStatus({ kind: 'none' })
   }, [])
 
-  return { status, connect, grant, adopt, disconnect, useFolderSide, useLocalSide }
+  return { status, connect, grant, adopt, disconnect }
 }

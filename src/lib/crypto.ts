@@ -7,7 +7,8 @@ import { argon2id } from '@noble/hashes/argon2.js'
 
 export type KdfParams = { name: 'argon2id'; m: number; t: number; p: number; salt: string }
 export type Sealed = { iv: string; data: string }
-export type Vault = { kdf: KdfParams; wrappedDek: Sealed; dekId: string }
+// changedAt: when the passphrase last changed, so the newest one reaches the other devices
+export type Vault = { kdf: KdfParams; wrappedDek: Sealed; dekId: string; changedAt?: number | undefined }
 
 // 64 MiB, 3 passes, 1 lane: about half a second on a recent laptop.
 export type KdfTuning = { m: number; t: number; p: number }

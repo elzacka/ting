@@ -18,6 +18,7 @@ import { useSealedQuery } from './db/useSealedQuery'
 import { href, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
+import { errorText } from './lib/errors'
 import { hasKey, initVault, lock, setupVault, startTrial, unlock, unlockWithKey, useVault } from './lib/vault'
 import { exposedPasskey, openWithPasskey, passkeySupported, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
 import { categoryColumnId, type FieldSettings } from './lib/fields'
@@ -29,9 +30,10 @@ import { useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
 import { useNarrow } from './lib/useNarrow'
 import { useKeyboardInset } from './lib/useKeyboardInset'
-import { readAutoLock, readHiddenColumns, readWrap, writeAutoLock, writeHiddenColumns, writeWrap } from './lib/prefs'
+import { loadHiddenColumns, readAutoLock, readWrap, saveHiddenColumns, writeAutoLock, writeWrap } from './lib/prefs'
 import { Icon, Logo } from './components/Icons'
 import { AddItem } from './components/AddItem'
+import { ReceiptAdd } from './components/ReceiptAdd'
 import { ItemList } from './components/ItemList'
 import { ItemDetail } from './components/ItemDetail'
 import { LockScreen } from './components/LockScreen'
@@ -132,10 +134,20 @@ export function App() {
   // back does not send you to the start (elzacka, 23 September 2026).
   const [categoryPicked, setCategoryPicked] = useState(false)
   const [sort, setSort] = useState<Sort | null>(null)
-  const { widths, setWidth } = useColumnWidths()
+  const { widths, setWidth } = useColumnWidths(unlocked)
   const [autoLock, setAutoLock] = useState(readAutoLock)
   // Tilpass visning: columns taken out of the table on this device
-  const [hidden, setHidden] = useState(readHiddenColumns)
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set())
+  useEffect(() => {
+    if (!unlocked) return setHidden(new Set())
+    let live = true
+    loadHiddenColumns()
+      .then((ids) => live && setHidden(ids))
+      .catch((err: unknown) => console.error(errorText(err)))
+    return () => {
+      live = false
+    }
+  }, [unlocked])
   const [wrap, setWrap] = useState(readWrap)
   const toggleWrap = useCallback((on: boolean) => {
     writeWrap(on)
@@ -146,7 +158,7 @@ export function App() {
       const next = new Set(prev)
       if (visible) next.delete(id)
       else next.add(id)
-      writeHiddenColumns(next)
+      saveHiddenColumns(next)
       return next
     })
   }, [])
@@ -414,6 +426,9 @@ function Screen({
   }
   if (route.view === 'add') {
     return <AddItem items={items} properties={properties} fields={fields} onDirtyChange={onDirtyChange} />
+  }
+  if (route.view === 'receipt') {
+    return <ReceiptAdd items={items} properties={properties} onDirtyChange={onDirtyChange} />
   }
   const item = items.find((i) => i.id === route.id)
   if (!item) return <p className="hint">{t.detail.notFound}</p>

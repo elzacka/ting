@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
 import { createVault } from './crypto'
-import { fromStored, itemsFromDataFile, openEnvelope, parseAnyFile, parseDataFile, photoFileNames, sameItemSet, sealDataFile, storedPhotos, toBackupJson, toDataFile } from './backup'
+import { fromStored, itemsFromDataFile, openEnvelope, parseAnyFile, NewerFileError, parseDataFile, photoFileNames, sealDataFile, storedPhotos, toBackupJson, toDataFile } from './backup'
 
 const item: Item = {
   id: '3f1c2c2e-6a0b-4d1e-9a3a-1f2e3d4c5b6a',
@@ -105,20 +105,6 @@ describe('envelope', () => {
   })
 })
 
-describe('sameItemSet', () => {
-  const a = [{ id: '1' }, { id: '2' }]
-  it('is true for the same ids in any order', () => {
-    expect(sameItemSet(a, [{ id: '2' }, { id: '1' }])).toBe(true)
-  })
-  it('is false when one side has an item the other lacks', () => {
-    expect(sameItemSet(a, [{ id: '1' }, { id: '3' }])).toBe(false)
-    expect(sameItemSet(a, [{ id: '1' }])).toBe(false)
-  })
-  it('is true for two empty sets', () => {
-    expect(sameItemSet([], [])).toBe(true)
-  })
-})
-
 describe('photos in a downloaded copy', () => {
   it('round-trips a photo through the file without fetch(), which the CSP blocks', async () => {
     const fast = { m: 256, t: 1, p: 1 }
@@ -139,5 +125,26 @@ describe('photos in a downloaded copy', () => {
     const broken = { ...file, items: [{ ...file.items[0]!, photos: [{ file: null, type: 'image/png', data: 'data:image/png;base64,!!!' }] }] }
     const back = await itemsFromDataFile(broken)
     expect(back.items[0]?.photos).toEqual([])
+  })
+})
+
+describe('what merging needs', () => {
+  it('carries field stamps, tombstones, the device and the vault inside the seal', async () => {
+    const a = await createVault('passord for enhet a', { m: 256, t: 1, p: 1 })
+    const vault = { ...a.vault, changedAt: 77 }
+    const extras = { fieldsAt: 9, tombstones: { items: { x: 5 }, properties: {} }, deviceId: 'd1', deviceName: 'iPhone', vault }
+    const stamped = { ...item, photos: [], stamps: { name: 3 } }
+    const text = await toBackupJson([stamped], [], fields, a.open, a.vault, extras)
+    const parsed = parseAnyFile(text)
+    if (parsed.kind !== 'sealed') throw new Error('expected envelope')
+    const opened = await openEnvelope(parsed.envelope, a.open)
+    if (opened === 'foreign' || opened === 'wrong-passphrase') throw new Error('expected open')
+    const back = await itemsFromDataFile(opened.file)
+    expect(back).toMatchObject({ fieldsAt: 9, tombstones: extras.tombstones, deviceName: 'iPhone', vault: { changedAt: 77 } })
+    expect(back.items[0]?.stamps).toEqual({ name: 3 })
+  })
+
+  it('refuses a file from a newer app instead of dropping what it cannot read', () => {
+    expect(() => parseDataFile('{"app":"ting","format":3,"exportedAt":0,"items":[]}')).toThrow(NewerFileError)
   })
 })
