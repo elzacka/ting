@@ -3,10 +3,7 @@
 Oppdatert: 03.10.26
 
 Det du legger inn, lagres kryptert på enheten din. Du trenger ikke registrere
-deg eller logge inn. Data forlater enheten bare når du selv sender dem:
-Registeret sendes kryptert med AirDrop til en av enhetene dine, og når du slår
-opp en bok, sendes sifrene i ISBN-en til Nasjonalbiblioteket eller Open
-Library.
+deg eller logge inn, og data forlater enheten bare når du selv sender dem.
 
 ## Det appen lagrer
 
@@ -26,7 +23,7 @@ passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
 - **«Send til en annen enhet»:** Hele registeret sendes kryptert, bare til
   enheten du velger i AirDrop.
-- **«Slå opp på nett»:** Sifrene i en ISBN sendes til Nasjonalbiblioteket eller
+- **«Slå opp på nett»:** Sifrene i ISBN-numre sendes til Nasjonalbiblioteket eller
   Open Library. De ser også IP-adressen din.
 
 Appen ligger på GitHub Pages. GitHub ser IP-adressen din når appen lastes ned
@@ -34,10 +31,10 @@ eller oppdateres, slik alle nettsteder ser den.
 
 ## Kvitteringer og KI
 
-Appen leser teksten på kvitteringer på enheten, også uten nett.
-Tekstgjenkjenningen er små modeller som kjenner igjen bokstaver og tall
-(PP-OCRv5). De lærer ingenting av dataene dine og lager ingen tekst selv.
-Appen bruker ingen språkmodell og ingen KI-tjeneste.
+Appen leser teksten på kvitteringer med KI: Små modeller som er trent til å
+kjenne igjen bokstaver og tall (PP-OCRv5). Modellene kjører på enheten, også
+uten nett. De lærer ingenting av dataene dine og skriver ingen tekst selv.
+Appen bruker ingen KI-tjeneste på nett og ingen språkmodell.
 
 Bildet av kvitteringen lagres kryptert sammen med tingene du kjøpte. Teksten
 appen leste, lagres ikke. Bare navn, pris, dato og butikk blir med, og du ser
