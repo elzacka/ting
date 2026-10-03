@@ -593,10 +593,9 @@
   overflow-wrap: anywhere;
 }
 
-/* Every row on the detail page can be edited where it stands, by a click or
-   a tap anywhere on it. The pencil shows on hover or focus where there is a
-   pointer; on a touch screen it is out of sight and the row is the target,
-   while a screen reader still finds the pencil. */
+/* Every detail row is editable where it stands, by a click or tap anywhere on it. The pencil
+   shows on hover or focus with a pointer; on touch it is out of sight and the row is the target,
+   while a screen reader still finds it. */
 .spec-row-edit {
   display: flex;
   align-items: center;
@@ -788,10 +787,9 @@ section {
   overflow: clip; /* clips to the radius without becoming a scroll container, so the head can stick to the page */
 }
 
-/* The actions at the right edge, and under them, flush with the last
-   glyph, what is on screen in the same small grey as the table's foot row.
-   The head stays under the top bar while the rows scroll, and the table's
-   header row stays under the head: Overview measures the head into --head-h. */
+/* Actions at the right edge, and under them what is on screen in the table foot's small grey.
+   The head stays under the top bar while rows scroll, the header row under the head: Overview
+   measures the head into --head-h. */
 .overview-head {
   position: sticky;
   top: var(--topbar-h);
@@ -847,12 +845,9 @@ section {
   color: var(--text-2);
 }
 
-/* Kategori as the view: the app's select field (.select), drawn as a button
-   so it can open the dropdown with glyphs and counts. The chosen category's
-   glyph and name, or Velg kategori in the placeholder grey until one is
-   picked. Its box lines up with Navn: the table's checkbox column is one
-   gutter wide. */
-/* No frame and no fill: the chevron says it opens */
+/* Kategori as the view: the app's .select drawn as a button so it can open a dropdown with glyphs
+   and counts; placeholder grey until picked. Lines up with Navn (the checkbox column is one gutter
+   wide). No frame and no fill: the chevron says it opens. */
 .category-select {
   display: inline-flex;
   align-items: center;
@@ -884,10 +879,9 @@ section {
   color: var(--text-2);
 }
 
-/* The categories as a dropdown under the button: glyph, name, count. Fixed
-   to the window like the column menu, and scrolls on its own when the list
-   is longer than the room under the button (Overview measures that room);
-   scrolling to its end does not carry on into the page. */
+/* The categories as a dropdown under the button. Fixed to the window like the column menu, scrolls
+   on its own when the list is longer than the room Overview measures, and does not carry the
+   scroll on into the page. */
 .category-menu {
   position: fixed;
   z-index: 6;
@@ -922,10 +916,9 @@ section {
   font-weight: 600;
 }
 
-/* The item under the pointer or the arrow keys: filled in the accent with
-   white text, like a system menu, so where you are is never in doubt (the
-   fill is 7:1 against the menu, the text 7:1 against the fill). The fill is
-   the focus mark; the outline would only double it. */
+/* The item under the pointer or arrow keys is filled in the accent with white text, like a system
+   menu (7:1 against the menu and against the fill). The fill is the focus mark; an outline
+   would only double it. */
 .category-menu-item:hover,
 .category-menu-item:focus-visible,
 .col-menu-item:hover:not(:disabled),
@@ -945,10 +938,9 @@ section {
   white-space: nowrap;
 }
 
-/* A check mark in front of each chosen category, and an empty slot in front
-   of the rest so the names line up: a menu, not a form, so no boxes. The
-   list stays open while you choose, which is what tells you several can be
-   chosen (the way GitHub's label picker, Notion and Apple's menus do it). */
+/* A check mark before each chosen category, an empty slot before the rest so names line up: a
+   menu, not a form, so no boxes. The list stays open while you choose, which tells you several
+   can be chosen (as in GitHub's label picker, Notion and Apple's menus). */
 .category-menu-check {
   display: inline-flex;
   flex: none;
@@ -1085,10 +1077,8 @@ section {
   z-index: 6;
 }
 
-/* Endre egenskaper: name, type, unit or alternatives, categories, count and
-   remove on one line per property. The rows share one set of columns
-   (subgrid), so the counts end on one edge and the bins stand in one column
-   however long a count is. */
+/* Endre egenskaper: one line per property. The rows share one set of columns (subgrid), so the
+   counts end on one edge and the bins stand in one column however long a count is. */
 .property-rows {
   display: grid;
   grid-template-columns: minmax(0, 220px) 140px 160px minmax(0, 240px) max-content var(--row-h-sm);
@@ -1843,9 +1833,8 @@ section {
   }
 }
 
-/* Checkboxes stay out of the way until the pointer is over the checkbox's
-   own cell at the row's left edge, the row is checked, the checkbox has
-   keyboard focus, or a selection is under way. Touch devices have no hover,
+/* Checkboxes stay out of the way until the pointer is over the checkbox's cell, the row is
+   checked, the checkbox has focus, or a selection is under way. Touch devices have no hover,
    so they always show them. */
 
 .grid-check input {
@@ -2213,12 +2202,9 @@ section {
 }
 
 
-/* A quiet band with a fact about the register: the table band's tint and
-   hairline, the hint's size and grey, no icon and no title. It is not a
-   warning; nothing is wrong, something is unfinished. */
-/* A setting: title and one line of explanation on the left, its button on
-   the right, on one line. What the button did, or asks, comes underneath. A
-   choice is a checkbox with its sentence under the title. */
+/* A quiet band with a fact about the register: the table band's tint and hairline, the hint's
+   size and grey. Not a warning; nothing is wrong, something is unfinished. */
+/* A setting: title and one line of explanation left, its button right; a choice is a checkbox. */
 .setting {
   display: grid;
   gap: var(--s-3);

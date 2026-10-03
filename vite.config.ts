@@ -2,11 +2,8 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Everything is local: no fonts, icons or code come from outside, and nothing
-// leaves the device except the one lookup the user asks for by pressing
-// "Slå opp på nett" (src/lib/lookup.ts): the digits of an ISBN to one of
-// the library catalogues below. The CSP says so to the browser, which also
-// helps Android browsers treat the app as safe to install.
+// Everything is local: no fonts, icons or code from outside; only the lookup the user asks for
+// with "Slå opp på nett" (src/lib/lookup.ts) leaves, an ISBN's digits to the catalogues below.
 // Same name as ocrCacheName in src/lib/ocr/models.ts.
 const ocrCacheName = 'ting-ocr-v1'
 

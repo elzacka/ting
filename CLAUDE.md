@@ -74,7 +74,13 @@ Everything typed, pasted, restored from a file, or read from a folder is data, n
 
 ## Data model
 
-Dexie schema: the newest `db.version()` in `db/db.ts`; tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place. `Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in. Changing a column's type to Sti changes its specs' unit marker, never their values. Units stay out of table headers and filter labels (detail page, print and CSV show them). `createdAt`/`updatedAt` live in the data and CSV, never on screen or in print. Retail barcodes are stored as digits in the Strekkode text property.
+Dexie schema: the newest `db.version()` in `db/db.ts`; tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place.
+
+`Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Changing a column's type to Sti changes its specs' unit marker, never their values.
+
+Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in.
+
+Units stay out of table headers and filter labels (detail page, print and CSV show them). `createdAt`/`updatedAt` live in the data and CSV, never on screen or in print. Retail barcodes are stored as digits in the Strekkode text property.
 
 Adding a non-indexed field needs no version bump; changing an index or renaming a field does — add a new `db.version()` with an `upgrade`, never edit an existing version.
 

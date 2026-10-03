@@ -6,11 +6,9 @@ export const specSchema = z.object({
   unit: z.string().trim().nullable(),
 })
 
-// A thing is a name, its properties as specs, and its photos. Everything else
-// it can carry is a property: Kategori and Notat among them. The first photo
-// is the one shown wherever there is room for only one: the table, the phone
-// list, the report. Rows and files written before a thing could carry more
-// than one hold a single `photo`, which reads as a list of one.
+// A thing is a name, its properties as specs, and its photos; Kategori and Notat are properties.
+// The first photo is the one shown where there is room for one. A single `photo` from before
+// photos became a list reads as a list of one.
 export const itemSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
@@ -52,10 +50,9 @@ export const propertySchema = z.object({
   // The Kategori values this column belongs to. Missing or empty means it
   // belongs to every category: that is what a column is until it is narrowed.
   categories: z.array(z.string().trim().min(1)).optional(),
-  // On the Kategori property only: the icon chosen for a category, keyed by
-  // the category as written, valued by an id from the icon pack. A category
-  // without one shows the icon guessed from its name. Ids are plain words, so
-  // nothing from a file can become anything but a lookup key.
+  // On the Kategori property only: the icon chosen per category, keyed by the category as
+  // written, valued by an id from the icon pack (else the icon guessed from the name). Ids are
+  // plain words, so nothing from a file becomes anything but a lookup key.
   icons: z.record(z.string().trim().min(1).max(200), z.string().regex(/^[a-z0-9_]{1,64}$/)).optional(),
 })
 

@@ -1,14 +1,9 @@
 import { useSyncExternalStore } from 'react'
 import { createVault, openKeyFrom, randomBytes, rewrapVault, unlockVault, type OpenKey, type Vault } from './crypto'
 
-// Session state for the encryption key. The app opens locked; the key lives in
-// memory only while unlocked and is dropped on lock, reload or close.
-//
-// Before any passphrase exists the app runs as a trial: a fresh data key in
-// memory, nothing wrapping it. Everything is sealed under it as usual, so
-// nothing is ever stored in the clear; without a wrapper the key dies with
-// the tab, and what was sealed under it is unreadable and cleared on the next
-// start. Choosing a passphrase wraps this same key, so the trial's things stay.
+// Session state for the encryption key. The app opens locked; the key lives in memory only while
+// unlocked. Before a passphrase exists it runs as a trial: a fresh key nothing wraps, so what it
+// sealed is cleared on the next start; choosing a passphrase wraps this same key, so things stay.
 
 export type VaultState =
   | { status: 'loading' }

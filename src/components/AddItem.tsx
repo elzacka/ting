@@ -42,11 +42,9 @@ function domId(prefix: string, id: string): string {
   return `${prefix}-${encodeURIComponent(id)}`
 }
 
-// One thing at a time, for a phone with the thing in hand: the photos, the
-// name and the choice and path columns, which say what it is and where it
-// goes, then the barcode, which few things need. Prices and the rest are desk
-// work in the table. The choice values stay for the next thing, so the
-// second thing on the same shelf is a photo and a name.
+// One thing at a time, for a phone with the thing in hand: photos, name, the choice and path
+// columns (what it is, where it goes), then the barcode. Prices and the rest are desk work.
+// Choice values stay for the next thing, so a second thing on the shelf is a photo and a name.
 export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const nameLabel = fields.name.label ?? t.table.name
@@ -76,11 +74,9 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const url = useObjectUrl(photos[0] ?? null)
-  // The barcode, serial number or QR code: scanned from a photo of the label
-  // or typed from it. Only an ISBN in a book category can be looked up, since
-  // books are what an open catalogue holds. What the last scan or lookup said
-  // is one line under the field; in a book category, until there is an ISBN
-  // to look up, that line says the lookup is there.
+  // The barcode, serial number or QR code: scanned from a photo of the label or typed. Only an
+  // ISBN in a book category can be looked up, since an open catalogue holds books. A line under
+  // the field shows the last scan or lookup; in a book category it says the lookup is there.
   const books = isBookCategory(category, properties.find((p) => p.id === categoryColumnId)?.icons)
   const [code, setCode] = useState('')
   const [codeNote, setCodeNote] = useState<string | null>(null)

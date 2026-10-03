@@ -41,11 +41,9 @@ function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
-// Every column's width from its content, for columns the user has not set:
-// the widest value in the column (measured in the cell font, off screen on a
-// canvas) or the header, plus the cell's chrome, capped so one long name
-// cannot take the table. Runs over all rows on screen, not only the windowed
-// ones, so scrolling never changes a width.
+// Width from content for columns the user has not set: the widest value (measured in the cell
+// font, off screen) or the header, plus chrome, capped so one long name cannot take the table.
+// Runs over all rows, not only the windowed ones, so scrolling never changes a width.
 export function autoWidths(
   defs: readonly ColumnDef[],
   label: (def: ColumnDef) => string,
@@ -125,10 +123,8 @@ export function useColumnWidths(unlocked: boolean): { widths: Widths; setWidth: 
   return { widths, setWidth }
 }
 
-// The narrowest width that shows every value in the column whole: each
-// cell's text is measured in its own font, off screen, and the cell's chrome
-// (padding, a thumbnail, the header's chevron and arrow) is added. Reading a
-// cell's scrollWidth would never come out below the width it already has.
+// The narrowest width that shows every value whole: each cell's text measured in its own font,
+// off screen, plus the chrome. A cell's scrollWidth never comes out below its current width.
 export function fitWidth(table: HTMLTableElement, colIndex: number): number {
   const probe = document.createElement('span')
   probe.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre'

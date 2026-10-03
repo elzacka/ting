@@ -1,9 +1,8 @@
 import { argon2id } from '@noble/hashes/argon2.js'
 
-// Everything stored is encrypted with a random data key (DEK) under
-// AES-256-GCM. The DEK is wrapped by a key derived from the passphrase with
-// Argon2id. The wrapped DEK, salt and parameters travel with the data, so the
-// same passphrase opens it on any device. There is no recovery path.
+// Everything stored is encrypted with a random data key (DEK) under AES-256-GCM. The DEK is
+// wrapped by a key derived from the passphrase with Argon2id; the wrapped DEK, salt and
+// parameters travel with the data, so the passphrase opens it on any device. No recovery path.
 
 export type KdfParams = { name: 'argon2id'; m: number; t: number; p: number; salt: string }
 export type Sealed = { iv: string; data: string }
@@ -109,10 +108,9 @@ export async function rewrapVault(passphrase: string, open: OpenKey, params: Kdf
   return wrapDek(passphrase, kdf, open)
 }
 
-// A second way to the same data key, on one device: a secret the device's own
-// authenticator hands over only after Face ID or Touch ID (a passkey's PRF
-// output), stretched by HKDF into a wrapping key. The label keeps this key
-// apart from anything else the same secret might one day be used for.
+// A second way to the same data key, on one device: a secret the authenticator hands over after
+// Face ID or Touch ID (a passkey's PRF output), stretched by HKDF. The label keeps this key
+// apart from any other use of the same secret.
 export async function keyFromSecret(secret: Uint8Array, label: string): Promise<CryptoKey> {
   const base = await subtle.importKey('raw', secret as BufferSource, 'HKDF', false, ['deriveKey'])
   return subtle.deriveKey(

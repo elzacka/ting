@@ -1,19 +1,21 @@
 # Security
 
 Threat model and security model for Ting, mapped to the OWASP Top 10:2025.
-Current as of 2026-09-21, for version 0.1.0. Norwegian user-facing text about
-the same topics is in `BRUKERVEILEDNING.md` under Personvern.
+Current as of 2026-10-03, for version 1.1.0. Norwegian user-facing text about
+the same topics is in `PERSONVERN.md`.
 
 ## What Ting is
 
 Ting is a static web app. It has no server, no account, and no network calls
-after the page has loaded, with one exception the user triggers by hand: "Slå
-opp på nett" sends the digits of an ISBN to a public catalogue
-(`src/lib/lookup.ts`). Everything the user registers
-lives in the browser's IndexedDB on the device, optionally mirrored to a folder
-on disk and to downloaded copies (on a touch screen, a copy handed to the share
-sheet, which goes wherever the user sends it). All of it is encrypted with a key
-derived from a passphrase the user chooses.
+to other origins after the page has loaded, with one exception the user
+triggers by hand: "Slå opp på nett" sends the digits of an ISBN to a public
+catalogue (`src/lib/lookup.ts`). Turning on receipt reading downloads the OCR
+models from the app's own origin.
+
+Everything the user registers lives in the browser's IndexedDB on the device,
+optionally mirrored to a folder on disk, to downloaded copies, and to the
+user's other devices as a sealed file through the share sheet (AirDrop). All
+of it is encrypted with a key derived from a passphrase the user chooses.
 
 That shape removes whole classes of risk (server-side access control, session
 tokens, API abuse) and concentrates the rest in three places: the device, the

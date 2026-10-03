@@ -77,10 +77,9 @@ async function writeFile(dir: DirHandle, name: string, data: Blob | Uint8Array |
   await w.close()
 }
 
-// Photos are stored as bilder/<id>-1.bin: 12-byte nonce followed by the
-// ciphertext. Only names the app itself writes: <uuid>-<n>.<ext>, or the
-// <uuid>.<ext> a thing got while it could carry only one. A crafted ting.json
-// cannot point at anything else in the folder.
+// Photos are stored as bilder/<id>-1.bin: 12-byte nonce, then ciphertext. Only names the app
+// writes: <uuid>-<n>.<ext>, or <uuid>.<ext> from when a thing held one photo. A crafted
+// ting.json cannot point at anything else in the folder.
 const photoName = /^[0-9a-f-]{36}(-\d{1,4})?\.(bin|jpg|jpeg|png|webp|heic|heif|gif|avif)$/i
 
 async function readPhoto(photos: DirHandle, stored: StoredPhoto, open: OpenKey): Promise<Blob | null> {
@@ -136,11 +135,9 @@ export type FolderRead =
   | { kind: 'wrong-passphrase' }
   | { kind: 'data'; loaded: Loaded; open: OpenKey; vault: Vault | null }
 
-// Reads the folder. A file sealed under another data key needs the passphrase
-// once; the key that opened it comes back so the caller can adopt it. A photo
-// the file points at but the folder cannot deliver (sync lag, a stray delete)
-// falls back to the copy the browser already holds for that item, so loading
-// never drops a photo the user still has.
+// Reads the folder. A file sealed under another data key needs the passphrase once; the key
+// that opened it comes back for the caller to adopt. A photo the folder cannot deliver (sync
+// lag, a stray delete) falls back to the browser's copy, so loading never drops a photo.
 export async function readFolder(
   dir: DirHandle,
   open: OpenKey,
@@ -181,10 +178,9 @@ export async function readFolder(
   return { kind: 'data', loaded, open: key, vault }
 }
 
-// Writes ting.json as an envelope and photos as sealed .bin files. A photo is
-// written when its item changed after the file on disk was last written, and
-// gets a fresh nonce each time; unchanged photos are left alone, so a save
-// costs what changed, not the whole folder. Removed items lose their file.
+// Writes ting.json as an envelope and photos as sealed .bin files. A photo is rewritten, with a
+// fresh nonce, only when its item changed after the file was last written, so a save costs what
+// changed. Removed items lose their file.
 export async function writeFolder(dir: DirHandle, register: Register, open: OpenKey, vault: Vault): Promise<number> {
   const exportedAt = Date.now()
   const photos = (await dir.getDirectoryHandle(photoDirName, { create: true })) as DirHandle

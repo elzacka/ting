@@ -4,11 +4,9 @@ import { openJson, sealJson, unlockVault, type OpenKey, type Sealed, type Vault 
 import { categoryKey, type FieldSettings } from './fields'
 import type { Tombstones } from './merge'
 
-// One JSON document describes the whole register. The folder store keeps
-// photos as files next to it; the downloaded backup embeds them as data URLs.
-// On disk the document travels inside an envelope: the vault (wrapped key,
-// salt, parameters) in the clear, the document itself sealed under the data
-// key. Files written before encryption are plain documents and still load.
+// One JSON document describes the whole register. The folder store keeps photos as files next
+// to it; the downloaded backup embeds them as data URLs. On disk the document sits in an
+// envelope: the vault in the clear, the document sealed under the data key. Plain files still load.
 
 // 2 adds what merging needs: field stamps, tombstones, the device and the vault.
 // A file from a newer app is refused, or this one would drop what it cannot read.
@@ -24,10 +22,9 @@ const storedPhotoSchema = z.object({
   data: z.string().nullable().optional(),
 })
 
-// Files and rows from before 21 September 2026 carry a note field and a few
-// fields nothing ever wrote; the note becomes the property Notat on load,
-// the rest is dropped. Files from before 22 September 2026 carry one photo in
-// photoFile/photoType/photoData instead of the photos list, and still load.
+// Files and rows from before 21 September 2026 carry a note field and a few unwritten fields;
+// the note becomes the property Notat on load, the rest is dropped. Files from before 22
+// September 2026 carry one photo in photoFile/photoType/photoData instead of the photos list.
 const storedItemSchema = itemSchema.omit({ photos: true }).extend({
   photos: z.array(storedPhotoSchema).optional(),
   photoFile: z.string().nullable().optional(),
@@ -109,10 +106,9 @@ function extensionFor(blob: Blob): string {
   return map[blob.type] ?? 'bin'
 }
 
-// bilder/<id>-1.<ext>, numbered from one in the order the thing carries them.
-// The sealed folder write names them <id>-1.bin instead (folderStore.ts).
-// Flat, so the folder keeps one directory and the sweep that deletes what no
-// thing claims any more keeps working (elzacka, 22 September 2026).
+// bilder/<id>-1.<ext>, numbered from one in the order the thing carries them (the sealed folder
+// write uses <id>-1.bin, folderStore.ts). Flat, so the folder keeps one directory and the sweep
+// of unclaimed files keeps working (elzacka, 22 September 2026).
 export function photoFileNames(item: Item): string[] {
   return item.photos.map((photo, i) => `${photoDirName}/${item.id}-${i + 1}.${extensionFor(photo)}`)
 }
@@ -218,10 +214,8 @@ export async function openEnvelope(
   return { file: parseDoc(await openJson(key.key, env.sealed)), open: key }
 }
 
-// The mirror of dataUrlToBlob, and encoded by hand for the same reason: no
-// browser-only reader in the middle of a pure conversion. The bytes go through
-// btoa in chunks, since one call with a megapixel photo's worth of arguments
-// overflows the stack.
+// The mirror of dataUrlToBlob, encoded by hand for the same reason: no browser-only reader in a
+// pure conversion. btoa runs in chunks, since one call with a megapixel photo overflows the stack.
 async function blobToDataUrl(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer())
   const chunk = 0x8000
@@ -240,10 +234,9 @@ export function asImage(blob: Blob | null | undefined): Blob | null {
   return blob && imageTypes.has(blob.type) ? blob : null
 }
 
-// Decoded by hand, not by fetch(): the production CSP says connect-src 'self',
-// which a data: URL is not, so fetching one throws and takes the whole restore
-// with it. The base64 comes from a file, so a bad one returns null rather than
-// throwing (elzacka, 22 September 2026).
+// Decoded by hand, not by fetch(): the production CSP says connect-src 'self', which a data: URL
+// is not, so fetching one throws and fails the restore. A bad base64 from a file returns null
+// rather than throwing (elzacka, 22 September 2026).
 function dataUrlToBlob(url: string): Blob | null {
   const match = /^data:(image\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]*)$/i.exec(url)
   const type = match?.[1]

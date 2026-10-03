@@ -82,13 +82,9 @@ export function App() {
     return ok
   }
 
-  // Face ID or Touch ID, where this device has it set up for this vault. A
-  // copy wrapping another data key (a restore or a folder took over another
-  // vault) opens nothing, and one wrapped under an empty secret opens for
-  // anyone; both go.
-  // undefined while not yet known: the lock screen waits for it, so the
-  // passphrase field does not take the focus (and raise a phone's keyboard)
-  // over the Face ID sheet
+  // Face ID or Touch ID, where this device has it set up for this vault. A copy wrapping another
+  // key opens nothing and one under an empty secret opens for anyone; both go. undefined until
+  // known: the lock screen waits, so the passphrase field does not raise the keyboard over Face ID.
   const [passkey, setPasskey] = useState<PasskeyRecord | null | undefined>(undefined)
   const lockedVault = vault.status === 'locked' ? vault.vault : null
   useEffect(() => {
@@ -172,10 +168,8 @@ export function App() {
     if (initial !== '') setQuery(initial)
     else document.getElementById('search')?.focus()
   }, [])
-  // Hiding the panel keeps the search and the filters: the header icon stays
-  // lit while a query or a filter narrows the table. The category is the
-  // view, not a filter, and lights nothing. Clearing is the field's own X, the
-  // filters' "Fjern alle filtre", or "Vis alle ting".
+  // Hiding the panel keeps the search and filters: the header icon stays lit while a query or
+  // filter narrows the table. The category is the view, not a filter, and lights nothing.
   const closeSearch = useCallback(() => {
     setSearchOpen(false)
   }, [])
