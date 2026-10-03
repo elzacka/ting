@@ -1,8 +1,8 @@
 # Security
 
 Threat model and security model for Ting, mapped to the OWASP Top 10:2025.
-Current as of 2026-10-03, for version 1.1.0. Norwegian user-facing text about
-the same topics is in `PERSONVERN.md`.
+Current as of 2026-10-03. Norwegian user-facing text about the same topics is
+in `PERSONVERN.md`.
 
 ## What Ting is
 

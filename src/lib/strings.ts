@@ -365,7 +365,7 @@ export const t = {
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',
-    what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB, og leser kvitteringen på enheten. Ingenting sendes videre.',
+    what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB. Etterpå leser den kvitteringer på enheten, også uten nett.',
     downloading: 'Laster ned tekstgjenkjenning…',
     ready: 'Klar, også uten nett.',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
@@ -375,7 +375,7 @@ export const t = {
     title: 'Om appen',
     privacy: 'Personvern',
     source: 'Kildekode',
-    line: (version: string) => `Versjon ${version}. Laget av elzacka.`,
+    line: (version: string) => `Versjon ${version}. Laget av Tazk.`,
   },
   // Sync between one person's own devices: a file sent with AirDrop and merged in
   sync: {

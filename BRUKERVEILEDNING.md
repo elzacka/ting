@@ -76,8 +76,8 @@ Passordbehandleren din kan lagre det under navnet Ting og fylle det inn når du
 låser opp.
 
 > [!WARNING]
-> Passordet er den eneste nøkkelen. Mister du det, er dataene tapt. Det finnes
-> ingen bakvei, ingen e-post og ingen konto å be om nytt passord fra.
+> Passordet er den eneste nøkkelen. Dataene er tapt hvis du mister det. Ingen
+> kan sende deg et nytt.
 
 Har du en sikkerhetskopi fra før, gjenoppretter du den under Innstillinger i
 stedet for å velge et nytt passord. Da gjelder passordet kopien ble laget med.

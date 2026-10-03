@@ -2,9 +2,11 @@
 
 Oppdatert: 03.10.26
 
-Ting har ingen server og ingen konto. Det du legger inn, lagres kryptert på
-enheten din og blir der. Ingen andre ser det, heller ikke elzacka, som har laget
-appen.
+Det du legger inn, lagres kryptert på enheten din. Du trenger ikke registrere
+deg eller logge inn. Data forlater enheten bare når du selv sender dem:
+Registeret sendes kryptert med AirDrop til en av enhetene dine, og når du slår
+opp en bok, sendes sifrene i ISBN-en til Nasjonalbiblioteket eller Open
+Library.
 
 ## Det appen lagrer
 
@@ -22,20 +24,17 @@ passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
 ## Det som forlater enheten
 
-Appen sender ingenting av seg selv. Det skjer bare når du ber om det:
-
-| Du trykker på | Det som sendes | Hvem ser det |
-|---|---|---|
-| «Slå opp på nett» | Sifrene i en ISBN | Nasjonalbiblioteket eller Open Library, sammen med IP-adressen din |
-| «Send til en annen enhet» | Hele registeret, kryptert | Bare enheten du sender til med AirDrop |
-| «Les tekst på kvitteringer» | Ingenting. Appen laster ned tekstgjenkjenningen fra samme sted som selve appen | Ingen |
+- **«Send til en annen enhet»:** Hele registeret sendes kryptert, bare til
+  enheten du velger i AirDrop.
+- **«Slå opp på nett»:** Sifrene i en ISBN sendes til Nasjonalbiblioteket eller
+  Open Library. De ser også IP-adressen din.
 
 Appen ligger på GitHub Pages. GitHub ser IP-adressen din når appen lastes ned
 eller oppdateres, slik alle nettsteder ser den.
 
 ## Kvitteringer og KI
 
-Appen leser teksten på kvitteringer på enheten og sender den ikke videre.
+Appen leser teksten på kvitteringer på enheten, også uten nett.
 Tekstgjenkjenningen er små modeller som kjenner igjen bokstaver og tall
 (PP-OCRv5). De lærer ingenting av dataene dine og lager ingen tekst selv.
 Appen bruker ingen språkmodell og ingen KI-tjeneste.
@@ -53,7 +52,8 @@ Dataene ligger bare hos deg, så du bestemmer over dem selv:
 - **Slette:** Slett ting i appen. Slett nettstedsdataene i nettleseren for å
   fjerne alt fra enheten.
 
-elzacka har ingen kopi og kan ikke se, endre eller slette noe for deg.
+Det finnes ingen kopi utenfor enhetene og filene dine, så ingen andre kan se,
+endre eller slette dataene.
 
 Appen bruker ingen informasjonskapsler, ingen analyse og ingen reklame.
 
