@@ -83,7 +83,8 @@ Har du en sikkerhetskopi fra før, gjenoppretter du den under Innstillinger i
 stedet for å velge et nytt passord. Da gjelder passordet kopien ble laget med.
 
 Når du har et passord, åpner appen alltid låst. Den låser seg selv etter 10
-minutter uten bruk, og hengelåsen øverst låser med én gang.
+minutter uten bruk. Ved skrivebordet låser hengelåsen øverst med én gang. På
+mobilen låser du appen ved å lukke den.
 
 På iPhone lukker systemet appen når det trenger minnet. Da åpner den låst
 igjen, også når den automatiske låsen er av. Slå på «Lås opp med Face ID eller
@@ -141,7 +142,9 @@ dataene](#ta-vare-på-dataene).
 Under 600 px bred, altså på mobilen, er appen laget for tre ting: Legge til én
 ting, finne en ting og se på en ting. Det gjelder også når du snur mobilen på
 siden. Kolonner, summer, utskrift og regneark hører til skrivebordet og vises
-ikke der. Søkefeltet og pluss for ny ting ligger nederst, der tommelen er.
+ikke der. Søkefeltet ligger øverst. Nederst, der tommelen er, ligger pluss for
+ny ting i midten og tannhjulet for Innstillinger til høyre. Kvitteringssymbolet
+står til venstre når «Les tekst på kvitteringer» er slått på.
 
 ---
 
@@ -165,7 +168,7 @@ trykk «Lagre». Pris og tekst arves ikke.
 
 **Med tingen i hånden, på mobilen:**
 
-1. Pluss nederst til høyre åpner «Ny ting».
+1. Pluss nederst i midten åpner «Ny ting».
 2. Trykk på bildefeltet ved siden av navnet. «Ta bilde» åpner kameraet, og
    «Legg til bilde» åpner bildene dine. Gjenta for flere bilder, for eksempel
    av etiketten. Tallet på bildefeltet viser hvor mange bilder tingen har.
@@ -184,8 +187,7 @@ senere; `-har:pris` i søket henter frem de som står igjen.
 Innstillinger › Kvitteringer først. Appen laster da ned tekstgjenkjenningen,
 omtrent 27 MB, og leser kvitteringer også uten nett.
 
-1. Trykk på kvitteringssymbolet ved siden av pluss nederst. Kameraet åpner
-   seg.
+1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.
 2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
    godt lys.
 3. Appen retter opp bildet og fyller ut Kjøpt hos, Kjøpsdato og én rad per
@@ -439,8 +441,9 @@ igjen å fylle ut. Kolonner uten verdier der du står, og kolonner for alle
 kategorier med samme verdi på hver rad, er skjult; de skiller ikke tingene fra
 hverandre. Går tabellen lenger enn kortet, blekner høyre kant: Rull sidelengs.
 
-**På mobilen** svarer lista med plassering og kategori rett under navnet. En
-ting uten bilde viser symbolet til kategorien sin. Trykk på tingen for å se alt.
+**På mobilen** viser lista bare det du søker etter, med plassering og kategori
+rett under navnet. En ting uten bilde viser symbolet til kategorien sin. Trykk
+på tingen for å se alt.
 
 ---
 
@@ -584,7 +587,7 @@ Tannhjulet lengst til høyre i topplinja.
 | Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Egne enheter | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser kvitteringssymbolet ved siden av pluss nederst. Nedlastingen slettes når du slår det av |
+| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser kvitteringssymbolet nederst til venstre. Nedlastingen slettes når du slår det av |
 | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt på denne enheten, og spør først |
 | Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |
 | Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
@@ -628,11 +631,11 @@ Hva appen lagrer, hva som forlater enheten og rettighetene dine står i
 [PERSONVERN.md](PERSONVERN.md). Den finnes også under Innstillinger › Om
 appen.
 
-Med passord åpner appen alltid låst. Hengelåsen sletter nøkkelen fra minnet;
-det samme skjer etter 10 minutter uten bruk, men ikke mens du har ulagrede
-endringer i tabellen. Er Face ID eller Touch ID slått på, er enhetens egen lås
-også appens lås på den enheten. Kopier og lagringsmappen krever fortsatt
-passordet.
+Med passord åpner appen alltid låst. Appen sletter nøkkelen fra minnet når du
+trykker på hengelåsen ved skrivebordet eller lukker appen. Det samme skjer
+etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i
+tabellen. Enhetens egen lås er også appens lås på den enheten hvis Face ID
+eller Touch ID er slått på. Kopier og lagringsmappen krever fortsatt passordet.
 
 Alt du skriver inn, skanner eller får tilbake fra et oppslag, behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

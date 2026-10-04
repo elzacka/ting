@@ -199,8 +199,9 @@ export function App() {
   const folderStalled = ['needs-permission', 'needs-passphrase', 'conflict', 'error'].includes(folder.status.kind)
   const settingsLabel = folderStalled ? t.nav.settingsStalled : t.nav.settings
 
-  // Locked: only the wordmark, whatever the route.
-  const isTop = !unlocked || route.view === 'list' || route.view === 'settings'
+  // Locked: only the wordmark, whatever the route. The phone reaches Innstillinger from the
+  // list's bottom bar, so there it is a page with a way back.
+  const isTop = !unlocked || route.view === 'list' || (route.view === 'settings' && !narrow)
 
   // The table holds unsaved edits in memory; leaving it drops them.
   function guardNav(e: MouseEvent<HTMLAnchorElement>) {
@@ -239,7 +240,7 @@ export function App() {
         {isTop && (
           <div className="row topbar-end">
             <UpdateButton />
-            {/* The phone's search is a field at the bottom of the list */}
+            {/* The phone's search is a field at the top of the list */}
             {searchable && unlocked && !narrow && (
               <button
                 type="button"
@@ -252,12 +253,13 @@ export function App() {
                 <Icon name="search" />
               </button>
             )}
-            {vault.status === 'open' && (
+            {/* The phone locks when the app is closed; only the desk needs a lock button */}
+            {vault.status === 'open' && !narrow && (
               <button type="button" className="btn btn-icon" aria-label={t.lock.lock} onClick={lockApp}>
                 <Icon name="lockOpen" />
               </button>
             )}
-            {unlocked && (
+            {unlocked && !narrow && (
               <a
                 className={`btn btn-icon${route.view === 'settings' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
                 href={href.settings}
@@ -308,6 +310,7 @@ export function App() {
               onWidth={setWidth}
               onDirtyChange={onDirtyChange}
               folder={folder}
+              stalled={folderStalled}
               autoLock={autoLock}
               onAutoLockChange={toggleAutoLock}
               hidden={hidden}
@@ -342,6 +345,7 @@ type ScreenProps = {
   onWidth: (id: string, w: number | null) => void
   onDirtyChange: (dirty: boolean) => void
   folder: ReturnType<typeof useFolderSync>
+  stalled: boolean
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
   hidden: Set<string>
@@ -370,6 +374,7 @@ function Screen({
   onWidth,
   onDirtyChange,
   folder,
+  stalled,
   autoLock,
   onAutoLockChange,
   hidden,
@@ -379,7 +384,16 @@ function Screen({
 }: ScreenProps) {
   const search = { query, onQueryChange, searchOpen, onSearchClose }
   if (route.view === 'list' && narrow) {
-    return <ItemList items={items} properties={properties} fields={fields} query={query} onQueryChange={onQueryChange} />
+    return (
+      <ItemList
+        items={items}
+        properties={properties}
+        fields={fields}
+        query={query}
+        onQueryChange={onQueryChange}
+        stalled={stalled}
+      />
+    )
   }
   if (route.view === 'list') {
     return (

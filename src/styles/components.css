@@ -472,29 +472,42 @@
   text-align: center;
 }
 
-/* Where the thumb is: the search field and the way to add a thing, above
-   the home indicator, and above the keyboard while it is up (--kb) */
+/* The search stays under the top bar while hits scroll */
+.phone-search {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 2;
+  padding-bottom: var(--s-2);
+  background: var(--bg);
+}
+
+.phone-search .search-column {
+  max-width: none;
+}
+
+/* Where the thumb is: receipt, plus in the middle, Innstillinger, above the
+   home indicator. Typing a search needs the room, so the bar goes while the
+   field has the focus. */
 .phone-bar {
   position: fixed;
   right: 0;
-  bottom: var(--kb, 0px);
+  bottom: 0;
   left: 0;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-2) calc(var(--gutter) + env(safe-area-inset-right))
-    max(var(--s-2), calc(env(safe-area-inset-bottom) - var(--kb, 0px))) calc(var(--gutter) + env(safe-area-inset-left));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  padding: var(--s-2) calc(var(--gutter) + env(safe-area-inset-right)) max(var(--s-2), env(safe-area-inset-bottom))
+    calc(var(--gutter) + env(safe-area-inset-left));
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
 
-.phone-bar .search-column {
-  flex: 1;
-  min-width: 0;
+.phone-list:has(.phone-search input:focus) .phone-bar {
+  display: none;
 }
 
-/* The one action, filled in the accent and round, the way a phone draws it */
+/* The phone's actions, filled in the accent and round, the way a phone draws them */
 .btn-round {
   flex: none;
   border-radius: 50%;

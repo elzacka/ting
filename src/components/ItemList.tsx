@@ -22,15 +22,17 @@ type Props = {
   fields: FieldSettings
   query: string
   onQueryChange: (q: string) => void
+  // The folder is not being written: the gear says so, as the desk's header does
+  stalled: boolean
 }
 
 // Thumbnail, name and the line under it: the same height as the CSS gives .list-row
 const rowHeight = 56
 
-// The phone's overview: a list of hits and, at the bottom where the thumb is,
-// the search field and the way to add a thing. One row answers "where is
-// it"; tapping it opens the thing. Columns, totals and reports are desk work.
-export function ItemList({ items, properties, fields, query, onQueryChange }: Props) {
+// The phone's overview: the search field and its hits, nothing before a search. At the bottom,
+// where the thumb is: the receipt, plus and Innstillinger. One row answers "where is it";
+// tapping it opens the thing. Columns, totals and reports are desk work.
+export function ItemList({ items, properties, fields, query, onQueryChange, stalled }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   // The line under the name: the place first, since that is what a phone is
   // asked, then the choice values
@@ -42,10 +44,11 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
     [defs],
   )
   const icons = properties.find((p) => p.id === categoryColumnId)?.icons
-  const hits = useMemo(() => searchItems(items, query), [items, query])
+  const searching = query.trim() !== ''
+  const hits = useMemo(() => (searching ? searchItems(items, query) : []), [items, query, searching])
   const { ref, window: win } = useRowWindow<HTMLUListElement>(hits.length, rowHeight)
 
-  // With receipt reading on, the receipt button beside plus opens the camera on that one tap,
+  // With receipt reading on, the receipt button left of plus opens the camera on that one tap,
   // and the photo goes on to the receipt screen; plus stays one tap to Ny ting
   const [receipts, setReceipts] = useState(false)
   useEffect(() => {
@@ -62,9 +65,12 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
 
   return (
     <div className="phone-list">
+      <div className="phone-search">
+        <SearchField value={query} onChange={onQueryChange} autoFocus={false} />
+      </div>
       {items.length === 0 ? (
         <p className="hint list-empty">{t.list.empty}</p>
-      ) : hits.length === 0 ? (
+      ) : !searching ? null : hits.length === 0 ? (
         <p className="hint list-empty">{t.list.noMatch}</p>
       ) : (
         <ul ref={ref} className="list" style={{ paddingTop: win.topPad, paddingBottom: win.bottomPad }}>
@@ -73,9 +79,8 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
           ))}
         </ul>
       )}
-      <div className="phone-bar">
-        <SearchField value={query} onChange={onQueryChange} autoFocus={false} />
-        {receipts && (
+      <nav className="phone-bar" aria-label={t.nav.list}>
+        {receipts ? (
           <>
             <input
               ref={receiptRef}
@@ -88,18 +93,27 @@ export function ItemList({ items, properties, fields, query, onQueryChange }: Pr
             />
             <button
               type="button"
-              className="btn btn-icon"
+              className="btn btn-icon btn-round"
               aria-label={t.receipt.fromReceipt}
               onClick={() => receiptRef.current?.click()}
             >
               <Icon name="receiptLong" />
             </button>
           </>
+        ) : (
+          <span />
         )}
         <a className="btn btn-icon btn-round" href={href.add} aria-label={t.table.addRow}>
           <Icon name="add" />
         </a>
-      </div>
+        <a
+          className={`btn btn-icon${stalled ? ' is-stalled' : ''}`}
+          href={href.settings}
+          aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
+        >
+          <Icon name="settings" />
+        </a>
+      </nav>
     </div>
   )
 }

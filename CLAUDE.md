@@ -61,7 +61,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - Filter menus count the rows every other filter and the search leave (`withoutFilter`).
 - A new row inherits the Valgliste and date values of the row above, never numbers or text; the first row takes the Kategori of the newest thing.
 - Printing with photos: await `img.decode()` before `window.print()`, or photos print blank.
-- Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there.
+- Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there. It lists search hits only, nothing before a search; the search sits on top, the bottom bar holds receipt, plus and Innstillinger (out of the top bar there), and hides while the search has focus. No lock button on the phone: closing the app locks it.
 - `AddItem`: "Slå opp på nett" (ISBN lookup) shows only for a book category; other scanned codes are stored, never looked up.
 
 ## Encryption
