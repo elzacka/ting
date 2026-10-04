@@ -107,7 +107,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
           <Icon name="add" />
         </a>
         <a
-          className={`btn btn-icon${stalled ? ' is-stalled' : ''}`}
+          className={`btn btn-icon btn-round${stalled ? ' is-stalled' : ''}`}
           href={href.settings}
           aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
         >
