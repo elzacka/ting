@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item, Property } from '../db/schema'
-import { applyCategoryEdit } from './categories'
+import { applyCategoryEdit, iconsAfter } from './categories'
 import { categoryProperty } from './fields'
 
 function item(name: string, category: string): Item {
@@ -11,7 +11,7 @@ const kategori: Property = { ...categoryProperty(), options: ['Kjøkken', 'Inter
 const rom: Property = { id: '["rom",""]', key: 'Rom', unit: '', createdAt: 1, type: 'choice', categories: ['Kjøkken'] }
 const farge: Property = { id: '["farge",""]', key: 'Farge', unit: '', createdAt: 2, type: 'choice', categories: ['Interiør'] }
 
-const none = { renames: [], icons: {}, added: [] }
+const none = { renames: [], icons: {}, added: [], removed: [] }
 
 describe('applyCategoryEdit', () => {
   it('renames a category on every thing, however it was typed', () => {
@@ -57,5 +57,33 @@ describe('applyCategoryEdit', () => {
     })
     expect(out.items).toEqual([])
     expect(out.properties).toHaveLength(1)
+  })
+
+  it('takes a removed category out of the choices and out of the columns that have others', () => {
+    const both: Property = { ...farge, categories: ['Interiør', 'Kjøkken'] }
+    const out = applyCategoryEdit([], [rom, both], kategori, { ...none, removed: ['kjøkken'] })
+    expect(out.properties[0]?.options).toEqual(['Interiør'])
+    expect(out.properties.find((p) => p.id === both.id)?.categories).toEqual(['Interiør'])
+    expect(out.properties.some((p) => p.id === rom.id)).toBe(false)
+  })
+})
+
+describe('iconsAfter', () => {
+  it('keeps the icon of the category the other was merged into', () => {
+    const rows = [
+      { from: 'Bok', name: 'Bøker', icon: null },
+      { from: 'Bøker', name: 'Bøker', icon: 'book' },
+      { from: 'Spill', name: 'Bøker', icon: null },
+    ]
+    expect(iconsAfter(rows)).toEqual({ Bøker: 'book' })
+  })
+
+  it('takes the first icon chosen when two get a new name', () => {
+    const rows = [
+      { from: 'Bok', name: 'Lesing', icon: null },
+      { from: 'Blad', name: 'Lesing', icon: 'news' },
+      { from: 'Hefte', name: 'Lesing', icon: 'book' },
+    ]
+    expect(iconsAfter(rows)).toEqual({ Lesing: 'news' })
   })
 })

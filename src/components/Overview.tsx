@@ -509,7 +509,7 @@ export function Overview({
     [printing, printOnly, visible],
   )
 
-  // Endre kategorier stored: a category renamed while it is ticked stays ticked
+  // Endre kategorier stored: a category renamed while it is ticked stays ticked, a removed one is unticked
   async function saveCategoryEdit(edit: CategoryEdit) {
     try {
       await saveCategories(edit)
@@ -519,9 +519,11 @@ export function Overview({
       return
     }
     if (cats.length > 0) {
-      const next = cats.map((k) => {
+      const gone = new Set(edit.removed.map(valueKey))
+      const next = cats.flatMap((k) => {
+        if (gone.has(k)) return []
         const hit = edit.renames.find(([from]) => valueKey(from) === k)
-        return hit ? valueKey(hit[1]) : k
+        return [hit ? valueKey(hit[1]) : k]
       })
       onFiltersChange({ ...filters, [categoryColumnId]: [...new Set(next)] })
     }

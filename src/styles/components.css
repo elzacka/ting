@@ -1215,9 +1215,13 @@ section {
 
 .category-row {
   display: grid;
-  grid-template-columns: var(--row-h-sm) minmax(0, 320px) max-content;
+  grid-template-columns: var(--row-h-sm) minmax(0, 320px) max-content var(--row-h);
   gap: var(--s-3);
   align-items: center;
+}
+
+.category-row.is-removed input {
+  text-decoration: line-through;
 }
 
 .category-icon-btn {

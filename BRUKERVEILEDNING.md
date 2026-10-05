@@ -360,6 +360,7 @@ Kategorifeltet › «Endre kategorier» nederst i lista.
 | Velge symbol | Trykk på symbolet. Velg i rutenettet; navnet på symbolet står nederst. «Velg ut fra navnet» går tilbake til forslaget |
 | Endre navn | Skriv det nye navnet. Alle tingene i kategorien og egenskapene som hører til den, følger med |
 | Slå sammen to | Gi den ene samme navn som den andre |
+| Slette en kategori | Søppelbøtta. Den står bare ved kategorier som ingen ting har |
 
 Ingenting lagres før du trykker «Lagre». Til du velger et symbol selv, foreslår
 appen et ut fra ordene i navnet.
@@ -375,7 +376,7 @@ appen et ut fra ordene i navnet.
 | Én egenskap | Kolonnemenyen › «Fjern» |
 | Flere egenskaper | «Endre egenskaper» › søppelbøtta på hver linje › «Lagre» |
 | Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › søppelbøtta › «Lagre» |
-| En kategori | Flytt tingene til en annen kategori med «Endre verdi», eller slå den sammen med en annen under «Endre kategorier» |
+| En kategori | Flytt tingene først til en annen kategori med «Endre verdi». Deretter «Endre kategorier» › søppelbøtta › «Lagre» |
 
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
 appen hvor mange ting det gjelder, og spør først. Det du sletter, kan du ikke
