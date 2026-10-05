@@ -67,8 +67,12 @@ describe('appliesTo', () => {
   it('lets a column that names no category belong everywhere', () => {
     expect(appliesTo(column(), [])).toBe(true)
     expect(appliesTo(column(), ['Bok'])).toBe(true)
-    expect(appliesTo(column([]), ['Bok'])).toBe(true)
     expect(appliesTo(null, ['Bok'])).toBe(true)
+  })
+
+  it('keeps a column no category uses out of every category', () => {
+    expect(appliesTo(column([]), ['Bok'])).toBe(false)
+    expect(appliesTo(column([]), [])).toBe(false)
   })
 
   it('keeps a named column out of the view of every category at once', () => {
@@ -103,16 +107,24 @@ describe('claimedBy', () => {
 })
 
 describe('withCategory', () => {
-  it('narrows a column to a category and widens it back', () => {
-    expect(withCategory(column(), 'Bok', true)).toEqual(['Bok'])
-    expect(withCategory(column(['Bok']), 'Elektronikk', true)).toEqual(['Bok', 'Elektronikk'])
-    expect(withCategory(column(['Bok', 'Elektronikk']), 'Bok', false)).toEqual(['Elektronikk'])
-    // Emptied, it belongs everywhere again
-    expect(withCategory(column(['Bok']), 'bok', false)).toEqual([])
+  const all = ['Bok', 'Elektronikk', 'Kjøkken']
+
+  it('adds a category to a column and takes it off again', () => {
+    expect(withCategory(column(['Bok']), 'Elektronikk', true, all)).toEqual(['Bok', 'Elektronikk'])
+    expect(withCategory(column(['Bok', 'Elektronikk']), 'Bok', false, all)).toEqual(['Elektronikk'])
+  })
+
+  it('leaves a column no category uses when the last one stops, not one every category uses', () => {
+    expect(withCategory(column(['Bok']), 'bok', false, all)).toEqual([])
+  })
+
+  it('keeps every other category on a column every category used', () => {
+    expect(withCategory(column(), 'Bok', false, all)).toEqual(['Elektronikk', 'Kjøkken'])
+    expect(withCategory(column(), 'Bok', true, all)).toBeUndefined()
   })
 
   it('does not list the same category twice', () => {
-    expect(withCategory(column(['Bok']), 'bok', true)).toEqual(['bok'])
+    expect(withCategory(column(['Bok']), 'bok', true, all)).toEqual(['bok'])
   })
 })
 

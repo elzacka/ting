@@ -49,12 +49,13 @@ import { Icon } from './Icons'
 import { allCategoriesIcon, categoryIconFor, otherCategoryIcon } from '../lib/categoryIcons'
 import { CategoryIcon } from './CategoryIcon'
 import { CategoryEditor } from './CategoryEditor'
-import { PropertyEditor, type PropertyRow } from './PropertyEditor'
-import type { CategoryEdit } from '../lib/categories'
+import { PropertyEditor, sameCategories, type PropertyRow } from './PropertyEditor'
+import { sharedByAll, type CategoryEdit } from '../lib/categories'
 import { isEmptyEdit, optionEdit, optionValues } from '../lib/options'
 import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
+import { isDemo } from '../lib/useInstall'
 
 type RowEdit = { name?: string; cells?: Record<string, string> }
 type NewRow = {
@@ -167,7 +168,7 @@ export function Overview({
   const [printOnly, setPrintOnly] = useState<Set<string> | null>(null)
   // Shown inside the column form: the page's error line sits under the table
   const [columnError, setColumnError] = useState<string | null>(null)
-  // Columns the view leaves out are hidden; this shows every one of them anyway
+  // Columns the view leaves out are hidden; this shows the ones the categories in view use
   const [showAllCols, setShowAllCols] = useState(false)
   // A column added while one category is in view belongs to that category
   // unless the user says otherwise.
@@ -248,6 +249,7 @@ export function Overview({
       .map((o) => ({ key: valueKey(o), label: o, count: 0 }))
     return [...inUse, ...empty].sort((a, b) => collator.compare(a.label, b.label))
   }, [categoryDef, items])
+  const categoryList = useMemo(() => allCategories.map((c) => c.label), [allCategories])
   const cats = useMemo(() => filters[categoryColumnId] ?? [], [filters])
   // The icons chosen for categories, carried by the Kategori property
   const chosenIcons = categoryDef?.kind === 'prop' ? categoryDef.property?.icons : undefined
@@ -396,11 +398,15 @@ export function Overview({
       (appliesTo(d.property, inView) && (claimedBy(d.property, inView) || (used.has(d.id) && !uniform.has(d.id))))
     // With one category in view its own column says the same on every row
     const chosen = defs.filter(
-      (d) => d.kind === 'name' || (!hidden.has(d.id) && !(cats.length === 1 && d.id === categoryColumnId)),
+      (d) =>
+        d.kind === 'name' ||
+        (!(hidden.has(d.id) && sharedByAll(d.property, categoryList)) && !(cats.length === 1 && d.id === categoryColumnId)),
     )
-    const extra = items.length === 0 ? 0 : chosen.filter((d) => !fits(d)).length
-    return { shown: showAllCols || items.length === 0 ? chosen : chosen.filter(fits), extra }
-  }, [defs, visible, newRows, edits, baseCells, filters, showAllCols, items.length, hidden, cats])
+    // Never another category's column: inside a category, only what it uses
+    const more = inView.length === 0 ? chosen : chosen.filter((d) => d.kind === 'name' || appliesTo(d.property, inView))
+    const extra = items.length === 0 ? 0 : more.filter((d) => !fits(d)).length
+    return { shown: items.length === 0 ? chosen : showAllCols ? more : chosen.filter(fits), extra }
+  }, [defs, visible, newRows, edits, baseCells, filters, showAllCols, items.length, hidden, cats, categoryList])
 
   // The column form's help follows the field in use. For the name it is the
   // properties that start with what is typed: a name in use is taken into
@@ -418,8 +424,9 @@ export function Overview({
     const exact = matches.find((d) => labelOf(d).toLocaleLowerCase('nb') === typed)
     if (!exact) return matches.length > 0 ? `${h.similar}: ${matches.map(labelOf).join(', ')}` : null
     const key = labelOf(exact)
-    const own = exact.kind === 'prop' ? (exact.property?.categories ?? []) : []
-    if (own.length === 0) return h.everywhere(key)
+    const own = exact.kind === 'prop' ? exact.property?.categories : undefined
+    if (!own) return h.everywhere(key)
+    if (own.length === 0) return h.unused(key, listFormat.format(catLabels))
     const where = listFormat.format(own)
     if (catLabels.length === 0) return h.elsewhere(key, where)
     const missing = catLabels.filter((c) => !appliesTo(exact.kind === 'prop' ? exact.property : null, [c]))
@@ -693,7 +700,8 @@ export function Overview({
         extra.push({ ...row, name: patch.name ?? row.name, cells: { ...row.cells, ...cells } })
       }
     })
-    if (extra.length > 0) setNewRows((prev) => [...prev, ...extra])
+    // The demo adds nothing
+    if (extra.length > 0 && !isDemo) setNewRows((prev) => [...prev, ...extra])
   }
 
   function toggle(id: string, on: boolean) {
@@ -748,7 +756,11 @@ export function Overview({
 
   // What is on screen, like the count beside it: a filtered register says what
   // the filter leaves, not what the register holds (elzacka, 22 September 2026)
-  const sums = useMemo(() => totals(visible, properties), [visible, properties])
+  // Only the kr columns the categories in view use, as the table shows them
+  const sums = useMemo(
+    () => totals(visible, cats.length === 0 ? properties : properties.filter((p) => appliesTo(p, cats))),
+    [visible, properties, cats],
+  )
   const narrowed = visible.length !== items.length
 
   // Adding or editing rows is one mode, selecting rows is another. Never both.
@@ -789,10 +801,7 @@ export function Overview({
       if (existing?.kind === 'prop' && existing.property && missing.length > 0) {
         const property = existing.property
         try {
-          await setPropertyCategories(
-            property,
-            missing.reduce<string[]>((acc, c) => withCategory({ ...property, categories: acc }, c, true), property.categories ?? []),
-          )
+          await setPropertyCategories(property, [...(property.categories ?? []), ...missing])
         } catch (err) {
           console.error(errorText(err))
           setColumnError(t.error.saveFailed)
@@ -831,20 +840,21 @@ export function Overview({
     setAddingColumn(false)
   }
 
-  // Narrows a column to the category in view, or takes it back out again. A
-  // column that only ever lived in item values gets a definition on the way.
+  // A column that only ever lived in item values gets a definition when one is stored
+  function definitionOf(def: Extract<ColumnDef, { kind: 'prop' }>): Property {
+    return def.property ?? { id: def.id, key: def.col.key, unit: def.col.unit, type: def.type, createdAt: Date.now() }
+  }
+
+  // Takes a column out of the category in view, or into it
   async function scopeColumn(def: ColumnDef, category: string) {
     closeMenu()
     if (def.kind !== 'prop') return
-    const property: Property = def.property ?? {
-      id: def.id,
-      key: def.col.key,
-      unit: def.col.unit,
-      type: def.type,
-      createdAt: Date.now(),
-    }
+    const on = !appliesTo(def.property, [category])
     try {
-      await setPropertyCategories(property, withCategory(def.property, category, !claimedBy(def.property, cats)))
+      await setPropertyCategories(
+        definitionOf(def),
+        withCategory(def.property, category, on, categoryList),
+      )
     } catch (err) {
       console.error(errorText(err))
       setError(t.error.saveFailed)
@@ -923,7 +933,7 @@ export function Overview({
     return defs.flatMap((d) => {
       if (d.kind !== 'prop' || d.id === categoryColumnId) return []
       const unit = d.type === 'number' ? (d.col.unit ?? '') : ''
-      const categories = d.property?.categories ?? []
+      const categories = d.property?.categories ?? null
       const options = optionValues(items, d.id, d.property?.options).map((o) => ({
         key: o.label,
         from: o.label,
@@ -978,9 +988,7 @@ export function Overview({
         if (key !== r.was.key || r.type !== r.was.type || r.unit.trim() !== r.was.unit) {
           await renameProperty(r.id, { id, key, unit, type: r.type, options }, (s) => columnId({ key: s.key, unit: s.unit }) === r.id)
         }
-        const sameCats =
-          r.categories.length === r.was.categories.length && r.categories.every((c) => r.was.categories.includes(c))
-        if (!sameCats) {
+        if (!sameCategories(r.categories, r.was.categories)) {
           await setPropertyCategories(
             {
               id,
@@ -991,7 +999,7 @@ export function Overview({
               ...(def.property?.order !== undefined ? { order: def.property.order } : {}),
               ...(options.length > 0 ? { options } : {}),
             },
-            r.categories,
+            r.categories ?? undefined,
           )
         }
         const optEdit = optionEdit(r.options)
@@ -1362,17 +1370,19 @@ export function Overview({
             </div>
           ) : (
           <div className="row head-actions">
-            <button
-              type="button"
-              ref={addRef}
-              className={`btn btn-icon${addMenu || addingColumn ? ' is-active' : ''}`}
-              aria-label={t.table.add}
-              aria-haspopup="menu"
-              aria-expanded={addMenu !== null}
-              onClick={() => (addMenu ? closeAddMenu() : openAddMenu())}
-            >
-              <Icon name="add" />
-            </button>
+            {!isDemo && (
+              <button
+                type="button"
+                ref={addRef}
+                className={`btn btn-icon${addMenu || addingColumn ? ' is-active' : ''}`}
+                aria-label={t.table.add}
+                aria-haspopup="menu"
+                aria-expanded={addMenu !== null}
+                onClick={() => (addMenu ? closeAddMenu() : openAddMenu())}
+              >
+                <Icon name="add" />
+              </button>
+            )}
             {addMenu &&
               createPortal(
                 <div
@@ -1633,6 +1643,7 @@ export function Overview({
           {editingCategories && (
             <CategoryEditor
               categories={allCategories}
+              properties={defs.flatMap((d) => (d.kind === 'prop' && d.id !== categoryColumnId ? [definitionOf(d)] : []))}
               icons={chosenIcons}
               onSave={saveCategoryEdit}
               onClose={() => openPanel(null)}
@@ -2033,11 +2044,7 @@ export function Overview({
                               onClick={() => void scopeColumn(def, oneCategory)}
                             >
                               <Icon name="label" size={16} />
-                              {claimedBy(def.property, cats)
-                                ? t.table.notIn(oneCategory)
-                                : (def.property?.categories?.length ?? 0) > 0
-                                  ? t.table.alsoIn(oneCategory)
-                                  : t.table.onlyIn(oneCategory)}
+                              {appliesTo(def.property, cats) ? t.table.notIn(oneCategory) : t.table.alsoIn(oneCategory)}
                             </button>
                           )}
                           <button
@@ -2185,12 +2192,14 @@ export function Overview({
                     )}
                   </tr>
                 ))}
-                <tr className="grid-ghost" aria-hidden="true">
-                  <td className="grid-check" />
-                  <td colSpan={shown.length}>
-                    <input className="grid-input" placeholder={t.table.addRow} readOnly tabIndex={-1} onFocus={addRow} />
-                  </td>
-                </tr>
+                {!isDemo && (
+                  <tr className="grid-ghost" aria-hidden="true">
+                    <td className="grid-check" />
+                    <td colSpan={shown.length}>
+                      <input className="grid-input" placeholder={t.table.addRow} readOnly tabIndex={-1} onFocus={addRow} />
+                    </td>
+                  </tr>
+                )}
               </>
             }
           />

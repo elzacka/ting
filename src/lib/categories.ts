@@ -1,5 +1,5 @@
 import type { Item, Property } from '../db/schema'
-import { categoryColumnId } from './fields'
+import { appliesTo, categoryColumnId } from './fields'
 import { columnId } from './grid'
 
 // Changes made in Endre kategorier, applied to the things and the properties.
@@ -15,6 +15,9 @@ export type CategoryEdit = {
   added: readonly string[]
   // Categories no thing has, taken out of the list
   removed: readonly string[]
+  // The properties ticked or unticked under a category: the categories that use each one
+  // after the renames, or null for every category
+  uses: readonly { property: Property; categories: readonly string[] | null }[]
 }
 
 const fold = (s: string) => s.trim().toLocaleLowerCase('nb')
@@ -30,6 +33,21 @@ export function unique(values: readonly string[]): string[] {
   })
 }
 
+// Every category in the register: the Kategori values things hold, and the ones offered
+// before any thing holds them
+export function categoryNames(items: readonly Item[], kategori: Property | undefined): string[] {
+  const held = items.flatMap((i) =>
+    i.specs.flatMap((s) => (columnId({ key: s.key, unit: s.unit }) === categoryColumnId && typeof s.value === 'string' ? [s.value] : [])),
+  )
+  return unique([...held, ...(kategori?.options ?? [])])
+}
+
+// A property every category uses. Only these are hidden from Tilpass visning: a category's
+// own properties are chosen under Endre kategorier.
+export function sharedByAll(property: Property | null, categories: readonly string[]): boolean {
+  return categories.every((c) => appliesTo(property, [c]))
+}
+
 // The icon each category ends up with, by its name after the renames. Two
 // rows given one name: the row that kept it wins, else the first icon chosen.
 export function iconsAfter(
@@ -43,6 +61,13 @@ export function iconsAfter(
     if (!prev || (kept && !prev.kept) || (!prev.kept && prev.icon === null)) out.set(fold(r.name), { name: r.name, icon: r.icon, kept })
   }
   return Object.fromEntries([...out.values()].map((v) => [v.name, v.icon]))
+}
+
+// The categories that use a property after Endre kategorier: the rows that tick it, by their
+// name after the renames. One every category used stays so while every row ticks it.
+export function usesAfter(property: Property, rows: readonly { name: string; on: boolean }[]): string[] | null {
+  if (!property.categories && rows.every((r) => r.on)) return null
+  return unique(rows.flatMap((r) => (r.on ? [r.name] : [])))
 }
 
 function renamed(value: string, renames: CategoryEdit['renames']): string {
@@ -71,11 +96,14 @@ export function applyCategoryEdit(
     return touched ? [{ ...item, specs }] : []
   })
 
+  const uses = edit.uses.map(({ property, categories }) => {
+    const { categories: _old, ...rest } = properties.find((p) => p.id === property.id) ?? property
+    return categories === null ? rest : { ...rest, categories: unique(categories.map((c) => c.trim())) }
+  })
   const changedProps = properties.flatMap((p) => {
-    if (p.id === categoryColumnId || !p.categories || p.categories.length === 0) return []
+    if (p.id === categoryColumnId || uses.some((u) => u.id === p.id) || !p.categories || p.categories.length === 0) return []
     const kept = p.categories.filter((c) => !removed.has(fold(c)))
-    // A column that belonged only to a removed category stays with it, not with all
-    const categories = unique((kept.length > 0 ? kept : p.categories).map((c) => renamed(c, renames)))
+    const categories = unique(kept.map((c) => renamed(c, renames)))
     const same = categories.length === p.categories.length && categories.every((c, i) => c === p.categories?.[i])
     return same ? [] : [{ ...p, categories }]
   })
@@ -93,5 +121,5 @@ export function applyCategoryEdit(
     ...(Object.keys(icons).length > 0 ? { icons } : {}),
   }
 
-  return { items: changedItems, properties: [nextKategori, ...changedProps] }
+  return { items: changedItems, properties: [nextKategori, ...changedProps, ...uses] }
 }

@@ -16,6 +16,7 @@ import { errorText } from '../lib/errors'
 import { applyCategoryEdit, type CategoryEdit } from '../lib/categories'
 import { applyOptionEdit, type OptionEdit } from '../lib/options'
 import { currentKey, subscribeVault, vaultState } from '../lib/vault'
+import { isDemo } from '../lib/useInstall'
 import { noTombstones, revive, stampChanges, type Register, type Tombstones } from '../lib/merge'
 
 // Every record is sealed under the session key: an item as one document plus
@@ -33,7 +34,9 @@ type SealedItemRow = {
 type SealedPropertyRow = { id: string; sealed: Sealed }
 type Setting = { key: string; value?: unknown; sealed?: Sealed }
 
-const db = new Dexie('ting') as Dexie & {
+// A browser tab's demo has a database of its own, so it never opens or
+// clears the register an installed app shares this origin's storage with
+const db = new Dexie(isDemo ? 'ting-demo' : 'ting') as Dexie & {
   items: EntityTable<SealedItemRow, 'id'>
   settings: EntityTable<Setting, 'key'>
   properties: EntityTable<SealedPropertyRow, 'id'>
@@ -334,7 +337,7 @@ export async function renameProperty(
       createdAt: old?.createdAt ?? now,
       updatedAt: now,
       ...(old?.order !== undefined ? { order: old.order } : {}),
-      ...(old?.categories && old.categories.length > 0 ? { categories: old.categories } : {}),
+      ...(old?.categories ? { categories: old.categories } : {}),
       ...(old?.icons ? { icons: old.icons } : {}),
     }),
   )
@@ -361,12 +364,11 @@ export async function renameProperty(
   })
 }
 
-// Narrows a column to a set of Kategori values, or widens it back to all of
-// them with an empty list. A column that only ever lived in item values gets
-// a definition here, which is what carries the choice.
-export async function setPropertyCategories(property: Property, categories: string[]): Promise<void> {
+// The categories that use a column: undefined is every one, an empty list none. A column
+// that only ever lived in item values gets a definition here, which carries the choice.
+export async function setPropertyCategories(property: Property, categories: string[] | undefined): Promise<void> {
   const { categories: _old, ...rest } = property
-  const next = propertySchema.parse({ ...rest, ...(categories.length > 0 ? { categories } : {}), updatedAt: await stampNow() })
+  const next = propertySchema.parse({ ...rest, ...(categories ? { categories } : {}), updatedAt: await stampNow() })
   const row = await sealProperty(next)
   await db.transaction('rw', db.properties, db.settings, async () => {
     await db.properties.put(row)
@@ -581,6 +583,16 @@ export async function clearTrialRows(): Promise<void> {
     await db.settings.delete(tombstonesKey)
     await db.settings.delete(fieldsAtKey)
   })
+}
+
+// The demo starts over from the examples every time it opens
+export async function resetDemo(items: Item[], properties: Property[]): Promise<void> {
+  await db.transaction('rw', db.items, db.properties, db.settings, async () => {
+    await db.items.clear()
+    await db.properties.clear()
+    await db.settings.clear()
+  })
+  await replaceAll(items, properties)
 }
 
 // --- one-time migration of data written before encryption ------------------

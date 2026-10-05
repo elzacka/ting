@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item, Property } from '../db/schema'
-import { applyCategoryEdit, iconsAfter } from './categories'
+import { applyCategoryEdit, categoryNames, iconsAfter, sharedByAll, usesAfter } from './categories'
 import { categoryProperty } from './fields'
 
 function item(name: string, category: string): Item {
@@ -11,7 +11,7 @@ const kategori: Property = { ...categoryProperty(), options: ['Kjøkken', 'Inter
 const rom: Property = { id: '["rom",""]', key: 'Rom', unit: '', createdAt: 1, type: 'choice', categories: ['Kjøkken'] }
 const farge: Property = { id: '["farge",""]', key: 'Farge', unit: '', createdAt: 2, type: 'choice', categories: ['Interiør'] }
 
-const none = { renames: [], icons: {}, added: [], removed: [] }
+const none = { renames: [], icons: {}, added: [], removed: [], uses: [] }
 
 describe('applyCategoryEdit', () => {
   it('renames a category on every thing, however it was typed', () => {
@@ -59,12 +59,13 @@ describe('applyCategoryEdit', () => {
     expect(out.properties).toHaveLength(1)
   })
 
-  it('takes a removed category out of the choices and out of the columns that have others', () => {
+  it('takes a removed category out of the choices and out of every column', () => {
     const both: Property = { ...farge, categories: ['Interiør', 'Kjøkken'] }
     const out = applyCategoryEdit([], [rom, both], kategori, { ...none, removed: ['kjøkken'] })
     expect(out.properties[0]?.options).toEqual(['Interiør'])
     expect(out.properties.find((p) => p.id === both.id)?.categories).toEqual(['Interiør'])
-    expect(out.properties.some((p) => p.id === rom.id)).toBe(false)
+    // Its own column is left with no category, not every one
+    expect(out.properties.find((p) => p.id === rom.id)?.categories).toEqual([])
   })
 })
 
@@ -85,5 +86,71 @@ describe('iconsAfter', () => {
       { from: 'Hefte', name: 'Lesing', icon: 'book' },
     ]
     expect(iconsAfter(rows)).toEqual({ Lesing: 'news' })
+  })
+})
+
+describe('usesAfter', () => {
+  const pris: Property = { id: '["pris","kr"]', key: 'Pris', unit: 'kr', createdAt: 3, type: 'number' }
+
+  it('lists the other categories when one stops using a property every category had', () => {
+    expect(usesAfter(pris, [{ name: 'Kjøkken', on: false }, { name: 'Interiør', on: true }])).toEqual(['Interiør'])
+  })
+
+  it('keeps a property every category had that way while every row ticks it', () => {
+    expect(usesAfter(pris, [{ name: 'Kjøkken', on: true }, { name: 'Interiør', on: true }])).toBeNull()
+  })
+
+  it('leaves no category on a property the last one stopped using', () => {
+    expect(usesAfter(rom, [{ name: 'Kjøkken', on: false }, { name: 'Interiør', on: false }])).toEqual([])
+  })
+
+  it('lists a category once when two rows get the same name', () => {
+    expect(usesAfter(rom, [{ name: 'Kjøkken', on: true }, { name: 'kjøkken', on: true }])).toEqual(['Kjøkken'])
+  })
+})
+
+describe('applyCategoryEdit with uses', () => {
+  it('stores the categories ticked for a property, and none as an empty list', () => {
+    const out = applyCategoryEdit([], [kategori, rom, farge], kategori, {
+      ...none,
+      uses: [
+        { property: rom, categories: [] },
+        { property: farge, categories: ['Interiør', 'Kjøkken'] },
+      ],
+    })
+    expect(out.properties.find((p) => p.id === rom.id)?.categories).toEqual([])
+    expect(out.properties.find((p) => p.id === farge.id)?.categories).toEqual(['Interiør', 'Kjøkken'])
+  })
+
+  it('makes a property every category uses again with null', () => {
+    const out = applyCategoryEdit([], [kategori, rom], kategori, { ...none, uses: [{ property: rom, categories: null }] })
+    expect(out.properties.find((p) => p.id === rom.id)?.categories).toBeUndefined()
+  })
+
+  it('defines a column that only lived in item values', () => {
+    const loose: Property = { id: '["merke",null]', key: 'Merke', unit: null, createdAt: 4 }
+    const out = applyCategoryEdit([], [kategori], kategori, { ...none, uses: [{ property: loose, categories: ['Interiør'] }] })
+    expect(out.properties.find((p) => p.id === loose.id)?.categories).toEqual(['Interiør'])
+  })
+})
+
+describe('categoryNames', () => {
+  it('lists the categories things hold and the ones offered, once each', () => {
+    expect(categoryNames([item('Kjele', 'kjøkken'), item('Bok', 'Bøker')], kategori)).toEqual(['kjøkken', 'Bøker', 'Interiør'])
+  })
+})
+
+describe('sharedByAll', () => {
+  const pris: Property = { id: '["pris","kr"]', key: 'Pris', unit: 'kr', createdAt: 3, type: 'number' }
+
+  it('is a property every category uses, with or without a list', () => {
+    expect(sharedByAll(pris, ['Kjøkken', 'Interiør'])).toBe(true)
+    expect(sharedByAll({ ...rom, categories: ['Kjøkken', 'Interiør'] }, ['Kjøkken', 'Interiør'])).toBe(true)
+    expect(sharedByAll(null, ['Kjøkken'])).toBe(true)
+  })
+
+  it('stops being one when a category without it is added', () => {
+    expect(sharedByAll(rom, ['Kjøkken'])).toBe(true)
+    expect(sharedByAll(rom, ['Kjøkken', 'Interiør'])).toBe(false)
   })
 })

@@ -1,12 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
+import { isDemo } from './lib/useInstall'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
 
-// Ask the browser to keep IndexedDB. Nothing to show the user either way.
-void navigator.storage?.persist?.()
+// Ask the browser to keep IndexedDB. Nothing to show the user either way;
+// the demo keeps nothing, and Firefox would ask the user.
+if (!isDemo) void navigator.storage?.persist?.()
 
 const root = document.getElementById('root')
 if (!root) throw new Error('#root missing')

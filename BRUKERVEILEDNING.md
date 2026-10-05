@@ -9,7 +9,7 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 ## Innhold
 
 - [[#Kom i gang|Kom i gang]]
-	- [[#Kom i gang#1. Åpne og installer appen|1. Åpne og installer appen]]
+	- [[#Kom i gang#1. Last ned appen|1. Last ned appen]]
 	- [[#Kom i gang#2. Prøv appen, og velg et passord for å bevare det|2. Prøv appen, og velg et passord for å bevare det]]
 	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
 	- [[#Kom i gang#4. Legg til de første tingene|4. Legg til de første tingene]]
@@ -46,18 +46,16 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 
 ## Kom i gang
 
-### 1. Åpne og installer appen
+### 1. Last ned appen
 
-Appen virker i nettleseren, men som installert app får den eget ikon, starter
-uten et adressefelt som forstyrrer og tar bedre vare på dataene. Mens du prøver appen, viser
-linja under topplinja hvordan du installerer den der du er. I Safari og på
-iPhone og iPad står linja også etter at du har valgt passord, helt til appen er
-installert. Der kan nettleseren slette dataene til en side du ikke har åpnet på
-sju dager.
+Adressen åpner en demo med eksempler i nettleseren. Der kan du se, søke og
+filtrere, men ikke legge til noe. Du må laste ned appen for å registrere
+tingene dine. Trykk på «Last ned gratis» øverst til høyre. Knappen åpner
+nettleserens eget vindu for å installere, eller viser hvor menyvalget er.
 
 | Enhet | Slik |
 |---|---|
-| Mac eller PC med Chrome eller Edge | Installeringsikonet til høyre i adressefeltet, eller «Installer appen» i linja øverst mens du prøver appen |
+| Mac eller PC med Chrome eller Edge | «Last ned gratis», eller installeringsikonet til høyre i adressefeltet |
 | Mac med Safari | Del-ikonet i verktøylinjen › «Legg til i Dock» |
 | iPhone | Åpne adressen i Safari › ••• ved adressefeltet › «Del» › «Legg til på Hjem-skjerm» |
 | iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
@@ -93,8 +91,7 @@ Face ID eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
 trenger det for sikkerhetskopier og på andre enheter. Slår du valget av, kan du
 slette passnøkkelen «Ting» i Passord-appen.
 
-Valgene under Lås gjelder bare enheten du bruker. På iPhone har den installerte
-appen egne valg, atskilt fra Safari.
+Valgene under Lås gjelder bare enheten du bruker.
 
 ### 3. Lag kategoriene og egenskapene du trenger
 
@@ -143,8 +140,8 @@ Under 600 px bred, altså på mobilen, er appen laget for tre ting: Legge til é
 ting, finne en ting og se på en ting. Det gjelder også når du snur mobilen på
 siden. Kolonner, summer, utskrift og regneark hører til skrivebordet og vises
 ikke der. Søkefeltet ligger øverst. Nederst, der tommelen er, ligger pluss for
-ny ting i midten og tannhjulet for Innstillinger til høyre. Kvitteringssymbolet
-står til venstre når «Les tekst på kvitteringer» er slått på.
+ny ting i midten, tannhjulet for Innstillinger til høyre og kvitteringssymbolet
+til venstre.
 
 ---
 
@@ -183,9 +180,10 @@ trykk «Lagre». Pris og tekst arves ikke.
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
 senere; `-har:pris` i søket henter frem de som står igjen.
 
-**Fra kvittering, på mobilen:** Slå på «Les tekst på kvitteringer» under
-Innstillinger › Kvitteringer først. Appen laster da ned tekstgjenkjenningen,
-omtrent 27 MB, og leser kvitteringer også uten nett.
+**Fra kvittering, på mobilen:** Første gang ber appen deg slå på «Les tekst på
+kvitteringer». Den laster da ned tekstgjenkjenningen, omtrent 27 MB, og leser
+kvitteringer også uten nett. Bryteren står også under Innstillinger ›
+Kvitteringer.
 
 1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.
 2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
@@ -317,7 +315,7 @@ Kolonnemenyen er pilen ved kolonnenavnet.
 | Endre navn, felttype eller enhet | «Endre» |
 | Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
 | Flytte kolonnen | «Flytt til venstre» eller «Flytt til høyre» |
-| La den høre til kategorien du står i | «Bruk bare i …», «Bruk også i …» eller «Ikke bruk i …» (når én kategori er valgt) |
+| Ta den ut av kategorien du står i | «Ikke bruk i …» (når én kategori er valgt). Verdiene blir stående |
 
 Endrer du felttypen, blir verdiene stående som de er. Slik gjør du for eksempel
 en valgliste med plasseringer om til en Sti.
@@ -329,9 +327,10 @@ på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
 til, og antall ting med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
 du under «Endre kategorier».
 
-En egenskap hører til alle kategorier til du sier noe annet. Knappen med
-kategoriene åpner en liste der du huker av dem den skal høre til. Ingen hake er
-alle kategorier.
+Knappen med kategoriene åpner en liste der du huker av kategoriene som bruker
+egenskapen. «Alle kategorier» tar også med kategorier du lager senere. Uten
+hake bruker ingen kategori egenskapen: Verdiene blir stående, men tabellen viser
+den ikke i noen kategori.
 
 ### Alternativer
 
@@ -358,6 +357,7 @@ Kategorifeltet › «Endre kategorier» nederst i lista.
 | Vil du | Slik |
 |---|---|
 | Velge symbol | Trykk på symbolet. Velg i rutenettet; navnet på symbolet står nederst. «Velg ut fra navnet» går tilbake til forslaget |
+| Velge egenskapene til en kategori | Trykk på «n egenskaper» på linja til kategorien. Huk av dem kategorien skal ha, fjern haken på dem den ikke skal ha, og trykk «Lagre». Står du i kategorien, viser tabellen bare egenskapene med hake |
 | Endre navn | Skriv det nye navnet. Alle tingene i kategorien og egenskapene som hører til den, følger med |
 | Slå sammen to | Gi den ene samme navn som den andre |
 | Slette en kategori | Søppelbøtta. Den står bare ved kategorier som ingen ting har |
@@ -434,13 +434,14 @@ Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
 | Sortere | Klikk på kolonnenavnet: Stigende, synkende, av |
 | Endre bredde | Dra i kanten av kolonneoverskriften. Dobbeltklikk der for å tilpasse bredden til innholdet |
 | Se kolonner som er skjult | «Vis n kolonner til» på den grå linja |
-| Skjule en kolonne for godt | Innstillinger › Tilpass visning › «Egenskaper i tabellen» |
+| Skjule en kolonne for godt | Innstillinger › Tilpass visning › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
 | Se lange verdier i sin helhet | Innstillinger › Tilpass visning › «Bryt lang tekst over flere linjer» |
 
 Tabellen viser kolonnene kategorien din har, også de tomme: Det er dem du har
-igjen å fylle ut. Kolonner uten verdier der du står, og kolonner for alle
-kategorier med samme verdi på hver rad, er skjult; de skiller ikke tingene fra
-hverandre. Går tabellen lenger enn kortet, blekner høyre kant: Rull sidelengs.
+igjen å fylle ut. Kolonner for alle kategorier er skjult når de er tomme der du
+står, eller har samme verdi på hver rad; de skiller ikke tingene fra hverandre.
+«Vis n kolonner til» viser dem. Kolonner som kategorien ikke har, viser tabellen
+aldri. Hvilke den har, velger du under [Kategorier](#kategorier). Går tabellen lenger enn kortet, blekner høyre kant: Rull sidelengs.
 
 **På mobilen** viser lista bare det du søker etter, med plassering og kategori
 rett under navnet. En ting uten bilde viser symbolet til kategorien sin. Trykk
@@ -503,7 +504,7 @@ der du skriver det inn.
 
 ## Bruke flere enheter
 
-Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Egne enheter på
+Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Synkroniser på
 begge enhetene. Du sender registeret med AirDrop, og den andre enheten henter
 det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
 iPhone og en pris du retter på Mac, kommer med på begge enhetene.
@@ -587,10 +588,10 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Egne enheter | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen og viser kvitteringssymbolet nederst til venstre. Nedlastingen slettes når du slår det av |
+| Synkroniser | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
+| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
 | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt på denne enheten, og spør først |
-| Tilpass visning | Bryt lang tekst over flere linjer, og hvilke egenskaper tabellen viser. Navn vises alltid. Enheten husker valgene |
+| Tilpass visning | Bryt lang tekst over flere linjer, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
 | Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
 | Passord | «Endre passord». Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned |
 | Om appen | «Personvern» og «Kildekode» åpner dokumentene på GitHub. Linja under viser versjonen |
@@ -618,7 +619,6 @@ Tannhjulet lengst til høyre i topplinja.
 | «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID på denne enheten» av og på igjen under Innstillinger › Lås |
-| Appen er tom etter en stund på iPhone | Safari kan slette nettstedsdata som ikke er brukt på sju dager | Hent fra den andre enheten, eller gjenopprett fra sikkerhetskopien. Installer appen på Hjem-skjerm, så sletter ikke Safari dataene etter sju dager. Ta en ny kopi hver gang du har registrert noe på iPhone |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |

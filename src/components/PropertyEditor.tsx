@@ -5,24 +5,20 @@ import { isEmptyEdit, optionEdit, type OptionRow } from '../lib/options'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
-// Endre egenskaper: every property but Kategori (that one is Endre
-// kategorier) on one line each, so several can be changed or removed at once:
-// the name, the field type, the unit of a number or the alternatives of a
-// Valgliste, the categories it belongs to, and a mark to remove it. The
-// alternatives open under their line: the values things hold and the ones
-// offered before any thing holds them, each renamed, removed or added there.
-// Nothing is stored before Lagre, and removing values from things asks first.
-// One property at a time stays in the column menu.
+// Endre egenskaper: every property but Kategori on one line, so several can be changed or
+// removed at once; a Valgliste's alternatives open under their line. Nothing is stored
+// before Lagre, and removing values from things asks first.
 export type PropertyRow = {
   id: string
   key: string
   type: PropertyType
   unit: string
-  categories: string[]
+  // null is every category, an empty list none
+  categories: string[] | null
   options: OptionRow[]
   remove: boolean
   count: number
-  was: { key: string; type: PropertyType; unit: string; categories: string[] }
+  was: { key: string; type: PropertyType; unit: string; categories: string[] | null }
 }
 
 type Props = {
@@ -42,11 +38,19 @@ const orFormat = new Intl.ListFormat('nb', { type: 'disjunction' })
 // The alternatives count only on a line that stays a Valgliste
 const hasOptionEdit = (r: PropertyRow) => !r.remove && r.type === 'choice' && !isEmptyEdit(optionEdit(r.options))
 
+export function sameCategories(a: readonly string[] | null, b: readonly string[] | null): boolean {
+  if (a === null || b === null) return a === b
+  return a.length === b.length && a.every((c) => b.some((w) => fold(w) === fold(c)))
+}
+
 export function changed(r: PropertyRow): boolean {
-  const sameCats =
-    r.categories.length === r.was.categories.length && r.categories.every((c) => r.was.categories.some((w) => fold(w) === fold(c)))
   return (
-    r.remove || r.key.trim() !== r.was.key || r.type !== r.was.type || r.unit.trim() !== r.was.unit || !sameCats || hasOptionEdit(r)
+    r.remove ||
+    r.key.trim() !== r.was.key ||
+    r.type !== r.was.type ||
+    r.unit.trim() !== r.was.unit ||
+    !sameCategories(r.categories, r.was.categories) ||
+    hasOptionEdit(r)
   )
 }
 
@@ -110,7 +114,12 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
       <p className="hint">{t.properties.hint}</p>
       <div className="property-rows" role="list" ref={listRef}>
         {rows.map((r, i) => {
-          const where = r.categories.length === 0 ? t.properties.scopeAll : listFormat.format(r.categories)
+          const where =
+            r.categories === null
+              ? t.properties.scopeAll
+              : r.categories.length === 0
+                ? t.properties.scopeNone
+                : listFormat.format(r.categories)
           const optionsId = `${idBase}-options-${i}`
           const optionsOpen = expanded === r.id && r.type === 'choice' && !r.remove
           const optionCount = t.options.count(r.options.filter((o) => !o.remove && (o.from !== null || o.name.trim() !== '')).length)
@@ -276,7 +285,8 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
   )
 }
 
-// Which categories a property belongs to: none ticked is every category
+// Which categories use a property. Alle kategorier includes the ones added later; a
+// category unticked from it leaves the others ticked.
 function ScopePicker({
   anchor,
   name,
@@ -288,8 +298,8 @@ function ScopePicker({
   anchor: DOMRect
   name: string
   categories: readonly string[]
-  chosen: string[]
-  onChange: (next: string[]) => void
+  chosen: string[] | null
+  onChange: (next: string[] | null) => void
   onClose: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -301,7 +311,7 @@ function ScopePicker({
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
   }, [onClose])
-  const has = (c: string) => chosen.some((x) => fold(x) === fold(c))
+  const has = (c: string) => chosen === null || chosen.some((x) => fold(x) === fold(c))
   return createPortal(
     <div
       ref={ref}
@@ -317,7 +327,7 @@ function ScopePicker({
       }}
     >
       <label className="check-option">
-        <input type="checkbox" checked={chosen.length === 0} onChange={() => onChange([])} />
+        <input type="checkbox" checked={chosen === null} onChange={() => onChange(chosen === null ? [] : null)} />
         <span>{t.properties.scopeAll}</span>
       </label>
       {categories.map((c) => (
@@ -325,7 +335,10 @@ function ScopePicker({
           <input
             type="checkbox"
             checked={has(c)}
-            onChange={(e) => onChange(e.target.checked ? [...chosen, c] : chosen.filter((x) => fold(x) !== fold(c)))}
+            onChange={(e) => {
+              const now = chosen ?? categories
+              onChange(e.target.checked ? [...now, c] : now.filter((x) => fold(x) !== fold(c)))
+            }}
           />
           <span>{c}</span>
         </label>

@@ -31,7 +31,7 @@ function describe(r: MergeResult, loaded: Loaded): string[] {
   return lines
 }
 
-// Egne enheter: send the register with AirDrop (the share sheet) and merge in
+// Synkroniser: send the register with AirDrop (the share sheet) and merge in
 // what comes back. Off until switched on; the stamps are kept either way.
 export function DeviceSync() {
   const [on, setOn] = useState(false)

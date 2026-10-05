@@ -1,6 +1,6 @@
 # Personvern i Ting
 
-Oppdatert: 03.10.26
+Oppdatert: 05.10.26
 
 Det du legger inn, lagres kryptert på enheten din. Du trenger ikke registrere
 deg eller logge inn, og data forlater enheten bare når du selv sender dem.
@@ -18,6 +18,9 @@ deg eller logge inn, og data forlater enheten bare når du selv sender dem.
 
 Appen krypterer med AES-256-GCM. Nøkkelen kommer fra passordet ditt, og
 passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
+
+Demoen i nettleseren lagrer bare eksemplene, og den begynner på nytt hver gang
+du åpner den. Bare appen du har lastet ned, åpner registeret ditt.
 
 ## Det som forlater enheten
 

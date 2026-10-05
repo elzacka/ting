@@ -1,11 +1,9 @@
 import { useSyncExternalStore } from 'react'
 import { t } from './strings'
 
-// How this browser installs the app, if it can and has not already. Chrome,
-// Edge and Android hand over their own install prompt, which is kept for a
-// click; Safari has none, so the answer there is where its menu item is.
-// Safari on an iPhone keeps Del behind ••• (iOS 26 and later); an iPad and
-// the other iPhone browsers have Del on the bar itself.
+// How this browser installs the app, if it can and has not already: Chrome, Edge and Android
+// hand over a prompt, kept for a click; Safari has none, so the answer is where its menu item
+// is (behind ••• on an iPhone from iOS 26, on the bar on an iPad and in other iPhone browsers).
 export type Install =
   | { kind: 'prompt'; install: () => void }
   | { kind: 'ios-more' }
@@ -36,6 +34,10 @@ window.addEventListener('appinstalled', () => {
 function installed(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true
 }
+
+// Opened in a browser tab: a demo with examples, nothing added and nothing kept.
+// The register itself is only ever opened by the installed app (elzacka, 05.10.26).
+export const isDemo = !installed()
 
 function current(): Install {
   if (installed()) return null
@@ -75,9 +77,9 @@ export function useInstall(): Install {
 }
 
 // Where the menu item is, in a browser with no install prompt of its own
-export function installSteps(install: Install): string | null {
+export function installSteps(install: Install): string {
   if (install?.kind === 'ios-more') return t.install.iosMore
   if (install?.kind === 'ios-share') return t.install.iosShare
   if (install?.kind === 'mac-safari') return t.install.macSafari
-  return null
+  return t.install.other
 }

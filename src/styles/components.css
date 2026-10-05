@@ -49,6 +49,13 @@
   font-size: var(--text-xs);
 }
 
+/* Opened by Last ned gratis: on a line of its own, read rather than skimmed */
+.install-steps {
+  flex-basis: 100%;
+  color: var(--text);
+  font-size: var(--text-sm);
+}
+
 /* The one thing the line asks for, in the accent */
 .trial-link {
   color: var(--accent);
@@ -153,6 +160,11 @@
 
 .btn-primary:hover {
   background: #184a3a;
+}
+
+/* Last ned gratis in the demo's top bar: the one call to action, shaped as one */
+.btn-pill {
+  border-radius: 999px;
 }
 
 .btn-danger {
@@ -1204,7 +1216,7 @@ section {
   background: #8a2525;
 }
 
-/* Endre kategorier: icon, name and count on one line per category */
+/* Endre kategorier: icon, name, its properties and count on one line per category */
 .category-rows {
   display: grid;
   gap: var(--s-2);
@@ -1215,9 +1227,18 @@ section {
 
 .category-row {
   display: grid;
-  grid-template-columns: var(--row-h-sm) minmax(0, 320px) max-content var(--row-h);
-  gap: var(--s-3);
+  grid-template-columns: var(--row-h-sm) minmax(0, 320px) minmax(0, 200px) max-content var(--row-h);
+  gap: var(--s-2) var(--s-3);
   align-items: center;
+}
+
+/* The properties a category uses, ticked, open under its line */
+.category-properties {
+  display: grid;
+  grid-column: 2 / -1;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  column-gap: var(--s-3);
+  padding-bottom: var(--s-2);
 }
 
 .category-row.is-removed input {

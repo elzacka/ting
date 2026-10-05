@@ -45,23 +45,27 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - Facet menus (`lib/filters.ts`, `isFacet`): a date column always facets; others only with a dozen or fewer distinct values or values that repeat, and never price or order-number columns — judged over the whole register, not the rows in view.
 - CSV export (`lib/export.ts`): `;` delimiter, BOM, comma decimals — nb-NO, not the RFC default.
 - `lib/lookup.ts` is the one network call: an ISBN's digits go to Nasjonalbiblioteket first for a Norwegian ISBN (group 82), else Open Library first, with the other as fallback. Every other code is stored, never looked up — no server exists to hold a key for a larger catalogue.
-- Receipts (`ReceiptAdd`, phone only, switch `receiptReading`): `lib/flatten.ts` warps the paper flat (pure TS, no OpenCV), `lib/ocr/` runs PP-OCRv5 in a module worker, `lib/receipt.ts` parses by rule, `lib/receiptItems.ts` fills the register's own store/date/kr columns or makes Kjøpt hos, Kjøpsdato, Pris. Price is per unit, incl. MVA, after discount. OCR text is never stored; the scan is each thing's photo.
+- Receipts (`ReceiptAdd`, phone only, switch `receiptReading`; while off, the receipt screen offers the switch): `lib/flatten.ts` warps the paper flat (pure TS, no OpenCV), `lib/ocr/` runs PP-OCRv5 in a module worker, `lib/receipt.ts` parses by rule, `lib/receiptItems.ts` fills the register's own store/date/kr columns or makes Kjøpt hos, Kjøpsdato, Pris. Price is per unit, incl. MVA, after discount. OCR text is never stored; the scan is each thing's photo.
 - OCR models: `public/models/`, SHA-256 pinned in `ocr/models.ts`, fetched only when the switch goes on, runtime-cached (`ting-ocr-v1`), never precached; off deletes the cache. No generative model. `csp.test.ts` fails if a new origin or `fetch` appears.
 - `lib/barcode.ts`: the browser's `BarcodeDetector` first, `zxing-wasm` as fallback, bundled in `dist/`, never from a CDN (`'wasm-unsafe-eval'` in the CSP is for it).
 - `src/icons/`: one SVG per icon plus one line in `pack.ts`; a file and its line share the id, and `pack.test.ts` keeps them in step. An icon not from Material Symbols carries `source` and a matching line in README's licence section.
 - `lib/backup.ts`: `ting.json`, version in `fileFormat`; a file from a newer format is refused (`NewerFileError`), since Zod would drop what it cannot read and the next send would erase it. The folder keeps photos as files in `bilder/`; the downloaded backup embeds them as data URLs.
-- `lib/merge.ts` / `lib/sync.ts`: one merge for every copy, per field newest-wins, tombstones for deletes, symmetric and idempotent. Egne enheter sends the whole register as a sealed file (share sheet, so AirDrop) and merges what comes back; the folder (`folderStore.ts` `reconcile`) is merged the same way on connect and start, then written back (debounced, `writeDelayMs`). Gjenopprett is the one path that replaces, and revives restored things over their tombstones.
+- `lib/merge.ts` / `lib/sync.ts`: one merge for every copy, per field newest-wins, tombstones for deletes, symmetric and idempotent. Synkroniser sends the whole register as a sealed file (share sheet, so AirDrop) and merges what comes back; the folder (`folderStore.ts` `reconcile`) is merged the same way on connect and start, then written back (debounced, `writeDelayMs`). Gjenopprett is the one path that replaces, and revives restored things over their tombstones.
 - `lib/errors.ts`: log an error's name and message only, never the object — logging must not leak sealed content.
 
 ## Components
 
+- Demo: a browser tab (not `display-mode: standalone`, `isDemo` in `lib/useInstall.ts`) is a demo; only the installed app opens the register. Its database is `ting-demo`, refilled from `lib/demo.ts` at every start. No adding (plus, receipt, Ny rad, multi-row paste), no Innstillinger, no `persist()`; "Last ned gratis" in the top bar. The dev server is a tab too: install it from Chrome to work on the app itself.
+
 - `Overview`: choosing a category changes rows, columns and filters together — it is the view, not a filter. The register opens on "velg kategori", no table, until a category is picked or an action implies "show me things" (a new row, a search, fewer than two categories to choose from).
-- Column visibility is one rule everywhere it applies (table, filters, print, CSV): a column renders if it belongs to a category in view or holds a value on a visible row; with exactly one category in view, that category's own column drops since it says the same on every row. A change here must hold across table, phone list, search/filter and print/CSV at once.
+- Column visibility is one rule everywhere it applies (table, filters, print, CSV): with categories in view, a column renders only if one of them uses it (`appliesTo`), and then if one lists it or it holds a value on a visible row. "Vis n kolonner til" adds only columns they use, never another category's.
+- With exactly one category in view, that category's own column drops since it says the same on every row.
+- Tilpass visning lists Navn (locked) and the properties every category uses (`sharedByAll`); a hidden id counts only while its property is one of those, so a category's own column is never hidden out of reach. A change here must hold across table, phone list, search/filter and print/CSV at once.
 - `PropertyEditor`: removing a value asks for confirmation naming it and counting the affected things.
 - Filter menus count the rows every other filter and the search leave (`withoutFilter`).
 - A new row inherits the Valgliste and date values of the row above, never numbers or text; the first row takes the Kategori of the newest thing.
 - Printing with photos: await `img.decode()` before `window.print()`, or photos print blank.
-- Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there. It lists search hits only, nothing before a search; the search sits on top, the bottom bar holds receipt, plus and Innstillinger (out of the top bar there), and hides while the search has focus. No lock button on the phone: closing the app locks it.
+- Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there. It lists search hits only, nothing before a search (the demo lists every example); the search sits on top, the bottom bar holds receipt, plus and Innstillinger (out of the top bar there), and hides while the search has focus. No lock button on the phone: closing the app locks it.
 - `AddItem`: "Slå opp på nett" (ISBN lookup) shows only for a book category; other scanned codes are stored, never looked up.
 
 ## Encryption
@@ -77,6 +81,8 @@ Everything typed, pasted, restored from a file, or read from a folder is data, n
 Dexie schema: the newest `db.version()` in `db/db.ts`; tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place.
 
 `Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Changing a column's type to Sti changes its specs' unit marker, never their values.
+
+`Property.categories`: absent is every category (including later ones), `[]` is none, else those. Endre kategorier ticks a category's properties (`usesAfter`); unticking one from an every-category property lists all the others.
 
 Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in.
 
@@ -97,9 +103,9 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 - Commit only once elzacka has run and verified the change locally (differs from global).
 - A rule about the data model or its logic (e.g. which properties belong to a category) must give the same answer everywhere it applies: registering, viewing, searching/filtering, printing/CSV.
 - Design decisions: `dev_only/designsystem.md`. One accent colour, no shadows, no illustrations, 44 px targets, visible labels.
-- The lock is the passphrase: once one exists the app always opens locked; before one exists it opens as an unlocked trial, no lock button, no idle lock.
+- The lock is the passphrase: once one exists the app always opens locked; before one exists the installed app opens as an unlocked trial, no lock button, no idle lock.
 - No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; phone screens (`AddItem`, `ItemDetail`) store on blur instead.
 - No mobile-mode switch: viewport size alone decides the phone layout, on any orientation.
 - On a phone or touch screen without folder access, "Tilpass visning" and "Lagringsmappe" are not rendered; backup goes through the share sheet instead.
 - Password forms carry a hidden `username` field (`KeychainName`) so password managers file the passphrase under Ting. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.
-- `main.tsx` requests `navigator.storage.persist()` at every start, since a browser can otherwise evict an inactive site's storage.
+- `main.tsx` requests `navigator.storage.persist()` at every start outside the demo, since a browser can otherwise evict an inactive site's storage.

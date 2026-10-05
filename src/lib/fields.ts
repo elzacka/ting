@@ -101,11 +101,11 @@ function foldCategory(value: string): string {
 }
 
 // A column belongs when any category in view has it, so Kjøkken's Rom stays beside Interiør
-// (elzacka, 2026-09-23). A column naming no category belongs everywhere; with none chosen,
-// only those do.
+// (elzacka, 2026-09-23). A column without a list belongs everywhere; with none chosen, only
+// those do. An empty list is a column no category uses.
 export function appliesTo(property: Property | null, categories: readonly string[]): boolean {
   const own = property?.categories
-  if (!own || own.length === 0) return true
+  if (!own) return true
   if (categories.length === 0) return false
   const mine = new Set(own.map(foldCategory))
   return categories.some((c) => mine.has(foldCategory(c)))
@@ -117,12 +117,18 @@ export function claimedBy(property: Property | null, categories: readonly string
   return categories.length > 0 && (property?.categories?.length ?? 0) > 0 && appliesTo(property, categories)
 }
 
-// The list a column carries after it is used, or stopped being used, in one
-// category. Emptied, it belongs everywhere again.
-export function withCategory(property: Property | null, category: string, on: boolean): string[] {
-  const own = property?.categories ?? []
+// The list a column carries after one category starts or stops using it; undefined is
+// every category. A column every category uses keeps the others when one stops.
+export function withCategory(
+  property: Property | null,
+  category: string,
+  on: boolean,
+  all: readonly string[],
+): string[] | undefined {
+  const own = property?.categories
+  if (!own && on) return undefined
   const fold = foldCategory(category)
-  const rest = own.filter((c) => foldCategory(c) !== fold)
+  const rest = (own ?? all).filter((c) => foldCategory(c) !== fold)
   return on ? [...rest, category] : rest
 }
 

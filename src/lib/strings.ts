@@ -65,6 +65,7 @@ export const t = {
     type: (key: string) => `Felttype for ${key}`,
     unit: (key: string) => `Enhet for ${key}`,
     scopeAll: 'Alle kategorier',
+    scopeNone: 'Ingen kategorier',
     scopeButton: (key: string, where: string) => `${key} brukes i: ${where}. Endre`,
     scopeTitle: (key: string) => `Kategorier for ${key}`,
     remove: (key: string) => `Fjern ${key}`,
@@ -115,6 +116,9 @@ export const t = {
     search: 'Søk etter symbol',
     suggested: 'foreslått ut fra navnet',
     byName: 'Velg ut fra navnet',
+    properties: (n: number) => (n === 0 ? 'Ingen egenskaper' : n === 1 ? '1 egenskap' : `${n} egenskaper`),
+    propertiesButton: (count: string, category: string) => `${count} i ${category}`,
+    propertiesTitle: (category: string) => `Egenskaper i ${category}`,
   },
   filters: {
     showAll: (n: number) => `Vis alle ${n}`,
@@ -226,7 +230,9 @@ export const t = {
       here: (key: string, where: string) => `«${key}» finnes allerede i ${where}.`,
       elsewhere: (key: string, where: string) => `«${key}» finnes i ${where}.`,
       shared: (key: string, where: string, here: string) =>
-        `«${key}» finnes i ${where}. Legger du den til, får ${here} den samme egenskapen.`,
+        `«${key}» finnes i ${where}. ${here} får den samme egenskapen hvis du legger den til.`,
+      unused: (key: string, here: string) =>
+        `«${key}» finnes, men ingen kategori bruker den.${here === '' ? '' : ` ${here} får den hvis du legger den til.`}`,
       types: {
         text: 'Fritekst, som en kommentar eller et serienummer. Lenker blir klikkbare på tingens side.',
         choice: 'Faste verdier å velge mellom, som Status eller Farge. Du kan filtrere på dem og gruppere utskriften etter dem.',
@@ -264,7 +270,7 @@ export const t = {
     // The columns the view leaves out: empty here, or the same on every row
     showMore: (n: number) => (n === 1 ? 'Vis 1 kolonne til' : `Vis ${n} kolonner til`),
     hideMore: 'Vis færre kolonner',
-    // The column menu, only while one category is in view: what the column is for
+    // What a column is for while categories are in view: the column form, and the column menu with one
     onlyIn: (category: string) => `Bruk bare i ${category}`,
     alsoIn: (category: string) => `Bruk også i ${category}`,
     notIn: (category: string) => `Ikke bruk i ${category}`,
@@ -299,13 +305,15 @@ export const t = {
   // iPhone keeps Del behind ••• (iOS 26 and later); on an iPad and in the
   // other iPhone browsers Del is on the bar itself.
   install: {
-    prompt: 'Installer appen',
-    iosMore: 'Installer: ••• › Del › Legg til på Hjem-skjerm',
-    iosShare: 'Installer: Del › Legg til på Hjem-skjerm',
-    macSafari: 'Installer: Del › Legg til i Dock',
-    // With a passphrase: why installing matters in a browser that clears
-    // the data of a site nobody opens
-    evict: 'Nettleseren kan slette det du har lagt til hvis du ikke åpner appen på sju dager.',
+    iosMore: 'Trykk på •••, velg Del og så Legg til på Hjem-skjerm.',
+    iosShare: 'Trykk på Del og velg Legg til på Hjem-skjerm.',
+    macSafari: 'Klikk på Del og velg Legg til i Dock.',
+    other: 'Velg Installer eller Legg til på startskjerm i menyen til nettleseren. Bruk Chrome, Edge eller Safari hvis valget mangler.',
+  },
+  // In a browser tab: the app as a demo, and the way to the real one
+  demo: {
+    download: 'Last ned gratis',
+    notice: 'Dette er en demo med eksempler. Last ned appen for å registrere tingene dine.',
   },
   // Before a passphrase: the line under the top bar
   trial: {
@@ -385,7 +393,7 @@ export const t = {
   },
   // Sync between one person's own devices: a file sent with AirDrop and merged in
   sync: {
-    title: 'Egne enheter',
+    title: 'Synkroniser',
     option: 'Synkroniser mellom enhetene dine',
     what: 'Send registeret til den andre enheten din med AirDrop, og hent det tilbake når du har endret noe der. Appen tar vare på endringene fra begge enhetene.',
     send: 'Send til en annen enhet',

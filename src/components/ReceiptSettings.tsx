@@ -10,7 +10,8 @@ type State = 'off' | 'downloading' | 'ready' | 'failed'
 
 // Kvitteringer: turning it on downloads the text recognition into the cache,
 // so a receipt can be read later without a network; off deletes it again.
-export function ReceiptSettings() {
+// Shown on Innstillinger, and on the receipt screen while it is off.
+export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
   const [state, setState] = useState<State>('off')
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function ReceiptSettings() {
     try {
       await prefetchOcr()
       setState('ready')
+      onReady?.()
     } catch (err) {
       console.error(errorText(err))
       setState('failed')

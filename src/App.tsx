@@ -10,6 +10,7 @@ import {
   readPasskey,
   readProperties,
   readVault,
+  resetDemo,
   sealPlaintextRows,
   writeVault,
 } from './db/db'
@@ -40,21 +41,33 @@ import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
 import { SettingsPage } from './components/SettingsPage'
 import { UpdateButton } from './components/UpdateButton'
-import { InstallBanner, TrialBanner } from './components/TrialBanner'
+import { DemoBanner, DownloadButton, TrialBanner } from './components/TrialBanner'
+import { isDemo } from './lib/useInstall'
+import { demoRegister } from './lib/demo'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
-  const route = useRoute()
+  const hashRoute = useRoute()
+  // The demo adds nothing and has no settings: those routes show the register
+  const route: Route = isDemo && ['settings', 'add', 'receipt'].includes(hashRoute.view) ? { view: 'list' } : hashRoute
   const narrow = useNarrow()
   const vault = useVault()
   // A key in memory, from a passphrase or from trying the app
   const unlocked = hasKey(vault)
   const trial = vault.status === 'trial'
+  // The demo's reads wait until the examples are in, or they would open what an earlier tab left
+  const [demoReady, setDemoReady] = useState(false)
   // No passphrase yet: the app opens as a trial, after clearing what an
   // earlier one left sealed under a key nobody kept. Rows from before
   // encryption are the exception: they go to the setup screen as they are.
   useEffect(() => {
     void (async () => {
+      if (isDemo) {
+        await startTrial()
+        const { items, properties } = demoRegister(Date.now())
+        await resetDemo(items, properties)
+        return setDemoReady(true)
+      }
       const stored = await readVault()
       if (stored || (await hasPlainRows())) return initVault(stored)
       await clearTrialRows()
@@ -63,9 +76,10 @@ export function App() {
   }, [])
   // Watching keys, not rows: a change anywhere in the table re-runs the read,
   // and the read opens only rows whose seal changed.
-  const items = useSealedQuery(() => db.items.toCollection().primaryKeys(), readItems, unlocked)
-  const properties = useSealedQuery(() => db.properties.toArray(), readProperties, unlocked)
-  const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, unlocked)
+  const readable = unlocked && (demoReady || !isDemo)
+  const items = useSealedQuery(() => db.items.toCollection().primaryKeys(), readItems, readable)
+  const properties = useSealedQuery(() => db.properties.toArray(), readProperties, readable)
+  const fields = useSealedQuery(() => db.settings.toArray(), readFieldSettings, readable)
   const folder = useFolderSync()
   usePlainPaste()
   useKeyboardInset()
@@ -125,17 +139,17 @@ export function App() {
   const [query, setQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
   const [searchOpen, setSearchOpen] = useState(() => query !== '')
   const [filters, setFilters] = useState<Filters>({})
-  // The register opens on its categories alone: the table waits for one to be
-  // picked. Kept here rather than in Overview so opening a thing and coming
-  // back does not send you to the start (elzacka, 23 September 2026).
-  const [categoryPicked, setCategoryPicked] = useState(false)
+  // The register opens on its categories alone, the demo on every example. Kept here rather
+  // than in Overview so opening a thing and coming back does not send you to the start
+  // (elzacka, 23 September 2026).
+  const [categoryPicked, setCategoryPicked] = useState(isDemo)
   const [sort, setSort] = useState<Sort | null>(null)
-  const { widths, setWidth } = useColumnWidths(unlocked)
+  const { widths, setWidth } = useColumnWidths(readable)
   const [autoLock, setAutoLock] = useState(readAutoLock)
   // Tilpass visning: columns taken out of the table on this device
   const [hidden, setHidden] = useState<Set<string>>(() => new Set())
   useEffect(() => {
-    if (!unlocked) return setHidden(new Set())
+    if (!readable) return setHidden(new Set())
     let live = true
     loadHiddenColumns()
       .then((ids) => live && setHidden(ids))
@@ -143,8 +157,9 @@ export function App() {
     return () => {
       live = false
     }
-  }, [unlocked])
+  }, [readable])
   const [wrap, setWrap] = useState(readWrap)
+  const [installSteps, setInstallSteps] = useState(false)
   const toggleWrap = useCallback((on: boolean) => {
     writeWrap(on)
     setWrap(on)
@@ -259,7 +274,8 @@ export function App() {
                 <Icon name="lockOpen" />
               </button>
             )}
-            {unlocked && !narrow && (
+            {isDemo && <DownloadButton stepsOpen={installSteps} onSteps={setInstallSteps} />}
+            {unlocked && !narrow && !isDemo && (
               <a
                 className={`btn btn-icon${route.view === 'settings' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
                 href={href.settings}
@@ -274,8 +290,7 @@ export function App() {
         )}
       </header>
 
-      {trial && <TrialBanner onSettings={route.view === 'settings'} />}
-      {vault.status === 'open' && isTop && <InstallBanner />}
+      {isDemo ? <DemoBanner stepsOpen={installSteps} /> : trial && <TrialBanner onSettings={route.view === 'settings'} />}
 
       <main className="stack">
         <ErrorBoundary>

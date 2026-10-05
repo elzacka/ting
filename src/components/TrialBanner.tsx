@@ -3,13 +3,11 @@ import { t } from '../lib/strings'
 import { installSteps, useInstall } from '../lib/useInstall'
 import { useNarrow } from '../lib/useNarrow'
 
-// One quiet line under the top bar while there is no passphrase: that what is
-// added now goes when the app closes, the way to keep it, and how to install
-// the app where this browser can. It scrolls away with the page.
+// One quiet line under the top bar of the installed app while there is no
+// passphrase: that what is added now goes when the app closes, and the way to
+// keep it. It scrolls away with the page.
 export function TrialBanner({ onSettings }: { onSettings: boolean }) {
-  const install = useInstall()
   const narrow = useNarrow()
-  const steps = installSteps(install)
   return (
     <div className="trial-banner" role="note">
       <span>{narrow ? t.trial.noticePhone : t.trial.notice}</span>
@@ -18,26 +16,44 @@ export function TrialBanner({ onSettings }: { onSettings: boolean }) {
           {t.trial.setPassphrase}
         </a>
       )}
-      {install?.kind === 'prompt' && (
-        <button type="button" className="summary-link" onClick={install.install}>
-          {t.install.prompt}
-        </button>
-      )}
-      {steps && <span>{steps}</span>}
     </div>
   )
 }
 
-// With a passphrase, in a browser that clears the data of a site nobody
-// opens for seven days (Safari, and every browser on an iPhone): the same
-// line, saying why installing keeps the register, until the app is installed.
-export function InstallBanner() {
+const stepsId = 'install-steps'
+
+// In the demo's top bar: the browser's own install prompt where it has one,
+// else the steps for this browser, opened under the bar
+export function DownloadButton({ stepsOpen, onSteps }: { stepsOpen: boolean; onSteps: (open: boolean) => void }) {
+  const install = useInstall()
+  if (install?.kind === 'prompt') {
+    return (
+      <button type="button" className="btn btn-primary btn-pill" onClick={install.install}>
+        {t.demo.download}
+      </button>
+    )
+  }
+  return (
+    <button
+      type="button"
+      className="btn btn-primary btn-pill"
+      aria-expanded={stepsOpen}
+      aria-controls={stepsId}
+      onClick={() => onSteps(!stepsOpen)}
+    >
+      {t.demo.download}
+    </button>
+  )
+}
+
+export function DemoBanner({ stepsOpen }: { stepsOpen: boolean }) {
   const steps = installSteps(useInstall())
-  if (!steps) return null
   return (
     <div className="trial-banner" role="note">
-      <span>{t.install.evict}</span>
-      <span>{steps}</span>
+      <span>{t.demo.notice}</span>
+      <span id={stepsId} className="install-steps" hidden={!stepsOpen}>
+        {steps}
+      </span>
     </div>
   )
 }

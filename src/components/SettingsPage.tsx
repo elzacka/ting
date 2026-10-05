@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { deletePasskey, readPasskey, readRegister, replaceAll, writePasskey, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
-import { columnDefs, type FieldSettings } from '../lib/fields'
+import { categoryNames, sharedByAll } from '../lib/categories'
+import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { downloadText, exportFilename } from '../lib/export'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
@@ -50,7 +51,11 @@ export function SettingsPage({
 }: Props) {
   const { status, connect, grant, adopt, disconnect } = folder
   const trial = useVault().status === 'trial'
-  const columns = columnDefs(fields, properties, items).filter((d) => d.kind === 'prop')
+  // Navn, always shown, and the properties every category uses
+  const categories = categoryNames(items, properties.find((p) => p.id === categoryColumnId))
+  const columns = columnDefs(fields, properties, items).filter(
+    (d) => d.kind === 'name' || sharedByAll(d.property, categories),
+  )
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Loaded | null>(null)
@@ -438,7 +443,7 @@ export function SettingsPage({
             <input type="checkbox" checked={wrap} onChange={(e) => onWrapChange(e.target.checked)} />
             <span>{t.table.wrap}</span>
           </label>
-          {columns.length > 0 && (
+          {columns.length > 1 && (
             <details className="disclosure">
               <summary>
                 <span>{t.settings.columnsList}</span>
@@ -452,10 +457,11 @@ export function SettingsPage({
                   <label key={def.id} className="check-option">
                     <input
                       type="checkbox"
-                      checked={!hidden.has(def.id)}
+                      checked={def.kind === 'name' || !hidden.has(def.id)}
+                      disabled={def.kind === 'name'}
                       onChange={(e) => onHiddenChange(def.id, e.target.checked)}
                     />
-                    <span>{def.kind === 'prop' ? def.col.key : ''}</span>
+                    <span>{def.kind === 'prop' ? def.col.key : (fields.name.label ?? t.table.name)}</span>
                   </label>
                 ))}
               </div>

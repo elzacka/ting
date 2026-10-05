@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { addProperty, getSealedSetting, saveBatch, setSealedSetting } from '../db/db'
+import { addProperty, getSealedSetting, getSetting, saveBatch, setSealedSetting } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { asImage } from '../lib/backup'
 import { errorText } from '../lib/errors'
@@ -10,13 +10,14 @@ import { columnId, specsFrom } from '../lib/grid'
 import { readText } from '../lib/ocr'
 import { parseReceipt, splitAmount, storeKey } from '../lib/receipt'
 import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
-import { closestValue, linesSum, receiptColumns, receiptInputs, type ReceiptRow } from '../lib/receiptItems'
+import { closestValue, linesSum, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
 import { recentValues } from '../lib/values'
 import { ChoiceFields, firstCells } from './ChoiceFields'
 import { CornerEditor } from './CornerEditor'
 import { Icon } from './Icons'
+import { ReceiptSettings } from './ReceiptSettings'
 import { PhotoPicker, ThumbMenu } from './ThumbMenu'
 import { useObjectUrl } from './useObjectUrl'
 import { ValuePicker } from './ValuePicker'
@@ -62,6 +63,11 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   const [key, setKey] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // Reading is a download the user switches on; until then this screen offers it
+  const [reading, setReading] = useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    void getSetting<boolean>(receiptReadingKey).then((on) => setReading(on === true))
+  }, [])
 
   const cols = useMemo(() => receiptColumns(properties, Date.now()), [properties])
   const storeValues = useMemo(
@@ -175,7 +181,8 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
         className="visually-hidden"
         onChange={(e) => void pick(e.target.files?.[0])}
       />
-      {stage === 'pick' && (
+      {reading === false && <ReceiptSettings onReady={() => setReading(true)} />}
+      {stage === 'pick' && reading && (
         <div className="row">
           <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>
             <Icon name="photoCamera" size={20} />

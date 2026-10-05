@@ -10,6 +10,7 @@ import { receiptReadingKey } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { searchItems } from '../lib/search'
 import { t } from '../lib/strings'
+import { isDemo } from '../lib/useInstall'
 import { useRowWindow } from '../lib/useRowWindow'
 import { CategoryIcon } from './CategoryIcon'
 import { Icon } from './Icons'
@@ -29,9 +30,9 @@ type Props = {
 // Thumbnail, name and the line under it: the same height as the CSS gives .list-row
 const rowHeight = 56
 
-// The phone's overview: the search field and its hits, nothing before a search. At the bottom,
-// where the thumb is: the receipt, plus and Innstillinger. One row answers "where is it";
-// tapping it opens the thing. Columns, totals and reports are desk work.
+// The phone's overview: the search and its hits, nothing before a search (the demo lists every
+// example and has no bottom bar). Receipt, plus and Innstillinger sit at the bottom, where the
+// thumb is. One row answers "where is it"; columns, totals and reports are desk work.
 export function ItemList({ items, properties, fields, query, onQueryChange, stalled }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   // The line under the name: the place first, since that is what a phone is
@@ -45,11 +46,15 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
   )
   const icons = properties.find((p) => p.id === categoryColumnId)?.icons
   const searching = query.trim() !== ''
-  const hits = useMemo(() => (searching ? searchItems(items, query) : []), [items, query, searching])
+  const hits = useMemo(
+    () => (searching ? searchItems(items, query) : isDemo ? [...items].sort((a, b) => a.name.localeCompare(b.name, 'nb')) : []),
+    [items, query, searching],
+  )
   const { ref, window: win } = useRowWindow<HTMLUListElement>(hits.length, rowHeight)
 
   // With receipt reading on, the receipt button left of plus opens the camera on that one tap,
-  // and the photo goes on to the receipt screen; plus stays one tap to Ny ting
+  // and the photo goes on to the receipt screen; off, it opens that screen, which offers the
+  // download. Plus stays one tap to Ny ting.
   const [receipts, setReceipts] = useState(false)
   useEffect(() => {
     void getSetting<boolean>(receiptReadingKey).then((on) => setReceipts(on === true))
@@ -70,7 +75,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
       </div>
       {items.length === 0 ? (
         <p className="hint list-empty">{t.list.empty}</p>
-      ) : !searching ? null : hits.length === 0 ? (
+      ) : !searching && !isDemo ? null : hits.length === 0 ? (
         <p className="hint list-empty">{t.list.noMatch}</p>
       ) : (
         <ul ref={ref} className="list" style={{ paddingTop: win.topPad, paddingBottom: win.bottomPad }}>
@@ -79,41 +84,45 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
           ))}
         </ul>
       )}
-      <nav className="phone-bar" aria-label={t.nav.list}>
-        {receipts ? (
-          <>
-            <input
-              ref={receiptRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="visually-hidden"
-              tabIndex={-1}
-              onChange={(e) => receiptTaken(e.target)}
-            />
-            <button
-              type="button"
-              className="btn btn-icon btn-round"
-              aria-label={t.receipt.fromReceipt}
-              onClick={() => receiptRef.current?.click()}
-            >
+      {!isDemo && (
+        <nav className="phone-bar" aria-label={t.nav.list}>
+          {receipts ? (
+            <>
+              <input
+                ref={receiptRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="visually-hidden"
+                tabIndex={-1}
+                onChange={(e) => receiptTaken(e.target)}
+              />
+              <button
+                type="button"
+                className="btn btn-icon btn-round"
+                aria-label={t.receipt.fromReceipt}
+                onClick={() => receiptRef.current?.click()}
+              >
+                <Icon name="receiptLong" />
+              </button>
+            </>
+          ) : (
+            <a className="btn btn-icon btn-round" href={href.receipt} aria-label={t.receipt.fromReceipt}>
               <Icon name="receiptLong" />
-            </button>
-          </>
-        ) : (
-          <span />
-        )}
-        <a className="btn btn-icon btn-round" href={href.add} aria-label={t.table.addRow}>
-          <Icon name="add" />
-        </a>
-        <a
-          className={`btn btn-icon btn-round${stalled ? ' is-stalled' : ''}`}
-          href={href.settings}
-          aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
-        >
-          <Icon name="settings" />
-        </a>
-      </nav>
+            </a>
+          )}
+          <a className="btn btn-icon btn-round" href={href.add} aria-label={t.table.addRow}>
+            <Icon name="add" />
+          </a>
+          <a
+            className={`btn btn-icon btn-round${stalled ? ' is-stalled' : ''}`}
+            href={href.settings}
+            aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
+          >
+            <Icon name="settings" />
+          </a>
+        </nav>
+      )}
     </div>
   )
 }
