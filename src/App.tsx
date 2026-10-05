@@ -27,7 +27,7 @@ import type { Filters } from './lib/filters'
 import { usePlainPaste } from './lib/plainPaste'
 import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
-import { useSearchShortcut } from './lib/useSearchShortcut'
+import { searchKeys, searchKeysAria, useSearchShortcut } from './lib/useSearchShortcut'
 import { useAutoLock } from './lib/useAutoLock'
 import { useNarrow } from './lib/useNarrow'
 import { useKeyboardInset } from './lib/useKeyboardInset'
@@ -261,11 +261,16 @@ export function App() {
                 type="button"
                 className={`btn btn-icon${query !== '' || Object.entries(filters).some(([id, v]) => id !== categoryColumnId && v.length > 0) ? ' is-active' : ''}`}
                 aria-label={searchOpen ? t.search.close : t.search.open}
+                aria-keyshortcuts={searchKeysAria}
                 aria-pressed={searchOpen}
                 aria-controls="search"
                 onClick={toggleSearch}
               >
                 <Icon name="search" />
+                <span className="tip" aria-hidden="true">
+                  {searchOpen ? t.search.close : t.search.open}
+                  <kbd>{searchKeys}</kbd>
+                </span>
               </button>
             )}
             {/* The phone locks when the app is closed; only the desk needs a lock button */}

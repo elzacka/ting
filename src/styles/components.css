@@ -14,7 +14,8 @@
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 2;
+  /* Over the register's sticky head (4), which would cover the buttons' labels; under menus (6) */
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -195,7 +196,8 @@
   position: relative;
 }
 
-.btn-icon[aria-label]::after {
+.btn-icon[aria-label]::after,
+.btn-icon > .tip {
   content: attr(aria-label);
   position: absolute;
   top: calc(100% + var(--s-1));
@@ -216,13 +218,31 @@
 }
 
 .btn-icon[aria-label]:hover::after,
-.btn-icon[aria-label]:focus-visible::after {
+.btn-icon[aria-label]:focus-visible::after,
+.btn-icon:hover > .tip,
+.btn-icon:focus-visible > .tip {
   opacity: 1;
   transition-delay: 300ms;
 }
 
+/* A label with a keyboard shortcut is an element, so the keys can look like keys */
+.btn-icon:has(> .tip)::after {
+  content: none;
+}
+
+.tip kbd {
+  margin-left: var(--s-2);
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--bg) 45%, transparent);
+  border-radius: var(--radius);
+  color: color-mix(in srgb, var(--bg) 75%, transparent);
+  font-family: var(--font);
+  font-weight: 600;
+}
+
 /* At the right edge the label hangs from the button's right corner instead */
 .topbar-end .btn-icon[aria-label]::after,
+.topbar-end .btn-icon > .tip,
 .spec-edit[aria-label]::after {
   left: auto;
   right: 0;
@@ -240,7 +260,8 @@
 }
 
 @media (hover: none) {
-  .btn-icon[aria-label]:hover::after {
+  .btn-icon[aria-label]:hover::after,
+  .btn-icon:hover > .tip {
     opacity: 0;
   }
 }

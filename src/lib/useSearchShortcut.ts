@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 
-export const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
+
+// As shown, and as aria-keyshortcuts names it
+export const searchKeys = isMac ? '⌘K' : 'Ctrl+K'
+export const searchKeysAria = isMac ? 'Meta+K' : 'Control+K'
 
 function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false

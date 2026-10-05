@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import type { Tip } from '../lib/searchTips'
 import { t } from '../lib/strings'
-import { isMac } from '../lib/useSearchShortcut'
+import { searchKeys } from '../lib/useSearchShortcut'
 import { Icon } from './Icons'
 
 type Props = {
@@ -54,7 +54,7 @@ export function SearchField({ value, onChange, onClose, tips = [], autoFocus = t
             <Icon name="close" size={20} />
           </button>
         ) : (
-          finePointer && <kbd className="kbd">{isMac ? '⌘K' : 'Ctrl+K'}</kbd>
+          finePointer && <kbd className="kbd">{searchKeys}</kbd>
         )}
       </div>
       {tips.length > 0 && (
