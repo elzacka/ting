@@ -1,12 +1,8 @@
 import { parseSvg, type SvgShape } from './svg'
 
-// The category icon pack: what a user can choose for a category, and what the
-// app guesses from a category's name until they do.
-//
-// One SVG per icon in ./category, the file named by the icon's id. One entry
-// per icon below: the Norwegian name the picker shows and reads out, and the
-// words that make the app guess it. The guess tries the entries in this order
-// and takes the first whose word starts a word in the category's name.
+// The category icon pack, one SVG per id in ./category. The guess tries the
+// entries in this order and takes the first whose keyword starts a word in the
+// category's name.
 type Entry = {
   id: string
   name: string
