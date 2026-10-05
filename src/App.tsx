@@ -164,11 +164,13 @@ export function App() {
     writeWrap(on)
     setWrap(on)
   }, [])
-  const toggleHidden = useCallback((id: string, visible: boolean) => {
+  const toggleHidden = useCallback((ids: readonly string[], visible: boolean) => {
     setHidden((prev) => {
       const next = new Set(prev)
-      if (visible) next.delete(id)
-      else next.add(id)
+      for (const id of ids) {
+        if (visible) next.delete(id)
+        else next.add(id)
+      }
       saveHiddenColumns(next)
       return next
     })
@@ -369,7 +371,7 @@ type ScreenProps = {
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
   hidden: Set<string>
-  onHiddenChange: (id: string, visible: boolean) => void
+  onHiddenChange: (ids: readonly string[], visible: boolean) => void
   wrap: boolean
   onWrapChange: (on: boolean) => void
 }

@@ -13,25 +13,26 @@ export const t = {
     mismatch: 'Passordene er ikke like. Skriv det samme i begge feltene.',
     create: 'Krypter og fortsett',
     unlockTitle: 'Appen er låst',
-    autoLocked: 'Appen låste seg etter 10 minutter uten bruk.',
+    autoLocked: 'Appen låste seg etter 10 minutter uten bruk',
     unlock: 'Lås opp',
-    wrong: 'Feil passord.',
+    wrong: 'Feil passord',
     working: 'Låser opp…',
     // Lås og passord: the idle lock, Face ID or Touch ID in place of the
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
     passkeyOption: 'Lås opp med Face ID eller Touch ID',
-    passkeyWhere: 'Gjelder bare denne enheten.',
+    passkeyWhere: 'Gjelder bare denne enheten',
     passkeyUnlock: 'Lås opp med Face ID eller Touch ID',
     passkeyFailed: 'Face ID eller Touch ID virket ikke. Lås opp med passordet.',
-    passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID.',
+    passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID',
     changeTitle: 'Passord',
-    changeWhat: 'Krypterer registeret på enheten, i lagringsmappen og i sikkerhetskopiene.',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',
-    changed: 'Passordet er endret.',
+    // Beside the row's own title the verb is enough; the full text stays the accessible name
+    changeShort: 'Endre',
+    changed: 'Du har endret passordet',
     folderForeign: (name: string) =>
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
@@ -73,7 +74,7 @@ export const t = {
     confirmRemove: (keys: string, n: number) =>
       `${keys} har verdier på ${n === 1 ? '1 ting' : `${n} ting`}. Verdiene forsvinner fra alle. Du kan ikke angre.`,
     removeAndSave: 'Fjern og lagre',
-    dirtyFirst: 'Lagre eller forkast endringene i tabellen først.',
+    dirtyFirst: 'Lagre eller forkast endringene i tabellen først',
   },
   // A Valgliste's alternatives, opened from its line in Endre egenskaper
   options: {
@@ -130,7 +131,7 @@ export const t = {
     clearAll: 'Fjern alle filtre',
   },
   list: {
-    empty: 'Registeret er tomt.',
+    empty: 'Registeret er tomt',
     noMatch: 'Ingen treff',
     loading: 'Laster…',
   },
@@ -143,8 +144,6 @@ export const t = {
     csv: 'Last ned CSV',
     print: 'Skriv ut',
     pick: 'Ta med i utskriften',
-    pickAll: 'Velg alle',
-    pickNone: 'Fjern alle',
     docTitle: 'Ting',
     subtitle: (date: string, n: number) => `Rapport ${date}. ${n === 1 ? '1 ting' : `${n} ting`}.`,
     // Two choices that change the shape of the paper: headings that add up,
@@ -162,7 +161,8 @@ export const t = {
     close: 'Lukk',
     delete: 'Slett',
     back: 'Tilbake',
-    choosePhoto: 'Velg bilde',
+    pickAll: 'Velg alle',
+    pickNone: 'Fjern alle',
     takePhoto: 'Ta bilde',
     removePhoto: 'Fjern bilde',
     removePhotos: 'Fjern bildene',
@@ -179,18 +179,20 @@ export const t = {
     thing: 'tingen',
     photos: (name: string, n: number) =>
       n === 0 ? `Legg til bilde av ${name}` : n === 1 ? `Bilde av ${name}` : `${n} bilder av ${name}`,
-    saved: (name: string) => `«${name}» er lagret.`,
-    missingName: 'Tingen må ha et navn.',
+    saved: (name: string) => `«${name}» lagret`,
+    missingName: 'Tingen må ha et navn',
     // The values to tap under a field, named for the field
     suggestions: (label: string) => `${label}: Forslag`,
+    // The last chip under a short choice list: opens the field for a new value
+    other: 'Annet',
   },
   barcode: {
     label: 'Strekkode',
     scan: 'Skann strekkode',
     scanning: 'Leser…',
-    read: (format: string) => `Lest som ${format}.`,
+    read: (format: string) => `Lest som ${format}`,
     none: 'Fant ingen strekkode i bildet. Ta bildet nærmere, rett forfra.',
-    bookHint: 'Skann strekkoden på boka, så kan du hente tittel og forfatter på nett.',
+    bookHint: 'Skann strekkoden på boka, så kan du hente tittel og forfatter på nett',
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Navnet er hentet fra ${source}. Rett det som er feil før du lagrer.`,
@@ -210,7 +212,7 @@ export const t = {
     delete: (name: string) => `Slett «${name}»? Du kan ikke angre.`,
     deleteMany: (n: number) => (n === 1 ? 'Slett 1 ting? Du kan ikke angre.' : `Slett ${n} ting? Du kan ikke angre.`),
     unsaved: 'Du har endringer som ikke er lagret. Forlat siden likevel?',
-    saveOrDiscard: 'Du har endringer som ikke er lagret.',
+    saveOrDiscard: 'Du har endringer som ikke er lagret',
     discard: 'Forkast endringene',
   },
   table: {
@@ -226,9 +228,9 @@ export const t = {
     // properties that already exist and start with what is typed
     columnHelp: {
       similar: 'Finnes fra før',
-      everywhere: (key: string) => `«${key}» finnes i alle kategorier.`,
-      here: (key: string, where: string) => `«${key}» finnes allerede i ${where}.`,
-      elsewhere: (key: string, where: string) => `«${key}» finnes i ${where}.`,
+      everywhere: (key: string) => `«${key}» finnes i alle kategorier`,
+      here: (key: string, where: string) => `«${key}» finnes allerede i ${where}`,
+      elsewhere: (key: string, where: string) => `«${key}» finnes i ${where}`,
       shared: (key: string, where: string, here: string) =>
         `«${key}» finnes i ${where}. ${here} får den samme egenskapen hvis du legger den til.`,
       unused: (key: string, here: string) =>
@@ -242,9 +244,9 @@ export const t = {
       },
       options: 'Skriv alternativene adskilt med komma: «Bøker, Film, Musikk». Med eller uten mellomrom etter komma.',
       unit: 'Velg i lista eller skriv din egen. Kolonner i kr får en sum.',
-      scope: 'Uten hake hører egenskapen til alle kategorier.',
+      scope: 'Uten hake hører egenskapen til alle kategorier',
     },
-    wrap: 'Bryt lang tekst over flere linjer',
+    wrap: 'Bryt lang tekst i tabellen',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
     types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato', path: 'Sti' },
@@ -294,7 +296,7 @@ export const t = {
     crashed: 'Noe gikk galt, men dataene dine er bevart. Last siden på nytt for å fortsette.',
     reload: 'Last på nytt',
     rowsMissingName: (n: number) => (n === 1 ? '1 rad mangler navn.' : `${n} rader mangler navn.`),
-    columnExists: 'Denne egenskapen finnes allerede.',
+    columnExists: 'Denne egenskapen finnes allerede',
     notNumbers: (n: number, key: string) => (n === 1 ? `1 verdi i ${key} er ikke et tall.` : `${n} verdier i ${key} er ikke tall.`),
     notDates: (n: number, key: string) => (n === 1 ? `1 verdi i ${key} er ikke en dato.` : `${n} verdier i ${key} er ikke datoer.`),
   },
@@ -305,9 +307,9 @@ export const t = {
   // iPhone keeps Del behind ••• (iOS 26 and later); on an iPad and in the
   // other iPhone browsers Del is on the bar itself.
   install: {
-    iosMore: 'Trykk på •••, velg Del og så Legg til på Hjem-skjerm.',
-    iosShare: 'Trykk på Del og velg Legg til på Hjem-skjerm.',
-    macSafari: 'Klikk på Del og velg Legg til i Dock.',
+    iosMore: 'Trykk på •••, velg Del og så Legg til på Hjem-skjerm',
+    iosShare: 'Trykk på Del og velg Legg til på Hjem-skjerm',
+    macSafari: 'Klikk på Del og velg Legg til i Dock',
     other: 'Velg Installer eller Legg til på startskjerm i menyen til nettleseren. Bruk Chrome, Edge eller Safari hvis valget mangler.',
   },
   // In a browser tab: the app as a demo, and the way to the real one
@@ -319,12 +321,12 @@ export const t = {
   trial: {
     notice: 'Du bruker appen i prøvemodus. Det du legger til, blir borte når du lukker den.',
     // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger til, blir borte når appen lukkes.',
+    noticePhone: 'Det du legger til, blir borte når appen lukkes',
     setPassphrase: 'Velg passord for å bevare det',
-    why: 'Passordet krypterer alt du legger til, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
-    lost: 'Ingen kan åpne registeret hvis du mister passordet.',
-    folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
-    done: 'Passord valgt. Alt du har lagt til, er bevart.',
+    why: 'Passordet krypterer alt du legger til',
+    lost: 'Ingen kan åpne registeret hvis du mister passordet',
+    folderFirst: 'Velg et passord først',
+    done: 'Passord valgt. Alt du har lagt til, blir bevart.',
   },
   settings: {
     title: 'Innstillinger',
@@ -333,9 +335,10 @@ export const t = {
     columnsList: 'Egenskaper i tabellen',
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
-    folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata.',
+    folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
+    chooseShort: 'Velg',
     checking: 'Sjekker mappen…',
     needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare i nettleseren.`,
     grant: 'Gi tilgang',
@@ -344,15 +347,16 @@ export const t = {
     disconnect: 'Koble fra',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
     backupTitle: 'Sikkerhetskopi',
-    backupWhat: 'Én kryptert fil med alt i registeret.',
     download: 'Last ned sikkerhetskopi',
+    downloadShort: 'Last ned',
     // A phone saves the file through the share sheet: Filer, AirDrop, e-post
     share: 'Del sikkerhetskopi',
+    shareShort: 'Del',
     restore: 'Gjenopprett fra sikkerhetskopi',
-    restoreWhat: 'Erstatter alt i appen med innholdet i filen.',
+    restoreWhat: 'Erstatter alt i appen med innholdet i filen',
     restorePick: 'Velg fil',
     restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra filen? Du kan ikke angre.`,
-    restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}.`,
+    restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}`,
     restoreFailed: 'Denne filen er ikke en sikkerhetskopi fra Ting. Velg en fil som slutter på .json.',
     replace: 'Erstatt',
   },
@@ -365,7 +369,7 @@ export const t = {
     thumb: 'Kvitteringen',
     retake: 'Ta nytt bilde',
     adjust: 'Juster hjørnene',
-    adjustHint: 'Dra hvert hjørne ut til kanten av kvitteringen.',
+    adjustHint: 'Dra hvert hjørne ut til kanten av kvitteringen',
     useCorners: 'Bruk hjørnene',
     corner: (n: number) => `Hjørne ${n}. Flytt det med piltastene`,
     things: 'Ting på kvitteringen',
@@ -381,21 +385,22 @@ export const t = {
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',
-    what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB. Etterpå leser den kvitteringer på enheten, også uten nett.',
+    what: 'Appen laster ned KI-modeller og verktøy på ~ 27 MB, så den kan kjenne igjen tekst på kvitteringer',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Tekstgjenkjenningen er lastet ned.',
+    ready: 'Tekstgjenkjenning lastet ned',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
   // The foot of Innstillinger
   about: {
     privacy: 'Personvern',
     source: 'Kildekode',
-    line: (version: string) => `Versjon ${version}. Laget av Tazk.`,
+    version: (version: string) => `v${version}`,
+    author: 'elzacka',
   },
   // Sync between one person's own devices: a file sent with AirDrop and merged in
   sync: {
     option: 'Synkroniser mellom enhetene dine',
-    what: 'Send registeret til den andre enheten med AirDrop og hent det tilbake når du har endret noe der. Appen slår sammen endringene fra begge enhetene.',
+    what: 'Med AirDrop. Appen slår sammen endringene fra begge enhetene.',
     send: 'Send til en annen enhet',
     fetch: 'Hent fra en annen enhet',
     sent: (date: string, time: string) => `Sist sendt ${date} kl. ${time}.`,
@@ -411,7 +416,7 @@ export const t = {
       ]
         .filter(Boolean)
         .join(', '),
-    layout: 'Egenskapene er oppdatert.',
+    layout: 'Egenskaper oppdatert',
     both: (n: number) => `${n === 1 ? '1 ting' : `${n} ting`} var endret på begge enhetene. Den nyeste endringen er beholdt.`,
     nothing: (date: string, time: string) => `Ingenting nytt. Fila er laget ${date} kl. ${time}.`,
     future: 'Klokka på den andre enheten går mer enn ett døgn foran. Sjekk dato og klokkeslett der.',

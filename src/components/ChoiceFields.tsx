@@ -51,6 +51,7 @@ export function ChoiceFields({
         value={cells[def.id] ?? ''}
         onChange={(v) => onChange(def.id, v)}
         enterKeyHint="next"
+        chips
       />
     </div>
   ))

@@ -15,6 +15,7 @@ import { domId } from './ChoiceFields'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
 import { PhotoStrip } from './PhotoStrip'
+import { PhotoPicker } from './ThumbMenu'
 import { ValuePicker } from './ValuePicker'
 import { splitLinks } from '../lib/paste'
 
@@ -203,44 +204,63 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     </button>
   )
 
+  const title =
+    editing?.id === 'name' ? (
+      <h1 className="title">{field('name', nameLabel)}</h1>
+    ) : (
+      <h1 className="title spec-row-edit spec-row-tap" onClick={(e) => startFromRow(e, 'name')}>
+        {item.name}
+        {editButton('name', nameLabel)}
+      </h1>
+    )
+
   return (
     <div className="stack narrow">
-      {editing?.id === 'name' ? (
-        <h1 className="title">{field('name', nameLabel)}</h1>
+      {item.photos.length === 0 ? (
+        // No photo yet: the same tile as Ny ting, beside the name, rather than a button of its own
+        <div className="add-head detail-head">
+          <PhotoPicker
+            photos={item.photos}
+            label={t.add.photos(item.name, 0)}
+            large
+            onAdd={(added) => void setPhotos(added)}
+            onClear={() => undefined}
+          />
+          {title}
+        </div>
       ) : (
-        <h1 className="title spec-row-edit spec-row-tap" onClick={(e) => startFromRow(e, 'name')}>
-          {item.name}
-          {editButton('name', nameLabel)}
-        </h1>
+        title
       )}
 
       {url && <img className="photo" src={url} alt={t.detail.photoAlt(item.name)} />}
 
       <PhotoStrip photos={item.photos} name={item.name} onFirst={makeFirst} onRemove={dropPhoto} />
 
-      <div className="row toolbar">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="visually-hidden"
-          onChange={(e) => addPhotos(e.target.files)}
-        />
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-          <Icon name="photoCamera" size={20} />
-          {item.photos.length === 0 ? t.action.choosePhoto : t.action.addPhoto}
-        </button>
-        {/* With several, each tile carries its own way out */}
-        {item.photos.length === 1 && (
-          <button type="button" className="btn" onClick={() => dropPhoto(0)}>
-            {t.action.removePhoto}
+      {item.photos.length > 0 && (
+        <div className="row toolbar">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="visually-hidden"
+            onChange={(e) => addPhotos(e.target.files)}
+          />
+          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+            <Icon name="photoCamera" size={20} />
+            {t.action.addPhoto}
           </button>
-        )}
-      </div>
+          {/* With several, each tile carries its own way out */}
+          {item.photos.length === 1 && (
+            <button type="button" className="btn" onClick={() => dropPhoto(0)}>
+              {t.action.removePhoto}
+            </button>
+          )}
+        </div>
+      )}
 
-      <section className="stack-sm">
-        <h2 className="section-label">{t.detail.properties}</h2>
+      <section>
+        <h2 className="visually-hidden">{t.detail.properties}</h2>
         {props.length === 0 ? (
           <p className="hint">{t.detail.noProperties}</p>
         ) : (

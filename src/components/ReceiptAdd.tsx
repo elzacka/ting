@@ -182,9 +182,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
         onChange={(e) => void pick(e.target.files?.[0])}
       />
       {reading === false && (
-        <div className="setting-card">
-          <ReceiptSettings onReady={() => setReading(true)} />
-        </div>
+        <ReceiptSettings onReady={() => setReading(true)} />
       )}
       {stage === 'pick' && reading && (
         <div className="row">
@@ -245,7 +243,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
             <div className="stack-sm">
               <div className="field">
                 <label htmlFor="receipt-store">{cols.store.key}</label>
-                <ValuePicker id="receipt-store" label={cols.store.key} kind="choice" values={storeValues} value={store} onChange={setStore} />
+                <ValuePicker id="receipt-store" label={cols.store.key} kind="choice" values={storeValues} value={store} onChange={setStore} chips />
               </div>
               <div className="field">
                 <label htmlFor="receipt-date">{cols.date.key}</label>
@@ -254,7 +252,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
             </div>
           </div>
           <fieldset className="receipt-lines">
-            <legend className="section-label">{t.receipt.things}</legend>
+            <legend>{t.receipt.things}</legend>
             {rows.map((row, i) => (
               <div key={i} className="receipt-line">
                 <input

@@ -1,11 +1,11 @@
 import { useId, type ReactNode } from 'react'
 
-// Innstillinger: a heading over a card of rows
+// Innstillinger: a group of rows. Each row names itself, so the heading is for screen readers only.
 export function SettingGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="setting-group">
-      <h2 className="setting-group-title">{title}</h2>
-      <div className="setting-card">{children}</div>
+      <h2 className="visually-hidden">{title}</h2>
+      {children}
     </section>
   )
 }

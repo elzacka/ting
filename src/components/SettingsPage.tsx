@@ -21,6 +21,7 @@ import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
 
+const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 // Norwegian writes the time with a full stop: kl. 19.51
 const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
@@ -33,9 +34,18 @@ type Props = {
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
   hidden: Set<string>
-  onHiddenChange: (id: string, visible: boolean) => void
+  onHiddenChange: (ids: readonly string[], visible: boolean) => void
   wrap: boolean
   onWrapChange: (on: boolean) => void
+}
+
+// A confirmation has said its piece after a few seconds; an error stays until the next try
+function useFade(text: string | null, fades: boolean, clear: (text: null) => void) {
+  useEffect(() => {
+    if (text === null || !fades) return
+    const timer = setTimeout(() => clear(null), 4000)
+    return () => clearTimeout(timer)
+  }, [text, fades, clear])
 }
 
 export function SettingsPage({
@@ -52,11 +62,12 @@ export function SettingsPage({
 }: Props) {
   const { status, connect, grant, adopt, disconnect } = folder
   const trial = useVault().status === 'trial'
-  // Navn, always shown, and the properties every category uses
+  // Navn, always shown and first, then the properties every category uses, by name
   const categories = categoryNames(items, properties.find((p) => p.id === categoryColumnId))
-  const columns = columnDefs(fields, properties, items).filter(
-    (d) => d.kind === 'name' || sharedByAll(d.property, categories),
-  )
+  const columns = columnDefs(fields, properties, items)
+    .filter((d) => d.kind === 'name' || sharedByAll(d.property, categories))
+    .sort((a, b) => (a.kind === 'name' ? -1 : b.kind === 'name' ? 1 : collator.compare(a.col.key, b.col.key)))
+  const hideable = columns.flatMap((d) => (d.kind === 'prop' ? [d.id] : []))
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const fileRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Loaded | null>(null)
@@ -73,6 +84,8 @@ export function SettingsPage({
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [passMessage, setPassMessage] = useState<string | null>(null)
+  useFade(message, message !== t.settings.restoreFailed, setMessage)
+  useFade(passMessage, passMessage === t.trial.done || passMessage === t.vault.changed, setPassMessage)
   const [changingPass, setChangingPass] = useState(false)
   // The table's own choices are desk work, and so is a folder where the
   // browser cannot reach one: no browser on a phone or a tablet can
@@ -305,8 +318,8 @@ export function SettingsPage({
               </div>
               <div className="row">
                 {!trial && (status.kind === 'none' || status.kind === 'error') && (
-                  <button type="button" className="btn" onClick={connect}>
-                    {t.settings.choose}
+                  <button type="button" className="btn" aria-label={t.settings.choose} onClick={connect}>
+                    {t.settings.chooseShort}
                   </button>
                 )}
                 {(status.kind === 'connected' || status.kind === 'error') && disconnectButton}
@@ -371,17 +384,21 @@ export function SettingsPage({
             <div className="setting-main">
               <div className="setting-text">
                 <span className="setting-title">{t.settings.backupTitle}</span>
-                <p className="setting-desc">{t.settings.backupWhat}</p>
               </div>
-              <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
-                {shareable ? t.settings.share : t.settings.download}
+              <button
+                type="button"
+                className="btn"
+                aria-label={shareable ? t.settings.share : t.settings.download}
+                disabled={items.length === 0}
+                onClick={() => void download()}
+              >
+                {shareable ? t.settings.shareShort : t.settings.downloadShort}
               </button>
             </div>
           </div>
         )}
 
-        {/* Replaces everything: a row of its own, in the colour of what cannot
-            be undone, and confirmed before anything is replaced */}
+        {/* Replaces everything: confirmed before anything is replaced */}
         <div className="setting-row">
           <div className="setting-main">
             <div className="setting-text">
@@ -401,7 +418,7 @@ export function SettingsPage({
             />
             <button
               type="button"
-              className="btn btn-danger"
+              className="btn"
               aria-describedby="restore-title restore-what"
               onClick={() => fileRef.current?.click()}
             >
@@ -485,18 +502,18 @@ export function SettingsPage({
             <div className="setting-main">
               <div className="setting-text">
                 <span className="setting-title">{t.vault.changeTitle}</span>
-                <p className="setting-desc">{t.vault.changeWhat}</p>
               </div>
               {!changingPass && (
                 <button
                   type="button"
                   className="btn"
+                  aria-label={t.vault.change}
                   onClick={() => {
                     setPassMessage(null)
                     setChangingPass(true)
                   }}
                 >
-                  {t.vault.change}
+                  {t.vault.changeShort}
                 </button>
               )}
             </div>
@@ -574,13 +591,26 @@ export function SettingsPage({
                 </span>
               </summary>
               <div className="disclosure-body">
+                {/* Only the link that would change something, as in the print dialog */}
+                <div className="disclosure-actions">
+                  {hideable.some((id) => hidden.has(id)) && (
+                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, true)}>
+                      {t.action.pickAll}
+                    </button>
+                  )}
+                  {hideable.some((id) => !hidden.has(id)) && (
+                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, false)}>
+                      {t.action.pickNone}
+                    </button>
+                  )}
+                </div>
                 {columns.map((def) => (
                   <label key={def.id} className="check-option">
                     <input
                       type="checkbox"
                       checked={def.kind === 'name' || !hidden.has(def.id)}
                       disabled={def.kind === 'name'}
-                      onChange={(e) => onHiddenChange(def.id, e.target.checked)}
+                      onChange={(e) => onHiddenChange([def.id], e.target.checked)}
                     />
                     <span>{def.kind === 'prop' ? def.col.key : (fields.name.label ?? t.table.name)}</span>
                   </label>

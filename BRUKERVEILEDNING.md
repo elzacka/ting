@@ -86,7 +86,7 @@ mobilen låser du appen ved å lukke den.
 
 På iPhone lukker systemet appen når det trenger minnet. Da åpner den låst
 igjen, også når den automatiske låsen er av. Slå på «Lås opp med Face ID eller
-Touch ID» under Innstillinger › Lås og passord, så låser du opp med Face ID
+Touch ID» i Innstillinger, så låser du opp med Face ID
 eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
 trenger det for sikkerhetskopier og på andre enheter. Slår du valget av, kan du
 slette passnøkkelen «Ting» i Passord-appen.
@@ -172,18 +172,18 @@ trykk «Lagre». Pris og tekst arves ikke.
    Appen leser strekkoden på bildene og fyller inn «Strekkode» hvis feltet er
    tomt.
 3. Skriv navnet. «Neste» på tastaturet går til neste felt.
-4. Kategori og plassering står igjen fra forrige ting. Vil du bytte, trykker
-   du på et forslag under feltet. Plassering velger du ett nivå om gangen:
-   «Bod», så «Hylle 2», så «Blå kasse».
+4. Kategori og plassering står igjen fra forrige ting. Trykk på et annet valg
+   hvis du vil bytte, eller på «Annet» for å skrive et nytt. Plassering velger
+   du ett nivå om gangen: «Bod», så «Hylle 2», så «Blå kasse».
 5. «Lagre» nederst. Skjermen er klar for neste ting.
 
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
 senere; `-har:pris` i søket henter frem de som står igjen.
 
 **Fra kvittering, på mobilen:** Første gang ber appen deg slå på «Les tekst på
-kvitteringer». Den laster da ned tekstgjenkjenningen, omtrent 27 MB, og leser
-kvitteringer også uten nett. Bryteren står også under Innstillinger ›
-Kvitteringer.
+kvitteringer». Den laster da ned KI-modeller og verktøy for tekstgjenkjenning,
+omtrent 27 MB, og leser kvitteringer også uten nett. Bryteren står også i
+Innstillinger.
 
 1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.
 2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
@@ -268,7 +268,7 @@ kan slå opp bøker på nett.
 
 «Bruk bare i Underholdning» er huket av, så Type hører bare til Underholdning.
 Står du i Underholdning, får du en kolonne og et filter for Type. På «Ny ting»
-på mobilen står typene som forslag under Type når kategorien er Underholdning. I
+på mobilen står typene som valg under Type når kategorien er Underholdning. I
 utskriften kan du gruppere etter Type.
 
 **Har du allerede kategorier som Film og Musikk,** gir du tingene en type før du
@@ -291,7 +291,7 @@ slår kategoriene sammen:
 |---|---|
 | I tabellen | Klikk i cellen og skriv. Raden får en grønn strek til venstre. «Lagre» nederst lagrer, <kbd>Esc</kbd> spør om du vil forkaste |
 | På tingens side | Trykk på navnet i tabellen, så på raden du vil endre. Under en valgliste eller en plassering står verdiene du alt bruker. Trykker du på én, lagrer appen den. <kbd>Enter</kbd> eller et trykk utenfor lagrer, <kbd>Esc</kbd> angrer. Siden viser plasseringen først, så egenskapene tingens kategori har |
-| Bilder | På tingens side: «Legg til bilde». Du kan velge flere. Trykk på et lite bilde for å gjøre det til hovedbilde; krysset fjerner det |
+| Bilder | På tingens side: Bildefeltet ved siden av navnet, eller «Legg til bilde» når tingen har bilder. Du kan velge flere. Trykk på et lite bilde for å gjøre det til hovedbilde; krysset fjerner det |
 
 ### Mange ting
 
@@ -434,8 +434,8 @@ Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
 | Sortere | Klikk på kolonnenavnet: Stigende, synkende, av |
 | Endre bredde | Dra i kanten av kolonneoverskriften. Dobbeltklikk der for å tilpasse bredden til innholdet |
 | Se kolonner som er skjult | «Vis n kolonner til» på den grå linja |
-| Skjule en kolonne for godt | Innstillinger › Tilpass visning › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
-| Se lange verdier i sin helhet | Innstillinger › Tilpass visning › «Bryt lang tekst over flere linjer» |
+| Skjule en kolonne for godt | Innstillinger › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har, i alfabetisk rekkefølge etter Navn. «Velg alle» og «Fjern alle» viser eller skjuler alle på én gang. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
+| Se lange verdier i sin helhet | Innstillinger › «Bryt lang tekst i tabellen» |
 
 Tabellen viser kolonnene kategorien din har, også de tomme: Det er dem du har
 igjen å fylle ut. Kolonner for alle kategorier er skjult når de er tomme der du
@@ -482,8 +482,8 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 
 | Måte | Passer når | Slik |
 |---|---|---|
-| Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Lagre i Filer» eller send fila med AirDrop. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
+| Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned» lager fila. På iPhone og iPad heter knappen «Del». Velg «Lagre i Filer» eller send fila med AirDrop. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
@@ -504,8 +504,8 @@ der du skriver det inn.
 
 ## Bruke flere enheter
 
-Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Lagring på
-begge enhetene. Du sender registeret med AirDrop, og den andre enheten henter
+Slå på «Synkroniser mellom enhetene dine» i Innstillinger på begge
+enhetene. Du sender registeret med AirDrop, og den andre enheten henter
 det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
 iPhone og en pris du retter på Mac, kommer med på begge enhetene.
 
@@ -584,19 +584,19 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 
 Tannhjulet lengst til høyre i topplinja.
 
-| Gruppe | Valg | Gjør |
-|---|---|---|
-| Velg et passord | Passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
-| Lagring | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Lagring | Synkroniser mellom enhetene dine | Viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Lagring | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila |
-| Lagring | Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du lastet ned kopien, hvis det er et annet enn nå |
-| Lås og passord | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
-| Lås og passord | Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
-| Lås og passord | Passord | «Endre passord» |
-| Tilpass visning | Bryt lang tekst over flere linjer, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
-| Kvitteringer | Les tekst på kvitteringer | Bare på mobil. Laster ned tekstgjenkjenningen, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
-| Nederst | Personvern, Kildekode | Åpner dokumentene på GitHub. Linja under viser versjonen |
+| Valg | Gjør |
+|---|---|
+| Passord, Gjenta passordet | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
+| Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
+| Synkroniser mellom enhetene dine | Viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
+| Sikkerhetskopi | «Last ned» lager fila |
+| Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du lastet ned kopien, hvis det er et annet enn nå |
+| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
+| Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
+| Passord | «Endre» |
+| Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
+| Les tekst på kvitteringer | Bare på mobil. Laster ned KI-modellene for tekstgjenkjenning, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
+| Personvern, Kildekode | Nederst. Åpner dokumentene på GitHub. Linja under viser versjonen |
 
 ### Hurtigtaster
 
@@ -620,7 +620,7 @@ Tannhjulet lengst til høyre i topplinja.
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
-| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen under Innstillinger › Lås og passord |
+| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen i Innstillinger |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |

@@ -81,7 +81,7 @@ export function CategoryEditor({ categories, icons, properties, onSave, onClose 
 
   return (
     <form id="category-form" className="stack-sm category-form" onSubmit={(e) => void submit(e)}>
-      <p className="field-label">{t.categories.title}</p>
+      <p className="panel-title">{t.categories.title}</p>
       <p className="hint">{t.categories.hint}</p>
       <ul className="category-rows" ref={listRef}>
         {rows.map((r, i) => {

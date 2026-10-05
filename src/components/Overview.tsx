@@ -1486,7 +1486,7 @@ export function Overview({
                 void waitForPhotos().then(() => window.print())
               }}
             >
-              <p className="field-label">{t.report.pick}</p>
+              <p className="panel-title">{t.report.pick}</p>
               {printOnly && <p className="hint">{t.selection.printing(printOnly.size)}</p>}
               {/* Only the link that would change something: Velg alle while a
                   column is left out, Fjern alle while one is in */}
@@ -1497,12 +1497,12 @@ export function Overview({
                     className="summary-link"
                     onClick={() => setPrintPick(new Set(shownAll.map((d) => d.id)))}
                   >
-                    {t.report.pickAll}
+                    {t.action.pickAll}
                   </button>
                 )}
                 {shownAll.some((d) => d.kind !== 'name' && printPick.has(d.id)) && (
                   <button type="button" className="summary-link" onClick={() => setPrintPick(new Set())}>
-                    {t.report.pickNone}
+                    {t.action.pickNone}
                   </button>
                 )}
               </div>
@@ -1584,7 +1584,7 @@ export function Overview({
                 applyBulk()
               }}
             >
-              <p className="field-label">{t.selection.editTitle(selected.size)}</p>
+              <p className="panel-title">{t.selection.editTitle(selected.size)}</p>
               <div className="row toolbar">
                 <div className="field">
                   <label htmlFor="bulk-prop">{t.selection.property}</label>
@@ -1679,7 +1679,7 @@ export function Overview({
                 void addColumn()
               }}
             >
-              <p className="field-label">{t.table.addColumn}</p>
+              <p className="panel-title">{t.table.addColumn}</p>
               <div className="row toolbar">
                 <div className="field">
                   <label htmlFor="col-key">{t.table.columnKey}</label>

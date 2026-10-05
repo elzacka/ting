@@ -19,7 +19,9 @@ export function AboutApp() {
           <Icon name="openInNew" size={16} />
         </a>
       </div>
-      <p className="hint num">{t.about.line(version)}</p>
+      <p className="hint num">
+        {t.about.version(version)} <span className="about-sep" aria-hidden="true">|</span> {t.about.author}
+      </p>
     </footer>
   )
 }

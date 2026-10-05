@@ -278,8 +278,12 @@
   gap: var(--s-1);
 }
 
-.field label,
-.field-label {
+.field label {
+  font-size: var(--text-sm);
+}
+
+/* A panel's heading, one step above the band's labels (--text-xs) */
+.panel-title {
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -594,6 +598,15 @@
   border-top: 1px solid var(--border);
 }
 
+/* At the desk the bar keeps to the form's column */
+@media (min-width: 600px) {
+  .form-bar {
+    margin: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
 /* Detail */
 
 .title {
@@ -611,12 +624,10 @@
 }
 
 /* Label column as wide as the longest label, values left beside it: the eye
-   reads down one edge, as in the tables. */
+   reads down one edge, as in the tables. A hairline between rows. */
 .specs {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  column-gap: var(--s-6);
-  border-top: 1px solid var(--border);
 }
 
 .specs > div {
@@ -631,8 +642,19 @@
 }
 
 .specs dt {
+  display: flex;
+  align-items: center;
+  min-height: var(--row-h);
+  padding-right: var(--s-6);
   color: var(--text-2);
 }
+
+.specs > div:last-child > dt,
+.specs > div:last-child > dd {
+  border-bottom: 0;
+}
+
+
 
 .specs dd {
   font-variant-numeric: tabular-nums;
@@ -693,10 +715,10 @@
   padding: var(--s-1) 0;
 }
 
-/* Slett at the foot of a thing's page, set apart by a hairline */
-.detail-foot {
-  padding-top: var(--s-6);
-  border-top: 1px solid var(--border);
+/* Slett at the foot of a thing's page, under the list's last hairline. The text
+   button's label lines up with the column; only its hover fill reaches past it. */
+.detail-foot .btn-danger {
+  margin-left: calc((var(--s-4) + 1px) * -1);
 }
 
 /* A section's text sits one step under its label, level with rows and inputs */
@@ -704,12 +726,6 @@ section {
   font-size: var(--text-sm);
 }
 
-/* One step above the labels and rows it heads; the title is one step above it */
-.section-label {
-  font-size: var(--text-md);
-  font-weight: 600;
-  line-height: 1.3;
-}
 
 /* Form: spec rows */
 
@@ -805,10 +821,6 @@ section {
   background: var(--danger-bg);
   color: var(--danger);
   font-size: var(--text-sm);
-}
-
-.section-label {
-  margin-bottom: calc(var(--s-1) * -1);
 }
 
 /* The Oversikt icon sits a step away from the wordmark */
@@ -1031,9 +1043,9 @@ section {
   border-top: 1px solid var(--border);
 }
 
-/* Everything in the band is set in the column headers' size, on 36 px
-   controls: the band serves the table and must not outweigh it. Touch
-   screens keep 16 px text in fields so iOS does not zoom. */
+/* Everything in the band but a panel's heading is set in the column headers'
+   size, on 36 px controls: the band serves the table and must not outweigh it.
+   Touch screens keep 16 px text in fields so iOS does not zoom. */
 .controls {
   font-size: var(--text-xs);
 }
@@ -1042,7 +1054,6 @@ section {
 .controls .select,
 .controls .btn,
 .controls .field label,
-.controls .field-label,
 .controls .filter summary,
 .controls .filter-option,
 .controls .summary-link,
@@ -2256,6 +2267,18 @@ section {
   border-radius: var(--radius-lg);
 }
 
+/* Velg alle / Fjern alle: a line of its own above the choices */
+.disclosure-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--s-4);
+}
+
+.disclosure-actions .summary-link {
+  min-height: var(--row-h-sm);
+  font-size: var(--text-xs);
+}
+
 .disclosure-body .check-option {
   min-height: var(--row-h-sm);
   gap: var(--s-2);
@@ -2268,26 +2291,18 @@ section {
 }
 
 /* Innstillinger: a heading over each group, its rows in one card */
+/* Innstillinger: one list of rows, a hairline between each, no boxes and no visible
+   group headings. Every row names itself. */
 .settings {
   display: grid;
-  gap: var(--s-8);
+}
+
+.settings > .title {
+  padding-bottom: var(--s-4);
 }
 
 .setting-group {
-  display: grid;
-  gap: var(--s-2);
-}
-
-.setting-group-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.setting-card {
   min-width: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
 }
 
 /* One setting: title and description at the left, its control at the right,
@@ -2295,7 +2310,7 @@ section {
 .setting-row {
   display: grid;
   gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
+  padding: var(--s-3) 0;
 }
 
 /* <details> cannot be a grid container in every browser */
@@ -2303,7 +2318,8 @@ section {
   display: block;
 }
 
-.setting-row + .setting-row {
+.setting-row + .setting-row,
+.setting-group + .setting-group > h2 + .setting-row {
   border-top: 1px solid var(--border);
 }
 
@@ -2320,11 +2336,6 @@ section {
   flex: none;
 }
 
-/* A text button's label lines up with the edge the bordered buttons keep */
-.setting-main > .btn-danger {
-  margin-right: calc(var(--s-4) * -1);
-}
-
 .setting-switch {
   cursor: pointer;
 }
@@ -2336,7 +2347,6 @@ section {
 }
 
 .setting-desc {
-  max-width: 60ch;
   font-size: var(--text-xs);
   color: var(--text-2);
 }
@@ -2360,11 +2370,6 @@ section {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--s-3);
-  }
-
-  .setting-main > .btn-danger {
-    margin-right: 0;
-    margin-left: calc(var(--s-4) * -1);
   }
 }
 
@@ -2425,10 +2430,17 @@ section {
 .settings-footer {
   display: grid;
   gap: var(--s-1);
+  margin-top: var(--s-8);
+  font-size: var(--text-sm);
 }
 
 .settings-footer .row {
   gap: var(--s-6);
+}
+
+/* Only divides the version from the name: plainly lighter than the text around it */
+.about-sep {
+  color: color-mix(in srgb, var(--text-2) 40%, var(--bg));
 }
 
 .external-link {
@@ -2436,6 +2448,11 @@ section {
   align-items: center;
   gap: var(--s-1);
   min-height: var(--row-h);
+  text-decoration: none; /* links on their own line, marked by the accent and the icon */
+}
+
+.external-link:hover {
+  text-decoration: underline;
 }
 
 /* A checkbox and its sentence on one 44 px line */
@@ -2679,6 +2696,11 @@ section {
   gap: var(--s-3);
 }
 
+/* A thing without a photo: the tile beside its name, the name on the tile's centre line */
+.detail-head {
+  align-items: center;
+}
+
 /* Ny fra kvittering */
 
 .receipt-head {
@@ -2719,9 +2741,16 @@ section {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
-  border: 0;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Labels its lines like a field label */
+.receipt-lines legend {
+  margin-bottom: var(--s-1);
+  padding: 0;
+  font-size: var(--text-sm);
 }
 
 .receipt-line {

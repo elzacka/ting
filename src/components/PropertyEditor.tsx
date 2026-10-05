@@ -110,7 +110,7 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
 
   return (
     <form id="property-form" className="stack-sm" onSubmit={submit}>
-      <p className="field-label">{t.properties.title}</p>
+      <p className="panel-title">{t.properties.title}</p>
       <p className="hint">{t.properties.hint}</p>
       <div className="property-rows" role="list" ref={listRef}>
         {rows.map((r, i) => {
