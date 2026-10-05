@@ -86,12 +86,12 @@ mobilen låser du appen ved å lukke den.
 
 På iPhone lukker systemet appen når det trenger minnet. Da åpner den låst
 igjen, også når den automatiske låsen er av. Slå på «Lås opp med Face ID eller
-Touch ID på denne enheten» under Innstillinger › Lås, så låser du opp med
-Face ID eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
+Touch ID» under Innstillinger › Lås og passord, så låser du opp med Face ID
+eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
 trenger det for sikkerhetskopier og på andre enheter. Slår du valget av, kan du
 slette passnøkkelen «Ting» i Passord-appen.
 
-Valgene under Lås gjelder bare enheten du bruker.
+Den automatiske låsen og Face ID gjelder bare enheten du bruker.
 
 ### 3. Lag kategoriene og egenskapene du trenger
 
@@ -483,7 +483,7 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg mappe». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Lagre i Filer» eller send fila med AirDrop. «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har svart ja |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned sikkerhetskopi» lager fila. På iPhone og iPad heter knappen «Del sikkerhetskopi». Velg «Lagre i Filer» eller send fila med AirDrop. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
@@ -504,7 +504,7 @@ der du skriver det inn.
 
 ## Bruke flere enheter
 
-Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Synkroniser på
+Slå på «Synkroniser mellom enhetene dine» under Innstillinger › Lagring på
 begge enhetene. Du sender registeret med AirDrop, og den andre enheten henter
 det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
 iPhone og en pris du retter på Mac, kommer med på begge enhetene.
@@ -584,17 +584,19 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 
 Tannhjulet lengst til høyre i topplinja.
 
-| Valg | Gjør |
-|---|---|
-| Velg et passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
-| Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Synkroniser | «Synkroniser mellom enhetene dine» viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Kvitteringer | Bare på mobil. «Les tekst på kvitteringer» laster ned tekstgjenkjenningen, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
-| Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila. «Gjenopprett fra sikkerhetskopi» erstatter alt på denne enheten, og spør først |
-| Tilpass visning | Bryt lang tekst over flere linjer, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
-| Lås | «Lås appen etter 10 minutter uten bruk» slår den automatiske låsen av eller på. «Lås opp med Face ID eller Touch ID på denne enheten» lar deg låse opp uten passord. Begge gjelder bare enheten du bruker |
-| Passord | «Endre passord». Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned |
-| Om appen | «Personvern» og «Kildekode» åpner dokumentene på GitHub. Linja under viser versjonen |
+| Gruppe | Valg | Gjør |
+|---|---|---|
+| Velg et passord | Passord | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
+| Lagring | Lagringsmappe | «Velg mappe» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
+| Lagring | Synkroniser mellom enhetene dine | Viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
+| Lagring | Sikkerhetskopi | «Last ned sikkerhetskopi» lager fila |
+| Lagring | Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du lastet ned kopien, hvis det er et annet enn nå |
+| Lås og passord | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
+| Lås og passord | Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
+| Lås og passord | Passord | «Endre passord» |
+| Tilpass visning | Bryt lang tekst over flere linjer, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
+| Kvitteringer | Les tekst på kvitteringer | Bare på mobil. Laster ned tekstgjenkjenningen, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
+| Nederst | Personvern, Kildekode | Åpner dokumentene på GitHub. Linja under viser versjonen |
 
 ### Hurtigtaster
 
@@ -618,7 +620,7 @@ Tannhjulet lengst til høyre i topplinja.
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
-| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID på denne enheten» av og på igjen under Innstillinger › Lås |
+| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen under Innstillinger › Lås og passord |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |

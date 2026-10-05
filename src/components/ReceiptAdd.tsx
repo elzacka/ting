@@ -181,7 +181,11 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
         className="visually-hidden"
         onChange={(e) => void pick(e.target.files?.[0])}
       />
-      {reading === false && <ReceiptSettings onReady={() => setReading(true)} />}
+      {reading === false && (
+        <div className="setting-card">
+          <ReceiptSettings onReady={() => setReading(true)} />
+        </div>
+      )}
       {stage === 'pick' && reading && (
         <div className="row">
           <button type="button" className="btn btn-primary" onClick={() => fileRef.current?.click()}>

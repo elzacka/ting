@@ -17,17 +17,17 @@ export const t = {
     unlock: 'Lås opp',
     wrong: 'Feil passord.',
     working: 'Låser opp…',
-    // How this device locks and opens: the idle lock, and Face ID or Touch ID
-    // in place of the passphrase (a passkey)
-    lockTitle: 'Lås',
+    // Lås og passord: the idle lock, Face ID or Touch ID in place of the
+    // passphrase (a passkey), and the passphrase itself
+    lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
-    passkeyOption: 'Lås opp med Face ID eller Touch ID på denne enheten',
+    passkeyOption: 'Lås opp med Face ID eller Touch ID',
+    passkeyWhere: 'Gjelder bare denne enheten.',
     passkeyUnlock: 'Lås opp med Face ID eller Touch ID',
     passkeyFailed: 'Face ID eller Touch ID virket ikke. Lås opp med passordet.',
     passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID.',
     changeTitle: 'Passord',
-    changeWhat:
-      'Passordet krypterer alt du legger til, på enheten, i lagringsmappen og i sikkerhetskopiene. Gjenoppretter du fra en sikkerhetskopi og appen ber om passord, bruker du passordet du hadde da du lastet den ned.',
+    changeWhat: 'Krypterer registeret på enheten, i lagringsmappen og i sikkerhetskopiene.',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',
@@ -35,7 +35,7 @@ export const t = {
     folderForeign: (name: string) =>
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
-    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv det inn for å åpne den.',
+    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv inn passordet appen hadde da du lastet den ned.',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
   },
@@ -60,7 +60,7 @@ export const t = {
   properties: {
     edit: 'Endre egenskaper',
     title: 'Egenskaper',
-    hint: 'Endrer du navn eller felttype, gjelder det alle ting. Kategori endrer du under Endre kategorier.',
+    hint: 'Et nytt navn eller en ny felttype gjelder alle ting. Kategori endrer du under Endre kategorier.',
     name: (key: string) => `Navn på ${key}`,
     type: (key: string) => `Felttype for ${key}`,
     unit: (key: string) => `Enhet for ${key}`,
@@ -81,7 +81,7 @@ export const t = {
     count: (n: number) => (n === 0 ? 'Ingen alternativer' : n === 1 ? '1 alternativ' : `${n} alternativer`),
     button: (count: string, key: string) => `${count} for ${key}`,
     title: (key: string) => `Alternativer for ${key}`,
-    hint: 'Endrer du et alternativ, endres det på alle ting som har det. Gir du to alternativer samme navn, blir de ett.',
+    hint: 'Endringen gjelder alle ting som har alternativet. To alternativer med samme navn blir ett.',
     name: 'Navn på alternativ',
     add: 'Nytt alternativ',
     newRow: 'Nytt',
@@ -107,7 +107,7 @@ export const t = {
   categories: {
     edit: 'Endre kategorier',
     title: 'Kategorier',
-    hint: 'Endrer du et navn, endres det på alle ting i kategorien. Gir du to kategorier samme navn, blir de én.',
+    hint: 'Et nytt navn gjelder alle ting i kategorien. To kategorier med samme navn blir én.',
     name: 'Navn på kategori',
     add: 'Ny kategori',
     newRow: 'Ny',
@@ -322,18 +322,18 @@ export const t = {
     noticePhone: 'Det du legger til, blir borte når appen lukkes.',
     setPassphrase: 'Velg passord for å bevare det',
     why: 'Passordet krypterer alt du legger til, på enheten og i sikkerhetskopiene. Uten passord blir det borte når du lukker appen.',
-    lost: 'Mister du passordet, er dataene tapt.',
+    lost: 'Ingen kan åpne registeret hvis du mister passordet.',
     folderFirst: 'Velg et passord først. Mappen får bare krypterte data.',
     done: 'Passord valgt. Alt du har lagt til, er bevart.',
   },
   settings: {
     title: 'Innstillinger',
+    storageTitle: 'Lagring',
     columnsTitle: 'Tilpass visning',
     columnsList: 'Egenskaper i tabellen',
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
-    folderNone:
-      'Du har ikke valgt en mappe for automatisk lagring. Alt du legger til, ligger bare i denne nettleseren. Sletter du nettstedsdata i nettleseren, blir det borte.',
+    folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata.',
     unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
     choose: 'Velg mappe',
     checking: 'Sjekker mappen…',
@@ -344,11 +344,13 @@ export const t = {
     disconnect: 'Koble fra',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
     backupTitle: 'Sikkerhetskopi',
-    backupWhat: 'Manuelt: Én kryptert fil med alt du har lagt til. Gjenoppretter du fra filen, erstatter den alt som lå i appen fra før.',
+    backupWhat: 'Én kryptert fil med alt i registeret.',
     download: 'Last ned sikkerhetskopi',
     // A phone saves the file through the share sheet: Filer, AirDrop, e-post
     share: 'Del sikkerhetskopi',
     restore: 'Gjenopprett fra sikkerhetskopi',
+    restoreWhat: 'Erstatter alt i appen med innholdet i filen.',
+    restorePick: 'Velg fil',
     restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra filen? Du kan ikke angre.`,
     restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}.`,
     restoreFailed: 'Denne filen er ikke en sikkerhetskopi fra Ting. Velg en fil som slutter på .json.',
@@ -381,21 +383,19 @@ export const t = {
     option: 'Les tekst på kvitteringer',
     what: 'Appen laster ned tekstgjenkjenning, omtrent 27 MB. Etterpå leser den kvitteringer på enheten, også uten nett.',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Lastet ned og integrert i appen.',
+    ready: 'Tekstgjenkjenningen er lastet ned.',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
-  // Om appen: the last section of Innstillinger
+  // The foot of Innstillinger
   about: {
-    title: 'Om appen',
     privacy: 'Personvern',
     source: 'Kildekode',
     line: (version: string) => `Versjon ${version}. Laget av Tazk.`,
   },
   // Sync between one person's own devices: a file sent with AirDrop and merged in
   sync: {
-    title: 'Synkroniser',
     option: 'Synkroniser mellom enhetene dine',
-    what: 'Send registeret til den andre enheten din med AirDrop, og hent det tilbake når du har endret noe der. Appen tar vare på endringene fra begge enhetene.',
+    what: 'Send registeret til den andre enheten med AirDrop og hent det tilbake når du har endret noe der. Appen slår sammen endringene fra begge enhetene.',
     send: 'Send til en annen enhet',
     fetch: 'Hent fra en annen enhet',
     sent: (date: string, time: string) => `Sist sendt ${date} kl. ${time}.`,

@@ -12,7 +12,7 @@ Each document has one reader and one job; a fact lives in the document whose rea
 |---|---|---|---|
 | `README.md` | Anyone who finds the repo (Norwegian) | What Ting is, the link to the app, which document to read, licences | How to use, run, change or administer the app |
 | `BRUKERVEILEDNING.md` | People using the app (Norwegian, klarspråk) | Every task in the app, what to do when something goes wrong | Code, files, repository settings |
-| `PERSONVERN.md` | People using the app (Norwegian, klarspråk), linked from Innstillinger › Om appen | What is stored where, what leaves the device, rights, contact | How to use the app, threat model |
+| `PERSONVERN.md` | People using the app (Norwegian, klarspråk), linked from the foot of Innstillinger | What is stored where, what leaves the device, rights, contact | How to use the app, threat model |
 | `SECURITY.md` | Security reviewers and reporters | Threat model, OWASP mapping, residual risks, how to report | How to use the app |
 | `CLAUDE.md` | Whoever changes the code | Stack, commands, deployment, structure, data model, conventions; encryption in `.claude/rules/encryption.md` | Step-by-step guides for the owner |
 | `dev_only/adminguide.md` | elzacka as owner (Norwegian, gitignored) | Changing texts, category icons and the look without reading the code; the GitHub settings | What a user or a developer needs |

@@ -5,12 +5,13 @@ import { disposeOcr, prefetchOcr } from '../lib/ocr'
 import { ocrCacheName } from '../lib/ocr/models'
 import { receiptReadingKey } from '../lib/receiptItems'
 import { t } from '../lib/strings'
+import { SettingSwitch } from './Setting'
 
 type State = 'off' | 'downloading' | 'ready' | 'failed'
 
-// Kvitteringer: turning it on downloads the text recognition into the cache,
-// so a receipt can be read later without a network; off deletes it again.
-// Shown on Innstillinger, and on the receipt screen while it is off.
+// Kvitteringer: on downloads the text recognition into the cache, so a receipt
+// reads without a network; off deletes it. One row: in its group on
+// Innstillinger, in a card of its own on the receipt screen while it is off.
 export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
   const [state, setState] = useState<State>('off')
 
@@ -38,31 +39,25 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
   }
 
   return (
-    <section className="setting">
-      <div>
-        <h2 className="section-label">{t.receipt.settingsTitle}</h2>
-        <p className="hint">{t.receipt.what}</p>
-      </div>
-      <label className="check-option">
-        <input
-          type="checkbox"
-          checked={state !== 'off'}
-          disabled={state === 'downloading'}
-          onChange={(e) => void toggle(e.target.checked)}
-        />
-        <span>{t.receipt.option}</span>
-      </label>
+    <div className="setting-row">
+      <SettingSwitch
+        title={t.receipt.option}
+        description={t.receipt.what}
+        checked={state !== 'off'}
+        disabled={state === 'downloading'}
+        onChange={(on) => void toggle(on)}
+      />
       {state === 'downloading' && (
-        <p className="hint" role="status">
+        <p className="setting-desc" role="status">
           {t.receipt.downloading}
         </p>
       )}
-      {state === 'ready' && <p className="hint">{t.receipt.ready}</p>}
+      {state === 'ready' && <p className="setting-desc">{t.receipt.ready}</p>}
       {state === 'failed' && (
         <p className="error" role="alert">
           {t.receipt.downloadFailed}
         </p>
       )}
-    </section>
+    </div>
   )
 }

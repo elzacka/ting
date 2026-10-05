@@ -19,6 +19,7 @@ import { DeviceSync } from './DeviceSync'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
+import { SettingGroup, SettingSwitch } from './Setting'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 // Norwegian writes the time with a full stop: kl. 19.51
@@ -229,6 +230,9 @@ export function SettingsPage({
             ? t.settings.unsupported
             : null
 
+  // The one risk on the page: everything lives in this browser alone
+  const folderAtRisk = !trial && status.kind === 'none'
+
   const disconnectButton = (
     <button type="button" className="btn" onClick={disconnect}>
       {t.settings.disconnect}
@@ -236,217 +240,334 @@ export function SettingsPage({
   )
 
   return (
-    <div className="stack narrow">
+    <div className="settings narrow">
       <h1 className="title">{t.settings.title}</h1>
 
       {trial && (
-        <section className="setting">
-          <div>
-            <h2 className="section-label">{t.vault.setupTitle}</h2>
-            <p className="hint">{t.trial.why}</p>
-            <p className="hint">{t.trial.lost}</p>
+        <SettingGroup title={t.vault.setupTitle}>
+          <div className="setting-row">
+            <div className="setting-text">
+              <p className="setting-desc">{t.trial.why}</p>
+              <p className="setting-desc">{t.trial.lost}</p>
+            </div>
+            <form className="stack-sm" onSubmit={(e) => void onSetup(e)}>
+              <KeychainName />
+              <div className="field">
+                <label htmlFor="setup-pass">{t.vault.passphrase}</label>
+                <input
+                  id="setup-pass"
+                  className="input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={setupPass}
+                  onChange={(e) => setSetupPass(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="setup-repeat">{t.vault.repeat}</label>
+                <input
+                  id="setup-repeat"
+                  className="input"
+                  type="password"
+                  autoComplete="new-password"
+                  value={setupRepeat}
+                  onChange={(e) => setSetupRepeat(e.target.value)}
+                />
+              </div>
+              {passMessage && (
+                <p className="error" role="alert">
+                  {passMessage}
+                </p>
+              )}
+              <div className="row">
+                <button type="submit" className="btn btn-primary" disabled={setupPass === '' || setupRepeat === ''}>
+                  {t.vault.create}
+                </button>
+              </div>
+            </form>
           </div>
-          <form className="stack-sm" onSubmit={(e) => void onSetup(e)}>
-            <KeychainName />
-            <div className="field">
-              <label htmlFor="setup-pass">{t.vault.passphrase}</label>
-              <input
-                id="setup-pass"
-                className="input"
-                type="password"
-                autoComplete="new-password"
-                value={setupPass}
-                onChange={(e) => setSetupPass(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="setup-repeat">{t.vault.repeat}</label>
-              <input
-                id="setup-repeat"
-                className="input"
-                type="password"
-                autoComplete="new-password"
-                value={setupRepeat}
-                onChange={(e) => setSetupRepeat(e.target.value)}
-              />
-            </div>
-            {passMessage && (
-              <p className="error" role="alert">
-                {passMessage}
-              </p>
-            )}
-            <div className="row">
-              <button type="submit" className="btn btn-primary" disabled={setupPass === '' || setupRepeat === ''}>
-                {t.vault.create}
-              </button>
-            </div>
-          </form>
-        </section>
+        </SettingGroup>
       )}
 
-      {showFolder && (
-        <section className="setting">
-          <div className="setting-head">
-            <div>
-              <h2 className="section-label">{t.settings.folderTitle}</h2>
-              {folderLine && <p className="hint num">{folderLine}</p>}
-            </div>
-            <div className="row">
-              {!trial && (status.kind === 'none' || status.kind === 'error') && (
-                <button type="button" className="btn" onClick={connect}>
-                  {t.settings.choose}
-                </button>
-              )}
-              {(status.kind === 'connected' || status.kind === 'error') && disconnectButton}
-            </div>
-          </div>
-          {status.kind === 'needs-permission' && (
-            <div className="stack-sm">
-              <p>{t.settings.needsPermission(status.name)}</p>
+      <SettingGroup title={t.settings.storageTitle}>
+        {showFolder && (
+          <div className="setting-row">
+            <div className="setting-main">
+              <div className="setting-text">
+                <span className="setting-title">{t.settings.folderTitle}</span>
+                {folderLine && (
+                  <p className={`setting-desc num${folderAtRisk ? ' is-warn' : ''}`}>
+                    {folderAtRisk && <Icon name="warning" size={16} />}
+                    <span>{folderLine}</span>
+                  </p>
+                )}
+              </div>
               <div className="row">
-                <button type="button" className="btn btn-primary" onClick={grant}>
-                  {t.settings.grant}
-                </button>
-                {disconnectButton}
+                {!trial && (status.kind === 'none' || status.kind === 'error') && (
+                  <button type="button" className="btn" onClick={connect}>
+                    {t.settings.choose}
+                  </button>
+                )}
+                {(status.kind === 'connected' || status.kind === 'error') && disconnectButton}
               </div>
             </div>
-          )}
-          {status.kind === 'needs-passphrase' && (
-            <form
-              className="stack-sm"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void adopt(folderPass)
-              }}
+            {status.kind === 'needs-permission' && (
+              <div className="stack-sm">
+                <p>{t.settings.needsPermission(status.name)}</p>
+                <div className="row">
+                  <button type="button" className="btn btn-primary" onClick={grant}>
+                    {t.settings.grant}
+                  </button>
+                  {disconnectButton}
+                </div>
+              </div>
+            )}
+            {status.kind === 'needs-passphrase' && (
+              <form
+                className="stack-sm"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  void adopt(folderPass)
+                }}
+              >
+                <p>{t.vault.folderForeign(status.name)}</p>
+                <div className="field">
+                  <label htmlFor="folder-pass">{t.vault.passphrase}</label>
+                  <input
+                    id="folder-pass"
+                    className="input"
+                    type="password"
+                    autoComplete="current-password"
+                    value={folderPass}
+                    onChange={(e) => setFolderPass(e.target.value)}
+                  />
+                </div>
+                {status.wrong && (
+                  <p className="error" role="alert">
+                    {t.vault.wrong}
+                  </p>
+                )}
+                <div className="row">
+                  <button type="submit" className="btn btn-primary">
+                    {t.vault.folderOpen}
+                  </button>
+                  {disconnectButton}
+                </div>
+              </form>
+            )}
+            {status.kind === 'error' && (
+              <p className="error" role="alert">
+                {t.settings.error(status.name)}
+              </p>
+            )}
+          </div>
+        )}
+
+        {!trial && <DeviceSync />}
+
+        {!trial && (
+          <div className="setting-row">
+            <div className="setting-main">
+              <div className="setting-text">
+                <span className="setting-title">{t.settings.backupTitle}</span>
+                <p className="setting-desc">{t.settings.backupWhat}</p>
+              </div>
+              <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
+                {shareable ? t.settings.share : t.settings.download}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Replaces everything: a row of its own, in the colour of what cannot
+            be undone, and confirmed before anything is replaced */}
+        <div className="setting-row">
+          <div className="setting-main">
+            <div className="setting-text">
+              <span id="restore-title" className="setting-title">
+                {t.settings.restore}
+              </span>
+              <p id="restore-what" className="setting-desc">
+                {t.settings.restoreWhat}
+              </p>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              className="visually-hidden"
+              onChange={(e) => void onFile(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              className="btn btn-danger"
+              aria-describedby="restore-title restore-what"
+              onClick={() => fileRef.current?.click()}
             >
-              <p>{t.vault.folderForeign(status.name)}</p>
+              {t.settings.restorePick}
+            </button>
+          </div>
+          {foreignBackup && (
+            <form className="stack-sm" onSubmit={openForeignBackup}>
+              <p>{t.vault.backupForeign}</p>
               <div className="field">
-                <label htmlFor="folder-pass">{t.vault.passphrase}</label>
+                <label htmlFor="backup-pass">{t.vault.passphrase}</label>
                 <input
-                  id="folder-pass"
+                  id="backup-pass"
                   className="input"
                   type="password"
                   autoComplete="current-password"
-                  value={folderPass}
-                  onChange={(e) => setFolderPass(e.target.value)}
+                  value={backupPass}
+                  onChange={(e) => setBackupPass(e.target.value)}
+                  autoFocus
                 />
               </div>
-              {status.wrong && (
+              {backupError && (
                 <p className="error" role="alert">
-                  {t.vault.wrong}
+                  {backupError}
                 </p>
               )}
               <div className="row">
                 <button type="submit" className="btn btn-primary">
-                  {t.vault.folderOpen}
+                  {t.vault.unlock}
                 </button>
-                {disconnectButton}
+                <button type="button" className="btn" onClick={() => setForeignBackup(null)}>
+                  {t.action.cancel}
+                </button>
               </div>
             </form>
           )}
-          {status.kind === 'error' && (
-            <p className="error" role="alert">
-              {t.settings.error(status.name)}
+          {pending && (
+            <div className="confirm" role="alertdialog" aria-labelledby="restore-text">
+              <p id="restore-text">{t.settings.restoreConfirm(pending.items.length)}</p>
+              <div className="row">
+                <button type="button" className="btn btn-danger" onClick={() => void restore()} autoFocus>
+                  {t.settings.replace}
+                </button>
+                <button type="button" className="btn" onClick={() => setPending(null)}>
+                  {t.action.cancel}
+                </button>
+              </div>
+            </div>
+          )}
+          {message && (
+            <p className="setting-desc" role="status">
+              {message}
             </p>
           )}
-        </section>
+        </div>
+      </SettingGroup>
+
+      {/* A trial has no lock: the passphrase is chosen at the top instead */}
+      {!trial && (
+        <SettingGroup title={t.vault.lockTitle}>
+          <div className="setting-row">
+            <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
+          </div>
+          {canPasskey && (
+            <div className="setting-row">
+              <SettingSwitch
+                title={t.vault.passkeyOption}
+                description={t.vault.passkeyWhere}
+                checked={passkey !== null}
+                disabled={passkeyBusy}
+                onChange={(on) => void togglePasskey(on)}
+              />
+              {passkeyMessage && (
+                <p className="error" role="alert">
+                  {passkeyMessage}
+                </p>
+              )}
+            </div>
+          )}
+          <div className="setting-row">
+            <div className="setting-main">
+              <div className="setting-text">
+                <span className="setting-title">{t.vault.changeTitle}</span>
+                <p className="setting-desc">{t.vault.changeWhat}</p>
+              </div>
+              {!changingPass && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => {
+                    setPassMessage(null)
+                    setChangingPass(true)
+                  }}
+                >
+                  {t.vault.change}
+                </button>
+              )}
+            </div>
+            {!changingPass ? (
+              passMessage && (
+                <p className="setting-desc" role="status">
+                  {passMessage}
+                </p>
+              )
+            ) : (
+              <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
+                <KeychainName />
+                <div className="field">
+                  <label htmlFor="old-pass">{t.vault.current}</label>
+                  <input
+                    id="old-pass"
+                    className="input"
+                    type="password"
+                    autoComplete="current-password"
+                    value={oldPass}
+                    onChange={(e) => setOldPass(e.target.value)}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="new-pass">{t.vault.next}</label>
+                  <input
+                    id="new-pass"
+                    className="input"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value)}
+                  />
+                </div>
+                {passMessage && (
+                  <p className={passMessage === t.vault.changed ? 'hint' : 'error'} role="status">
+                    {passMessage}
+                  </p>
+                )}
+                <div className="row">
+                  <button type="submit" className="btn" disabled={oldPass === '' || newPass === ''}>
+                    {t.vault.change}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setOldPass('')
+                      setNewPass('')
+                      setPassMessage(null)
+                      setChangingPass(false)
+                    }}
+                  >
+                    {t.action.cancel}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </SettingGroup>
       )}
 
-      {!trial && <DeviceSync />}
-
-      {/* Receipts are read from the phone's add screen */}
-      {narrow && <ReceiptSettings />}
-
-      <section className="setting">
-        <div className="setting-head">
-          <div>
-            <h2 className="section-label">{t.settings.backupTitle}</h2>
-            <p className="hint">{t.settings.backupWhat}</p>
-          </div>
-          {!trial && (
-            <button type="button" className="btn" disabled={items.length === 0} onClick={() => void download()}>
-              {shareable ? t.settings.share : t.settings.download}
-            </button>
-          )}
-        </div>
-        {/* Replaces everything: set apart from the download, in the colour of
-            what cannot be undone, and confirmed before anything is replaced */}
-        <div className="row">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="visually-hidden"
-            onChange={(e) => void onFile(e.target.files?.[0])}
-          />
-          <button type="button" className="btn btn-danger setting-danger" onClick={() => fileRef.current?.click()}>
-            {t.settings.restore}
-          </button>
-        </div>
-        {foreignBackup && (
-          <form className="stack-sm" onSubmit={openForeignBackup}>
-            <p>{t.vault.backupForeign}</p>
-            <div className="field">
-              <label htmlFor="backup-pass">{t.vault.passphrase}</label>
-              <input
-                id="backup-pass"
-                className="input"
-                type="password"
-                autoComplete="current-password"
-                value={backupPass}
-                onChange={(e) => setBackupPass(e.target.value)}
-                autoFocus
-              />
-            </div>
-            {backupError && (
-              <p className="error" role="alert">
-                {backupError}
-              </p>
-            )}
-            <div className="row">
-              <button type="submit" className="btn btn-primary">
-                {t.vault.unlock}
-              </button>
-              <button type="button" className="btn" onClick={() => setForeignBackup(null)}>
-                {t.action.cancel}
-              </button>
-            </div>
-          </form>
-        )}
-        {pending && (
-          <div className="confirm" role="alertdialog" aria-labelledby="restore-text">
-            <p id="restore-text">{t.settings.restoreConfirm(pending.items.length)}</p>
-            <div className="row">
-              <button type="button" className="btn btn-danger" onClick={() => void restore()} autoFocus>
-                {t.settings.replace}
-              </button>
-              <button type="button" className="btn" onClick={() => setPending(null)}>
-                {t.action.cancel}
-              </button>
-            </div>
-          </div>
-        )}
-        {message && (
-          <p className="hint" role="status">
-            {message}
-          </p>
-        )}
-      </section>
-
-      {/* A choice and its sentence are one label: the text is part of the
-          target, and the box sits right beside what it switches */}
       {!narrow && (
-        <section className="setting">
-          <h2 className="section-label">{t.settings.columnsTitle}</h2>
-          <label className="check-option">
-            <input type="checkbox" checked={wrap} onChange={(e) => onWrapChange(e.target.checked)} />
-            <span>{t.table.wrap}</span>
-          </label>
+        <SettingGroup title={t.settings.columnsTitle}>
+          <div className="setting-row">
+            <SettingSwitch title={t.table.wrap} checked={wrap} onChange={onWrapChange} />
+          </div>
           {columns.length > 1 && (
-            <details className="disclosure">
+            <details className="setting-row disclosure">
               <summary>
-                <span>{t.settings.columnsList}</span>
+                <span className="setting-title">{t.settings.columnsList}</span>
                 <span className="disclosure-meta">
                   {t.settings.columnsShown(visibleCount, columns.length)}
                   <Icon name="chevronRight" size={16} className="disclosure-chevron" />
@@ -467,110 +588,14 @@ export function SettingsPage({
               </div>
             </details>
           )}
-        </section>
+        </SettingGroup>
       )}
 
-      <section className="setting">
-        <h2 className="section-label">{t.vault.lockTitle}</h2>
-        <label className="check-option">
-          <input type="checkbox" checked={autoLock} onChange={(e) => onAutoLockChange(e.target.checked)} />
-          <span>{t.vault.autoLockOption}</span>
-        </label>
-        {!trial && canPasskey && (
-          <label className="check-option">
-            <input
-              type="checkbox"
-              checked={passkey !== null}
-              disabled={passkeyBusy}
-              onChange={(e) => void togglePasskey(e.target.checked)}
-            />
-            <span>{t.vault.passkeyOption}</span>
-          </label>
-        )}
-        {passkeyMessage && (
-          <p className="error" role="alert">
-            {passkeyMessage}
-          </p>
-        )}
-      </section>
-
-      {/* During a trial the passphrase is chosen at the top instead */}
-      {!trial && (
-        <section className="setting">
-          <div className="setting-head">
-            <div>
-              <h2 className="section-label">{t.vault.changeTitle}</h2>
-              <p className="hint">{t.vault.changeWhat}</p>
-            </div>
-            {!changingPass && (
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  setPassMessage(null)
-                  setChangingPass(true)
-                }}
-              >
-                {t.vault.change}
-              </button>
-            )}
-          </div>
-          {!changingPass ? (
-            passMessage && (
-              <p className="hint" role="status">
-                {passMessage}
-              </p>
-            )
-          ) : (
-            <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
-              <KeychainName />
-              <div className="field">
-                <label htmlFor="old-pass">{t.vault.current}</label>
-                <input
-                  id="old-pass"
-                  className="input"
-                  type="password"
-                  autoComplete="current-password"
-                  value={oldPass}
-                  onChange={(e) => setOldPass(e.target.value)}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="new-pass">{t.vault.next}</label>
-                <input
-                  id="new-pass"
-                  className="input"
-                  type="password"
-                  autoComplete="new-password"
-                  value={newPass}
-                  onChange={(e) => setNewPass(e.target.value)}
-                />
-              </div>
-              {passMessage && (
-                <p className={passMessage === t.vault.changed ? 'hint' : 'error'} role="status">
-                  {passMessage}
-                </p>
-              )}
-              <div className="row">
-                <button type="submit" className="btn" disabled={oldPass === '' || newPass === ''}>
-                  {t.vault.change}
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => {
-                    setOldPass('')
-                    setNewPass('')
-                    setPassMessage(null)
-                    setChangingPass(false)
-                  }}
-                >
-                  {t.action.cancel}
-                </button>
-              </div>
-            </form>
-          )}
-        </section>
+      {/* Receipts are read from the phone's add screen */}
+      {narrow && (
+        <SettingGroup title={t.receipt.settingsTitle}>
+          <ReceiptSettings />
+        </SettingGroup>
       )}
 
       <AboutApp />

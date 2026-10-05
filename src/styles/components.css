@@ -2191,28 +2191,15 @@ section {
   cursor: text;
 }
 
-/* Choices under a setting read like the line under it: the hint's size and
-   grey, 16 px boxes on 36 px lines */
-.setting .check-option,
-.disclosure summary {
-  min-height: var(--row-h-sm);
-  gap: var(--s-2);
-  font-size: var(--text-xs);
-  color: var(--text-2);
-}
-
-.setting .check-option input {
-  width: 16px;
-  height: 16px;
-}
-
-/* A folded list under a setting: one line with the name at the left and the
-   count and a chevron at the right, closed until asked; open, the choices
-   sit in the same tinted band as the table's controls */
+/* A folded list in a settings row: the name at the left, the count and a
+   chevron at the right, closed until asked; open, the choices sit in the
+   same tinted band as the table's controls */
 .disclosure summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--s-2);
+  min-height: var(--row-h);
   list-style: none;
   cursor: pointer;
 }
@@ -2225,6 +2212,7 @@ section {
   display: inline-flex;
   align-items: center;
   gap: var(--s-1);
+  color: var(--text-2);
 }
 
 .disclosure-chevron {
@@ -2240,54 +2228,196 @@ section {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0 var(--s-4);
+  margin-top: var(--s-2);
   padding: var(--s-1) var(--s-3);
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 
-
-/* A quiet band with a fact about the register: the table band's tint and hairline, the hint's
-   size and grey. Not a warning; nothing is wrong, something is unfinished. */
-/* A setting: title and one line of explanation left, its button right; a choice is a checkbox. */
-.setting {
-  display: grid;
-  gap: var(--s-3);
+.disclosure-body .check-option {
+  min-height: var(--row-h-sm);
+  gap: var(--s-2);
+  font-size: var(--text-xs);
 }
 
-.setting-head {
+.disclosure-body .check-option input {
+  width: 16px;
+  height: 16px;
+}
+
+/* Innstillinger: a heading over each group, its rows in one card */
+.settings {
+  display: grid;
+  gap: var(--s-8);
+}
+
+.setting-group {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.setting-group-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.setting-card {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* One setting: title and description at the left, its control at the right,
+   and whatever it opens underneath */
+.setting-row {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+}
+
+/* <details> cannot be a grid container in every browser */
+.setting-row.disclosure {
+  display: block;
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--border);
+}
+
+.setting-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
+  min-height: var(--row-h);
 }
 
-.setting-head > div:first-child {
-  display: grid;
-  gap: var(--s-1);
-  min-width: 0;
-}
-
-.setting-head > .btn,
-.setting-head > .row {
+.setting-main > .btn,
+.setting-main > .row {
   flex: none;
 }
 
-/* A phone has no room beside the text: the button goes under it */
+/* A text button's label lines up with the edge the bordered buttons keep */
+.setting-main > .btn-danger {
+  margin-right: calc(var(--s-4) * -1);
+}
+
+.setting-switch {
+  cursor: pointer;
+}
+
+.setting-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.setting-desc {
+  max-width: 60ch;
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+/* The one risk on the page: no folder, so the register lives in this browser alone */
+.setting-desc.is-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+  color: var(--warn);
+}
+
+.setting-desc.is-warn svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* A phone has no room beside the text: a button goes under it, a switch stays */
 @media (max-width: 599px) {
-  .setting-head {
+  .setting-main:not(.setting-switch) {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--s-3);
   }
+
+  .setting-main > .btn-danger {
+    margin-right: 0;
+    margin-left: calc(var(--s-4) * -1);
+  }
 }
 
-/* A danger action under a setting, text flush with the title above it */
-.setting-danger {
-  margin-left: calc(var(--s-4) * -1);
+/* A checkbox drawn as a switch (role="switch"). The knob jumps rather than
+   slides: colour changes, nothing moves. */
+.switch {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--border-input);
+  cursor: pointer;
+  transition: background-color var(--duration) ease-out;
 }
 
-/* A setting: checkbox and its sentence on one 44 px line */
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch:checked::before {
+  left: 23px;
+}
+
+.switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (forced-colors: active) {
+  .switch {
+    border: 1px solid CanvasText;
+  }
+
+  .switch::before {
+    background: CanvasText;
+  }
+
+  .switch:checked {
+    background: Highlight;
+  }
+}
+
+/* The foot of Innstillinger: links out, then the version */
+.settings-footer {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.settings-footer .row {
+  gap: var(--s-6);
+}
+
+.external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--row-h);
+}
+
+/* A checkbox and its sentence on one 44 px line */
 .check-option {
   display: flex;
   align-items: center;

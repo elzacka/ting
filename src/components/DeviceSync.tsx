@@ -9,6 +9,7 @@ import { t } from '../lib/strings'
 import { fileExtras, markSent, mergeIn, syncEnabledKey, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
 import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
+import { SettingSwitch } from './Setting'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
@@ -164,15 +165,8 @@ export function DeviceSync() {
     .join(' ')
 
   return (
-    <section className="setting">
-      <div>
-        <h2 className="section-label">{t.sync.title}</h2>
-        <p className="hint">{t.sync.what}</p>
-      </div>
-      <label className="check-option">
-        <input type="checkbox" checked={on} onChange={(e) => void toggle(e.target.checked)} />
-        <span>{t.sync.option}</span>
-      </label>
+    <div className="setting-row">
+      <SettingSwitch title={t.sync.option} description={t.sync.what} checked={on} onChange={(next) => void toggle(next)} />
       {on && (
         <>
           <div className="row toolbar">
@@ -191,7 +185,7 @@ export function DeviceSync() {
               {t.sync.fetch}
             </button>
           </div>
-          {statusLine && <p className="hint num">{statusLine}</p>}
+          {statusLine && <p className="setting-desc num">{statusLine}</p>}
         </>
       )}
       {foreign && (
@@ -238,6 +232,6 @@ export function DeviceSync() {
           {error}
         </p>
       )}
-    </section>
+    </div>
   )
 }
