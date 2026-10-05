@@ -1,0 +1,159 @@
+<!doctype html>
+<!-- Dev server only (localhost:5173/dev.html): the build takes index.html alone.
+     Shows the app as the browser version or the installed one, at the Mac's size or an iPhone's. -->
+<html lang="nb">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ting – utvikling</title>
+    <style>
+      body {
+        margin: 0;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        height: 100vh;
+        background: #ececea;
+        font: 14px system-ui, sans-serif;
+      }
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        padding: 8px 16px;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+      }
+      fieldset {
+        display: flex;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 32px;
+      }
+      main {
+        overflow: auto;
+        display: grid;
+        place-items: start center;
+      }
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+      }
+      /* iPhone 17 Pro: 402 × 874 points, scaled down when the window is shorter.
+         The installed app draws under the status bar; Safari's page starts below it. */
+      .stage {
+        width: calc(402px * var(--scale, 1));
+        height: calc(874px * var(--scale, 1));
+        margin: 26px;
+      }
+      .phone {
+        position: relative;
+        width: 402px;
+        height: 874px;
+        overflow: hidden;
+        border-radius: 55px;
+        outline: 10px solid #1c1c1e;
+        background: #fbfbfa;
+        transform: scale(var(--scale, 1));
+        transform-origin: top left;
+      }
+      .mobil.demo iframe {
+        margin-top: 62px;
+        height: 812px;
+      }
+      .island,
+      .home {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #000;
+        pointer-events: none;
+      }
+      .island {
+        top: 11px;
+        width: 125px;
+        height: 37px;
+        border-radius: 19px;
+      }
+      .home {
+        bottom: 8px;
+        width: 140px;
+        height: 5px;
+        border-radius: 3px;
+      }
+      .desktop .island,
+      .desktop .home {
+        display: none;
+      }
+      .desktop .stage,
+      .desktop .phone {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border-radius: 0;
+        outline: 0;
+        transform: none;
+      }
+    </style>
+  </head>
+  <body>
+    <form>
+      <fieldset>
+        <label><input type="radio" name="versjon" value="demo" checked /> Nettleserversjon</label>
+        <label><input type="radio" name="versjon" value="full" /> Fullversjon</label>
+      </fieldset>
+      <fieldset>
+        <label><input type="radio" name="enhet" value="desktop" checked /> Mac</label>
+        <label><input type="radio" name="enhet" value="mobil" /> iPhone 17 Pro (402 × 874)</label>
+      </fieldset>
+    </form>
+    <main>
+      <div class="stage">
+        <div class="phone">
+          <iframe title="Ting"></iframe>
+          <div class="island"></div>
+          <div class="home"></div>
+        </div>
+      </div>
+    </main>
+    <script type="module">
+      const form = document.querySelector('form')
+      const frame = document.querySelector('iframe')
+      const key = 'ting-dev-preview'
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) ?? '{}')
+        for (const [name, value] of Object.entries(saved)) {
+          const input = form.querySelector(`[name="${name}"][value="${value}"]`)
+          if (input) input.checked = true
+        }
+      } catch {}
+
+      function show() {
+        const choice = Object.fromEntries(new FormData(form))
+        try {
+          localStorage.setItem(key, JSON.stringify(choice))
+        } catch {}
+        document.body.className = `${choice.enhet} ${choice.versjon}`
+        fit()
+        // The app reads both at start, so a change loads it again, on the screen it was on
+        const hash = frame.contentWindow?.location.hash ?? ''
+        frame.src = `/?${new URLSearchParams(choice)}${hash}`
+      }
+      function fit() {
+        const room = innerHeight - form.offsetHeight - 52
+        document.body.style.setProperty('--scale', Math.min(1, room / 874))
+      }
+      form.addEventListener('change', show)
+      addEventListener('resize', fit)
+      show()
+    </script>
+  </body>

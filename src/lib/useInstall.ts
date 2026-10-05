@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { devInstalled } from './devPreview'
 import { t } from './strings'
 
 // How this browser installs the app, if it can and has not already: Chrome, Edge and Android
@@ -32,6 +33,7 @@ window.addEventListener('appinstalled', () => {
 })
 
 function installed(): boolean {
+  if (devInstalled !== null) return devInstalled
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true
 }
 

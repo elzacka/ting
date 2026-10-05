@@ -28,6 +28,7 @@ Lives in `package.json` only; nothing here mirrors the number.
 - Verify: `npm test` (Vitest), `npm run typecheck`, `npm run build`
 - CI (`ci.yml`, PR and push to `main`): `npm audit --audit-level=high`, `npm test`, `npm run build`
 - `npm run dev`: `localhost:5173/`; `npm run preview`: `localhost:4173/ting/`
+- `localhost:5173/dev.html` (dev server only): the app framed as the browser version or the installed one, at Mac or iPhone 17 Pro size; `lib/devPreview.ts` reads the choice and gives the frame the iPhone's touch, safe areas and user agent; the build drops it
 
 Security scope: OWASP ASVS L2 (latest released edition), Top 10, WSTG, CI/CD Top 10; cheat sheets per `SECURITY.md`. Not API or LLM Top 10: no own API, no LLM feature.
 
@@ -55,7 +56,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 
 ## Components
 
-- Demo: a browser tab (not `display-mode: standalone`, `isDemo` in `lib/useInstall.ts`) is a demo; only the installed app opens the register. Its database is `ting-demo`, refilled from `lib/demo.ts` at every start. No adding (plus, receipt, Ny rad, multi-row paste), no Innstillinger, no `persist()`; "Last ned gratis" in the top bar. The dev server is a tab too: install it from Chrome to work on the app itself.
+- Demo: a browser tab (not `display-mode: standalone`, `isDemo` in `lib/useInstall.ts`) is a demo; only the installed app opens the register. Its database is `ting-demo`, refilled from `lib/demo.ts` at every start. No adding (plus, receipt, Ny rad, multi-row paste), no Innstillinger, no `persist()`; "Last ned gratis" in the top bar. The dev server is a tab too: `dev.html` shows the installed app, or install it from Chrome.
 
 - `Overview`: choosing a category changes rows, columns and filters together — it is the view, not a filter. The register opens on "velg kategori", no table, until a category is picked or an action implies "show me things" (a new row, a search, fewer than two categories to choose from).
 - Column visibility is one rule everywhere it applies (table, filters, print, CSV): with categories in view, a column renders only if one of them uses it (`appliesTo`), and then if one lists it or it holds a value on a visible row. "Vis n kolonner til" adds only columns they use, never another category's.

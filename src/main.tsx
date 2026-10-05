@@ -1,3 +1,5 @@
+// First, so its dev-only overrides are in place before any module reads the browser
+import './lib/devPreview'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
@@ -14,8 +16,8 @@ const root = document.getElementById('root')
 if (!root) throw new Error('#root missing')
 
 // frame-ancestors in a meta CSP is ignored by browsers and GitHub Pages sets no
-// headers, so a framed copy (clickjacking) is refused here instead.
-if (window.self !== window.top) throw new Error('framed')
+// headers, so a framed copy (clickjacking) is refused here instead. dev.html frames it on the dev server.
+if (window.self !== window.top && !import.meta.env.DEV) throw new Error('framed')
 
 createRoot(root).render(
   <StrictMode>
