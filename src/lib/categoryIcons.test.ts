@@ -23,15 +23,15 @@ describe('guessCategoryIcon', () => {
     expect(guessCategoryIcon('Vesker og bagasje')).toBe('luggage')
   })
 
-  it('gives Elektronikk the glyph for a phone and a laptop together', () => {
-    expect(guessCategoryIcon('Elektronikk')).toBe('devices')
-    // and not the one either half of it used to have
-    expect(guessCategoryIcon('Elektronikk og tilbehør')).toBe('devices')
+  it('gives Elektronikk the power button', () => {
+    expect(guessCategoryIcon('Elektronikk')).toBe('power_settings_new')
+    // and not the phone or the computer
+    expect(guessCategoryIcon('Elektronikk og tilbehør')).toBe('power_settings_new')
   })
 
   it('matches a word, never a fragment inside one', () => {
     // "Elektronikk" contains "lek" and is not about toys
-    expect(guessCategoryIcon('Elektronikk')).toBe('devices')
+    expect(guessCategoryIcon('Elektronikk')).toBe('power_settings_new')
     // "Sportsutstyr" starts with "sport", which is a word beginning
     expect(guessCategoryIcon('Sportsutstyr')).toBe('sports_soccer')
   })

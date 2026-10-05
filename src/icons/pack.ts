@@ -19,7 +19,7 @@ const manifest: readonly Entry[] = [
   { id: 'book', name: 'Bok', keywords: ['bok', 'bøk'] },
   { id: 'person_play', name: 'Underholdning', keywords: ['underholdning', 'film', 'musikk'] },
   { id: 'child_hat', name: 'Leker', keywords: ['lek', 'barn'] },
-  { id: 'devices', name: 'Elektronikk', keywords: ['elektronikk'] },
+  { id: 'power_settings_new', name: 'Elektronikk', keywords: ['elektronikk'] },
   { id: 'computer', name: 'Datamaskin', keywords: ['data', 'kontor', 'pc'] },
   { id: 'palette', name: 'Hobby', keywords: ['hobby', 'håndarbeid', 'kunst'] },
   { id: 'local_laundry_service', name: 'Vaskemaskin', keywords: ['hvitevare', 'vask'] },
