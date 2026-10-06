@@ -385,7 +385,7 @@ export const t = {
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',
-    what: 'Appen laster ned KI-modeller og verktøy på ~ 27 MB, så den kan kjenne igjen tekst på kvitteringer',
+    what: 'Appen laster ned KI-modeller og verktøy på ~ 45 MB, så den kan kjenne igjen tekst på kvitteringer',
     downloading: 'Laster ned tekstgjenkjenning…',
     ready: 'Tekstgjenkjenning lastet ned',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',

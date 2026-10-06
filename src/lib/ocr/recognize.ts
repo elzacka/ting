@@ -3,20 +3,31 @@ import type { Rect } from './detect'
 export const recHeight = 48
 const baseRatio = 320 / recHeight
 const batchSize = 6
+// The output holds every class at every step: wide lines go fewer at a time, so a batch stays near 18 MB
+const batchPixels = batchSize * baseRatio * recHeight
 const maxRatio = 64
 const minScore = 0.5
 
 export type Read = { text: string; score: number; box: Rect }
 
-// Classes: 0 is the CTC blank, then the dictionary, then a space.
-export function parseDict(text: string): string[] {
-  const lines = text.split('\n').map((l) => l.replace(/\r$/, ''))
-  if (lines[lines.length - 1] === '') lines.pop()
-  return ['', ...lines, ' ']
+// chars: 0 is the CTC blank, then the dictionary, then a space; classes: the ones a receipt can hold.
+export type Dict = { chars: string[]; classes: number[] }
+
+// The model also reads Chinese and Japanese; on a Norwegian receipt such a read is a smudge or masked digits.
+function latin(c: string): boolean {
+  const p = c.codePointAt(0) ?? 0
+  return p <= 0x24f || (p >= 0x2000 && p <= 0x20cf) || p === 0x2212
 }
 
-// Greedy CTC: best class per step, repeats merged, blanks dropped.
-export function ctcDecode(probs: Float32Array, steps: number, classes: number, chars: string[]): { text: string; score: number } {
+export function parseDict(text: string): Dict {
+  const lines = text.split('\n').map((l) => l.replace(/\r$/, ''))
+  if (lines[lines.length - 1] === '') lines.pop()
+  const chars = ['', ...lines, ' ']
+  return { chars, classes: chars.flatMap((c, i) => (i === 0 || latin(c) ? [i] : [])) }
+}
+
+// Greedy CTC over the allowed classes: best class per step, repeats merged, blanks dropped.
+export function ctcDecode(probs: Float32Array, steps: number, classes: number, dict: Dict): { text: string; score: number } {
   let text = ''
   let sum = 0
   let n = 0
@@ -24,7 +35,7 @@ export function ctcDecode(probs: Float32Array, steps: number, classes: number, c
   for (let t = 0; t < steps; t++) {
     let best = 0
     let bestP = -Infinity
-    for (let c = 0; c < classes; c++) {
+    for (const c of dict.classes) {
       const p = probs[t * classes + c] as number
       if (p > bestP) {
         bestP = p
@@ -32,7 +43,7 @@ export function ctcDecode(probs: Float32Array, steps: number, classes: number, c
       }
     }
     if (best !== 0 && best !== prev) {
-      text += chars[best] ?? ''
+      text += dict.chars[best] ?? ''
       sum += bestP
       n++
     }
@@ -49,7 +60,16 @@ export function cropRatio(b: Rect): number {
 export function batchesByWidth(boxes: Rect[]): number[][] {
   const order = boxes.map((_, i) => i).sort((a, b) => cropRatio(boxes[a] as Rect) - cropRatio(boxes[b] as Rect))
   const out: number[][] = []
-  for (let i = 0; i < order.length; i += batchSize) out.push(order.slice(i, i + batchSize))
+  let cur: number[] = []
+  for (const i of order) {
+    const width = batchWidth([cropRatio(boxes[i] as Rect)])
+    if (cur.length === batchSize || (cur.length > 0 && (cur.length + 1) * width > batchPixels)) {
+      out.push(cur)
+      cur = []
+    }
+    cur.push(i)
+  }
+  if (cur.length) out.push(cur)
   return out
 }
 

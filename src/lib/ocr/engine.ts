@@ -23,7 +23,7 @@ export async function createEngine(ort: Ort, models: Models): Promise<Engine> {
   const opts = { executionProviders: ['wasm'], graphOptimizationLevel: 'all' } as const
   const det = await ort.InferenceSession.create(models.det, opts)
   const rec = await ort.InferenceSession.create(models.rec, opts)
-  const chars = parseDict(models.dict)
+  const dict = parseDict(models.dict)
 
   async function detect(img: Rgba): Promise<Rect[]> {
     const plan = planTiles(img.width, img.height)
@@ -57,7 +57,7 @@ export async function createEngine(ort: Ort, models: Models): Promise<Engine> {
       const data = t.data as Float32Array
       batch.forEach((idx, n) => {
         const probs = data.subarray(n * steps * classes, (n + 1) * steps * classes)
-        reads[idx] = { ...ctcDecode(probs, steps, classes, chars), box: boxes[idx] as Rect }
+        reads[idx] = { ...ctcDecode(probs, steps, classes, dict), box: boxes[idx] as Rect }
       })
     }
     return reads

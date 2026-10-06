@@ -35,7 +35,7 @@ eller oppdateres, slik alle nettsteder ser den.
 ## Kvitteringer og KI
 
 Appen leser teksten på kvitteringer med KI: To små modeller fra PaddlePaddle
-(PP-OCRv5), der den ene finner teksten på kvitteringen og den andre leser
+(PP-OCRv6), der den ene finner teksten på kvitteringen og den andre leser
 bokstavene og tallene. Modellene kjører på enheten, også uten nett. De lærer
 ingenting av dataene dine og skriver ingen tekst selv. Appen bruker ingen
 KI-tjeneste på nett og ingen språkmodell.

@@ -13,4 +13,4 @@ Et register over det du eier, og hvor du har det: Innbo, utstyr og andre eiendel
 
 ## Lisens
 
-Koden har MIT-lisens, se [LICENSE](LICENSE). Alle ikonene i appen, også kategorisymbolene og appikonet med symbolet «inventory», er fra Google Material Symbols (Apache 2.0). Modellene for tekstgjenkjenning på kvitteringer er PP-OCRv5 fra PaddlePaddle (Apache 2.0), som ONNX-filer fra RapidOCR.
+Koden har MIT-lisens, se [LICENSE](LICENSE). Alle ikonene i appen, også kategorisymbolene og appikonet med symbolet «inventory», er fra Google Material Symbols (Apache 2.0). Modellene for tekstgjenkjenning på kvitteringer er PP-OCRv6 fra PaddlePaddle (Apache 2.0), som ONNX-filer fra RapidOCR.

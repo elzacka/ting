@@ -182,7 +182,7 @@ senere; `-har:pris` i søket henter frem de som står igjen.
 
 **Fra kvittering, på mobilen:** Første gang ber appen deg slå på «Les tekst på
 kvitteringer». Den laster da ned KI-modeller og verktøy for tekstgjenkjenning,
-omtrent 27 MB, og leser kvitteringer også uten nett. Bryteren står også i
+omtrent 45 MB, og leser kvitteringer også uten nett. Bryteren står også i
 Innstillinger.
 
 1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.

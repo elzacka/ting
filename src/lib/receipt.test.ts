@@ -124,6 +124,8 @@ describe('parseReceipt, column layout with a code', () => {
   it('uses the area name for Oslo', () => {
     const withArea = ['Lun interiør', 'Holmlia senter', '1152 OSLO', ...gravering.slice(2)]
     expect(parseReceipt(withArea, today).storeName).toBe('Lun Holmlia')
+    const logoAndZero = ['Lun', 'Lun interiør', 'Holmlia senter', '1152 0SLO', ...gravering.slice(2)]
+    expect(parseReceipt(logoAndZero, today).storeName).toBe('Lun Holmlia')
     expect(r.storeName).toBe('Solglimt Optikk')
     expect(r.postcode).toBe('0150')
   })

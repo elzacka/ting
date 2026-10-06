@@ -221,7 +221,9 @@ function placeCase(place: string): string {
     .join('')
 }
 
-function postcodeIn(line: string): { postcode: string; place: string } | null {
+function postcodeIn(text: string): { postcode: string; place: string } | null {
+  // A capital O read as a zero: 1153 0SLO
+  const line = text.replace(/(?<=^|\s)0(?=\p{Lu}{2})/gu, 'O')
   const a = /(?:^|[\s,])(\d{4})[\s,]+(\p{Lu}[\p{L}\- ]{1,30})$/u.exec(line)
   const b = /^(\p{Lu}[\p{L}\- ]{1,30}?)[\s,]+(\d{4})$/u.exec(line)
   const postcode = a?.[1] ?? b?.[2]
