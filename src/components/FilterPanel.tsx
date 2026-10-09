@@ -7,6 +7,7 @@ import { maxPathLevels, parsePath } from '../lib/paths'
 import { parseNumber } from '../lib/values'
 import { appliesTo, categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
+import { useEscape } from '../lib/useEscape'
 import { Icon } from './Icons'
 
 type Props = {
@@ -34,11 +35,18 @@ function isNumeric(values: FilterValue[], unit: string | null): boolean {
 
 // One dropdown per filter, counting the rows the other filters and the search leave, so choosing
 // Kategori shrinks the rest to what exists there; an empty menu is not shown. Native <details>:
-// works with the keyboard, and a click outside closes the open one.
+// works with the keyboard, and a click outside or Escape closes the open one.
 export function FilterPanel({ items, searched, properties, fields, filters, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [narrow, setNarrow] = useState<Record<string, string>>({})
+  const [menuOpen, setMenuOpen] = useState(false)
+  useEscape(() => {
+    const open = ref.current?.querySelector<HTMLDetailsElement>('details[open]')
+    if (!open) return
+    open.open = false
+    open.querySelector('summary')?.focus()
+  }, menuOpen)
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -100,7 +108,11 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
               ? `${def.label}: ${def.values.find((v) => v.key === chosen[0])?.label ?? chosen[0]}`
               : `${def.label} (${chosen.length})`
         return (
-          <details key={def.id} className={`filter${chosen.length > 0 ? ' is-active' : ''}`}>
+          <details
+            key={def.id}
+            className={`filter${chosen.length > 0 ? ' is-active' : ''}`}
+            onToggle={() => setMenuOpen(ref.current?.querySelector('details[open]') != null)}
+          >
             <summary className="btn">
               {summary}
               <Icon name="chevronRight" size={16} className="filter-chevron" />

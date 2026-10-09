@@ -4,6 +4,8 @@ import type { Item, Property } from '../db/schema'
 import { categoryNames, sharedByAll } from '../lib/categories'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
+import { unlockMethod } from '../lib/unlockMethod'
+import { useEscape } from '../lib/useEscape'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { changePassphrase, currentKey, currentVault, setupVault, useVault } from '../lib/vault'
 import { folderSupported } from '../lib/folderStore'
@@ -72,6 +74,13 @@ export function SettingsPage({
   const [passMessage, setPassMessage] = useState<string | null>(null)
   useFade(passMessage, passMessage === t.trial.done || passMessage === t.vault.changed, setPassMessage)
   const [changingPass, setChangingPass] = useState(false)
+  function cancelPassChange() {
+    setOldPass('')
+    setNewPass('')
+    setPassMessage(null)
+    setChangingPass(false)
+  }
+  useEscape(cancelPassChange, changingPass)
   // The table's own choices are desk work, and so is a folder where the
   // browser cannot reach one: no browser on a phone or a tablet can
   const narrow = useNarrow()
@@ -107,7 +116,7 @@ export function SettingsPage({
     const made = await createPasskey(currentKey())
     setPasskeyBusy(false)
     if (made === 'cancelled') return
-    if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere)
+    if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere(unlockMethod()))
     await writePasskey(made)
     setPasskey(made)
   }
@@ -299,7 +308,7 @@ export function SettingsPage({
           {canPasskey && (
             <div className="setting-row">
               <SettingSwitch
-                title={t.vault.passkeyOption}
+                title={t.vault.passkeyOption(unlockMethod())}
                 description={t.vault.passkeyWhere}
                 checked={passkey !== null}
                 disabled={passkeyBusy}
@@ -349,6 +358,7 @@ export function SettingsPage({
                     autoComplete="current-password"
                     value={oldPass}
                     onChange={(e) => setOldPass(e.target.value)}
+                    autoFocus
                   />
                 </div>
                 <div className="field">
@@ -374,12 +384,7 @@ export function SettingsPage({
                   <button
                     type="button"
                     className="btn"
-                    onClick={() => {
-                      setOldPass('')
-                      setNewPass('')
-                      setPassMessage(null)
-                      setChangingPass(false)
-                    }}
+                    onClick={cancelPassChange}
                   >
                     {t.action.cancel}
                   </button>

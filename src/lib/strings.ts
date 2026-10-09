@@ -1,7 +1,7 @@
 // All user-facing text. Norwegian (nb-NO), klarspråk, du-form.
 export const t = {
   appName: 'ting',
-  nav: { home: 'Til forsiden', list: 'Oversikt', settings: 'Innstillinger', settingsStalled: 'Innstillinger. Lagring til mappen har stoppet' },
+  nav: { home: 'Til oversikten', list: 'Oversikt', settings: 'Innstillinger', settingsStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
   vault: {
     setupTitle: 'Velg et passord',
@@ -21,11 +21,12 @@ export const t = {
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
-    passkeyOption: 'Lås opp med Face ID eller Touch ID',
+    // The method is named for the platform (lib/unlockMethod.ts): Face ID or Touch ID, Windows Hello, the screen lock
+    passkeyOption: (method: string) => `Lås opp med ${method}`,
     passkeyWhere: 'Gjelder bare denne enheten',
-    passkeyUnlock: 'Lås opp med Face ID eller Touch ID',
-    passkeyFailed: 'Face ID eller Touch ID virket ikke. Lås opp med passordet.',
-    passkeyNotHere: 'Denne enheten kan ikke låse opp appen med Face ID eller Touch ID',
+    passkeyUnlock: (method: string) => `Lås opp med ${method}`,
+    passkeyFailed: (method: string) => `${method[0]?.toLocaleUpperCase('nb') ?? ''}${method.slice(1)} virket ikke. Lås opp med passordet.`,
+    passkeyNotHere: (method: string) => `Denne enheten kan ikke låse opp appen med ${method}`,
     changeTitle: 'Passord',
     current: 'Nåværende passord',
     next: 'Nytt passord',
@@ -54,7 +55,7 @@ export const t = {
     label: 'Velg kategori',
     all: 'Alle',
     change: (current: string) => `Kategori: ${current}. Velg en annen`,
-    clear: 'Fjern alle valgte',
+    clear: 'Velg ingen',
   },
   // Endre egenskaper: several properties changed or removed at once
   properties: {
@@ -68,11 +69,11 @@ export const t = {
     scopeNone: 'Ingen kategorier',
     scopeButton: (key: string, where: string) => `${key} brukes i: ${where}. Endre`,
     scopeTitle: (key: string) => `Kategorier for ${key}`,
-    remove: (key: string) => `Fjern ${key}`,
+    remove: (key: string) => `Slett ${key}`,
     keep: (key: string) => `Behold ${key}`,
     confirmRemove: (keys: string, n: number) =>
       `${keys} har verdier på ${n === 1 ? '1 ting' : `${n} ting`}. Verdiene forsvinner fra alle. Du kan ikke angre.`,
-    removeAndSave: 'Fjern og lagre',
+    removeAndSave: 'Slett og lagre',
     dirtyFirst: 'Lagre eller forkast endringene i tabellen først',
   },
   // A Valgliste's alternatives, opened from its line in Endre egenskaper
@@ -95,12 +96,12 @@ export const t = {
     editTitle: (n: number) => (n === 1 ? 'Endre 1 ting' : `Endre ${n} ting`),
     property: 'Egenskap',
     value: 'Ny verdi',
-    apply: 'Endre',
+    apply: 'Fyll inn',
     editHint: 'Et tomt felt fjerner verdien. Ingenting lagres før du trykker Lagre.',
     print: 'Skriv ut',
     csv: 'Last ned',
     delete: 'Slett',
-    clear: 'Fjern valget',
+    clear: 'Velg ingen',
     printing: (n: number) => (n === 1 ? 'Bare den valgte tingen kommer med.' : `Bare de ${n} valgte tingene kommer med.`),
   },
   // Endre kategorier: names, icons and new categories
@@ -161,7 +162,7 @@ export const t = {
     delete: 'Slett',
     back: 'Tilbake',
     pickAll: 'Velg alle',
-    pickNone: 'Fjern alle',
+    pickNone: 'Velg ingen',
     takePhoto: 'Ta bilde',
     removePhoto: 'Fjern bilde',
     removePhotos: 'Fjern bildene',
@@ -190,7 +191,7 @@ export const t = {
     label: 'Strekkode',
     scan: 'Skann strekkode',
     scanning: 'Leser…',
-    read: (format: string) => `Lest som ${format}`,
+    read: 'Strekkoden er lest',
     none: 'Fant ingen strekkode i bildet',
     // In a book category the field is the book's ISBN
     isbn: 'ISBN',
@@ -198,10 +199,13 @@ export const t = {
     lookup: 'Slå opp på nett',
     looking: 'Slår opp…',
     found: (source: string) => `Hentet fra ${source}`,
-    known: (n: number) => `Registeret har ${n} med denne koden`,
-    notFound: 'Fant ikke boka i oppslagsverkene',
+    known: (n: number) =>
+      n === 1
+        ? 'Registeret har én ting med denne koden. Tomme felt er fylt ut fra den.'
+        : `Registeret har ${n} ting med denne koden. Tomme felt er fylt ut fra den nyeste.`,
+    notFound: 'Fant ikke boka hos Nasjonalbiblioteket eller Open Library',
     offline: 'Ingen nettforbindelse',
-    failed: 'Fikk ikke svar fra oppslagsverkene',
+    failed: 'Fikk ikke svar fra Nasjonalbiblioteket eller Open Library',
   },
   detail: {
     properties: 'Egenskaper',
@@ -226,7 +230,7 @@ export const t = {
     addColumn: 'Legg til egenskap',
     // Plus opens a menu: a thing (a row) or a property (a column)
     add: 'Legg til',
-    addColumnMenu: 'Legg til/endre egenskap (kolonne)',
+    addColumnMenu: 'Legg til egenskap',
     // Under the column form: help for the field in use. For the name, the
     // properties that already exist and start with what is typed
     columnHelp: {
@@ -252,7 +256,7 @@ export const t = {
     wrap: 'Bryt lang tekst i tabellen',
     columnKey: 'Navn på egenskap',
     columnType: 'Felttype',
-    types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato', path: 'Sti' },
+    types: { text: 'Tekst', choice: 'Valgliste', number: 'Tall', date: 'Dato', path: 'Plassering' },
     columnOptions: 'Alternativer',
     columnUnit: 'Enhet',
     columnUnitOptional: 'Valgfritt',
@@ -271,7 +275,7 @@ export const t = {
       ['stk', 'stykk'],
       ['år', 'år'],
     ],
-    removeColumn: 'Fjern',
+    removeColumn: 'Slett egenskap',
     // The columns the view leaves out: empty here, or the same on every row
     showMore: (n: number) => (n === 1 ? 'Vis 1 kolonne til' : `Vis ${n} kolonner til`),
     hideMore: 'Vis færre kolonner',
@@ -280,16 +284,19 @@ export const t = {
     alsoIn: (category: string) => `Bruk også i ${category}`,
     notIn: (category: string) => `Ikke bruk i ${category}`,
     removeColumnConfirm: (key: string, n: number) =>
-      `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Fjern den fra alle? Du kan ikke angre.`,
-    removeColumnAction: 'Fjern',
+      `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Slett den og verdiene? Du kan ikke angre.`,
+    removeColumnAction: 'Slett',
     columnMenu: (key: string) => `Valg for ${key}`,
     sortBy: (key: string) => `Sorter etter ${key}`,
     resize: (key: string) => `Endre bredde på ${key}`,
     resizeHint: 'Dra for å endre bredde. Dobbeltklikk for å tilpasse bredden til innholdet.',
+    // The column menu's inline edit: Navn has only a name, a property also its type and unit
     renameColumn: 'Endre navn',
-    renameSave: 'Lagre navn',
+    editColumn: 'Endre navn og type',
+    renameSave: 'Lagre',
     renameCancel: 'Avbryt',
-    unsaved: (n: number) => (n === 1 ? '1 endring ikke lagret' : `${n} endringer ikke lagret`),
+    // Counts things (rows), not cells
+    unsaved: (n: number) => `${n} ting ikke lagret`,
     cell: (name: string, col: string) => `${col} for ${name === '' ? 'ny rad' : name}`,
   },
   error: {
@@ -346,7 +353,7 @@ export const t = {
     connected: (name: string) => `Appen lagrer i mappen «${name}».`,
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
     disconnect: 'Koble fra',
-    error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
+    error: (name: string) => `Kunne ikke lagre i «${name}». Velg mappen på nytt.`,
   },
   // Ny fra kvittering: the photo of a receipt read on the device into things
   receipt: {
@@ -365,17 +372,17 @@ export const t = {
     lineName: (n: number) => `Navn på ting ${n}`,
     lineThing: (n: number) => `ting ${n}`,
     linePrice: (n: number) => `Pris for ting ${n}, i kroner`,
-    addLine: 'Legg til en ting',
+    addLine: 'Legg til ting',
     unbalanced: (sum: string, total: string) => `Prisene blir ${sum} til sammen, men kvitteringen sier ${total}. Sjekk prisene.`,
-    noLines: 'Fant ingen varer. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
+    noLines: 'Fant ingen ting på kvitteringen. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
     failed: 'Kunne ikke lese kvitteringen. Ta et nytt bilde rett ovenfra, med godt lys.',
     save: (n: number) => (n === 1 ? 'Lagre 1 ting' : `Lagre ${n} ting`),
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',
-    what: 'Appen laster ned KI-modeller og verktøy på ~ 45 MB, så den kan kjenne igjen tekst på kvitteringer',
+    what: 'Appen laster ned KI-modeller og verktøy på omtrent 45 MB, så den kan kjenne igjen tekst på kvitteringer',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Tekstgjenkjenning lagt til og aktivert',
+    ready: 'Klar til å lese kvitteringer',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
   // The foot of Innstillinger
@@ -388,12 +395,14 @@ export const t = {
   // The register as one sealed file: exported as a backup or to another device, imported by merge or replace
   sync: {
     importTitle: 'Importer til registeret',
-    importWhat: 'Velg fil fra denne enheten eller delt fra en annen enhet',
+    importWhat: 'Velg en fil du har eksportert fra Ting, her eller på en annen enhet',
     pick: 'Velg fil',
     imported: (date: string, time: string) => `Sist importert ${date} kl. ${time}.`,
     exportTitle: 'Eksporter registeret',
-    exportWhat: 'Lagre fil fra denne enheten som en sikkerhetskopi eller for å dele med en annen enhet',
+    exportWhat: 'Hele registeret i én kryptert fil. Bruk den som sikkerhetskopi eller for å flytte registeret til en annen enhet',
     exportButton: 'Eksporter/del fil',
+    // A desk only downloads: its share sheet cannot save a file
+    exportDownload: 'Eksporter fil',
     exported: (date: string, time: string) => `Sist eksportert ${date} kl. ${time}.`,
     // Asked only when the register already holds things
     ask: (held: number, incoming: number) =>
@@ -422,6 +431,7 @@ export const t = {
     future: 'Klokka på den andre enheten går mer enn ett døgn foran. Sjekk dato og klokkeslett der.',
     passphraseChanged: 'Passordet er endret på den andre enheten. Bruk det nye passordet når du låser opp.',
     newer: 'Fila er laget av en nyere versjon av Ting. Oppdater appen og prøv på nytt.',
+    failed: 'Appen kunne ikke importere fila. Prøv på nytt.',
     notTing: 'Denne fila er ikke fra Ting. Velg en fil du har eksportert fra Ting.',
     foreign: 'Fila er låst med et annet passord. Skriv inn passordet appen hadde da fila ble eksportert.',
   },

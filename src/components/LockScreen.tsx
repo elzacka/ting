@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { PasskeyFailure } from '../lib/passkey'
 import { t } from '../lib/strings'
+import { unlockMethod } from '../lib/unlockMethod'
 import { Icon } from './Icons'
 
 type Props =
@@ -8,7 +9,7 @@ type Props =
   | {
       mode: 'unlock'
       onUnlock: (passphrase: string) => Promise<boolean>
-      // Set when this device opens the app with Face ID or Touch ID
+      // Set when this device opens the app with a passkey (Face ID, Touch ID, Windows Hello, the screen lock)
       onPasskey: (() => Promise<'ok' | PasskeyFailure>) | undefined
       idle: boolean | undefined
     }
@@ -75,12 +76,12 @@ export function LockScreen(props: Props) {
           <div className="row">
             <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void tryPasskey()}>
               <Icon name="lockOpen" size={20} />
-              {t.vault.passkeyUnlock}
+              {t.vault.passkeyUnlock(unlockMethod())}
             </button>
           </div>
           {passkeyFailed && (
             <p className="error" role="alert">
-              {t.vault.passkeyFailed}
+              {t.vault.passkeyFailed(unlockMethod())}
             </p>
           )}
         </div>

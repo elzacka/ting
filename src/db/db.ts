@@ -3,7 +3,7 @@ import { passkeySchema, type PasskeyRecord } from '../lib/passkey'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
 import { fromStored, legacyAsSpecs, storedItemSchema, toStored } from '../lib/backup'
 import { columnId } from '../lib/grid'
-import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type Sealed, type Vault } from '../lib/crypto'
+import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type OpenKey, type Sealed, type Vault } from '../lib/crypto'
 import {
   categoryColumnId,
   categoryProperty,
@@ -15,7 +15,7 @@ import {
 import { errorText } from '../lib/errors'
 import { applyCategoryEdit, type CategoryEdit } from '../lib/categories'
 import { applyOptionEdit, type OptionEdit } from '../lib/options'
-import { currentKey, subscribeVault, vaultState } from '../lib/vault'
+import { adoptVault, currentKey, subscribeVault, vaultState } from '../lib/vault'
 import { isDemo } from '../lib/useInstall'
 import { noTombstones, revive, stampChanges, type Register, type Tombstones } from '../lib/merge'
 
@@ -89,8 +89,8 @@ async function readTombstones(): Promise<Tombstones> {
   return { ...noTombstones(), ...(await openJson<Tombstones>(currentKey().key, row.sealed)) }
 }
 
-async function tombstoneRow(t: Tombstones): Promise<Setting> {
-  return { key: tombstonesKey, sealed: await sealJson(currentKey().key, t) }
+async function tombstoneRow(t: Tombstones, key = currentKey().key): Promise<Setting> {
+  return { key: tombstonesKey, sealed: await sealJson(key, t) }
 }
 
 async function buried(kind: keyof Tombstones, ids: readonly string[], at: number): Promise<Setting> {
@@ -120,8 +120,7 @@ function sealedPhotos(row: SealedItemRow): SealedPhoto[] {
   return row.photo ? [row.photo] : []
 }
 
-async function sealItem(item: Item): Promise<SealedItemRow> {
-  const { key } = currentKey()
+async function sealItem(item: Item, key = currentKey().key): Promise<SealedItemRow> {
   const sealed = await sealJson(key, toStored(item))
   const photos = await Promise.all(
     item.photos.map(async (photo) => {
@@ -144,8 +143,8 @@ async function openItem(row: SealedItemRow): Promise<Item> {
   return fromStored(stored, photos)
 }
 
-async function sealProperty(p: Property): Promise<SealedPropertyRow> {
-  return { id: p.id, sealed: await sealJson(currentKey().key, p) }
+async function sealProperty(p: Property, key = currentKey().key): Promise<SealedPropertyRow> {
+  return { id: p.id, sealed: await sealJson(key, p) }
 }
 
 async function openProperty(row: SealedPropertyRow): Promise<Property> {
@@ -430,21 +429,58 @@ export async function removeProperty(id: string, matches: (spec: Item['specs'][n
   })
 }
 
+// A key taken over from a file. Rows are sealed under it and stored in one transaction
+// with its vault; the session switches only after, so rows and key never disagree.
+export type KeyChange = { vault: Vault; open: OpenKey }
+
+// Sealed settings (field settings, widths, hidden columns, receipt stores) follow the key; the
+// rows written after them win. One the current key cannot open is lost already, so it is dropped.
+async function resealSettings(change: KeyChange | undefined): Promise<{ put: Setting[]; drop: string[] }> {
+  const put: Setting[] = []
+  const drop: string[] = []
+  if (!change || change.open.dekId === currentKey().dekId) return { put, drop }
+  for (const row of await db.settings.toArray()) {
+    if (!row.sealed || row.key === tombstonesKey) continue
+    try {
+      put.push({ key: row.key, sealed: await sealJson(change.open.key, await openJson<unknown>(currentKey().key, row.sealed)) })
+    } catch {
+      drop.push(row.key)
+    }
+  }
+  return { put, drop }
+}
+
+async function storeKeyChange(change: KeyChange | undefined, settings: { put: Setting[]; drop: string[] }): Promise<void> {
+  if (!change) return
+  await db.settings.bulkPut(settings.put)
+  await db.settings.bulkDelete(settings.drop)
+  await db.settings.put({ key: vaultKey, value: change.vault })
+}
+
 // Erstatt alt: replaces everything here with a copy. A thing in the copy that
 // was deleted since comes back on purpose, so it is made newer than its tombstone.
-export async function replaceAll(items: Item[], properties: Property[], fields?: FieldSettings, tombstones?: Tombstones): Promise<void> {
+export async function replaceAll(
+  items: Item[],
+  properties: Property[],
+  fields?: FieldSettings,
+  tombstones?: Tombstones,
+  change?: KeyChange,
+): Promise<void> {
   const now = await stampNow()
   const local = await readTombstones()
+  const key = change?.open.key ?? currentKey().key
   const merged: Tombstones = {
     items: { ...tombstones?.items, ...local.items },
     properties: { ...tombstones?.properties, ...local.properties },
   }
   const restored = items.map((i) => (merged.items[i.id] !== undefined ? revive(i, now) : i))
-  const itemRows = await Promise.all(restored.map((i) => sealItem(itemSchema.parse(i))))
-  const propRows = await Promise.all(properties.map((p) => sealProperty(propertySchema.parse(p))))
-  const fieldRow = fields ? await sealJson(currentKey().key, parseFieldSettings(fields)) : null
-  const tombRow = await tombstoneRow(merged)
+  const itemRows = await Promise.all(restored.map((i) => sealItem(itemSchema.parse(i), key)))
+  const propRows = await Promise.all(properties.map((p) => sealProperty(propertySchema.parse(p), key)))
+  const fieldRow = fields ? await sealJson(key, parseFieldSettings(fields)) : null
+  const tombRow = await tombstoneRow(merged, key)
+  const settings = await resealSettings(change)
   await db.transaction('rw', db.items, db.properties, db.settings, async () => {
+    await storeKeyChange(change, settings)
     await db.items.clear()
     await db.items.bulkAdd(itemRows)
     await db.properties.clear()
@@ -455,6 +491,7 @@ export async function replaceAll(items: Item[], properties: Property[], fields?:
       await db.settings.put({ key: fieldsAtKey, value: now })
     }
   })
+  if (change) adoptVault(change.vault, change.open)
 }
 
 // Everything a merge weighs: the things, the columns, the field settings and
@@ -473,18 +510,21 @@ const itemSignature = (i: Item) => JSON.stringify([toStored(i), i.photos.map((p)
 
 // Writes a merged register over the local one it came from. Only rows that
 // differ are sealed again, unless the data key changed: then every row is.
-export async function writeRegister(merged: Register, local: Register, rewriteAll = false): Promise<void> {
+export async function writeRegister(merged: Register, local: Register, rewriteAll = false, change?: KeyChange): Promise<void> {
+  const key = change?.open.key ?? currentKey().key
   const before = new Map(local.items.map((i) => [i.id, itemSignature(i)]))
   const beforeProps = new Map(local.properties.map((p) => [p.id, JSON.stringify(p)]))
   const items = rewriteAll ? merged.items : merged.items.filter((i) => before.get(i.id) !== itemSignature(i))
   const props = rewriteAll ? merged.properties : merged.properties.filter((p) => beforeProps.get(p.id) !== JSON.stringify(p))
   const keepItems = new Set(merged.items.map((i) => i.id))
   const keepProps = new Set(merged.properties.map((p) => p.id))
-  const itemRows = await Promise.all(items.map((i) => sealItem(itemSchema.parse(i))))
-  const propRows = await Promise.all(props.map((p) => sealProperty(propertySchema.parse(p))))
-  const fieldRow = await sealJson(currentKey().key, parseFieldSettings(merged.fields))
-  const tombRow = await tombstoneRow(merged.tombstones)
+  const itemRows = await Promise.all(items.map((i) => sealItem(itemSchema.parse(i), key)))
+  const propRows = await Promise.all(props.map((p) => sealProperty(propertySchema.parse(p), key)))
+  const fieldRow = await sealJson(key, parseFieldSettings(merged.fields))
+  const tombRow = await tombstoneRow(merged.tombstones, key)
+  const settings = await resealSettings(change)
   await db.transaction('rw', db.items, db.properties, db.settings, async () => {
+    await storeKeyChange(change, settings)
     if (rewriteAll) {
       await db.items.clear()
       await db.properties.clear()
@@ -498,6 +538,7 @@ export async function writeRegister(merged: Register, local: Register, rewriteAl
     await db.settings.put({ key: fieldsAtKey, value: merged.fieldsAt })
     await db.settings.put(tombRow)
   })
+  if (change) adoptVault(change.vault, change.open)
 }
 
 // --- plain settings ----------------------------------------------------------

@@ -13,6 +13,7 @@ import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
 import { closestValue, linesSum, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
+import { useEscape } from '../lib/useEscape'
 import { recentValues } from '../lib/values'
 import { ChoiceFields, firstCells } from './ChoiceFields'
 import { ChoiceMenu } from './ChoiceMenu'
@@ -50,6 +51,7 @@ function specValue(item: Item, id: string): string {
 export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [stage, setStage] = useState<Stage>('pick')
+  useEscape(() => setStage('review'), stage === 'corners')
   const [source, setSource] = useState<{ img: Rgba; preview: Blob } | null>(null)
   const [quad, setQuad] = useState<Quad | null>(null)
   const [scan, setScan] = useState<Blob | null>(null)

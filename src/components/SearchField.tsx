@@ -5,6 +5,7 @@ import { errorText } from '../lib/errors'
 import { barcodeKey } from '../lib/grid'
 import type { Tip } from '../lib/searchTips'
 import { t } from '../lib/strings'
+import { useEscape } from '../lib/useEscape'
 import { searchKeys } from '../lib/useSearchShortcut'
 import { Icon } from './Icons'
 
@@ -28,6 +29,12 @@ function codeQuery(code: string): string {
 }
 
 export function SearchField({ value, onChange, onClose, tips = [], autoFocus = true, scan = false }: Props) {
+  const tipsRef = useRef<HTMLDetailsElement>(null)
+  const [tipsOpen, setTipsOpen] = useState(false)
+  useEscape(() => {
+    if (tipsRef.current) tipsRef.current.open = false
+    tipsRef.current?.querySelector('summary')?.focus()
+  }, tipsOpen)
   const ref = useRef<HTMLInputElement>(null)
   const scanRef = useRef<HTMLInputElement>(null)
   const finePointer = window.matchMedia('(pointer: fine)').matches
@@ -76,6 +83,7 @@ export function SearchField({ value, onChange, onClose, tips = [], autoFocus = t
             // Søk on a phone's keyboard puts the keyboard away and shows the hits
             if (e.key === 'Enter' && !finePointer) e.currentTarget.blur()
             if (e.key !== 'Escape') return
+            e.preventDefault()
             if (value !== '') onChange('')
             else onClose?.()
           }}
@@ -120,7 +128,7 @@ export function SearchField({ value, onChange, onClose, tips = [], autoFocus = t
         </p>
       )}
       {tips.length > 0 && (
-        <details className="tips">
+        <details ref={tipsRef} className="tips" onToggle={(e) => setTipsOpen(e.currentTarget.open)}>
           <summary>
             {t.search.tips}
             <Icon name="chevronRight" size={14} className="tips-chevron" />

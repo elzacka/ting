@@ -11,6 +11,7 @@ import { formatValue } from '../lib/format'
 import { cellsFrom, columnId, inputFrom } from '../lib/grid'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
+import { useEscape } from '../lib/useEscape'
 import { domId } from './ChoiceFields'
 import { Icon } from './Icons'
 import { useObjectUrl } from './useObjectUrl'
@@ -28,6 +29,7 @@ type PropDef = Extract<ColumnDef, { kind: 'prop' }>
 export function ItemDetail({ item, items, properties, fields }: Props) {
   const url = useObjectUrl(item.photos[0] ?? null)
   const [confirming, setConfirming] = useState(false)
+  useEscape(() => setConfirming(false), confirming)
   const fileRef = useRef<HTMLInputElement>(null)
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const nameLabel = fields.name.label ?? t.table.name
@@ -124,6 +126,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
       e.preventDefault()
       void commit()
     } else if (e.key === 'Escape') {
+      e.preventDefault()
       setEditing(null)
       setError(null)
     }

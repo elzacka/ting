@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { readRegister, replaceAll, writeVault } from '../db/db'
+import { readRegister, replaceAll } from '../db/db'
 import { itemsFromDataFile, NewerFileError, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import type { OpenKey, Vault } from '../lib/crypto'
 import { downloadText, exportFilename } from '../lib/export'
@@ -7,8 +7,9 @@ import { formatDate } from '../lib/format'
 import { requestFullPhotoWrite } from '../lib/folderStore'
 import { nothingNew } from '../lib/merge'
 import { t } from '../lib/strings'
+import { useEscape } from '../lib/useEscape'
 import { fileExtras, markFetched, markSent, mergeIn, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
-import { adoptVault, currentKey, currentVault } from '../lib/vault'
+import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
@@ -48,8 +49,10 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
   const [choice, setChoice] = useState<Opened | null>(null)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
-  // Plain text, since Chrome's share sheet refuses .json. A touch screen shares
-  // (Lagre i Filer is in the sheet); a desk downloads, as its sheet cannot save
+  useEscape(() => setForeign(null), foreign !== null)
+  useEscape(() => setChoice(null), choice !== null)
+  // A touch screen shares, as plain text since Chrome's share sheet refuses .json (Lagre i
+  // Filer is in the sheet). A desk downloads .json: its sheet cannot save, so one button can't do both
   const [share] = useState(
     () =>
       window.matchMedia('(pointer: coarse)').matches &&
@@ -74,8 +77,8 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
     setError(null)
     const register = await readRegister()
     const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
-    const name = exportFilename('txt')
     if (share) {
+      const name = exportFilename('txt')
       try {
         await navigator.share({ files: [new File([json], name, { type: 'text/plain' })] })
       } catch (err) {
@@ -84,7 +87,7 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
         console.error(errorText(err))
         downloadText(name, json, 'text/plain')
       }
-    } else downloadText(name, json, 'text/plain')
+    } else downloadText(exportFilename('json'), json, 'application/json')
     await markSent()
     setStatus(await syncStatus())
   }
@@ -99,23 +102,29 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
     if (!o.open) return
     setChoice(null)
     const adopted = o.open.dekId !== currentKey().dekId
-    const r = await mergeIn(o.loaded, o.open, o.vault, { recordFetch: true })
-    setResult([...describe(r, o.loaded), ...(adopted ? [t.sync.adopted] : [])])
+    try {
+      const r = await mergeIn(o.loaded, o.open, o.vault, { recordFetch: true })
+      setResult([...describe(r, o.loaded), ...(adopted ? [t.sync.adopted] : [])])
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.sync.failed)
+    }
     setStatus(await syncStatus())
   }
 
   async function replace(o: Opened) {
     setChoice(null)
     // The trial's key dies with the tab, so a file under another key brings its own
-    const adopted = trial && o.open !== null && o.vault !== null && o.open.dekId !== currentKey().dekId
-    if (adopted && o.open && o.vault) {
-      adoptVault(o.vault, o.open)
-      await writeVault(o.vault)
+    const change = trial && o.open && o.vault && o.open.dekId !== currentKey().dekId ? { vault: o.vault, open: o.open } : undefined
+    try {
+      requestFullPhotoWrite()
+      await replaceAll(o.loaded.items, o.loaded.properties, o.loaded.fields, o.loaded.tombstones, change)
+      await markFetched()
+      setResult([t.sync.replaced(o.loaded.items.length), ...(change ? [t.sync.adopted] : [])])
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.sync.failed)
     }
-    requestFullPhotoWrite()
-    await replaceAll(o.loaded.items, o.loaded.properties, o.loaded.fields, o.loaded.tombstones)
-    await markFetched()
-    setResult([t.sync.replaced(o.loaded.items.length), ...(adopted ? [t.sync.adopted] : [])])
     setStatus(await syncStatus())
   }
 
@@ -293,7 +302,7 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
               </p>
             </div>
             <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
-              {t.sync.exportButton}
+              {share ? t.sync.exportButton : t.sync.exportDownload}
             </button>
           </div>
         </div>

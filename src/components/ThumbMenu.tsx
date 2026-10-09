@@ -33,7 +33,9 @@ export function ThumbMenu({
       if (e.target instanceof Node && !ref.current?.contains(e.target)) setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      setOpen(false)
     }
     document.addEventListener('pointerdown', onDown)
     document.addEventListener('keydown', onKey)

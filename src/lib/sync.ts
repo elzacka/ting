@@ -1,9 +1,9 @@
-import { getSetting, raiseClock, readRegister, setSetting, writeRegister, writeVault } from '../db/db'
+import { getSetting, raiseClock, readRegister, setSetting, writeRegister, type KeyChange } from '../db/db'
 import type { Loaded } from './backup'
 import type { FileExtras } from './backup'
 import type { OpenKey, Vault } from './crypto'
 import { mergeRegisters, newestStamp, noTombstones, type MergeSummary, type Register } from './merge'
-import { adoptVault, currentKey, currentVault } from './vault'
+import { currentKey, currentVault } from './vault'
 
 // Sync between one person's own devices: each sends its whole register as a
 // sealed file (AirDrop on Apple), the other merges it in. No server, no cloud.
@@ -93,21 +93,19 @@ export async function mergeIn(
   const since = Math.max((await getSetting<number>(lastMergedKey)) ?? 0, loaded.mergedAt)
   const { merged, summary } = mergeRegisters(local, remote, since)
 
-  let passphraseChanged = false
+  let change: KeyChange | undefined
   const otherKey = open.dekId !== currentKey().dekId
   if (otherKey && envelopeVault) {
-    adoptVault(envelopeVault, open)
-    await writeVault(envelopeVault)
+    change = { vault: envelopeVault, open }
   } else {
     const mine = currentVault()
     const theirs = loaded.vault
     if (mine && theirs && theirs.dekId === mine.dekId && (theirs.changedAt ?? 0) > (mine.changedAt ?? 0)) {
-      adoptVault(theirs, currentKey())
-      await writeVault(theirs)
-      passphraseChanged = true
+      change = { vault: theirs, open: currentKey() }
     }
   }
-  await writeRegister(merged, local, otherKey)
+  await writeRegister(merged, local, otherKey, change)
+  const passphraseChanged = change !== undefined && !otherKey
 
   const newest = newestStamp(remote)
   await raiseClock(newest)

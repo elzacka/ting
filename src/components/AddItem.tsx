@@ -96,7 +96,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
         if (!found) continue
         if (!scanned && typed.current !== '') return
         setCode(found.value)
-        setCodeNote(t.barcode.read(classify(found.value) === 'isbn' ? 'ISBN' : found.format))
+        setCodeNote(t.barcode.read)
         return
       }
       if (scanned) setCodeNote(t.barcode.none)

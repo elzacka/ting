@@ -86,12 +86,15 @@ mobilen låser du appen ved å lukke den.
 
 På iPhone lukker systemet appen når det trenger minnet. Da åpner den låst
 igjen, også når den automatiske låsen er av. Slå på «Lås opp med Face ID eller
-Touch ID» i Innstillinger, så låser du opp med Face ID
-eller Touch ID i stedet for passordet. Passordet virker fortsatt, og du
-trenger det for sikkerhetskopier og på andre enheter. Slår du valget av, kan du
-slette passnøkkelen «Ting» i Passord-appen.
+Touch ID» i Innstillinger, så låser du opp med Face ID eller Touch ID i stedet
+for passordet.
 
-Den automatiske låsen og Face ID gjelder bare enheten du bruker.
+På en PC med Windows heter valget «Lås opp med Windows Hello», og på Android
+«Lås opp med skjermlåsen». Passordet virker fortsatt, og du trenger det for
+sikkerhetskopier og på andre enheter. Du kan slette passnøkkelen «Ting» i
+Passord-appen på iPhone hvis du slår valget av.
+
+Den automatiske låsen og opplåsingen uten passord gjelder bare enheten du bruker.
 
 ### 3. Lag kategoriene og egenskapene du trenger
 
@@ -102,7 +105,7 @@ hvilke kolonner du ser. Et godt utgangspunkt:
 | Egenskap | Felttype | Alternativer eller enhet |
 |---|---|---|
 | Kategori | Valgliste | Turutstyr, Kjøkken, Klær og sko, Data og kontor |
-| Plassering | Sti | Loftsbod/Hylle 2/Boks 4 |
+| Plassering | Plassering | Loftsbod/Hylle 2/Boks 4 |
 | Kjøpesum | Tall | kr |
 | Kjøpsdato | Dato | |
 | Kommentar | Tekst | |
@@ -129,7 +132,7 @@ dataene](#ta-vare-på-dataene).
 | Del | Hvor | Gjør |
 |---|---|---|
 | Kategorifeltet | Øverst til venstre i registeret | Velger hvilke kategorier du ser. Uten valgt kategori vises ingen tabell |
-| Pluss | Øverst til høyre | «Legg til ting» eller «Legg til/endre egenskap (kolonne)» |
+| Pluss | Øverst til høyre | «Legg til ting» eller «Legg til egenskap» |
 | Nedlasting og utskrift | Ved siden av pluss | Henter ut det du ser, se [Skrive ut og hente ut](#skrive-ut-og-hente-ut) |
 | Den grå linja | Under knappene | Hvor mange ting du ser, summer i kr, og «Vis n kolonner til» |
 | Tabellen | Under | Én rad per ting. Navnet åpner tingens side; en annen celle endrer raden |
@@ -263,7 +266,7 @@ kolonnene i samme rekkefølge som regnearket først, så treffer alt. «Lagre».
 
 ### En egenskap
 
-Pluss › «Legg til/endre egenskap (kolonne)». Skriv navnet og velg felttype, se
+Pluss › «Legg til egenskap». Skriv navnet og velg felttype, se
 [Felttyper](#felttyper). En valgliste kan få alternativer, et tall en enhet.
 
 Står du i én eller flere kategorier, kan egenskapen høre til bare dem: «Bruk
@@ -287,8 +290,7 @@ kan slå opp bøker på nett.
 1. Kategorifeltet › «Endre kategorier». Trykk på «Ny kategori» og skriv
    `Underholdning`. Gjør det samme for `Bøker` og `Leker`. Trykk «Lagre». Hver
    av dem får symbolet sitt av seg selv, og Bøker får «Bok».
-2. Velg Underholdning i kategorifeltet. Pluss › «Legg til/endre egenskap
-   (kolonne)».
+2. Velg Underholdning i kategorifeltet. Pluss › «Legg til egenskap».
 3. Fyll ut skjemaet og trykk «Legg til»:
    - Navn på egenskap: `Type`
    - Felttype: Valgliste
@@ -327,8 +329,8 @@ Huk av tingene i tabellen. Avkrysningsboksen i overskriften huker av alle du
 ser. Linja øverst viser da **«n valgt · Endre verdi · Skriv ut · Last ned ·
 Slett · ×»**.
 
-«Endre verdi»: Velg egenskap og skriv verdien. Den kommer på alle tingene du har
-huket av. Radene viser hva som endres, og ingenting lagres før du trykker
+«Endre verdi»: Velg egenskap, skriv verdien og trykk «Fyll inn». Den kommer på
+alle tingene du har huket av. Radene viser hva som endres, og ingenting lagres før du trykker
 «Lagre». Et tomt felt fjerner verdien. Slik flytter du for eksempel ti ting til
 en ny plassering, eller til en annen kategori.
 
@@ -340,16 +342,16 @@ Kolonnemenyen er pilen ved kolonnenavnet.
 
 | Vil du | Velg |
 |---|---|
-| Endre navn, felttype eller enhet | «Endre navn» |
+| Endre navn, felttype eller enhet | «Endre navn og type» |
 | Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
 | Ta den ut av kategorien du står i | «Ikke bruk i …» (når én kategori er valgt). Verdiene blir stående |
 
 Endrer du felttypen, blir verdiene stående som de er. Slik gjør du for eksempel
-en valgliste med plasseringer om til en Sti.
+en valgliste med plasseringer om til felttypen Plassering.
 
 ### Mange egenskaper
 
-Pluss › «Legg til/endre egenskap (kolonne)» › «Endre egenskaper». Hver
+Kolonnemenyen › «Endre egenskaper». Hver
 egenskap står på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
 til, og antall ting med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
 du under «Endre kategorier».
@@ -401,12 +403,12 @@ appen et ut fra ordene i navnet.
 |---|---|
 | Én ting | På tingens side: «Slett» nederst |
 | Flere ting | Huk av tingene › «Slett» i linja øverst |
-| Én egenskap | Kolonnemenyen › «Fjern» |
-| Flere egenskaper | «Endre egenskaper» › det røde krysset på hver linje › «Lagre» |
+| Én egenskap | Kolonnemenyen › «Slett egenskap» |
+| Flere egenskaper | Kolonnemenyen › «Endre egenskaper» › det røde krysset på hver linje › «Lagre» |
 | Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › det røde krysset › «Lagre» |
 | En kategori | Flytt tingene først til en annen kategori med «Endre verdi». Deretter «Endre kategorier» › det røde krysset › «Lagre» |
 
-Fjerner du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
+Sletter du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
 appen hvor mange ting det gjelder, og spør først. Det du sletter, kan du ikke
 få tilbake, utenom fra en sikkerhetskopi.
 
@@ -426,7 +428,7 @@ den bort.
 | En kategori | Tingene i den, og kolonnene som hører til den |
 | Flere kategorier | Tingene i alle, og kolonnene som hører til minst én av dem |
 | «Alle» | Alt, og lukker lista |
-| «Fjern alle valgte» | Skjuler tabellen igjen |
+| «Velg ingen» | Skjuler tabellen igjen |
 
 <kbd>Esc</kbd> eller et klikk utenfor lukker lista, og piltastene flytter i
 den. Kategori-kolonnen er borte så lenge du står i én kategori: Der sier den det
@@ -452,7 +454,7 @@ med «Vis alle ting».
 Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
 
 - Datoer filtreres per år.
-- En Sti får ett filter per nivå: «Plassering» er rommet, «Plassering 2» hylla,
+- En plassering får ett filter per nivå: «Plassering» er rommet, «Plassering 2» hylla,
   «Plassering 3» boksen.
 - Egenskaper der nesten hver ting har sin egen verdi, som pris og ordrenummer,
   får ikke filter. Bruk søket, for eksempel `pris>1000`.
@@ -465,7 +467,7 @@ Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
 | Flytte en kolonne | Dra kolonnenavnet dit du vil ha kolonnen. En strek viser hvor den havner. På en berøringsskjerm holder du fingeren på navnet til kolonnen løsner, og drar. Navn står alltid først |
 | Endre bredde | Dra i kanten av kolonneoverskriften. Dobbeltklikk der for å tilpasse bredden til innholdet |
 | Se kolonner som er skjult | «Vis n kolonner til» på den grå linja |
-| Skjule en kolonne for godt | Innstillinger › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har, i alfabetisk rekkefølge etter Navn. «Velg alle» og «Fjern alle» viser eller skjuler alle på én gang. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
+| Skjule en kolonne for godt | Innstillinger › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har, i alfabetisk rekkefølge etter Navn. «Velg alle» og «Velg ingen» viser eller skjuler alle på én gang. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
 | Se lange verdier i sin helhet | Innstillinger › «Bryt lang tekst i tabellen» |
 
 Tabellen viser kolonnene kategorien din har, også de tomme: Det er dem du har
@@ -496,7 +498,7 @@ bestemmer formen:
 
 | Valg | Gjør |
 |---|---|
-| Grupper etter | En valgliste eller ett nivå i en Sti blant kolonnene du ser, for eksempel Kategori under «Alle» eller «Plassering 2» for hylla. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
+| Grupper etter | En valgliste eller ett nivå i en plassering blant kolonnene du ser, for eksempel Kategori under «Alle» eller «Plassering 2» for hylla. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
 | Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
 
 Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
@@ -514,7 +516,7 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Eksporter/del fil» lagrer fila i Filer eller sender den med AirDrop på iPhone, og laster den ned på Mac og PC. «Velg fil» ved «Importer til registeret» henter den inn igjen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | På iPhone lagrer «Eksporter/del fil» fila i Filer eller sender den med AirDrop. På Mac og PC laster «Eksporter fil» den ned. «Velg fil» ved «Importer til registeret» henter den inn igjen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
@@ -548,7 +550,7 @@ pris du retter på Mac, kommer med på begge enhetene.
 2. **På Mac:** Fila havner i Nedlastinger. Dra den inn i Innstillinger i Ting,
    eller trykk på «Velg fil» ved «Importer til registeret» og velg den. Velg
    «Slå sammen».
-3. **Tilbake til iPhone:** Trykk på «Eksporter/del fil» på Mac. Fila havner i
+3. **Tilbake til iPhone:** Trykk på «Eksporter fil» på Mac. Fila havner i
    Nedlastinger. Send den til iPhone med AirDrop fra Finder. Trykk på «Velg
    fil» ved «Importer til registeret» på iPhone, velg fila i Filer, og velg
    «Slå sammen».
@@ -600,7 +602,7 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 | Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene skilles med komma |
 | Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Tallene står til høyre. Tall med fem sifre eller flere får mellomrom mellom tusenene, så et årstall står som 2003. Kolonner i kr summeres på den grå linja når minst én ting har en verdi |
 | Dato | Skriv `19.09.26` |
-| Sti | Hele veien inn til en plass: `Loftsbod/Hylle 2/Boks 4`, eller med `>` eller `›`. Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`, og foreslår plassene du alt bruker |
+| Plassering | Hele veien inn til en plass: `Loftsbod/Hylle 2/Boks 4`, eller med `>` eller `›`. Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`, og foreslår plassene du alt bruker |
 
 > [!TIP]
 > Skriv hele veien inn, ikke bare rommet. På mobilen trykker du deg inn ett
@@ -627,9 +629,9 @@ Tannhjulet lengst til høyre i topplinja.
 | Passord, Gjenta passordet | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Importer til registeret | «Velg fil» henter en fil fra denne enheten eller en som er delt fra en annen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før, se [Bruke flere enheter](#bruke-flere-enheter). Appen ber om passordet fila ble eksportert med, hvis det er et annet enn nå. Linja under sier når du sist importerte |
-| Eksporter registeret | «Eksporter/del fil» lagrer fila i Filer eller sender den med AirDrop på iPhone, og laster den ned på Mac og PC. Linja under sier når du sist eksporterte |
+| Eksporter registeret | På iPhone lagrer «Eksporter/del fil» fila i Filer eller sender den med AirDrop. På Mac og PC heter knappen «Eksporter fil» og laster fila ned. Linja under sier når du sist eksporterte |
 | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
-| Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
+| Lås opp med Face ID eller Touch ID | Du låser opp uten passord. På Windows heter valget «Lås opp med Windows Hello», på Android «Lås opp med skjermlåsen». Gjelder bare enheten du bruker |
 | Passord | «Endre» |
 | Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
 | Les tekst på kvitteringer | Bare på mobil. Laster ned KI-modellene for tekstgjenkjenning, så kvitteringssymbolet nederst til venstre åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
@@ -641,7 +643,7 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | <kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Åpner og lukker søket |
 | En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
-| <kbd>Esc</kbd> | Tømmer søket, lukker en liste eller et panel, eller spør om du vil forkaste endringene i tabellen |
+| <kbd>Esc</kbd> | Lukker det du åpnet sist, slik «Avbryt» eller «Lukk» gjør: Et spørsmål, en liste, et panel eller søket. I søket tømmer den først teksten. Appen spør om du vil forkaste endringene i tabellen hvis ingenting annet er åpent |
 | Piltastene | Flytter i lister og i rutenettet med symboler |
 | <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>←</kbd> eller <kbd>→</kbd> | Flytter kolonnen når du står på kolonnenavnet |
 | <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side og legger til neste rad når du skriver i en ny rad i tabellen |
@@ -658,10 +660,11 @@ Tannhjulet lengst til høyre i topplinja.
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
-| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen i Innstillinger |
+| «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så opplåsingen uten passord av og på igjen i Innstillinger |
+| «Appen kunne ikke importere fila.» | Appen fikk ikke lagret innholdet fra fila | Prøv på nytt. Registeret og passordet er som før |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og importer fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
-| «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |
+| «Fant ingen ting på kvitteringen.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |
 | Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og importer en sikkerhetskopi hvis du har en |
 
 ---
@@ -675,8 +678,8 @@ appen.
 Med passord åpner appen alltid låst. Appen sletter nøkkelen fra minnet når du
 trykker på hengelåsen ved skrivebordet eller lukker appen. Det samme skjer
 etter 10 minutter uten bruk, men ikke mens du har ulagrede endringer i
-tabellen. Enhetens egen lås er også appens lås på den enheten hvis Face ID
-eller Touch ID er slått på. Kopier og lagringsmappen krever fortsatt passordet.
+tabellen. Enhetens egen lås er også appens lås på den enheten hvis du har slått
+på opplåsing med Face ID, Touch ID, Windows Hello eller skjermlåsen. Kopier og lagringsmappen krever fortsatt passordet.
 
 Alt du skriver inn, skanner eller får tilbake fra et oppslag, behandles som
 tekst, aldri som kode. Trusselmodellen står i `SECURITY.md` (engelsk).

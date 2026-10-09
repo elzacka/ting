@@ -116,6 +116,7 @@ export function useColumnDrag(
     // Escape drops the column where it was; the release that follows is no sort either
     function key(ev: KeyboardEvent) {
       if (ev.key !== 'Escape' || !dragging) return
+      ev.preventDefault()
       end()
       const release = (r: PointerEvent) => {
         if (r.pointerId !== e.pointerId) return
@@ -131,7 +132,7 @@ export function useColumnDrag(
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', end)
       window.removeEventListener('contextmenu', still)
-      window.removeEventListener('keydown', key)
+      window.removeEventListener('keydown', key, true)
       document.body.classList.remove('is-moving-column')
       dragging = false
       holding.current = false
@@ -141,7 +142,7 @@ export function useColumnDrag(
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', end)
     window.addEventListener('contextmenu', still)
-    window.addEventListener('keydown', key)
+    window.addEventListener('keydown', key, true)
   }
 
   return { drop, onPointerDown }

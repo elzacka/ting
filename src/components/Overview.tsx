@@ -57,6 +57,7 @@ import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
+import { useEscape } from '../lib/useEscape'
 
 type RowEdit = { name?: string; cells?: Record<string, string> }
 type NewRow = {
@@ -312,7 +313,7 @@ export function Overview({
     closePicker()
   }
   // Open: the chosen one has focus, the arrows move through the list, a
-  // click anywhere else closes it (Escape is in the key handler below)
+  // click anywhere else closes it (Escape: useEscape below)
   useEffect(() => {
     if (!picking) return
     const menu = pickerRef.current
@@ -783,8 +784,10 @@ export function Overview({
   // or fewer than two categories, since the chooser needs two and an unreachable table is a trap.
   const showTable =
     categoryPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
-  // Endre kategorier stands alone: its own rows count the things, and a table under it reads as part of it
-  const hasRows = showTable && !editingCategories && (items.length > 0 || newRows.length > 0)
+  // Endre kategorier and Endre egenskaper stand alone: their own rows count the things, and a
+  // table under them reads as part of them
+  const standalone = editingCategories || editingProperties
+  const hasRows = showTable && !standalone && (items.length > 0 || newRows.length > 0)
   const allIds = visible.map((i) => i.id)
   const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id))
 
@@ -1163,34 +1166,24 @@ export function Overview({
     }
   }, [])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      if (e.target instanceof HTMLElement && e.target.id === 'search') return
-      if (picking) {
-        closePicker()
-        return
-      }
-      if (addMenu) {
-        closeAddMenu()
-        return
-      }
-      if (renaming) {
-        setRenaming(null)
-        return
-      }
-      if (confirmingDiscard || confirmingDelete || removingColumn) {
-        setConfirmingDiscard(false)
-        setConfirmingDelete(false)
-        setRemovingColumn(null)
-        return
-      }
-      if (dirtyCount === 0) reset()
-      else setConfirmingDiscard(true)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+  // Escape, as Avbryt or Lukk would: the table's own question at the bottom, then a panel,
+  // then a question or menu, whichever opened last
+  useEscape(() => {
+    if (dirtyCount === 0) reset()
+    else setConfirmingDiscard(true)
   })
+  useEscape(() => openPanel(null), printPick !== null || bulk !== null || addingColumn || editingCategories || editingProperties)
+  useEscape(() => setConfirmingDiscard(false), confirmingDiscard)
+  useEscape(() => setConfirmingDelete(false), confirmingDelete)
+  useEscape(() => setRemovingColumn(null), removingColumn !== null)
+  useEscape(() => setRenaming(null), renaming !== null)
+  useEscape(closeAddMenu, addMenu !== null)
+  useEscape(() => {
+    const summary = document.querySelector<HTMLElement>('details.col-menu[open] > summary')
+    closeMenu()
+    summary?.focus()
+  }, menuPos !== null)
+  useEscape(closePicker, picking)
 
   return (
     <div className="stack">
@@ -1286,7 +1279,7 @@ export function Overview({
                       )
                     })}
                     {/* Names, icons and new categories: the panel in the band. An action, not a
-                        category, so no icon: text only, like Tøm valg, under a hairline */}
+                        category, so no icon: text only, like Velg ingen, under a hairline */}
                     <button
                       type="button"
                       role="menuitem"
@@ -1443,7 +1436,7 @@ export function Overview({
           </div>
           )}
           </div>
-          {showTable && !editingCategories && (
+          {showTable && !standalone && (
           <p className="summary">
             {/* What is on screen and the whole register */}
             <strong>
@@ -1773,11 +1766,6 @@ export function Overview({
               <p id="column-help" className="hint column-help">
                 {columnHelp()}
               </p>
-              <div className="row">
-                <button type="button" className="summary-link" onClick={() => openPanel('properties')}>
-                  {t.properties.edit}
-                </button>
-              </div>
             </form>
           )}
         </div>
@@ -2015,7 +2003,7 @@ export function Overview({
                               })
                             }}
                           >
-                            {t.table.renameColumn}
+                            {def.kind === 'prop' ? t.table.editColumn : t.table.renameColumn}
                           </button>
                           {def.kind === 'prop' && def.type === 'choice' && (
                             <button
@@ -2035,6 +2023,18 @@ export function Overview({
                               {def.id === categoryColumnId ? t.categories.edit : t.options.edit}
                             </button>
                           )}
+                          {/* Every property at once: names, types, units, which categories use them */}
+                          <button
+                            type="button"
+                            className="col-menu-item"
+                            role="menuitem"
+                            onClick={() => {
+                              closeMenu()
+                              openPanel('properties')
+                            }}
+                          >
+                            {t.properties.edit}
+                          </button>
                           {oneCategory !== null && def.kind === 'prop' && def.id !== categoryColumnId && (
                             <button
                               type="button"
@@ -2182,7 +2182,7 @@ export function Overview({
           />
         )}
 
-        {items.length > 0 && visible.length === 0 && newRows.length === 0 && !editingCategories && (
+        {items.length > 0 && visible.length === 0 && newRows.length === 0 && !standalone && (
           <div className="empty">
             <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
             <button

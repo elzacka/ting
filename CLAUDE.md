@@ -52,7 +52,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - `src/icons/`: one SVG per icon plus one line in `pack.ts`; a file and its line share the id, and `pack.test.ts` keeps them in step. An icon not from Material Symbols carries `source` and a matching line in README's licence section.
 - `lib/backup.ts`: `ting.json`, version in `fileFormat`; a file from a newer format is refused (`NewerFileError`), since Zod would drop what it cannot read and the next send would erase it. The folder keeps photos as files in `bilder/`; the downloaded backup embeds them as data URLs.
 - `lib/merge.ts` / `lib/sync.ts`: one merge for every copy, per field newest-wins, tombstones for deletes, symmetric and idempotent. The folder (`folderStore.ts` `reconcile`) is merged the same way on connect and start, then written back (debounced, `writeDelayMs`).
-- `ImportExport`: «Eksporter registeret» is both sync file and backup, the register sealed as `.txt` (Chrome's share sheet refuses `.json`), shared on a touch screen, downloaded on a desk. «Importer til registeret» replaces an empty register; otherwise it asks: merge (sealed files only, not in a trial) or replace. Replace (`replaceAll`) revives imported things over their tombstones.
+- `ImportExport`: «Eksporter registeret» is both sync file and backup, the register sealed: «Eksporter/del fil» shares it as `.txt` on a touch screen (Chrome's share sheet refuses `.json`), «Eksporter fil» downloads `.json` on a desk (a desk's share sheet cannot save, so one button cannot do both). «Importer til registeret» replaces an empty register; otherwise it asks: merge (sealed files only, not in a trial) or replace. Replace (`replaceAll`) revives imported things over their tombstones.
 - `lib/errors.ts`: log an error's name and message only, never the object — logging must not leak sealed content.
 
 ## Components
@@ -82,7 +82,7 @@ Everything typed, pasted, restored from a file, or read from a folder is data, n
 
 Dexie schema: the newest `db.version()` in `db/db.ts`; tables `items`, `settings`, `properties`, no content indexes (an index would leak content). `Item` carries `specs`; old rows/files with a bare `category` or `note` field become the properties Kategori and Notat on load, never migrated in place.
 
-`Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Changing a column's type to Sti changes its specs' unit marker, never their values.
+`Property.id` is `key+unit`; `type` is text/choice/number/date/path, with a stored `dato` or `sti` unit marker driving date/path formatting — the UI shows only the resolved type, never the marker. Changing a column's type to Plassering (path) changes its specs' unit marker, never their values.
 
 `Property.categories`: absent is every category (including later ones), `[]` is none, else those. Endre kategorier ticks a category's properties (`usesAfter`); unticking one from an every-category property lists all the others.
 
@@ -107,6 +107,7 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 - Design decisions: `dev_only/designsystem.md`. One accent colour, no shadows, no illustrations, 44 px targets, visible labels.
 - The lock is the passphrase: once one exists the app always opens locked; before one exists the installed app opens as an unlocked trial, no lock button, no idle lock.
 - No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; on the phone `ItemDetail` stores on blur and `AddItem` on Lagre.
+- Escape is Avbryt or Lukk everywhere: a surface with one calls `useEscape` (`lib/useEscape.ts`); the one opened last answers, and a field that handles Escape itself calls `preventDefault`.
 - No mobile-mode switch: viewport size alone decides the phone layout, on any orientation.
 - On a phone or touch screen without folder access, "Tilpass visning" and "Lagringsmappe" are not rendered; backup goes through the share sheet instead.
 - Password forms carry a hidden `username` field (`KeychainName`) so password managers file the passphrase under Ting. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.
