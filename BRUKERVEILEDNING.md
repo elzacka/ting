@@ -512,11 +512,15 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Last ned» lager fila. På iPhone og iPad heter knappen «Del». Velg «Lagre i Filer» eller send fila med AirDrop. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Send en kopi» lager fila. «Del» lar deg sende den med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
 der du skriver det inn.
+
+Gjenopprett erstatter bare det som ligger på enheten du bruker. Når du senere
+henter fra en annen enhet, kommer det som er nyere der, tilbake. Det gjelder
+også ting som mangler i kopien.
 
 <details>
 <summary>Mer om mappen</summary>
@@ -533,17 +537,15 @@ der du skriver det inn.
 
 ## Bruke flere enheter
 
-Slå på «Synkroniser mellom enhetene dine» i Innstillinger på begge
-enhetene. Du sender registeret med AirDrop, og den andre enheten henter
-det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
+Du sender registeret med AirDrop, og den andre enheten henter det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
 iPhone og en pris du retter på Mac, kommer med på begge enhetene.
 
-1. **På iPhone:** Trykk på «Send til en annen enhet», og velg Mac under
-   AirDrop.
+1. **På iPhone:** Trykk på «Del» ved «Send en kopi» i Innstillinger, og velg
+   Mac under AirDrop.
 2. **På Mac:** Fila havner i Nedlastinger. Dra den inn i Innstillinger i Ting,
-   eller trykk på «Hent fra en annen enhet» og velg den.
-3. **Tilbake til iPhone:** Send fra Mac på samme måte. Trykk på «Hent fra en
-   annen enhet» på iPhone, og velg fila i Filer.
+   eller trykk på «Velg fil» ved «Hent fra en annen enhet» og velg den.
+3. **Tilbake til iPhone:** Send fra Mac på samme måte. Trykk på «Velg fil» ved
+   «Hent fra en annen enhet» på iPhone, og velg fila i Filer.
 
 Etter hentingen sier appen hvor mange ting som er nye, endret og slettet.
 
@@ -618,9 +620,9 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | Passord, Gjenta passordet | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Synkroniser mellom enhetene dine | Viser «Send til en annen enhet» og «Hent fra en annen enhet». Linja under sier når du sist sendte og hentet |
-| Sikkerhetskopi | «Last ned» lager fila |
-| Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du lastet ned kopien, hvis det er et annet enn nå |
+| Send en kopi | «Del» lar deg sende fila med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. Linja under sier når du sist sendte |
+| Hent fra en annen enhet | «Velg fil» slår sammen fila med det som ligger her, se [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist hentet |
+| Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du laget kopien, hvis det er et annet enn nå |
 | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
 | Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
 | Passord | «Endre» |

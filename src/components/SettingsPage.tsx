@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { deletePasskey, readPasskey, readRegister, replaceAll, writePasskey, writeVault } from '../db/db'
+import { deletePasskey, readPasskey, replaceAll, writePasskey, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
-import { itemsFromDataFile, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
+import { itemsFromDataFile, openEnvelope, parseAnyFile, type Envelope, type Loaded } from '../lib/backup'
 import { categoryNames, sharedByAll } from '../lib/categories'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
-import { downloadText, exportFilename } from '../lib/export'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
 import type { OpenKey } from '../lib/crypto'
@@ -13,7 +12,6 @@ import { errorText } from '../lib/errors'
 import { folderSupported, requestFullPhotoWrite } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
 import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
-import { fileExtras } from '../lib/sync'
 import { AboutApp } from './AboutApp'
 import { DeviceSync } from './DeviceSync'
 import { ReceiptSettings } from './ReceiptSettings'
@@ -92,15 +90,6 @@ export function SettingsPage({
   const narrow = useNarrow()
   const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
   const showFolder = folderSupported || !touch
-  // A touch screen saves the copy through the share sheet (Filer, AirDrop,
-  // e-post), which a download in an installed app on an iPhone cannot do
-  const [shareable] = useState(
-    () =>
-      touch &&
-      typeof navigator.canShare === 'function' &&
-      navigator.canShare({ files: [new File([''], 'ting.json', { type: 'application/json' })] }),
-  )
-
   // Face ID or Touch ID on this device, where it can verify its user. A copy
   // wrapping another data key (a restore took over another vault) is stale.
   const [canPasskey, setCanPasskey] = useState(false)
@@ -134,25 +123,6 @@ export function SettingsPage({
     if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere)
     await writePasskey(made)
     setPasskey(made)
-  }
-
-  async function download() {
-    const v = currentVault()
-    if (!v) return
-    const name = exportFilename('json')
-    const register = await readRegister()
-    const json = await toBackupJson(items, properties, fields, currentKey(), v, await fileExtras(register, v))
-    if (shareable) {
-      try {
-        await navigator.share({ files: [new File([json], name, { type: 'application/json' })] })
-        return
-      } catch (err) {
-        // Closing the sheet is a choice; anything else falls back to a download
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        console.error(errorText(err))
-      }
-    }
-    downloadText(name, json, 'application/json')
   }
 
   async function onFile(file: File | undefined) {
@@ -379,25 +349,6 @@ export function SettingsPage({
 
         {!trial && <DeviceSync />}
 
-        {!trial && (
-          <div className="setting-row">
-            <div className="setting-main">
-              <div className="setting-text">
-                <span className="setting-title">{t.settings.backupTitle}</span>
-              </div>
-              <button
-                type="button"
-                className="btn"
-                aria-label={shareable ? t.settings.share : t.settings.download}
-                disabled={items.length === 0}
-                onClick={() => void download()}
-              >
-                {shareable ? t.settings.shareShort : t.settings.downloadShort}
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Replaces everything: confirmed before anything is replaced */}
         <div className="setting-row">
           <div className="setting-main">
@@ -412,7 +363,7 @@ export function SettingsPage({
             <input
               ref={fileRef}
               type="file"
-              accept="application/json,.json"
+              accept="text/plain,.txt,application/json,.json"
               className="visually-hidden"
               onChange={(e) => void onFile(e.target.files?.[0])}
             />

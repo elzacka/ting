@@ -8,7 +8,6 @@ import { adoptVault, currentKey, currentVault } from './vault'
 // Sync between one person's own devices: each sends its whole register as a
 // sealed file (AirDrop on Apple), the other merges it in. No server, no cloud.
 
-export const syncEnabledKey = 'deviceSync'
 const lastMergedKey = 'lastMergedAt'
 const lastSentKey = 'lastSentAt'
 const lastFetchedKey = 'lastFetchedAt'

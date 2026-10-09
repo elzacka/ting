@@ -32,7 +32,7 @@ files the app writes, and the code that ships to the browser.
 | CSV and print output | Wherever the user puts them | None: they exist to be read. The app says so |
 
 In the clear: row ids, the photo MIME type, sync times and switches (`clock`,
-`fieldsChangedAt`, `lastMergedAt`, `deviceSync`, `receiptReading`), a random
+`fieldsChangedAt`, `lastMergedAt`, `receiptReading`), a random
 device id, the folder handle, the wrapped key with its salt and parameters, the passkey
 record (credential id, PRF salt, wrapped key, key id), and the
 `exportedAt` on the outside of a file envelope. None of these reveal content.
@@ -46,7 +46,7 @@ record (credential id, PRF salt, wrapped key, key id), and the
 | Someone with the locked device, the folder or a copy | Read ids, counts and timestamps; attempt an offline guess of the passphrase, paying the Argon2id cost per guess | Read content, forge a document (GCM tag), roll back data with an old copy: a merge weighs the stamps inside the sealed document, field by field, so an older copy never replaces newer data |
 | A crafted `ting.json` or folder | Be rejected by the schema | Reference files outside `bilder/<uuid>-<n>.bin` (or the older `<uuid>.<ext>`), inject markup, ask for unbounded key-derivation memory |
 | Someone who receives a sync file by mistake (a wrong AirDrop target) | Read ids and counts, as with any copy | Read content, or change the owner's passphrase by swapping the clear-text vault: only the vault copy inside the sealed part is ever adopted (`lib/sync.ts`) |
-| Someone who hands the user a crafted file to fetch | Be refused: Synkroniser merges only a file sealed under the user's own key, or one whose passphrase the user types | Delete or overwrite things through a plain (unsealed) file's tombstones or stamps: plain files go only through Gjenopprett, which shows the count and asks first |
+| Someone who hands the user a crafted file to fetch | Be refused: Hent fra en annen enhet merges only a file sealed under the user's own key, or one whose passphrase the user types | Delete or overwrite things through a plain (unsealed) file's tombstones or stamps: plain files go only through Gjenopprett, which shows the count and asks first |
 | A page that frames the app | Load it | Show it: the app refuses to render inside a frame |
 | A compromised dependency or CI action | Ship malicious code to every user | Nothing stops this except the controls under A03 below; it is the largest residual risk |
 | The hosting provider (GitHub Pages) | Serve altered files, omit headers | Read user data: none is ever sent |

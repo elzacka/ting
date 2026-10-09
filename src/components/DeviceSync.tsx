@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { getSetting, readRegister, setSetting } from '../db/db'
+import { readRegister } from '../db/db'
 import { itemsFromDataFile, NewerFileError, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import type { OpenKey, Vault } from '../lib/crypto'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
 import { nothingNew } from '../lib/merge'
 import { t } from '../lib/strings'
-import { fileExtras, markSent, mergeIn, syncEnabledKey, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
+import { fileExtras, markSent, mergeIn, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
 import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
-import { SettingSwitch } from './Setting'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
@@ -32,10 +31,9 @@ function describe(r: MergeResult, loaded: Loaded): string[] {
   return lines
 }
 
-// Synkroniser: send the register with AirDrop (the share sheet) and merge in
-// what comes back. Off until switched on; the stamps are kept either way.
+// A copy of the whole register, sealed: sent to another device or kept as the
+// backup. Hent merges one back in; Gjenopprett (SettingsPage) replaces.
 export function DeviceSync() {
-  const [on, setOn] = useState(false)
   const [status, setStatus] = useState<SyncStatus>({ sentAt: null, fetchedAt: null })
   const [result, setResult] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -44,47 +42,41 @@ export function DeviceSync() {
   const [wrong, setWrong] = useState(false)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  // Plain text, since Chrome's share sheet refuses .json. A touch screen shares
+  // only (Lagre i Filer is in the sheet); a desk also downloads, as its sheet cannot save
+  const [shareable] = useState(
+    () => typeof navigator.canShare === 'function' && navigator.canShare({ files: [new File([''], 'ting.txt', { type: 'text/plain' })] }),
+  )
+  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
 
   useEffect(() => {
     let live = true
-    void (async () => {
-      const [enabled, st] = await Promise.all([getSetting<boolean>(syncEnabledKey), syncStatus()])
-      if (!live) return
-      setOn(enabled === true)
-      setStatus(st)
-    })()
+    void syncStatus().then((st) => {
+      if (live) setStatus(st)
+    })
     return () => {
       live = false
     }
   }, [])
 
-  async function toggle(next: boolean) {
-    setOn(next)
-    await setSetting(syncEnabledKey, next)
-  }
-
-  async function send() {
+  async function send(how: 'share' | 'download') {
     const vault = currentVault()
     if (!vault) return
     setResult(null)
     setError(null)
     const register = await readRegister()
     const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
-    // Plain text, since Chrome's share sheet refuses .json and would leave only a download
     const name = exportFilename('txt')
-    const file = new File([json], name, { type: 'text/plain' })
-    if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+    if (how === 'share') {
       try {
-        await navigator.share({ files: [file] })
-        await markSent()
-        setStatus(await syncStatus())
-        return
+        await navigator.share({ files: [new File([json], name, { type: 'text/plain' })] })
       } catch (err) {
+        // Closing the sheet is a choice; anything else falls back to a download
         if (err instanceof DOMException && err.name === 'AbortError') return
         console.error(errorText(err))
+        downloadText(name, json, 'text/plain')
       }
-    }
-    downloadText(name, json, 'text/plain')
+    } else downloadText(name, json, 'text/plain')
     await markSent()
     setStatus(await syncStatus())
   }
@@ -139,7 +131,6 @@ export function DeviceSync() {
 
   // On a Mac, AirDrop leaves the file in Downloads: it can be dragged in here
   useEffect(() => {
-    if (!on) return
     const over = (e: DragEvent) => {
       if (e.dataTransfer?.types.includes('Files')) e.preventDefault()
     }
@@ -157,81 +148,104 @@ export function DeviceSync() {
     }
   })
 
-  const statusLine = [
-    status.sentAt ? t.sync.sent(formatDate(status.sentAt), formatTime(status.sentAt)) : null,
-    status.fetchedAt ? t.sync.fetched(formatDate(status.fetchedAt), formatTime(status.fetchedAt)) : null,
-  ]
-    .filter(Boolean)
-    .join(' ')
-
   return (
-    <div className="setting-row">
-      <SettingSwitch title={t.sync.option} description={t.sync.what} checked={on} onChange={(next) => void toggle(next)} />
-      {on && (
-        <>
-          <div className="row toolbar">
-            <button type="button" className="btn" onClick={() => void send()}>
+    <>
+      <div className="setting-row">
+        <div className="setting-main">
+          <div className="setting-text">
+            <span id="send-title" className="setting-title">
               {t.sync.send}
-            </button>
-            <input
-              id="sync-file"
-              ref={fileRef}
-              type="file"
-              accept="text/plain,.txt,application/json,.json"
-              className="visually-hidden"
-              onChange={(e) => void receive(e.target.files?.[0])}
-            />
-            <button type="button" className="btn" disabled={busy} onClick={() => fileRef.current?.click()}>
-              {t.sync.fetch}
-            </button>
-          </div>
-          {statusLine && <p className="setting-desc num">{statusLine}</p>}
-        </>
-      )}
-      {foreign && (
-        <form className="stack-sm" onSubmit={(e) => void openForeign(e)}>
-          <p>{t.sync.foreign}</p>
-          <div className="field">
-            <label htmlFor="sync-pass">{t.vault.passphrase}</label>
-            <input
-              id="sync-pass"
-              className="input"
-              type="password"
-              autoComplete="current-password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              autoFocus
-            />
-          </div>
-          {wrong && (
-            <p className="error" role="alert">
-              {t.vault.wrong}
+            </span>
+            <p id="send-what" className="setting-desc num">
+              {status.sentAt ? `${t.sync.sendWhat}. ${t.sync.sent(formatDate(status.sentAt), formatTime(status.sentAt))}` : t.sync.sendWhat}
             </p>
-          )}
+          </div>
           <div className="row">
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {t.sync.fetch}
-            </button>
-            <button type="button" className="btn" onClick={() => setForeign(null)}>
-              {t.action.cancel}
-            </button>
+            {shareable && (
+              <button type="button" className="btn" aria-label={t.sync.share} onClick={() => void send('share')}>
+                {t.sync.shareShort}
+              </button>
+            )}
+            {!(shareable && touch) && (
+              <button type="button" className="btn" aria-label={t.sync.download} onClick={() => void send('download')}>
+                {t.sync.downloadShort}
+              </button>
+            )}
           </div>
-        </form>
-      )}
-      {result && (
-        <div role="status">
-          {result.map((line) => (
-            <p key={line} className="hint">
-              {line}
-            </p>
-          ))}
         </div>
-      )}
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
+      </div>
+      <div className="setting-row">
+        <div className="setting-main">
+          <div className="setting-text">
+            <span id="fetch-title" className="setting-title">
+              {t.sync.fetch}
+            </span>
+            <p id="fetch-what" className="setting-desc num">
+              {status.fetchedAt ? `${t.sync.fetchWhat}. ${t.sync.fetched(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}` : t.sync.fetchWhat}
+            </p>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="text/plain,.txt,application/json,.json"
+            className="visually-hidden"
+            onChange={(e) => void receive(e.target.files?.[0])}
+          />
+          <button
+            type="button"
+            className="btn"
+            disabled={busy}
+            aria-describedby="fetch-title fetch-what"
+            onClick={() => fileRef.current?.click()}
+          >
+            {t.sync.pick}
+          </button>
+        </div>
+        {foreign && (
+          <form className="stack-sm" onSubmit={(e) => void openForeign(e)}>
+            <p>{t.sync.foreign}</p>
+            <div className="field">
+              <label htmlFor="sync-pass">{t.vault.passphrase}</label>
+              <input
+                id="sync-pass"
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                autoFocus
+              />
+            </div>
+            {wrong && (
+              <p className="error" role="alert">
+                {t.vault.wrong}
+              </p>
+            )}
+            <div className="row">
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {t.sync.fetch}
+              </button>
+              <button type="button" className="btn" onClick={() => setForeign(null)}>
+                {t.action.cancel}
+              </button>
+            </div>
+          </form>
+        )}
+        {result && (
+          <div role="status">
+            {result.map((line) => (
+              <p key={line} className="hint">
+                {line}
+              </p>
+            ))}
+          </div>
+        )}
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    </>
   )
 }

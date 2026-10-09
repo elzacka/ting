@@ -783,7 +783,8 @@ export function Overview({
   // or fewer than two categories, since the chooser needs two and an unreachable table is a trap.
   const showTable =
     categoryPicked || newRows.length > 0 || query.trim() !== '' || categoryValues.length <= 1
-  const hasRows = showTable && (items.length > 0 || newRows.length > 0)
+  // Endre kategorier stands alone: its own rows count the things, and a table under it reads as part of it
+  const hasRows = showTable && !editingCategories && (items.length > 0 || newRows.length > 0)
   const allIds = visible.map((i) => i.id)
   const allSelected = allIds.length > 0 && allIds.every((id) => selected.has(id))
 
@@ -1443,7 +1444,7 @@ export function Overview({
           </div>
           )}
           </div>
-          {showTable && (
+          {showTable && !editingCategories && (
           <p className="summary">
             {/* What is on screen and the whole register */}
             <strong>
@@ -2015,7 +2016,6 @@ export function Overview({
                               })
                             }}
                           >
-                            <Icon name="edit" size={16} />
                             {t.table.renameColumn}
                           </button>
                           {def.kind === 'prop' && def.type === 'choice' && (
@@ -2033,7 +2033,6 @@ export function Overview({
                                 setOptionsFor(def.id)
                               }}
                             >
-                              <Icon name="list" size={16} />
                               {def.id === categoryColumnId ? t.categories.edit : t.options.edit}
                             </button>
                           )}
@@ -2044,7 +2043,6 @@ export function Overview({
                               role="menuitem"
                               onClick={() => void scopeColumn(def, oneCategory)}
                             >
-                              <Icon name="label" size={16} />
                               {appliesTo(def.property, cats) ? t.table.notIn(oneCategory) : t.table.alsoIn(oneCategory)}
                             </button>
                           )}
@@ -2055,7 +2053,6 @@ export function Overview({
                               role="menuitem"
                               onClick={() => void requestRemoveColumn(def)}
                             >
-                              <Icon name="delete" size={16} />
                               {t.table.removeColumn}
                             </button>
                           )}
@@ -2186,7 +2183,7 @@ export function Overview({
           />
         )}
 
-        {items.length > 0 && visible.length === 0 && newRows.length === 0 && (
+        {items.length > 0 && visible.length === 0 && newRows.length === 0 && !editingCategories && (
           <div className="empty">
             <p>{query.trim() !== '' ? t.search.noMatch(query.trim()) : t.list.noMatch}</p>
             <button

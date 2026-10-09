@@ -17,7 +17,7 @@ Face ID / Touch ID can stand in for the passphrase on one device via a platform 
 
 The PRF output is used only as exactly 32 bytes (`prfBytes` accepts an ArrayBuffer, a view, or the plain array 1Password's extension returns); read as an empty secret it would give a fixed key, so anything else fails, and a copy that opens under that fixed key is deleted at the lock screen. Log what arrived as type and length, never the value.
 
-Only ids, the folder handle, sync times and switches (`clock`, `fieldsChangedAt`, `lastMergedAt`, `deviceSync` …), the device id and the vault itself (wrapped key, salt, parameters) are ever unencrypted. `db.ts` seals every row (items, properties, field settings, tombstones) and every per-device setting that names content (hidden columns, column widths, remembered receipt stores); backup files keep the vault in the clear and everything else sealed.
+Only ids, the folder handle, sync times and switches (`clock`, `fieldsChangedAt`, `lastMergedAt` …), the device id and the vault itself (wrapped key, salt, parameters) are ever unencrypted. `db.ts` seals every row (items, properties, field settings, tombstones) and every per-device setting that names content (hidden columns, column widths, remembered receipt stores); backup files keep the vault in the clear and everything else sealed.
 
 A newer passphrase reaches other devices only through the vault copy inside the sealed part (`sync.ts`), never the clear one, which anyone could swap. Photos in the folder are `bilder/<id>-1.bin`, flat and numbered from one, each 12-byte nonce + ciphertext.
 

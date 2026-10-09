@@ -36,7 +36,7 @@ export const t = {
     folderForeign: (name: string) =>
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
-    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv inn passordet appen hadde da du lastet den ned.',
+    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv inn passordet appen hadde da du laget den.',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
   },
@@ -338,7 +338,7 @@ export const t = {
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
     folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata',
-    unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge. Du kan også laste ned en sikkerhetskopi under.',
+    unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Send en kopi».',
     choose: 'Velg mappe',
     chooseShort: 'Velg',
     checking: 'Sjekker mappen…',
@@ -348,18 +348,12 @@ export const t = {
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
     disconnect: 'Koble fra',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
-    backupTitle: 'Sikkerhetskopi',
-    download: 'Last ned sikkerhetskopi',
-    downloadShort: 'Last ned',
-    // A phone saves the file through the share sheet: Filer, AirDrop, e-post
-    share: 'Del sikkerhetskopi',
-    shareShort: 'Del',
     restore: 'Gjenopprett fra sikkerhetskopi',
-    restoreWhat: 'Erstatter alt i appen med innholdet i filen',
+    restoreWhat: 'Erstatter alt i appen med innholdet i fila',
     restorePick: 'Velg fil',
-    restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra filen? Du kan ikke angre.`,
+    restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra fila? Du kan ikke angre.`,
     restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}`,
-    restoreFailed: 'Denne filen er ikke en sikkerhetskopi fra Ting. Velg en fil som slutter på .json.',
+    restoreFailed: 'Denne fila er ikke en sikkerhetskopi fra Ting. Velg en kopi du har sendt eller lastet ned fra Ting.',
     replace: 'Erstatt',
   },
   // Ny fra kvittering: the photo of a receipt read on the device into things
@@ -399,12 +393,18 @@ export const t = {
     version: (version: string) => `v${version}`,
     author: 'elzacka',
   },
-  // Sync between one person's own devices: a file sent with AirDrop and merged in
+  // A sealed copy of the register: sent to another device and merged in there, or kept as the backup
   sync: {
-    option: 'Synkroniser mellom enhetene dine',
-    what: 'Med AirDrop. Appen slår sammen endringene fra begge enhetene.',
-    send: 'Send til en annen enhet',
+    send: 'Send en kopi',
+    sendWhat: 'Til en annen enhet eller som sikkerhetskopi',
+    // A phone saves through the share sheet (Lagre i Filer, AirDrop); a desk downloads too
+    share: 'Del en kopi',
+    shareShort: 'Del',
+    download: 'Last ned en kopi',
+    downloadShort: 'Last ned',
     fetch: 'Hent fra en annen enhet',
+    fetchWhat: 'Slår sammen endringene fra begge enhetene',
+    pick: 'Velg fil',
     sent: (date: string, time: string) => `Sist sendt ${date} kl. ${time}.`,
     fetched: (date: string, time: string) => `Sist hentet ${date} kl. ${time}.`,
     // After a merge: where the file came from, when it was made, what changed

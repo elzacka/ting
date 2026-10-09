@@ -20,8 +20,8 @@ passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
 ## Det som forlater enheten
 
-- **«Send til en annen enhet»:** Hele registeret sendes kryptert, bare til
-  enheten du velger i AirDrop.
+- **«Send en kopi»:** Hele registeret sendes kryptert, bare dit du velger: En
+  annen enhet med AirDrop, Filer eller en nedlasting.
 - **Oppslag av bøker:** ISBN-nummeret sendes til Nasjonalbiblioteket eller Open
   Library når du skanner eller skriver ISBN i en kategori for bøker, og boka
   ikke finnes i registeret fra før. De ser IP-adressen din.
@@ -34,7 +34,8 @@ eller oppdateres, og når appen laster ned modellene som leser kvitteringer.
 Dataene ligger bare hos deg, så du bestemmer over dem selv:
 
 - **Se:** Alt står i appen.
-- **Hente ut:** Last ned CSV eller en sikkerhetskopi under Innstillinger.
+- **Hente ut:** Last ned CSV, eller ta en sikkerhetskopi med «Send en kopi»
+  under Innstillinger.
 - **Slette:** Slett ting i appen. Slett nettstedsdataene i nettleseren for å
   fjerne alt fra enheten.
 
