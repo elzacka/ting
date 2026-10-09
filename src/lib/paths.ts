@@ -82,3 +82,16 @@ export function nextLevels(paths: readonly string[], value: string): { base: str
     options: beside.filter((o) => foldLevel(o) !== last && (complete || foldLevel(o).startsWith(last))),
   }
 }
+
+// A place typed anew, written with the levels' spelling already in use:
+// "kjellerbod/hylle 9" goes in beside the Kjellerbod on the list
+export function spellLike(paths: readonly string[], value: string): string {
+  const parts = parsePath(value)
+  const known = paths.map(parsePath)
+  return formatPath(
+    parts.map((part, i) => {
+      const same = known.find((k) => k.length > i && parts.slice(0, i + 1).every((p, j) => foldLevel(p) === foldLevel(k[j] ?? '')))
+      return same?.[i] ?? part
+    }),
+  )
+}

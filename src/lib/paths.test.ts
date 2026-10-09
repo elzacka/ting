@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPath, isPathUnit, nextLevels, parsePath, pathPrefix, pathsInUse } from './paths'
+import { formatPath, isPathUnit, nextLevels, parsePath, pathPrefix, pathsInUse, spellLike } from './paths'
 
 describe('parsePath', () => {
   it('takes whichever separator the keyboard could reach', () => {
@@ -100,5 +100,22 @@ describe('nextLevels', () => {
   it('offers nothing for a place not in use', () => {
     expect(nextLevels(paths, 'Garasje').options).toEqual([])
     expect(nextLevels(paths, 'Bod › Loft').options).toEqual([])
+  })
+})
+
+describe('spellLike', () => {
+  const paths = ['Kjellerbod', 'Kjellerbod › Hylle 1', 'Loftsbod']
+
+  it('takes the spelling of each level in use', () => {
+    expect(spellLike(paths, 'kjellerbod/hylle 1 > boks 3')).toBe('Kjellerbod › Hylle 1 › boks 3')
+  })
+
+  it('keeps a level that is new as typed', () => {
+    expect(spellLike(paths, 'kjellerbod / Hylle 9')).toBe('Kjellerbod › Hylle 9')
+    expect(spellLike(paths, 'Garasje')).toBe('Garasje')
+  })
+
+  it('matches a level only under the same way in', () => {
+    expect(spellLike(paths, 'loftsbod/hylle 1')).toBe('Loftsbod › hylle 1')
   })
 })

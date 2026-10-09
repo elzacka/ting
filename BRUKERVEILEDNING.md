@@ -172,9 +172,11 @@ trykk «Lagre». Pris og tekst arves ikke.
    Appen leser strekkoden på bildene og fyller inn «Strekkode» hvis feltet er
    tomt.
 3. Skriv navnet. «Neste» på tastaturet går til neste felt.
-4. Kategori og plassering står igjen fra forrige ting. Trykk på et annet valg
-   hvis du vil bytte, eller på «Annet» for å skrive et nytt. Plassering velger
-   du ett nivå om gangen: «Bod», så «Hylle 2», så «Blå kasse».
+4. Kategori og plassering står igjen fra forrige ting. Trykk på feltet for å
+   velge noe annet i listen, eller skriv en ny verdi i feltet øverst. Den nye
+   verdien er valgt med en gang. En ny plassering skriver du med skråstrek
+   mellom nivåene: «Bod / Hylle 2 / Blå kasse». Trykk på valget igjen hvis du
+   vil fjerne det.
 5. «Lagre» nederst. Skjermen er klar for neste ting.
 
 På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet

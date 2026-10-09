@@ -1,9 +1,9 @@
 import type { Item } from '../db/schema'
 import { categoryColumnId, type ChoiceDef } from '../lib/fields'
 import { columnId } from '../lib/grid'
-import { pathsInUse } from '../lib/paths'
+import { pathsInUse, spellLike } from '../lib/paths'
 import { recentValues } from '../lib/values'
-import { ValuePicker } from './ValuePicker'
+import { ChoiceMenu } from './ChoiceMenu'
 
 // Column ids are JSON; encoded they are safe as element ids
 export function domId(prefix: string, id: string): string {
@@ -40,19 +40,21 @@ export function ChoiceFields({
     return recentValues(items, value, def.property?.options ?? [])
   }
 
-  return choices.map((def) => (
-    <div key={def.id} className="field">
-      <label htmlFor={domId(prefix, def.id)}>{def.col.key}</label>
-      <ValuePicker
-        id={domId(prefix, def.id)}
-        label={def.col.key}
-        kind={def.type === 'path' ? 'path' : 'choice'}
-        values={valuesFor(def)}
-        value={cells[def.id] ?? ''}
-        onChange={(v) => onChange(def.id, v)}
-        enterKeyHint="next"
-        chips
-      />
-    </div>
-  ))
+  return choices.map((def) => {
+    const values = valuesFor(def)
+    return (
+      <div key={def.id} className="field">
+        <label htmlFor={domId(prefix, def.id)}>{def.col.key}</label>
+        <ChoiceMenu
+          id={domId(prefix, def.id)}
+          label={def.col.key}
+          values={values}
+          value={cells[def.id] ?? ''}
+          onChange={(v) => onChange(def.id, v)}
+          // A new place is typed with a slash between the levels and listed with its levels
+          tidy={def.type === 'path' ? (v) => spellLike(values, v) : undefined}
+        />
+      </div>
+    )
+  })
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Item } from '../db/schema'
-import { parseNumber, recentValues, suggest } from './values'
+import { menuValues, parseNumber, recentValues, suggest } from './values'
 
 describe('parseNumber', () => {
   it('handles Norwegian and unicode forms', () => {
@@ -38,5 +38,19 @@ describe('suggest', () => {
   it('narrows to the values containing what is typed', () => {
     expect(suggest(values, 'k', 10)).toEqual(['Bøker', 'Elektronikk', 'Kjøkken'])
     expect(suggest(values, 'xyz', 10)).toEqual([])
+  })
+})
+
+describe('menuValues', () => {
+  it('sorts alphabetically, Norwegian letters last and numbers in order', () => {
+    expect(menuValues(['Å', 'b', 'Hylle 10', 'Ø', 'a', 'Hylle 2'], '')).toEqual(['a', 'b', 'Hylle 2', 'Hylle 10', 'Ø', 'Å'])
+  })
+
+  it('lists a new chosen value in its place', () => {
+    expect(menuValues(['Kjøkken', 'Bad'], ' Garasje ')).toEqual(['Bad', 'Garasje', 'Kjøkken'])
+  })
+
+  it('keeps the first spelling of a value', () => {
+    expect(menuValues(['Bad', 'bad', ''], 'BAD')).toEqual(['Bad'])
   })
 })

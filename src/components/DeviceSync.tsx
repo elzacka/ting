@@ -70,9 +70,9 @@ export function DeviceSync() {
     setError(null)
     const register = await readRegister()
     const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
-    const name = exportFilename('json')
-    const file = new File([json], name, { type: 'application/json' })
-    // Safari offers AirDrop in the share sheet; Chrome refuses .json there and downloads
+    // Plain text, since Chrome's share sheet refuses .json and would leave only a download
+    const name = exportFilename('txt')
+    const file = new File([json], name, { type: 'text/plain' })
     if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file] })
@@ -84,7 +84,7 @@ export function DeviceSync() {
         console.error(errorText(err))
       }
     }
-    downloadText(name, json, 'application/json')
+    downloadText(name, json, 'text/plain')
     await markSent()
     setStatus(await syncStatus())
   }
@@ -177,7 +177,7 @@ export function DeviceSync() {
               id="sync-file"
               ref={fileRef}
               type="file"
-              accept="application/json,.json"
+              accept="text/plain,.txt,application/json,.json"
               className="visually-hidden"
               onChange={(e) => void receive(e.target.files?.[0])}
             />

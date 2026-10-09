@@ -15,12 +15,12 @@ import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
 import { recentValues } from '../lib/values'
 import { ChoiceFields, firstCells } from './ChoiceFields'
+import { ChoiceMenu } from './ChoiceMenu'
 import { CornerEditor } from './CornerEditor'
 import { Icon } from './Icons'
 import { ReceiptSettings } from './ReceiptSettings'
 import { PhotoPicker, ThumbMenu } from './ThumbMenu'
 import { useObjectUrl } from './useObjectUrl'
-import { ValuePicker } from './ValuePicker'
 
 type Props = {
   items: Item[]
@@ -243,7 +243,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
             <div className="stack-sm">
               <div className="field">
                 <label htmlFor="receipt-store">{cols.store.key}</label>
-                <ValuePicker id="receipt-store" label={cols.store.key} kind="choice" values={storeValues} value={store} onChange={setStore} chips />
+                <ChoiceMenu id="receipt-store" label={cols.store.key} values={storeValues} value={store} onChange={setStore} />
               </div>
               <div className="field">
                 <label htmlFor="receipt-date">{cols.date.key}</label>

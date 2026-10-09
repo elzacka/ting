@@ -46,3 +46,16 @@ export function suggest(values: readonly string[], typed: string, limit: number)
   if (q === '' || values.some((v) => v.toLocaleLowerCase('nb') === q)) return values.slice(0, limit)
   return values.filter((v) => v.toLocaleLowerCase('nb').includes(q)).slice(0, limit)
 }
+
+const menuOrder = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
+
+// A dropdown's values: alphabetical, one per spelling, and the chosen one
+// listed even before any thing holds it
+export function menuValues(values: readonly string[], current: string): string[] {
+  const seen = new Map<string, string>()
+  for (const v of [...values, current]) {
+    const k = v.trim().toLocaleLowerCase('nb')
+    if (k !== '' && !seen.has(k)) seen.set(k, v.trim())
+  }
+  return [...seen.values()].sort(menuOrder.compare)
+}

@@ -586,6 +586,66 @@
   color: var(--on-accent);
 }
 
+/* A choice in a form: the closed dropdown reads as a select. The open list
+   floats over the fields under it and Lagre, so closing it moves nothing a
+   finger is already on its way to. */
+.choice-menu {
+  position: relative;
+}
+
+.choice-menu-btn {
+  display: block;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice-menu-btn[aria-expanded='true'] {
+  border-color: var(--accent);
+}
+
+.choice-menu-list {
+  position: absolute;
+  top: calc(100% + var(--s-1));
+  right: 0;
+  left: 0;
+  z-index: 3;
+  display: grid;
+  gap: var(--s-1);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--s-2);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.choice-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: var(--row-h);
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice-option:hover {
+  background: var(--hover);
+}
+
+.choice-option[aria-pressed='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* Lagre on the phone form: pinned to the bottom, above the keyboard while
    it is up, so the thing can be saved from any field */
 .form-bar {

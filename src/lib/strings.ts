@@ -183,8 +183,9 @@ export const t = {
     missingName: 'Tingen må ha et navn',
     // The values to tap under a field, named for the field
     suggestions: (label: string) => `${label}: Forslag`,
-    // The last chip under a short choice list: opens the field for a new value
-    other: 'Annet',
+    // The field on top of a choice's dropdown
+    newValue: 'Ny verdi',
+    newValueFor: (label: string) => `${label}: Ny verdi`,
   },
   barcode: {
     label: 'Strekkode',
@@ -422,7 +423,7 @@ export const t = {
     future: 'Klokka på den andre enheten går mer enn ett døgn foran. Sjekk dato og klokkeslett der.',
     passphraseChanged: 'Passordet er endret på den andre enheten. Bruk det nye passordet når du låser opp.',
     newer: 'Fila er laget av en nyere versjon av Ting. Oppdater appen og prøv på nytt.',
-    notTing: 'Denne fila er ikke fra Ting. Velg en fil som slutter på .json.',
+    notTing: 'Denne fila er ikke fra Ting. Velg fila du sendte fra den andre enheten.',
     foreign: 'Fila er låst med et annet passord. Skriv det inn for å hente den. Fra nå av låser du opp appen med det passordet.',
   },
 } as const
