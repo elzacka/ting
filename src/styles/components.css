@@ -88,11 +88,13 @@
 
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-6);
 }
 
 .stack-sm {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
 }
 
@@ -259,10 +261,12 @@
   transform: translateY(-50%);
 }
 
+/* A touch screen has no hover, and an unseen label at the screen's edge still
+   widens the page, which then pans sideways */
 @media (hover: none) {
-  .btn-icon[aria-label]:hover::after,
-  .btn-icon:hover > .tip {
-    opacity: 0;
+  .btn-icon[aria-label]:not(:focus-visible)::after,
+  .btn-icon:not(:focus-visible) > .tip {
+    display: none;
   }
 }
 
@@ -276,6 +280,7 @@
 
 .field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-1);
 }
 
@@ -612,6 +617,7 @@
   left: 0;
   z-index: 3;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-1);
   max-height: 320px;
   overflow-y: auto;
@@ -635,6 +641,7 @@
   color: var(--text);
   font-size: var(--text-sm);
   text-align: left;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 
@@ -730,6 +737,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-2);
+  overflow-wrap: anywhere;
 }
 
 .spec-value {
@@ -2815,7 +2823,7 @@ section {
 /* Ny ting: the thumbnail beside the name */
 .add-head {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: end;
   gap: var(--s-3);
 }
@@ -2829,7 +2837,7 @@ section {
 
 .receipt-head {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   gap: var(--s-3);
 }

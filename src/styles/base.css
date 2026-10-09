@@ -11,6 +11,9 @@ html {
   font-size: var(--text-md);
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
+  /* The page scrolls up and down only: a long word breaks, and nothing pans it sideways */
+  overflow-wrap: break-word;
+  overflow-x: clip;
 }
 
 /* With viewport-fit=cover the page reaches under the notch and the Dynamic

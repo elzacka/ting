@@ -111,6 +111,7 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 - No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; on the phone `ItemDetail` stores on blur and `AddItem` on Lagre.
 - Escape is Avbryt or Lukk everywhere: a surface with one calls `useEscape` (`lib/useEscape.ts`); the one opened last answers, and a field that handles Escape itself calls `preventDefault`.
 - No mobile-mode switch: viewport size alone decides the phone layout, on any orientation.
+- The page scrolls up and down only, never sideways: a grid column holding text is `minmax(0, 1fr)` (an `auto` column grows to its longest word), a flex row with text gets `overflow-wrap: anywhere`, wide content scrolls in its own box (`.table-wrap`, `.photo-strip`), and `html` clips what is left.
 - On a phone or touch screen without folder access, "Tilpass visning" and "Lagringsmappe" are not rendered; backup goes through the share sheet instead.
 - Password forms carry a hidden `username` field (`KeychainName`) so password managers file the passphrase under Ting. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.
 - `main.tsx` requests `navigator.storage.persist()` at every start outside the demo, since a browser can otherwise evict an inactive site's storage.
