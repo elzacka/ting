@@ -6,8 +6,8 @@ import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
 // Endre egenskaper: every property but Kategori on one line, so several can be changed or
-// removed at once; a Valgliste's alternatives open under their line. Nothing is stored
-// before Lagre, and removing values from things asks first.
+// removed at once; a Valgliste's alternatives open alone, in place of the lines. Nothing is
+// stored before Lagre, and removing values from things asks first.
 export type PropertyRow = {
   id: string
   key: string
@@ -24,7 +24,7 @@ export type PropertyRow = {
 type Props = {
   rows: PropertyRow[]
   categories: readonly string[]
-  // The property whose alternatives are open from the start
+  // The property whose alternatives show from the start
   open?: string | null
   onSave: (rows: PropertyRow[]) => Promise<void>
   onClose: () => void
@@ -57,11 +57,14 @@ export function changed(r: PropertyRow): boolean {
 export function PropertyEditor({ rows: initial, categories, open: openFirst = null, onSave, onClose }: Props) {
   const [rows, setRows] = useState(initial)
   const [scope, setScope] = useState<{ id: string; anchor: DOMRect } | null>(null)
-  const [expanded, setExpanded] = useState<string | null>(openFirst)
+  const [listing, setListing] = useState<string | null>(openFirst)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
   const idBase = useId()
+  const formRef = useRef<HTMLFormElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  // The line to return focus to from its alternatives
+  const backTo = useRef<string | null>(openFirst)
   const edit = (id: string, patch: Partial<PropertyRow>) => setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
   const editOption = (id: string, key: string, patch: Partial<OptionRow>) =>
     setRows((prev) =>
@@ -76,15 +79,15 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
     requestAnimationFrame(() => listRef.current?.querySelector<HTMLInputElement>(`[data-option="${key}"]`)?.focus())
   }
 
-  // Opened from a column's menu: straight to its alternatives
   useEffect(() => {
-    if (openFirst === null) return
-    const at = initial.findIndex((r) => r.id === openFirst)
-    const group = document.getElementById(`${idBase}-options-${at}`)
-    group?.scrollIntoView({ block: 'nearest' })
-    group?.querySelector<HTMLElement>('input, button')?.focus()
-    // Once, as the editor opens
-  }, [])
+    if (listing !== null) {
+      formRef.current?.scrollIntoView({ block: 'nearest' })
+      listRef.current?.querySelector('input')?.focus()
+    } else if (backTo.current !== null) {
+      document.getElementById(`${idBase}-list-${rows.findIndex((r) => r.id === backTo.current)}`)?.focus()
+    }
+    // Only as the view switches
+  }, [listing])
 
   const losing = rows.filter((r) => r.remove && r.count > 0)
   // Alternatives taken off things, on the lines that stay a Valgliste
@@ -107,142 +110,162 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
   }
 
   const open = scope ? rows.find((r) => r.id === scope.id) : undefined
+  const listed = rows.find((r) => r.id === listing)
 
   return (
-    <form id="property-form" className="stack-sm" onSubmit={submit}>
-      <p className="panel-title">{t.properties.title}</p>
-      <p className="hint">{t.properties.hint}</p>
-      <div className="property-rows" role="list" ref={listRef}>
-        {rows.map((r, i) => {
-          const where =
-            r.categories === null
-              ? t.properties.scopeAll
-              : r.categories.length === 0
-                ? t.properties.scopeNone
-                : listFormat.format(r.categories)
-          const optionsId = `${idBase}-options-${i}`
-          const optionsOpen = expanded === r.id && r.type === 'choice' && !r.remove
-          const optionCount = t.options.count(r.options.filter((o) => !o.remove && (o.from !== null || o.name.trim() !== '')).length)
-          return (
-            <div key={r.id} role="listitem" className={`property-row${r.remove ? ' is-removed' : ''}`}>
-              <input
-                className="input"
-                aria-label={t.properties.name(r.was.key)}
-                value={r.key}
-                disabled={r.remove}
-                onChange={(e) => edit(r.id, { key: e.target.value })}
-              />
-              <select
-                className="select"
-                aria-label={t.properties.type(r.was.key)}
-                value={r.type}
-                disabled={r.remove}
-                onChange={(e) => edit(r.id, { type: e.target.value as PropertyType })}
-              >
-                {types.map((ty) => (
-                  <option key={ty} value={ty}>
-                    {t.table.types[ty]}
-                  </option>
-                ))}
-              </select>
-              {r.type === 'number' ? (
-                <input
-                  className="input"
-                  list="unit-options"
-                  aria-label={t.properties.unit(r.was.key)}
-                  placeholder={t.table.columnUnit}
-                  value={r.unit}
-                  disabled={r.remove}
-                  onChange={(e) => edit(r.id, { unit: e.target.value })}
-                />
-              ) : r.type === 'choice' ? (
-                <button
-                  type="button"
-                  className="btn property-scope"
-                  aria-label={t.options.button(optionCount, r.was.key)}
-                  aria-expanded={optionsOpen}
-                  aria-controls={optionsId}
-                  disabled={r.remove}
-                  onClick={() => setExpanded(optionsOpen ? null : r.id)}
-                >
-                  <span>{optionCount}</span>
-                  <Icon name="chevronRight" size={16} className="property-scope-chevron" />
-                </button>
-              ) : (
-                <span />
-              )}
-              <button
-                type="button"
-                className="btn property-scope"
-                aria-label={t.properties.scopeButton(r.was.key, where)}
-                aria-haspopup="dialog"
-                aria-expanded={scope?.id === r.id}
-                disabled={r.remove || categories.length === 0}
-                onClick={(e) => setScope(scope?.id === r.id ? null : { id: r.id, anchor: e.currentTarget.getBoundingClientRect() })}
-              >
-                <span>{where}</span>
-                <Icon name="chevronRight" size={16} className="property-scope-chevron" />
-              </button>
-              <span className="hint num property-count">{t.summary.things(r.count)}</span>
-              <button
-                type="button"
-                className={`btn btn-icon property-remove${r.remove ? ' is-active' : ''}`}
-                aria-label={r.remove ? t.properties.keep(r.was.key) : t.properties.remove(r.was.key)}
-                aria-pressed={r.remove}
-                onClick={() => {
-                  edit(r.id, { remove: !r.remove })
-                  setConfirming(false)
-                }}
-              >
-                <Icon name={r.remove ? 'undo' : 'close'} size={24} />
-              </button>
-              {optionsOpen && (
-                <div id={optionsId} className="option-rows" role="group" aria-label={t.options.title(r.was.key)}>
-                  <p className="hint option-hint">{t.options.hint}</p>
-                  {r.options.map((o) => {
-                    const label = o.name.trim() || o.from || t.options.add
-                    return (
-                      <div key={o.key} className={`option-row${o.remove ? ' is-removed' : ''}`}>
-                        <input
-                          className="input"
-                          data-option={o.key}
-                          aria-label={t.options.name}
-                          placeholder={o.from ?? t.options.add}
-                          value={o.name}
-                          disabled={o.remove}
-                          onChange={(e) => editOption(r.id, o.key, { name: e.target.value })}
-                        />
-                        <span className="hint num property-count">
-                          {o.count === null ? t.options.newRow : t.summary.things(o.count)}
-                        </span>
-                        <button
-                          type="button"
-                          className={`btn btn-icon property-remove${o.remove ? ' is-active' : ''}`}
-                          aria-label={o.remove ? t.properties.keep(label) : t.properties.remove(label)}
-                          aria-pressed={o.from === null ? undefined : o.remove}
-                          onClick={() => {
-                            // A new one nothing holds just goes
-                            if (o.from === null) edit(r.id, { options: r.options.filter((x) => x.key !== o.key) })
-                            else editOption(r.id, o.key, { remove: !o.remove })
-                            setConfirming(false)
-                          }}
-                        >
-                          <Icon name={o.remove ? 'undo' : 'close'} size={24} />
-                        </button>
-                      </div>
-                    )
-                  })}
-                  <div className="option-add">
-                    <button type="button" className="summary-link" onClick={() => addOption(r.id)}>
-                      {t.options.add}
-                    </button>
-                  </div>
+    <form id="property-form" className="stack-sm" onSubmit={submit} ref={formRef}>
+      {listed ? (
+        <>
+          <p className="panel-title">
+            <button type="button" className="summary-link" onClick={() => setListing(null)}>
+              {t.properties.title}
+            </button>
+            {' › '}
+            {t.options.title(listed.key.trim() || listed.was.key)}
+          </p>
+          <p className="hint">{t.options.hint}</p>
+          <div className="option-rows" role="list" ref={listRef}>
+            {listed.options.map((o) => {
+              const label = o.name.trim() || o.from || t.options.add
+              return (
+                <div key={o.key} role="listitem" className={`option-row${o.remove ? ' is-removed' : ''}`}>
+                  <input
+                    className="input"
+                    data-option={o.key}
+                    aria-label={t.options.name}
+                    placeholder={o.from ?? t.options.add}
+                    value={o.name}
+                    disabled={o.remove}
+                    onChange={(e) => editOption(listed.id, o.key, { name: e.target.value })}
+                  />
+                  <span className="hint num">
+                    {o.count === null ? (
+                      t.options.newRow
+                    ) : (
+                      <>
+                        <span aria-hidden="true">{o.count}</span>
+                        <span className="visually-hidden">{t.summary.things(o.count)}</span>
+                      </>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    className={`btn btn-icon property-remove${o.remove ? ' is-active' : ''}`}
+                    aria-label={o.remove ? t.properties.keep(label) : t.properties.remove(label)}
+                    aria-pressed={o.from === null ? undefined : o.remove}
+                    onClick={() => {
+                      // A new one nothing holds just goes
+                      if (o.from === null) edit(listed.id, { options: listed.options.filter((x) => x.key !== o.key) })
+                      else editOption(listed.id, o.key, { remove: !o.remove })
+                      setConfirming(false)
+                    }}
+                  >
+                    <Icon name={o.remove ? 'undo' : 'close'} size={24} />
+                  </button>
                 </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              )
+            })}
+          </div>
+          <div>
+            <button type="button" className="summary-link" onClick={() => addOption(listed.id)}>
+              {t.options.add}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="panel-title">{t.properties.title}</p>
+          <p className="hint">{t.properties.hint}</p>
+          <div className="property-rows" role="list">
+            {rows.map((r, i) => {
+              const where =
+                r.categories === null
+                  ? t.properties.scopeAll
+                  : r.categories.length === 0
+                    ? t.properties.scopeNone
+                    : listFormat.format(r.categories)
+              const optionCount = t.options.count(r.options.filter((o) => !o.remove && (o.from !== null || o.name.trim() !== '')).length)
+              return (
+                <div key={r.id} role="listitem" className={`property-row${r.remove ? ' is-removed' : ''}`}>
+                  <input
+                    className="input"
+                    aria-label={t.properties.name(r.was.key)}
+                    value={r.key}
+                    disabled={r.remove}
+                    onChange={(e) => edit(r.id, { key: e.target.value })}
+                  />
+                  <select
+                    className="select"
+                    aria-label={t.properties.type(r.was.key)}
+                    value={r.type}
+                    disabled={r.remove}
+                    onChange={(e) => edit(r.id, { type: e.target.value as PropertyType })}
+                  >
+                    {types.map((ty) => (
+                      <option key={ty} value={ty}>
+                        {t.table.types[ty]}
+                      </option>
+                    ))}
+                  </select>
+                  {r.type === 'number' ? (
+                    <input
+                      className="input"
+                      list="unit-options"
+                      aria-label={t.properties.unit(r.was.key)}
+                      placeholder={t.table.columnUnit}
+                      value={r.unit}
+                      disabled={r.remove}
+                      onChange={(e) => edit(r.id, { unit: e.target.value })}
+                    />
+                  ) : r.type === 'choice' ? (
+                    <button
+                      type="button"
+                      id={`${idBase}-list-${i}`}
+                      className="btn property-scope"
+                      aria-label={t.options.button(optionCount, r.was.key)}
+                      disabled={r.remove}
+                      onClick={() => {
+                        backTo.current = r.id
+                        setListing(r.id)
+                      }}
+                    >
+                      <span>{optionCount}</span>
+                      <Icon name="chevronRight" size={16} />
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    className="btn property-scope"
+                    aria-label={t.properties.scopeButton(r.was.key, where)}
+                    aria-haspopup="dialog"
+                    aria-expanded={scope?.id === r.id}
+                    disabled={r.remove || categories.length === 0}
+                    onClick={(e) => setScope(scope?.id === r.id ? null : { id: r.id, anchor: e.currentTarget.getBoundingClientRect() })}
+                  >
+                    <span>{where}</span>
+                    <Icon name="chevronRight" size={16} className="property-scope-chevron" />
+                  </button>
+                  <span className="hint num property-count">{t.summary.things(r.count)}</span>
+                  <button
+                    type="button"
+                    className={`btn btn-icon property-remove${r.remove ? ' is-active' : ''}`}
+                    aria-label={r.remove ? t.properties.keep(r.was.key) : t.properties.remove(r.was.key)}
+                    aria-pressed={r.remove}
+                    onClick={() => {
+                      edit(r.id, { remove: !r.remove })
+                      setConfirming(false)
+                    }}
+                  >
+                    <Icon name={r.remove ? 'undo' : 'close'} size={24} />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
       {confirming && confirmNeeded && (
         <div className="confirm" role="alertdialog" aria-labelledby="property-confirm">
           {losing.length > 0 && (

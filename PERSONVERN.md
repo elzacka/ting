@@ -10,8 +10,8 @@ Det du legger inn, lagres kryptert på enheten din.
 |---|---|---|
 | Ting, egenskaper, kategorier, bilder og kvitteringer | I nettleseren på enheten | Ja |
 | Kopi i en lagringsmappe, hvis du velger en | Mappen du velger | Ja |
-| Sikkerhetskopier og filer du sender til egne enheter | Der du legger dem | Ja |
-| Antall ting, når du sist sendte, hentet og endret noe, og en tilfeldig id for enheten | I nettleseren | Nei |
+| Sikkerhetskopier og filer du eksporterer til egne enheter | Der du legger dem | Ja |
+| Antall ting, når du sist eksporterte, importerte og endret noe, og en tilfeldig id for enheten | I nettleseren | Nei |
 | Hvilke egenskaper du har skjult i tabellen, og bredden på kolonnene | I nettleseren | Ja |
 | CSV og utskrift | Der du legger dem | Nei, de er laget for å leses |
 
@@ -20,7 +20,7 @@ passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
 ## Det som forlater enheten
 
-- **«Send en kopi»:** Hele registeret sendes kryptert, bare dit du velger: En
+- **«Eksporter registeret»:** Hele registeret sendes kryptert, bare dit du velger: En
   annen enhet med AirDrop, Filer eller en nedlasting.
 - **Oppslag av bøker:** ISBN-nummeret sendes til Nasjonalbiblioteket eller Open
   Library når du skanner eller skriver ISBN i en kategori for bøker, og boka
@@ -34,7 +34,7 @@ eller oppdateres, og når appen laster ned modellene som leser kvitteringer.
 Dataene ligger bare hos deg, så du bestemmer over dem selv:
 
 - **Se:** Alt står i appen.
-- **Hente ut:** Last ned CSV, eller ta en sikkerhetskopi med «Send en kopi»
+- **Hente ut:** Last ned CSV, eller ta en sikkerhetskopi med «Eksporter registeret»
   under Innstillinger.
 - **Slette:** Slett ting i appen. Slett nettstedsdataene i nettleseren for å
   fjerne alt fra enheten.

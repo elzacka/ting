@@ -42,7 +42,8 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
     <div className="setting-row">
       <SettingSwitch
         title={t.receipt.option}
-        description={t.receipt.what}
+        // Once on, the line says only that it is on; what it downloads matters until then
+        description={state === 'ready' ? t.receipt.ready : t.receipt.what}
         checked={state !== 'off'}
         disabled={state === 'downloading'}
         onChange={(on) => void toggle(on)}
@@ -52,7 +53,6 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
           {t.receipt.downloading}
         </p>
       )}
-      {state === 'ready' && <p className="setting-desc">{t.receipt.ready}</p>}
       {state === 'failed' && (
         <p className="error" role="alert">
           {t.receipt.downloadFailed}

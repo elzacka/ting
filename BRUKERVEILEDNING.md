@@ -77,7 +77,7 @@ låser opp.
 > Passordet er den eneste nøkkelen. Dataene er tapt hvis du mister det. Ingen
 > kan sende deg et nytt.
 
-Har du en sikkerhetskopi fra før, gjenoppretter du den under Innstillinger i
+Hvis du har en sikkerhetskopi fra før, importerer du den under Innstillinger i
 stedet for å velge et nytt passord. Da gjelder passordet kopien ble laget med.
 
 Når du har et passord, åpner appen alltid låst. Den låser seg selv etter 10
@@ -340,7 +340,7 @@ Kolonnemenyen er pilen ved kolonnenavnet.
 
 | Vil du | Velg |
 |---|---|
-| Endre navn, felttype eller enhet | «Endre» |
+| Endre navn, felttype eller enhet | «Endre navn» |
 | Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
 | Ta den ut av kategorien du står i | «Ikke bruk i …» (når én kategori er valgt). Verdiene blir stående |
 
@@ -363,7 +363,8 @@ den ikke i noen kategori.
 
 Kolonnemenyen › «Endre alternativer», eller knappen «n alternativer» på linja
 til en valgliste under «Endre egenskaper». Lista viser alle alternativene og
-hvor mange ting som har hvert av dem, også dem med 0 ting.
+hvor mange ting som har hvert av dem, også dem med 0 ting. «Egenskaper» øverst
+fører tilbake til alle egenskapene.
 
 | Vil du | Slik |
 |---|---|
@@ -513,15 +514,15 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Send en kopi» lager fila. «Lagre/Del» lar deg sende den med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Eksporter/del fil» lagrer fila i Filer eller sender den med AirDrop på iPhone, og laster den ned på Mac og PC. «Velg fil» ved «Importer til registeret» henter den inn igjen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
 der du skriver det inn.
 
-Gjenopprett erstatter bare det som ligger på enheten du bruker. Når du senere
-henter fra en annen enhet, kommer det som er nyere der, tilbake. Det gjelder
-også ting som mangler i kopien.
+«Erstatt alt» gjelder bare enheten du bruker. Når du senere slår sammen med en
+fil fra en annen enhet, kommer det som er nyere der, tilbake. Det gjelder også
+ting som mangler i kopien.
 
 <details>
 <summary>Mer om mappen</summary>
@@ -538,17 +539,21 @@ også ting som mangler i kopien.
 
 ## Bruke flere enheter
 
-Du sender registeret med AirDrop, og den andre enheten henter det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
-iPhone og en pris du retter på Mac, kommer med på begge enhetene.
+Du eksporterer registeret på én enhet og importerer det på den andre. Appen
+slår sammen endringene felt for felt: Et bilde du legger til på iPhone og en
+pris du retter på Mac, kommer med på begge enhetene.
 
-1. **På iPhone:** Trykk på «Lagre/Del» ved «Send en kopi» i Innstillinger, og
-   velg Mac under AirDrop.
+1. **På iPhone:** Trykk på «Eksporter/del fil» ved «Eksporter registeret» i
+   Innstillinger, og velg Mac under AirDrop.
 2. **På Mac:** Fila havner i Nedlastinger. Dra den inn i Innstillinger i Ting,
-   eller trykk på «Velg fil» ved «Hent fra en annen enhet» og velg den.
-3. **Tilbake til iPhone:** Send fra Mac på samme måte. Trykk på «Velg fil» ved
-   «Hent fra en annen enhet» på iPhone, og velg fila i Filer.
+   eller trykk på «Velg fil» ved «Importer til registeret» og velg den. Velg
+   «Slå sammen».
+3. **Tilbake til iPhone:** Trykk på «Eksporter/del fil» på Mac. Fila havner i
+   Nedlastinger. Send den til iPhone med AirDrop fra Finder. Trykk på «Velg
+   fil» ved «Importer til registeret» på iPhone, velg fila i Filer, og velg
+   «Slå sammen».
 
-Etter hentingen sier appen hvor mange ting som er nye, endret og slettet.
+Etter sammenslåingen sier appen hvor mange ting som er nye, endret og slettet.
 
 - Første gang ber appen om passordet fra den andre enheten. Fra da av bruker
   begge enhetene det passordet.
@@ -621,9 +626,8 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | Passord, Gjenta passordet | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Send en kopi | «Lagre/Del» lar deg sende fila med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. Linja under sier når du sist sendte |
-| Hent fra en annen enhet | «Velg fil» slår sammen fila med det som ligger her, se [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist hentet |
-| Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du laget kopien, hvis det er et annet enn nå |
+| Importer til registeret | «Velg fil» henter en fil fra denne enheten eller en som er delt fra en annen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før, se [Bruke flere enheter](#bruke-flere-enheter). Appen ber om passordet fila ble eksportert med, hvis det er et annet enn nå. Linja under sier når du sist importerte |
+| Eksporter registeret | «Eksporter/del fil» lagrer fila i Filer eller sender den med AirDrop på iPhone, og laster den ned på Mac og PC. Linja under sier når du sist eksporterte |
 | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |
 | Lås opp med Face ID eller Touch ID | Lar deg låse opp uten passord. Gjelder bare enheten du bruker |
 | Passord | «Endre» |
@@ -655,10 +659,10 @@ Tannhjulet lengst til høyre i topplinja.
 | «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen i Innstillinger |
-| «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
+| «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og importer fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen varer.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |
-| Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og gjenopprett fra en kopi hvis du har en |
+| Glemt passord | | Dataene kan ikke åpnes. Start på nytt med et nytt passord, og importer en sikkerhetskopi hvis du har en |
 
 ---
 

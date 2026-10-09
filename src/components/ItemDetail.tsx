@@ -186,25 +186,23 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
     )
   }
 
-  // The whole row opens the field, not only the pencil: on a touch screen the
-  // pencils are out of sight, and the row is the target. A link in a value
-  // still opens the link.
+  // The whole row opens the field. A link in a value still opens the link.
   function startFromRow(e: MouseEvent, id: string) {
     if (editing?.id === id || (e.target instanceof Element && e.target.closest('a, button'))) return
     start(id)
   }
 
+  // No pencil: the row is the target. The button is out of sight and carries
+  // the name for a keyboard and a screen reader; with focus, its row is outlined.
   const editButton = (id: string, label: string) => (
-    <button type="button" className="btn btn-icon spec-edit" aria-label={t.detail.edit(label)} onClick={() => start(id)}>
-      <Icon name="edit" size={20} />
-    </button>
+    <button type="button" className="spec-edit" aria-label={t.detail.edit(label)} onClick={() => start(id)} />
   )
 
   const title =
     editing?.id === 'name' ? (
       <h1 className="title">{field('name', nameLabel)}</h1>
     ) : (
-      <h1 className="title spec-row-edit spec-row-tap" onClick={(e) => startFromRow(e, 'name')}>
+      <h1 className="title spec-row-edit spec-row-tap is-text" onClick={(e) => startFromRow(e, 'name')}>
         {item.name}
         {editButton('name', nameLabel)}
       </h1>
@@ -264,7 +262,10 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
             {props.map((def) => {
               const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === def.id)
               return (
-                <div key={def.id} className="spec-row-tap" onClick={(e) => startFromRow(e, def.id)}>
+                <div
+                  key={def.id}
+                  className={`spec-row-tap${def.type === 'choice' || def.type === 'path' ? '' : ' is-text'}`}
+                  onClick={(e) => startFromRow(e, def.id)}>
                   <dt>{def.col.key}</dt>
                   <dd className="spec-row-edit">
                     {editing?.id === def.id ? (

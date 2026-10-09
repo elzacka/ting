@@ -26,7 +26,11 @@ export async function markSent(): Promise<void> {
   await setSetting(lastSentKey, Date.now())
 }
 
-// A plain word for the line after a merge: «Hentet fra iPhone»
+export async function markFetched(): Promise<void> {
+  await setSetting(lastFetchedKey, Date.now())
+}
+
+// A plain word for the line after a merge: «Fil fra iPhone»
 export function deviceName(ua = navigator.userAgent, touch = navigator.maxTouchPoints > 1): string | undefined {
   if (/iPhone/.test(ua)) return 'iPhone'
   if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touch)) return 'iPad'

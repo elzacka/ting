@@ -1,19 +1,16 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { deletePasskey, readPasskey, replaceAll, writePasskey, writeVault } from '../db/db'
+import { useEffect, useState, type FormEvent } from 'react'
+import { deletePasskey, readPasskey, writePasskey, writeVault } from '../db/db'
 import type { Item, Property } from '../db/schema'
-import { itemsFromDataFile, openEnvelope, parseAnyFile, type Envelope, type Loaded } from '../lib/backup'
 import { categoryNames, sharedByAll } from '../lib/categories'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import type { useFolderSync } from '../lib/useFolderSync'
-import type { OpenKey } from '../lib/crypto'
-import { adoptVault, changePassphrase, currentKey, currentVault, setupVault, useVault } from '../lib/vault'
-import { errorText } from '../lib/errors'
-import { folderSupported, requestFullPhotoWrite } from '../lib/folderStore'
+import { changePassphrase, currentKey, currentVault, setupVault, useVault } from '../lib/vault'
+import { folderSupported } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
 import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
 import { AboutApp } from './AboutApp'
-import { DeviceSync } from './DeviceSync'
+import { ImportExport } from './ImportExport'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
@@ -67,22 +64,12 @@ export function SettingsPage({
     .sort((a, b) => (a.kind === 'name' ? -1 : b.kind === 'name' ? 1 : collator.compare(a.col.key, b.col.key)))
   const hideable = columns.flatMap((d) => (d.kind === 'prop' ? [d.id] : []))
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [pending, setPending] = useState<Loaded | null>(null)
-  // A copy opened with its own passphrase during a trial: restoring it takes
-  // over that passphrase and key, since the trial's key dies with the tab
-  const [adopting, setAdopting] = useState<{ vault: Envelope['vault']; open: OpenKey } | null>(null)
   const [setupPass, setSetupPass] = useState('')
   const [setupRepeat, setSetupRepeat] = useState('')
-  const [foreignBackup, setForeignBackup] = useState<Envelope | null>(null)
-  const [backupPass, setBackupPass] = useState('')
-  const [backupError, setBackupError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
   const [folderPass, setFolderPass] = useState('')
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [passMessage, setPassMessage] = useState<string | null>(null)
-  useFade(message, message !== t.settings.restoreFailed, setMessage)
   useFade(passMessage, passMessage === t.trial.done || passMessage === t.vault.changed, setPassMessage)
   const [changingPass, setChangingPass] = useState(false)
   // The table's own choices are desk work, and so is a folder where the
@@ -123,54 +110,6 @@ export function SettingsPage({
     if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere)
     await writePasskey(made)
     setPasskey(made)
-  }
-
-  async function onFile(file: File | undefined) {
-    setMessage(null)
-    setBackupError(null)
-    setForeignBackup(null)
-    if (!file) return
-    try {
-      const parsed = parseAnyFile(await file.text())
-      if (parsed.kind === 'plain') {
-        setPending(await itemsFromDataFile(parsed.file))
-      } else {
-        const opened = await openEnvelope(parsed.envelope, currentKey())
-        if (opened === 'foreign') setForeignBackup(parsed.envelope)
-        else if (opened !== 'wrong-passphrase') setPending(await itemsFromDataFile(opened.file))
-      }
-    } catch (err) {
-      console.error(errorText(err))
-      setMessage(t.settings.restoreFailed)
-    }
-    if (fileRef.current) fileRef.current.value = ''
-  }
-
-  async function openForeignBackup(e: FormEvent) {
-    e.preventDefault()
-    if (!foreignBackup) return
-    const opened = await openEnvelope(foreignBackup, currentKey(), backupPass)
-    if (opened === 'wrong-passphrase' || opened === 'foreign') {
-      setBackupError(t.vault.wrong)
-      return
-    }
-    if (trial) setAdopting({ vault: foreignBackup.vault, open: opened.open })
-    setForeignBackup(null)
-    setBackupPass('')
-    setPending(await itemsFromDataFile(opened.file))
-  }
-
-  async function restore() {
-    if (!pending) return
-    if (trial && adopting) {
-      adoptVault(adopting.vault, adopting.open)
-      await writeVault(adopting.vault)
-      setAdopting(null)
-    }
-    requestFullPhotoWrite()
-    await replaceAll(pending.items, pending.properties, pending.fields, pending.tombstones)
-    setMessage(t.settings.restoreDone(pending.items.length))
-    setPending(null)
   }
 
   // The trial's key, wrapped under the passphrase chosen here: what was made
@@ -347,84 +286,8 @@ export function SettingsPage({
           </div>
         )}
 
-        {!trial && <DeviceSync />}
+        <ImportExport trial={trial} held={items.length} />
 
-        {/* Replaces everything: confirmed before anything is replaced */}
-        <div className="setting-row">
-          <div className="setting-main">
-            <div className="setting-text">
-              <span id="restore-title" className="setting-title">
-                {t.settings.restore}
-              </span>
-              <p id="restore-what" className="setting-desc">
-                {t.settings.restoreWhat}
-              </p>
-            </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="text/plain,.txt,application/json,.json"
-              className="visually-hidden"
-              onChange={(e) => void onFile(e.target.files?.[0])}
-            />
-            <button
-              type="button"
-              className="btn"
-              aria-describedby="restore-title restore-what"
-              onClick={() => fileRef.current?.click()}
-            >
-              {t.settings.restorePick}
-            </button>
-          </div>
-          {foreignBackup && (
-            <form className="stack-sm" onSubmit={openForeignBackup}>
-              <p>{t.vault.backupForeign}</p>
-              <div className="field">
-                <label htmlFor="backup-pass">{t.vault.passphrase}</label>
-                <input
-                  id="backup-pass"
-                  className="input"
-                  type="password"
-                  autoComplete="current-password"
-                  value={backupPass}
-                  onChange={(e) => setBackupPass(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              {backupError && (
-                <p className="error" role="alert">
-                  {backupError}
-                </p>
-              )}
-              <div className="row">
-                <button type="submit" className="btn btn-primary">
-                  {t.vault.unlock}
-                </button>
-                <button type="button" className="btn" onClick={() => setForeignBackup(null)}>
-                  {t.action.cancel}
-                </button>
-              </div>
-            </form>
-          )}
-          {pending && (
-            <div className="confirm" role="alertdialog" aria-labelledby="restore-text">
-              <p id="restore-text">{t.settings.restoreConfirm(pending.items.length)}</p>
-              <div className="row">
-                <button type="button" className="btn btn-danger" onClick={() => void restore()} autoFocus>
-                  {t.settings.replace}
-                </button>
-                <button type="button" className="btn" onClick={() => setPending(null)}>
-                  {t.action.cancel}
-                </button>
-              </div>
-            </div>
-          )}
-          {message && (
-            <p className="setting-desc" role="status">
-              {message}
-            </p>
-          )}
-        </div>
       </SettingGroup>
 
       {/* A trial has no lock: the passphrase is chosen at the top instead */}

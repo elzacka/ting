@@ -430,7 +430,7 @@ export async function removeProperty(id: string, matches: (spec: Item['specs'][n
   })
 }
 
-// Gjenopprett: replaces everything here with a copy. A thing in the copy that
+// Erstatt alt: replaces everything here with a copy. A thing in the copy that
 // was deleted since comes back on purpose, so it is made newer than its tombstone.
 export async function replaceAll(items: Item[], properties: Property[], fields?: FieldSettings, tombstones?: Tombstones): Promise<void> {
   const now = await stampNow()

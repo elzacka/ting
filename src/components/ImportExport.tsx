@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { readRegister } from '../db/db'
+import { readRegister, replaceAll, writeVault } from '../db/db'
 import { itemsFromDataFile, NewerFileError, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import type { OpenKey, Vault } from '../lib/crypto'
 import { downloadText, exportFilename } from '../lib/export'
 import { formatDate } from '../lib/format'
+import { requestFullPhotoWrite } from '../lib/folderStore'
 import { nothingNew } from '../lib/merge'
 import { t } from '../lib/strings'
-import { fileExtras, markSent, mergeIn, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
-import { currentKey, currentVault } from '../lib/vault'
+import { fileExtras, markFetched, markSent, mergeIn, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
+import { adoptVault, currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
@@ -31,23 +32,30 @@ function describe(r: MergeResult, loaded: Loaded): string[] {
   return lines
 }
 
-// A copy of the whole register, sealed: sent to another device or kept as the
-// backup. Hent merges one back in; Gjenopprett (SettingsPage) replaces.
-export function DeviceSync() {
+// An opened file, waiting for merge or replace. Only a sealed file merges: it
+// proves it came from a device holding the key; a plain one only replaces
+type Opened = { loaded: Loaded; open: OpenKey | null; vault: Vault | null; mergeable: boolean }
+
+// The register as one sealed file, out to a backup or another device, and back
+// in: merged with what is here, or replacing it. A trial has no vault to seal under.
+export function ImportExport({ trial, held }: { trial: boolean; held: number }) {
   const [status, setStatus] = useState<SyncStatus>({ sentAt: null, fetchedAt: null })
   const [result, setResult] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [foreign, setForeign] = useState<Envelope | null>(null)
   const [pass, setPass] = useState('')
   const [wrong, setWrong] = useState(false)
+  const [choice, setChoice] = useState<Opened | null>(null)
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   // Plain text, since Chrome's share sheet refuses .json. A touch screen shares
-  // only (Lagre i Filer is in the sheet); a desk also downloads, as its sheet cannot save
-  const [shareable] = useState(
-    () => typeof navigator.canShare === 'function' && navigator.canShare({ files: [new File([''], 'ting.txt', { type: 'text/plain' })] }),
+  // (Lagre i Filer is in the sheet); a desk downloads, as its sheet cannot save
+  const [share] = useState(
+    () =>
+      window.matchMedia('(pointer: coarse)').matches &&
+      typeof navigator.canShare === 'function' &&
+      navigator.canShare({ files: [new File([''], 'ting.txt', { type: 'text/plain' })] }),
   )
-  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
 
   useEffect(() => {
     let live = true
@@ -59,7 +67,7 @@ export function DeviceSync() {
     }
   }, [])
 
-  async function send(how: 'share' | 'download') {
+  async function exportFile() {
     const vault = currentVault()
     if (!vault) return
     setResult(null)
@@ -67,7 +75,7 @@ export function DeviceSync() {
     const register = await readRegister()
     const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
     const name = exportFilename('txt')
-    if (how === 'share') {
+    if (share) {
       try {
         await navigator.share({ files: [new File([json], name, { type: 'text/plain' })] })
       } catch (err) {
@@ -81,9 +89,33 @@ export function DeviceSync() {
     setStatus(await syncStatus())
   }
 
-  async function merge(loaded: Loaded, open: OpenKey, envelopeVault: Vault | null) {
-    const r = await mergeIn(loaded, open, envelopeVault, { recordFetch: true })
-    setResult(describe(r, loaded))
+  // An empty register has nothing to lose: the file simply comes in
+  async function consider(o: Opened) {
+    if (held === 0) await replace(o)
+    else setChoice(o)
+  }
+
+  async function merge(o: Opened) {
+    if (!o.open) return
+    setChoice(null)
+    const adopted = o.open.dekId !== currentKey().dekId
+    const r = await mergeIn(o.loaded, o.open, o.vault, { recordFetch: true })
+    setResult([...describe(r, o.loaded), ...(adopted ? [t.sync.adopted] : [])])
+    setStatus(await syncStatus())
+  }
+
+  async function replace(o: Opened) {
+    setChoice(null)
+    // The trial's key dies with the tab, so a file under another key brings its own
+    const adopted = trial && o.open !== null && o.vault !== null && o.open.dekId !== currentKey().dekId
+    if (adopted && o.open && o.vault) {
+      adoptVault(o.vault, o.open)
+      await writeVault(o.vault)
+    }
+    requestFullPhotoWrite()
+    await replaceAll(o.loaded.items, o.loaded.properties, o.loaded.fields, o.loaded.tombstones)
+    await markFetched()
+    setResult([t.sync.replaced(o.loaded.items.length), ...(adopted ? [t.sync.adopted] : [])])
     setStatus(await syncStatus())
   }
 
@@ -91,19 +123,19 @@ export function DeviceSync() {
     setResult(null)
     setError(null)
     setForeign(null)
+    setChoice(null)
     if (fileRef.current) fileRef.current.value = ''
     if (!file) return
     setBusy(true)
     try {
       const parsed = parseAnyFile(await file.text())
-      // Only a sealed file is merged: it proves it came from a device holding
-      // the key. A plain one is a backup from before encryption, for Gjenopprett
       if (parsed.kind === 'plain') {
-        setError(t.sync.notTing)
+        await consider({ loaded: await itemsFromDataFile(parsed.file), open: null, vault: null, mergeable: false })
       } else {
         const opened = await openEnvelope(parsed.envelope, currentKey())
         if (opened === 'foreign') setForeign(parsed.envelope)
-        else if (opened !== 'wrong-passphrase') await merge(await itemsFromDataFile(opened.file), opened.open, parsed.envelope.vault)
+        else if (opened !== 'wrong-passphrase')
+          await consider({ loaded: await itemsFromDataFile(opened.file), open: opened.open, vault: parsed.envelope.vault, mergeable: !trial })
       }
     } catch (err) {
       console.error(errorText(err))
@@ -123,7 +155,7 @@ export function DeviceSync() {
       setForeign(null)
       setPass('')
       setWrong(false)
-      await merge(await itemsFromDataFile(opened.file), opened.open, foreign.vault)
+      await consider({ loaded: await itemsFromDataFile(opened.file), open: opened.open, vault: foreign.vault, mergeable: !trial })
     } finally {
       setBusy(false)
     }
@@ -153,35 +185,13 @@ export function DeviceSync() {
       <div className="setting-row">
         <div className="setting-main">
           <div className="setting-text">
-            <span id="send-title" className="setting-title">
-              {t.sync.send}
+            <span id="import-title" className="setting-title">
+              {t.sync.importTitle}
             </span>
-            <p id="send-what" className="setting-desc num">
-              {status.sentAt ? `${t.sync.sendWhat}. ${t.sync.sent(formatDate(status.sentAt), formatTime(status.sentAt))}` : t.sync.sendWhat}
-            </p>
-          </div>
-          <div className="row">
-            {shareable && (
-              <button type="button" className="btn" aria-label={t.sync.share} onClick={() => void send('share')}>
-                {t.sync.shareShort}
-              </button>
-            )}
-            {!(shareable && touch) && (
-              <button type="button" className="btn" aria-label={t.sync.download} onClick={() => void send('download')}>
-                {t.sync.downloadShort}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="setting-row">
-        <div className="setting-main">
-          <div className="setting-text">
-            <span id="fetch-title" className="setting-title">
-              {t.sync.fetch}
-            </span>
-            <p id="fetch-what" className="setting-desc num">
-              {status.fetchedAt ? `${t.sync.fetchWhat}. ${t.sync.fetched(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}` : t.sync.fetchWhat}
+            <p id="import-what" className="setting-desc num">
+              {status.fetchedAt
+                ? `${t.sync.importWhat}. ${t.sync.imported(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}`
+                : t.sync.importWhat}
             </p>
           </div>
           <input
@@ -195,7 +205,7 @@ export function DeviceSync() {
             type="button"
             className="btn"
             disabled={busy}
-            aria-describedby="fetch-title fetch-what"
+            aria-describedby="import-title import-what"
             onClick={() => fileRef.current?.click()}
           >
             {t.sync.pick}
@@ -205,9 +215,9 @@ export function DeviceSync() {
           <form className="stack-sm" onSubmit={(e) => void openForeign(e)}>
             <p>{t.sync.foreign}</p>
             <div className="field">
-              <label htmlFor="sync-pass">{t.vault.passphrase}</label>
+              <label htmlFor="import-pass">{t.vault.passphrase}</label>
               <input
-                id="sync-pass"
+                id="import-pass"
                 className="input"
                 type="password"
                 autoComplete="current-password"
@@ -223,13 +233,36 @@ export function DeviceSync() {
             )}
             <div className="row">
               <button type="submit" className="btn btn-primary" disabled={busy}>
-                {t.sync.fetch}
+                {t.vault.unlock}
               </button>
               <button type="button" className="btn" onClick={() => setForeign(null)}>
                 {t.action.cancel}
               </button>
             </div>
           </form>
+        )}
+        {choice && (
+          // A merge loses nothing, so only a replace-only question looks like a warning
+          <div className={choice.mergeable ? 'stack-sm' : 'confirm'} role="alertdialog" aria-labelledby="import-ask">
+            <p id="import-ask">
+              {choice.mergeable ? t.sync.ask(held, choice.loaded.items.length) : t.sync.replaceOnly(choice.loaded.items.length)}
+              {/* A merge under another key takes over that key's passphrase: said before, not only after */}
+              {choice.mergeable && choice.open && choice.open.dekId !== currentKey().dekId && ` ${t.sync.askAdopt}`}
+            </p>
+            <div className="row">
+              {choice.mergeable && (
+                <button type="button" className="btn btn-primary" onClick={() => void merge(choice)} autoFocus>
+                  {t.sync.merge}
+                </button>
+              )}
+              <button type="button" className="btn btn-danger" onClick={() => void replace(choice)} autoFocus={!choice.mergeable}>
+                {t.sync.replace}
+              </button>
+              <button type="button" className="btn" onClick={() => setChoice(null)}>
+                {t.action.cancel}
+              </button>
+            </div>
+          </div>
         )}
         {result && (
           <div role="status">
@@ -246,6 +279,25 @@ export function DeviceSync() {
           </p>
         )}
       </div>
+      {!trial && (
+        <div className="setting-row">
+          <div className="setting-main">
+            <div className="setting-text">
+              <span id="export-title" className="setting-title">
+                {t.sync.exportTitle}
+              </span>
+              <p id="export-what" className="setting-desc num">
+                {status.sentAt
+                  ? `${t.sync.exportWhat}. ${t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}`
+                  : t.sync.exportWhat}
+              </p>
+            </div>
+            <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
+              {t.sync.exportButton}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }

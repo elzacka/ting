@@ -1285,7 +1285,8 @@ export function Overview({
                         </button>
                       )
                     })}
-                    {/* Names, icons and new categories: the panel in the band */}
+                    {/* Names, icons and new categories: the panel in the band. An action, not a
+                        category, so no icon: text only, like Tøm valg, under a hairline */}
                     <button
                       type="button"
                       role="menuitem"
@@ -1295,8 +1296,6 @@ export function Overview({
                         openPanel('categories')
                       }}
                     >
-                      <span className="category-menu-check" aria-hidden="true" />
-                      <Icon name="edit" size={20} />
                       <span className="category-menu-name">{t.categories.edit}</span>
                     </button>
                   </div>,

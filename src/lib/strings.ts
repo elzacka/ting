@@ -36,7 +36,6 @@ export const t = {
     folderForeign: (name: string) =>
       `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
     folderOpen: 'Åpne mappen',
-    backupForeign: 'Sikkerhetskopien er låst med et annet passord. Skriv inn passordet appen hadde da du laget den.',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
   },
@@ -287,7 +286,7 @@ export const t = {
     sortBy: (key: string) => `Sorter etter ${key}`,
     resize: (key: string) => `Endre bredde på ${key}`,
     resizeHint: 'Dra for å endre bredde. Dobbeltklikk for å tilpasse bredden til innholdet.',
-    renameColumn: 'Endre',
+    renameColumn: 'Endre navn',
     renameSave: 'Lagre navn',
     renameCancel: 'Avbryt',
     unsaved: (n: number) => (n === 1 ? '1 endring ikke lagret' : `${n} endringer ikke lagret`),
@@ -338,7 +337,7 @@ export const t = {
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
     folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata',
-    unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Send en kopi».',
+    unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Eksporter registeret».',
     choose: 'Velg mappe',
     chooseShort: 'Velg',
     checking: 'Sjekker mappen…',
@@ -348,13 +347,6 @@ export const t = {
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
     disconnect: 'Koble fra',
     error: (name: string) => `Kunne ikke lagre i «${name}». Prøv på nytt, eller koble til mappen på nytt.`,
-    restore: 'Gjenopprett fra sikkerhetskopi',
-    restoreWhat: 'Erstatter alt i appen med innholdet i fila',
-    restorePick: 'Velg fil',
-    restoreConfirm: (n: number) => `Erstatt alt som ligger her med ${n === 1 ? '1 ting' : `${n} ting`} fra fila? Du kan ikke angre.`,
-    restoreDone: (n: number) => `Gjenopprettet ${n === 1 ? '1 ting' : `${n} ting`}`,
-    restoreFailed: 'Denne fila er ikke en sikkerhetskopi fra Ting. Velg en kopi du har sendt eller lastet ned fra Ting.',
-    replace: 'Erstatt',
   },
   // Ny fra kvittering: the photo of a receipt read on the device into things
   receipt: {
@@ -383,7 +375,7 @@ export const t = {
     option: 'Les tekst på kvitteringer',
     what: 'Appen laster ned KI-modeller og verktøy på ~ 45 MB, så den kan kjenne igjen tekst på kvitteringer',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Tekstgjenkjenning lastet ned',
+    ready: 'Tekstgjenkjenning lagt til og aktivert',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
   // The foot of Innstillinger
@@ -393,23 +385,29 @@ export const t = {
     version: (version: string) => `v${version}`,
     author: 'elzacka',
   },
-  // A sealed copy of the register: sent to another device and merged in there, or kept as the backup
+  // The register as one sealed file: exported as a backup or to another device, imported by merge or replace
   sync: {
-    send: 'Send en kopi',
-    sendWhat: 'Til en annen enhet eller som sikkerhetskopi',
-    // A phone saves through the share sheet (Lagre i Filer, AirDrop); a desk downloads too
-    share: 'Lagre eller del en kopi',
-    shareShort: 'Lagre/Del',
-    download: 'Last ned en kopi',
-    downloadShort: 'Last ned',
-    fetch: 'Hent fra en annen enhet',
-    fetchWhat: 'Slår sammen endringene fra begge enhetene',
+    importTitle: 'Importer til registeret',
+    importWhat: 'Velg fil fra denne enheten eller delt fra en annen enhet',
     pick: 'Velg fil',
-    sent: (date: string, time: string) => `Sist sendt ${date} kl. ${time}.`,
-    fetched: (date: string, time: string) => `Sist hentet ${date} kl. ${time}.`,
+    imported: (date: string, time: string) => `Sist importert ${date} kl. ${time}.`,
+    exportTitle: 'Eksporter registeret',
+    exportWhat: 'Lagre fil fra denne enheten som en sikkerhetskopi eller for å dele med en annen enhet',
+    exportButton: 'Eksporter/del fil',
+    exported: (date: string, time: string) => `Sist eksportert ${date} kl. ${time}.`,
+    // Asked only when the register already holds things
+    ask: (held: number, incoming: number) =>
+      `Registeret har ${held} ting fra før, og fila har ${incoming}. Vil du slå sammen endringene fra begge, eller erstatte alt i registeret med innholdet i fila? Du kan ikke angre hvis du erstatter alt.`,
+    askAdopt: 'Hvis du slår sammen, bruker du passordet fra fila når du låser opp appen etterpå.',
+    // A plain file or a trial cannot merge
+    replaceOnly: (incoming: number) => `Erstatt alt i registeret med ${incoming} ting fra fila? Du kan ikke angre.`,
+    merge: 'Slå sammen',
+    replace: 'Erstatt alt',
+    replaced: (n: number) => `${n} ting importert`,
+    adopted: 'Fra nå av låser du opp appen med passordet fra fila',
     // After a merge: where the file came from, when it was made, what changed
     from: (device: string | undefined, date: string, time: string) =>
-      device ? `Hentet fra ${device}, laget ${date} kl. ${time}` : `Hentet fil laget ${date} kl. ${time}`,
+      device ? `Fil fra ${device}, laget ${date} kl. ${time}` : `Fil laget ${date} kl. ${time}`,
     counts: (added: number, changed: number, deleted: number) =>
       [
         added > 0 ? `${added} ${added === 1 ? 'ny' : 'nye'}` : null,
@@ -424,7 +422,7 @@ export const t = {
     future: 'Klokka på den andre enheten går mer enn ett døgn foran. Sjekk dato og klokkeslett der.',
     passphraseChanged: 'Passordet er endret på den andre enheten. Bruk det nye passordet når du låser opp.',
     newer: 'Fila er laget av en nyere versjon av Ting. Oppdater appen og prøv på nytt.',
-    notTing: 'Denne fila er ikke fra Ting. Velg fila du sendte fra den andre enheten.',
-    foreign: 'Fila er låst med et annet passord. Skriv det inn for å hente den. Fra nå av låser du opp appen med det passordet.',
+    notTing: 'Denne fila er ikke fra Ting. Velg en fil du har eksportert fra Ting.',
+    foreign: 'Fila er låst med et annet passord. Skriv inn passordet appen hadde da fila ble eksportert.',
   },
 } as const
