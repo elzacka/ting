@@ -141,7 +141,7 @@ export function CategoryEditor({ categories, icons, properties, onSave, onClose 
                     r.from === null ? setRows((prev) => prev.filter((x) => x.key !== r.key)) : edit(r.key, { remove: !r.remove })
                   }
                 >
-                  <Icon name={r.remove ? 'close' : 'delete'} size={24} />
+                  <Icon name={r.remove ? 'undo' : 'close'} size={24} />
                 </button>
               )}
               {open && (

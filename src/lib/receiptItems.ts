@@ -12,7 +12,8 @@ export const receiptReadingKey = 'receiptReading'
 
 export type ReceiptColumns = { store: Property; date: Property; price: Property; missing: Property[] }
 
-const storeName = /kjøpt hos|butikk|forhandler|kjøpested|kjøpssted/i
+// "Kjøpt" alone, like "Kjøpsdato", is when it was bought; where takes a word more
+const storeName = /kjøpt (?:hos|hvor|fra|på|i)(?!\p{L})|butikk|forhandler|kjøpe?s?sted/iu
 const dateName = /kjøp/i
 const priceName = /pris|verdi|kost|beløp/i
 
@@ -25,11 +26,11 @@ export function receiptColumns(properties: readonly Property[], now: number): Re
   const store = pick(
     properties,
     (p) => (p.type === 'choice' || p.type === 'text' || p.type === undefined) && storeName.test(p.key),
-    () => ({ id: columnId({ key: 'Kjøpt hos', unit: null }), key: 'Kjøpt hos', unit: null, type: 'choice', createdAt: now }),
+    () => ({ id: columnId({ key: 'Kjøpt hvor', unit: null }), key: 'Kjøpt hvor', unit: null, type: 'choice', createdAt: now }),
   )
   const date = pick(
     properties,
-    (p) => (p.type === 'date' || p.unit === dateUnit) && dateName.test(p.key),
+    (p) => (p.type === 'date' || p.unit === dateUnit) && dateName.test(p.key) && !storeName.test(p.key),
     () => ({ id: columnId({ key: 'Kjøpsdato', unit: dateUnit }), key: 'Kjøpsdato', unit: dateUnit, type: 'date', createdAt: now }),
   )
   const price = pick(

@@ -1354,7 +1354,7 @@ export function Overview({
                 disabled={confirmingDelete}
                 onClick={() => setConfirmingDelete(true)}
               >
-                <Icon name="delete" size={20} />
+                <Icon name="close" size={20} />
                 {t.selection.delete}
               </button>
               <button

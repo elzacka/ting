@@ -129,7 +129,7 @@ dataene](#ta-vare-på-dataene).
 | Del | Hvor | Gjør |
 |---|---|---|
 | Kategorifeltet | Øverst til venstre i registeret | Velger hvilke kategorier du ser. Uten valgt kategori vises ingen tabell |
-| Pluss | Øverst til høyre | «Legg til ting» eller «Legg til egenskap (kolonne)» |
+| Pluss | Øverst til høyre | «Legg til ting» eller «Legg til/endre egenskap (kolonne)» |
 | Nedlasting og utskrift | Ved siden av pluss | Henter ut det du ser, se [Skrive ut og hente ut](#skrive-ut-og-hente-ut) |
 | Den grå linja | Under knappene | Hvor mange ting du ser, summer i kr, og «Vis n kolonner til» |
 | Tabellen | Under | Én rad per ting. Navnet åpner tingens side; en annen celle endrer raden |
@@ -198,7 +198,7 @@ Innstillinger.
 1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.
 2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
    godt lys.
-3. Appen retter opp bildet og fyller ut Kjøpt hos, Kjøpsdato og én rad per
+3. Appen retter opp bildet og fyller ut Kjøpt hvor, Kjøpsdato og én rad per
    ting med navn og pris.
 4. Rett det som er feil, og fjern haken på det du ikke vil ha med.
 5. Trykk på bildefeltet foran en ting for å ta bilde av den eller legge til
@@ -212,7 +212,7 @@ Innstillinger.
 - Hver ting får bildet av kvitteringen som kjøpsbevis, etter sine egne bilder.
   Bildet av tingen blir hovedbildet.
 - Appen husker navnet du ga butikken, og bruker det på neste kvittering derfra.
-- Appen lager egenskapene Kjøpt hos, Kjøpsdato og Pris hvis registeret mangler
+- Appen lager egenskapene Kjøpt hvor, Kjøpsdato og Pris hvis registeret mangler
   dem. Har du en egen egenskap for butikk, kjøpsdato eller pris i kr, bruker
   appen den.
 - Trykk på det lille bildet av kvitteringen hvis bildet er skjevt eller
@@ -263,7 +263,7 @@ kolonnene i samme rekkefølge som regnearket først, så treffer alt. «Lagre».
 
 ### En egenskap
 
-Pluss › «Legg til egenskap (kolonne)». Skriv navnet og velg felttype, se
+Pluss › «Legg til/endre egenskap (kolonne)». Skriv navnet og velg felttype, se
 [Felttyper](#felttyper). En valgliste kan få alternativer, et tall en enhet.
 
 Står du i én eller flere kategorier, kan egenskapen høre til bare dem: «Bruk
@@ -287,7 +287,8 @@ kan slå opp bøker på nett.
 1. Kategorifeltet › «Endre kategorier». Trykk på «Ny kategori» og skriv
    `Underholdning`. Gjør det samme for `Bøker` og `Leker`. Trykk «Lagre». Hver
    av dem får symbolet sitt av seg selv, og Bøker får «Bok».
-2. Velg Underholdning i kategorifeltet. Pluss › «Legg til egenskap (kolonne)».
+2. Velg Underholdning i kategorifeltet. Pluss › «Legg til/endre egenskap
+   (kolonne)».
 3. Fyll ut skjemaet og trykk «Legg til»:
    - Navn på egenskap: `Type`
    - Felttype: Valgliste
@@ -348,8 +349,8 @@ en valgliste med plasseringer om til en Sti.
 
 ### Mange egenskaper
 
-Pluss › «Legg til egenskap (kolonne)» › «Endre egenskaper». Hver egenskap står
-på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
+Pluss › «Legg til/endre egenskap (kolonne)» › «Endre egenskaper». Hver
+egenskap står på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
 til, og antall ting med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
 du under «Endre kategorier».
 
@@ -400,9 +401,9 @@ appen et ut fra ordene i navnet.
 | Én ting | På tingens side: «Slett» nederst |
 | Flere ting | Huk av tingene › «Slett» i linja øverst |
 | Én egenskap | Kolonnemenyen › «Fjern» |
-| Flere egenskaper | «Endre egenskaper» › søppelbøtta på hver linje › «Lagre» |
-| Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › søppelbøtta › «Lagre» |
-| En kategori | Flytt tingene først til en annen kategori med «Endre verdi». Deretter «Endre kategorier» › søppelbøtta › «Lagre» |
+| Flere egenskaper | «Endre egenskaper» › det røde krysset på hver linje › «Lagre» |
+| Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › det røde krysset › «Lagre» |
+| En kategori | Flytt tingene først til en annen kategori med «Endre verdi». Deretter «Endre kategorier» › det røde krysset › «Lagre» |
 
 Fjerner du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
 appen hvor mange ting det gjelder, og spør først. Det du sletter, kan du ikke
@@ -512,7 +513,7 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 | Måte | Passer når | Slik |
 |---|---|---|
 | Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi ingen nettleser der kan nå en mappe |
-| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Send en kopi» lager fila. «Del» lar deg sende den med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
+| Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | «Send en kopi» lager fila. «Lagre/Del» lar deg sende den med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. «Velg fil» under «Gjenopprett fra sikkerhetskopi» henter den inn igjen og erstatter alt, etter at du har bekreftet |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
 kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
@@ -540,8 +541,8 @@ også ting som mangler i kopien.
 Du sender registeret med AirDrop, og den andre enheten henter det inn. Appen slår sammen endringene felt for felt: Et bilde du legger til på
 iPhone og en pris du retter på Mac, kommer med på begge enhetene.
 
-1. **På iPhone:** Trykk på «Del» ved «Send en kopi» i Innstillinger, og velg
-   Mac under AirDrop.
+1. **På iPhone:** Trykk på «Lagre/Del» ved «Send en kopi» i Innstillinger, og
+   velg Mac under AirDrop.
 2. **På Mac:** Fila havner i Nedlastinger. Dra den inn i Innstillinger i Ting,
    eller trykk på «Velg fil» ved «Hent fra en annen enhet» og velg den.
 3. **Tilbake til iPhone:** Send fra Mac på samme måte. Trykk på «Velg fil» ved
@@ -620,7 +621,7 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | Passord, Gjenta passordet | Bare mens du prøver appen: Låser det du har lagt til, så det blir med |
 | Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Send en kopi | «Del» lar deg sende fila med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. Linja under sier når du sist sendte |
+| Send en kopi | «Lagre/Del» lar deg sende fila med AirDrop, og på iPhone lagre den i Filer. «Last ned» lagrer den på Mac og PC. Linja under sier når du sist sendte |
 | Hent fra en annen enhet | «Velg fil» slår sammen fila med det som ligger her, se [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist hentet |
 | Gjenopprett fra sikkerhetskopi | «Velg fil» erstatter alt på denne enheten med innholdet i fila, og spør først. Appen ber om passordet den hadde da du laget kopien, hvis det er et annet enn nå |
 | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Gjelder bare enheten du bruker |

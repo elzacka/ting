@@ -194,7 +194,7 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
                   setConfirming(false)
                 }}
               >
-                <Icon name={r.remove ? 'close' : 'delete'} size={24} />
+                <Icon name={r.remove ? 'undo' : 'close'} size={24} />
               </button>
               {optionsOpen && (
                 <div id={optionsId} className="option-rows" role="group" aria-label={t.options.title(r.was.key)}>
@@ -227,7 +227,7 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
                             setConfirming(false)
                           }}
                         >
-                          <Icon name={o.remove ? 'close' : 'delete'} size={24} />
+                          <Icon name={o.remove ? 'undo' : 'close'} size={24} />
                         </button>
                       </div>
                     )

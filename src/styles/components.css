@@ -1275,7 +1275,8 @@ section {
   transform: rotate(-90deg);
 }
 
-.property-remove.is-active {
+/* A red cross removes; once marked, the undo arrow keeps */
+.property-remove:not(.is-active) svg {
   color: var(--danger);
 }
 

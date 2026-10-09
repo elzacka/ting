@@ -304,7 +304,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
       ) : (
         <div className="row detail-foot">
           <button type="button" className="btn btn-danger" onClick={() => setConfirming(true)}>
-            <Icon name="delete" size={20} />
+            <Icon name="close" size={20} />
             {t.action.delete}
           </button>
         </div>

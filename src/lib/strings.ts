@@ -227,7 +227,7 @@ export const t = {
     addColumn: 'Legg til egenskap',
     // Plus opens a menu: a thing (a row) or a property (a column)
     add: 'Legg til',
-    addColumnMenu: 'Legg til egenskap (kolonne)',
+    addColumnMenu: 'Legg til/endre egenskap (kolonne)',
     // Under the column form: help for the field in use. For the name, the
     // properties that already exist and start with what is typed
     columnHelp: {
@@ -398,8 +398,8 @@ export const t = {
     send: 'Send en kopi',
     sendWhat: 'Til en annen enhet eller som sikkerhetskopi',
     // A phone saves through the share sheet (Lagre i Filer, AirDrop); a desk downloads too
-    share: 'Del en kopi',
-    shareShort: 'Del',
+    share: 'Lagre eller del en kopi',
+    shareShort: 'Lagre/Del',
     download: 'Last ned en kopi',
     downloadShort: 'Last ned',
     fetch: 'Hent fra en annen enhet',

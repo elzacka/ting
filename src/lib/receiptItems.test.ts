@@ -5,10 +5,10 @@ import { closestValue, linesSum, receiptColumns, receiptInputs } from './receipt
 const photo = new Blob(['k'], { type: 'image/jpeg' })
 
 describe('receiptColumns', () => {
-  it('makes Kjøpt hos, Kjøpsdato and Pris when the register has none', () => {
+  it('makes Kjøpt hvor, Kjøpsdato and Pris when the register has none', () => {
     const cols = receiptColumns([], 7)
     expect(cols.missing.map((p) => [p.key, p.unit, p.type])).toEqual([
-      ['Kjøpt hos', null, 'choice'],
+      ['Kjøpt hvor', null, 'choice'],
       ['Kjøpsdato', 'dato', 'date'],
       ['Pris', 'kr', 'number'],
     ])
@@ -23,6 +23,20 @@ describe('receiptColumns', () => {
     const cols = receiptColumns(own, 7)
     expect([cols.store.id, cols.date.id, cols.price.id]).toEqual(['a', 'b', 'c'])
     expect(cols.missing).toEqual([])
+  })
+
+  it('reads Kjøpt as when, and Kjøpt hvor or Kjøpt hos as where', () => {
+    const own: Property[] = [
+      { id: 'a', key: 'Kjøpt', unit: null, type: 'choice', createdAt: 1 },
+      { id: 'b', key: 'Kjøpt hvor', unit: null, type: 'choice', createdAt: 1 },
+      { id: 'c', key: 'Kjøpt hos', unit: 'dato', type: 'date', createdAt: 1 },
+      { id: 'd', key: 'Kjøpt', unit: 'dato', type: 'date', createdAt: 1 },
+    ]
+    const cols = receiptColumns(own, 7)
+    expect([cols.store.id, cols.date.id]).toEqual(['b', 'd'])
+    for (const key of ['Kjøpested', 'Kjøpt på']) {
+      expect(receiptColumns([{ id: 'k', key, unit: null, type: 'text', createdAt: 1 }], 7).store.id).toBe('k')
+    }
   })
 
   it('does not take a price column that is not in kroner', () => {
@@ -54,7 +68,7 @@ describe('receiptInputs', () => {
     expect(out[0]?.name).toBe('Lampe')
     expect(out[0]?.specs).toEqual([
       { key: 'Kategori', value: 'Hjem', unit: '' },
-      { key: 'Kjøpt hos', value: 'Butikken Sentrum', unit: null },
+      { key: 'Kjøpt hvor', value: 'Butikken Sentrum', unit: null },
       { key: 'Kjøpsdato', value: '2026-01-15', unit: 'dato' },
       { key: 'Pris', value: 1299.5, unit: 'kr' },
     ])
@@ -63,7 +77,7 @@ describe('receiptInputs', () => {
 
   it('leaves out a price that is not a number and a missing date', () => {
     const out = receiptInputs([{ include: true, name: 'Lampe', price: 'ukjent', photos: [] }], cols, { ...shared, date: null })
-    expect(out[0]?.specs.map((s) => s.key)).toEqual(['Kategori', 'Kjøpt hos'])
+    expect(out[0]?.specs.map((s) => s.key)).toEqual(['Kategori', 'Kjøpt hvor'])
   })
 
   it('puts the thing’s own photos before the receipt, so one of them is the main photo', () => {
