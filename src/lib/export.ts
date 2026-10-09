@@ -1,6 +1,6 @@
 import type { Item, Property } from '../db/schema'
 import { columnDefs, type FieldSettings } from './fields'
-import { columnId, columnsFrom, type Column } from './grid'
+import { columnId, columnsFrom, isBarcode, type Column } from './grid'
 import { formatStoredDate, isDateUnit } from './dates'
 import { parseNumber } from './values'
 
@@ -19,6 +19,7 @@ function cellValue(item: Item, col: Column): string {
   const s = item.specs.find((x) => columnId({ key: x.key, unit: x.unit }) === columnId(col))
   if (!s) return ''
   if (isDateUnit(s.unit)) return formatStoredDate(s.value)
+  if (isBarcode(s)) return String(s.value)
   const n = parseNumber(s.value)
   // Comma decimal so a Norwegian spreadsheet reads it as a number.
   return n === null ? String(s.value) : String(n).replace('.', ',')

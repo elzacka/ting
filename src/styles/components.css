@@ -2856,3 +2856,45 @@ section {
 .receipt-line .num {
   text-align: right;
 }
+
+/* Moving a column: the held header fades, a bar marks where it lands */
+
+body.is-moving-column,
+body.is-moving-column * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.grid th.grid-col {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.grid th.grid-col :is(input, select) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.grid th.is-dragged {
+  opacity: 0.5;
+}
+
+.grid th.is-drop-before::before,
+.grid th.is-drop-after::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  z-index: 3;
+}
+
+.grid th.is-drop-before::before {
+  left: 0;
+}
+
+.grid th.is-drop-after::before {
+  right: 0;
+}

@@ -54,3 +54,10 @@ describe('menuValues', () => {
     expect(menuValues(['Bad', 'bad', ''], 'BAD')).toEqual(['Bad'])
   })
 })
+
+describe('parseNumber past fifteen digits', () => {
+  it('leaves a long serial number as text rather than round it', () => {
+    expect(parseNumber('1234567890123456789')).toBeNull()
+    expect(parseNumber('123456789012345')).toBe(123456789012345)
+  })
+})

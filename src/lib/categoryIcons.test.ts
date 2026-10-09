@@ -76,6 +76,7 @@ describe('categoryIconFor', () => {
 describe('isBookCategory', () => {
   it('knows books by the book icon, guessed from the name', () => {
     expect(isBookCategory('Bøker')).toBe(true)
+    expect(isBookCategory('Bok')).toBe(true)
     expect(isBookCategory('Bøker og leker')).toBe(true)
     expect(isBookCategory('Kjøkken')).toBe(false)
     expect(isBookCategory('')).toBe(false)

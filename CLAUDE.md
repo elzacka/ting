@@ -43,9 +43,9 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - Field names in `schema.ts` stay English; the UI is Norwegian, the data model is not.
 - Search DSL (`lib/search.ts`): fuzzy words, phrases, negation, `key<value`, and `har:`/`has:` as the same operator.
 - Søketips (`lib/searchTips.ts`): comparison examples are generated from the register's own columns and values so each one finds something; a tip whose column doesn't exist is dropped. Word examples are fixed text.
-- Facet menus (`lib/filters.ts`, `isFacet`): a date column always facets; others only with a dozen or fewer distinct values or values that repeat, and never price or order-number columns — judged over the whole register, not the rows in view.
+- Facet menus (`lib/filters.ts`, `isFacet`): a date column always facets; others only with a dozen or fewer distinct values or values that repeat, and never price, order-number or Strekkode columns — judged over the whole register, not the rows in view.
 - CSV export (`lib/export.ts`): `;` delimiter, BOM, comma decimals — nb-NO, not the RFC default.
-- `lib/lookup.ts` is the one network call: an ISBN's digits go to Nasjonalbiblioteket first for a Norwegian ISBN (group 82), else Open Library first, with the other as fallback. Every other code is stored, never looked up — no server exists to hold a key for a larger catalogue.
+- `lib/lookup.ts` is the one network call: an ISBN (13 or 10 digits, sent as 13) goes to Nasjonalbiblioteket first for a Norwegian ISBN (group 82), else Open Library's edition endpoint first, with the other as fallback. Every other code is stored, never looked up — no server exists to hold a key for a larger catalogue. `lib/books.ts` maps the answer onto the register's own Forfatter (`Surname, Given`), Utgitt and Språk by name.
 - Receipts (`ReceiptAdd`, phone only, switch `receiptReading`; while off, the receipt screen offers the switch): `lib/flatten.ts` warps the paper flat (pure TS, no OpenCV), `lib/ocr/` runs PP-OCRv6 small in a module worker, decoding Latin script only, `lib/receipt.ts` parses by rule, `lib/receiptItems.ts` fills the register's own store/date/kr columns or makes Kjøpt hos, Kjøpsdato, Pris. Price is per unit, incl. MVA, after discount. OCR text is never stored; the scan is each thing's photo.
 - OCR models: `public/models/`, SHA-256 pinned in `ocr/models.ts`, fetched only when the switch goes on, runtime-cached (`ting-ocr-v1`), never precached; off deletes the cache. No generative model. `csp.test.ts` fails if a new origin or `fetch` appears.
 - `lib/barcode.ts`: the browser's `BarcodeDetector` first, `zxing-wasm` as fallback, bundled in `dist/`, never from a CDN (`'wasm-unsafe-eval'` in the CSP is for it).
@@ -67,7 +67,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - A new row inherits the Valgliste and date values of the row above, never numbers or text; the first row takes the Kategori of the newest thing.
 - Printing with photos: await `img.decode()` before `window.print()`, or photos print blank.
 - Below 600 px (or a touch screen under 500 px tall) is the phone product: `ItemList` replaces the table; no columns, bulk edits, totals, CSV or print there. It lists search hits only, nothing before a search (the demo lists every example); the search sits on top, the bottom bar holds receipt, plus and Innstillinger (out of the top bar there), and hides while the search has focus. No lock button on the phone: closing the app locks it.
-- `AddItem`: "Slå opp på nett" (ISBN lookup) shows only for a book category; other scanned codes are stored, never looked up.
+- `AddItem`: Kategori, then the code, then `categoryFields` (the rule of a thing's page, read live from the properties); lists, places and dates stay for the next thing. A code the register holds fills empty fields from its newest thing (`lib/known.ts`, never dates), offline; otherwise a valid ISBN in a book category is looked up. A fill never overwrites a typed field. "Slå opp på nett" only retries a failed lookup.
 
 ## Encryption
 
@@ -87,7 +87,7 @@ Dexie schema: the newest `db.version()` in `db/db.ts`; tables `items`, `settings
 
 Navn is the only built-in field: first column always, cannot be moved, removed or hidden, and is the frozen column on sideways scroll. Kategori is a Valgliste property like any other, not built-in.
 
-Units stay out of table headers and filter labels (detail page, print and CSV show them). `createdAt`/`updatedAt` live in the data and CSV, never on screen or in print. Retail barcodes are stored as digits in the Strekkode text property.
+Units stay out of table headers and filter labels (detail page, print and CSV show them). `createdAt`/`updatedAt` live in the data and CSV, never on screen or in print. Codes are text in the Strekkode property (`isBarcode` in `grid.ts`): retail codes as digits, an ISBN as 13, never a number, which would drop a leading zero. Search matches digit strings exactly.
 
 Adding a non-indexed field needs no version bump; changing an index or renaming a field does — add a new `db.version()` with an `upgrade`, never edit an existing version.
 
@@ -105,7 +105,7 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 - A rule about the data model or its logic (e.g. which properties belong to a category) must give the same answer everywhere it applies: registering, viewing, searching/filtering, printing/CSV.
 - Design decisions: `dev_only/designsystem.md`. One accent colour, no shadows, no illustrations, 44 px targets, visible labels.
 - The lock is the passphrase: once one exists the app always opens locked; before one exists the installed app opens as an unlocked trial, no lock button, no idle lock.
-- No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; phone screens (`AddItem`, `ItemDetail`) store on blur instead.
+- No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; on the phone `ItemDetail` stores on blur and `AddItem` on Lagre.
 - No mobile-mode switch: viewport size alone decides the phone layout, on any orientation.
 - On a phone or touch screen without folder access, "Tilpass visning" and "Lagringsmappe" are not rendered; backup goes through the share sheet instead.
 - Password forms carry a hidden `username` field (`KeychainName`) so password managers file the passphrase under Ting. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.

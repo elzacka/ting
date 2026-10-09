@@ -1,13 +1,13 @@
 import type { Item } from '../db/schema'
 import { isDateUnit } from './dates'
+import { formatNumber } from './format'
 import { isPathUnit, pathPrefix } from './paths'
 import { parseNumber } from './values'
 import { columnId, type Column } from './grid'
 
-// One filter per column: the set of accepted values (empty = no filter).
-// Values are compared by their normalised text so "5" and 5 are the same.
-// A path column has one filter per level, keyed "<column>#1", "<column>#2":
-// the level is in the id, so nothing downstream needs to know the types.
+// One filter per column: the accepted values, compared as normalised text so "5" and 5 agree;
+// empty is no filter. A path column has one per level, "<column>#1", "<column>#2", so the level
+// is in the id and nothing downstream needs to know the types.
 export type Filters = Record<string, string[]>
 
 export const categoryFilterId = 'category'
@@ -44,7 +44,7 @@ function yearOf(v: string | number): string {
 function labelFor(v: string | number, unit: string | null): string {
   if (isDateUnit(unit)) return yearOf(v)
   const n = parseNumber(v)
-  return n === null ? String(v).trim() : new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2 }).format(n).replace('-', '−')
+  return n === null ? String(v).trim() : formatNumber(n)
 }
 
 // What one spec offers a filter: a year for a date, the way in as far as the
@@ -114,12 +114,9 @@ export function activeCount(filters: Filters): number {
   return Object.values(filters).filter((v) => v.length > 0).length
 }
 
-// Whether a column is worth a menu, judged over the whole register rather
-// than the rows in view: in one category of twenty things nearly every brand
-// is different, over three hundred the brands repeat. A date is always one
-// (it facets by year); anything else is when its values are few, or repeat
-// enough that a menu is shorter than the list. Prices and order numbers do
-// not: the search takes those (pris>1000).
+// Whether a column is worth a menu, judged over the whole register, where brands repeat that
+// rarely do within one category. A date always is (by year); anything else when its values are
+// few or repeat. Prices and order numbers are not: the search takes those (pris>1000).
 const facetShort = 12
 const facetMaxUnique = 0.6
 

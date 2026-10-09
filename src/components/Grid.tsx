@@ -5,11 +5,10 @@ import type { Sort } from '../lib/sort'
 import { rowHeight, useRowWindow } from '../lib/useRowWindow'
 import { ColumnResizer } from './ColumnResizer'
 import { ariaSort } from './SortHeader'
+import { useColumnDrag, type ColumnDrop } from './useColumnDrag'
 
-// The one table skeleton both views share: fixed column widths, a checkbox
-// gutter, a header cell per column with a resize handle, and a body that
-// renders only the rows on screen. What goes in a header cell and a row is
-// the view's business.
+// The table skeleton both views share: fixed widths, a checkbox gutter, headers that resize
+// and move, a body of the rows on screen. What goes in a header cell and a row is the view's.
 type Props = {
   defs: ColumnDef[]
   widths: Record<string, number>
@@ -19,6 +18,8 @@ type Props = {
   headerCheck: ReactNode
   label: (def: ColumnDef) => string
   header: (def: ColumnDef, index: number) => ReactNode
+  // A header dragged onto another column's place; absent, headers stay put
+  onMove?: ((id: string, targetId: string) => void) | undefined
   rowCount: number
   row: (index: number) => ReactNode
   // Rows after the windowed ones, always rendered: new rows being typed
@@ -43,6 +44,7 @@ export function Grid({
   headerCheck,
   label,
   header,
+  onMove,
   rowCount,
   row,
   tail,
@@ -56,6 +58,16 @@ export function Grid({
   const tableRef = useRef<HTMLTableElement>(null)
   const headRef = useRef<HTMLTableSectionElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+  // A column moved from the keyboard keeps focus on its header once it lands
+  const refocus = useRef<{ id: string; order: string } | null>(null)
+  useEffect(() => {
+    const r = refocus.current
+    if (r === null || defs.map((d) => d.id).join() === r.order) return
+    const th = [...(headRef.current?.querySelectorAll<HTMLElement>('th[data-col]') ?? [])].find((c) => c.dataset.col === r.id)
+    th?.querySelector<HTMLElement>('.sort-btn')?.focus()
+    refocus.current = null
+  }, [defs])
+  const { drop, onPointerDown } = useColumnDrag(headRef, defs.map((d) => d.id), onMove)
   // More columns to the right than the card shows: the edge fades, since an
   // overlay scrollbar at the foot of a long table says nothing
   const [more, setMore] = useState(false)
@@ -144,8 +156,21 @@ export function Grid({
               <th
                 scope="col"
                 key={def.id}
-                className={`grid-col${isNumberColumn(def) ? ' is-number' : ''}`}
+                data-col={def.id}
+                className={`grid-col${isNumberColumn(def) ? ' is-number' : ''}${dropClass(def.id, drop)}`}
                 aria-sort={ariaSort(def, sort)}
+                onPointerDown={(e) => onPointerDown(e, def.id)}
+                onKeyDown={(e) => {
+                  // Alt and an arrow is the keyboard's drag
+                  if (!onMove || !e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
+                  // Not from the rename field, where Option and an arrow jumps a word
+                  if (!(e.target instanceof Element && e.target.closest('.sort-btn'))) return
+                  const target = defs[index + (e.key === 'ArrowLeft' ? -1 : 1)]
+                  if (!target || index === 0 || target.kind === 'name') return
+                  e.preventDefault()
+                  refocus.current = { id: def.id, order: defs.map((d) => d.id).join() }
+                  onMove(def.id, target.id)
+                }}
               >
                 {header(def, index)}
                 <ColumnResizer id={def.id} label={label(def)} onWidth={onWidth} />
@@ -162,6 +187,13 @@ export function Grid({
       </table>
     </div>
   )
+}
+
+function dropClass(id: string, drop: ColumnDrop | null): string {
+  if (!drop) return ''
+  if (drop.id === id) return ' is-dragged'
+  if (drop.target !== id) return ''
+  return drop.after ? ' is-drop-after' : ' is-drop-before'
 }
 
 // Numbers line up on the right, like the sum they add up to

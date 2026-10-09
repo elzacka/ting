@@ -24,8 +24,8 @@ const examples: Example[] = [
   ['Vaterpass', 'Verktøy', 'Kjellerbod › Hylle 1', []],
   ['Telt', 'Tur', 'Loftsbod › Hylle 2', [[brand, 'Helsport'], [bought, '2021-05-30'], [price, 4200]]],
   ['Sovepose', 'Tur', 'Loftsbod › Hylle 2 › Boks 1', [[bought, '2021-05-30'], [price, 1800]]],
-  ['Sult', 'Bøker', 'Leilighet › Stue › Bokhylle', [[author, 'Knut Hamsun']]],
-  ['Kristin Lavransdatter', 'Bøker', 'Leilighet › Stue › Bokhylle', [[author, 'Sigrid Undset']]],
+  ['Sult', 'Bøker', 'Leilighet › Stue › Bokhylle', [[author, 'Hamsun, Knut']]],
+  ['Kristin Lavransdatter', 'Bøker', 'Leilighet › Stue › Bokhylle', [[author, 'Undset, Sigrid']]],
 ]
 
 export function demoRegister(now: number): { items: Item[]; properties: Property[] } {

@@ -1,7 +1,7 @@
 import type { Item, Property, PropertyType } from '../db/schema'
 import { dateUnit, isDateUnit } from './dates'
 import { isPathUnit, pathUnit } from './paths'
-import { columnId, columnsFrom, type Column } from './grid'
+import { barcodeKey, columnId, columnsFrom, type Column } from './grid'
 
 // Display settings for the one built-in field. Navn can be renamed but never
 // moved or removed: it is the identity of a thing, always the first column,
@@ -32,7 +32,7 @@ export const categoryProperty = (): Property => ({
 
 // The property Strekkode: a text column, created the first time a code is
 // scanned or typed on the phone form.
-export const barcodeKey = 'Strekkode'
+export { barcodeKey }
 export const barcodeColumnId = columnId({ key: barcodeKey, unit: null })
 export const barcodeProperty = (): Property => ({
   id: barcodeColumnId,
@@ -76,6 +76,19 @@ export function columnDefs(_fields: FieldSettings, properties: readonly Property
   return defs.sort((a, b) => a.order - b.order)
 }
 
+// The order after one column moves to where another stands, the rest keeping theirs:
+// rightward it lands after the target, leftward before it. Hidden columns between
+// the two stay put. Null when nothing moves; Navn neither moves nor is passed.
+export function moveColumnTo(defs: readonly ColumnDef[], id: string, targetId: string): ColumnDef[] | null {
+  const from = defs.findIndex((d) => d.id === id)
+  const to = defs.findIndex((d) => d.id === targetId)
+  const moving = defs[from]
+  if (!moving || to < 0 || from === to || moving.kind === 'name' || defs[to]?.kind === 'name') return null
+  const rest = defs.filter((_, i) => i !== from)
+  rest.splice(to, 0, moving)
+  return rest
+}
+
 export type ChoiceDef = Extract<ColumnDef, { kind: 'prop' }>
 
 // The phone form's choice and path columns (what it is, where it goes). Kategori comes first
@@ -88,6 +101,15 @@ export function choiceDefs(defs: readonly ColumnDef[], category: string): Choice
         d.kind === 'prop' && (d.type === 'choice' || d.type === 'path') && appliesTo(d.property, category === '' ? [] : [category]),
     )
     .sort((a, b) => rank(a) - rank(b))
+}
+
+// The fields a thing in a category has, on its page and on the phone form: the place first,
+// then the rest in column order. `has` keeps a field that holds a value outside the category.
+export function categoryFields(defs: readonly ColumnDef[], category: string, has: (id: string) => boolean = () => false): ChoiceDef[] {
+  const fields = defs.filter(
+    (d): d is ChoiceDef => d.kind === 'prop' && (has(d.id) || appliesTo(d.property, category === '' ? [] : [category])),
+  )
+  return [...fields.filter((d) => d.type === 'path'), ...fields.filter((d) => d.type !== 'path')]
 }
 
 export function propColumns(defs: readonly ColumnDef[]): Column[] {

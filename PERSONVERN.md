@@ -1,9 +1,8 @@
 # Personvern i Ting
 
-Oppdatert: 05.10.26
+Oppdatert: 09.10.26
 
-Det du legger inn, lagres kryptert på enheten din. Du trenger ikke registrere
-deg eller logge inn, og data forlater enheten bare når du selv sender dem.
+Det du legger inn, lagres kryptert på enheten din.
 
 ## Det appen lagrer
 
@@ -19,30 +18,16 @@ deg eller logge inn, og data forlater enheten bare når du selv sender dem.
 Appen krypterer med AES-256-GCM. Nøkkelen kommer fra passordet ditt, og
 passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
-Demoen i nettleseren lagrer bare eksemplene, og den begynner på nytt hver gang
-du åpner den. Bare appen du har lastet ned, åpner registeret ditt.
-
 ## Det som forlater enheten
 
 - **«Send til en annen enhet»:** Hele registeret sendes kryptert, bare til
   enheten du velger i AirDrop.
-- **«Slå opp på nett»:** Sifrene i ISBN-numre sendes til Nasjonalbiblioteket eller
-  Open Library. De ser også IP-adressen din.
+- **Oppslag av bøker:** ISBN-nummeret sendes til Nasjonalbiblioteket eller Open
+  Library når du skanner eller skriver ISBN i en kategori for bøker, og boka
+  ikke finnes i registeret fra før. De ser IP-adressen din.
 
 Appen ligger på GitHub Pages. GitHub ser IP-adressen din når appen lastes ned
-eller oppdateres, slik alle nettsteder ser den.
-
-## Kvitteringer og KI
-
-Appen leser teksten på kvitteringer med KI: To små modeller fra PaddlePaddle
-(PP-OCRv6), der den ene finner teksten på kvitteringen og den andre leser
-bokstavene og tallene. Modellene kjører på enheten, også uten nett. De lærer
-ingenting av dataene dine og skriver ingen tekst selv. Appen bruker ingen
-KI-tjeneste på nett og ingen språkmodell.
-
-Bildet av kvitteringen lagres kryptert sammen med tingene du kjøpte. Teksten
-appen leste, lagres ikke. Bare navn, pris, dato og butikk blir med, og du ser
-dem før du lagrer.
+eller oppdateres, og når appen laster ned modellene som leser kvitteringer.
 
 ## Rettighetene dine
 
@@ -55,8 +40,6 @@ Dataene ligger bare hos deg, så du bestemmer over dem selv:
 
 Det finnes ingen kopi utenfor enhetene og filene dine, så ingen andre kan se,
 endre eller slette dataene.
-
-Appen bruker ingen informasjonskapsler, ingen analyse og ingen reklame.
 
 Har du spørsmål, skriv til hei@tazk.no. Den tekniske beskrivelsen av
 sikkerheten står i [SECURITY.md](SECURITY.md) (engelsk).

@@ -1,16 +1,12 @@
 import type { Item } from '../db/schema'
 import { isDateUnit, parseDateInput } from './dates'
+import { isBarcode } from './grid'
+import { codeKey } from './known'
 import { parseNumber } from './values'
 
-// Query syntax, kept deliberately small:
-//   sovepose            word, typo-tolerant
-//   "sovepose vinter"   exact phrase
-//   -sommer             exclude
-//   komfort<0           spec compare: < > <= >= = :   (key is a prefix, ":" is contains)
-//   har:bilde har:vekt (any property key prefix, so har:notat too; has: is the same)
-//   kategori:tur         the property Kategori contains (or = for exact)
-//   kjøpsdato<01.01.26   date columns (unit "dato") compare as dates
-//   "r-verdi">=4        quote a key that contains an operator character
+// Query syntax, kept small: words (typo-tolerant), "phrases", -exclude, key<value with
+// < > <= >= = : (key a prefix, ":" contains, dates as dates), har:/has: for a property or bilde.
+// The user guide's Søk table lists every form; search.test.ts holds an example of each.
 
 export type Op = '<' | '>' | '<=' | '>=' | '=' | ':'
 
@@ -98,8 +94,9 @@ function editDistance(a: string, b: string, max: number): number {
   return prev[b.length] ?? max + 1
 }
 
+// A number has no typos: a code one digit off is another product
 function tolerance(word: string): number {
-  if (word.length < 4) return 0
+  if (word.length < 4 || /^\d+$/.test(word)) return 0
   return word.length >= 8 ? 2 : 1
 }
 
@@ -128,6 +125,12 @@ function specHit(item: Item, key: string, op: Op, value: string): boolean {
   const wanted = parseNumber(value)
   return item.specs.some((s) => {
     if (!norm(s.key).startsWith(key)) return false
+    // A code is the same code however it was typed: hyphens, an ISBN-10, a lost leading zero
+    if (isBarcode(s) && (op === '=' || op === ':')) {
+      const have = norm(codeKey(String(s.value)))
+      const want = norm(codeKey(value))
+      return op === '=' ? have === want : have.includes(want)
+    }
     if (isDateUnit(s.unit)) {
       const want = parseDateInput(value)
       const have = parseDateInput(s.value)

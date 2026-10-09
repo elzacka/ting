@@ -166,21 +166,29 @@ trykk «Lagre». Pris og tekst arves ikke.
 **Med tingen i hånden, på mobilen:**
 
 1. Pluss nederst i midten åpner «Ny ting».
-2. Trykk på bildefeltet ved siden av navnet. «Ta bilde» åpner kameraet, og
+2. Velg kategori øverst. Den står igjen fra forrige ting. Skjemaet viser bare
+   feltene kategorien har, de samme som på siden til en ting. Legger du til en
+   egenskap i kategorien, kommer feltet med en gang. Trykk på feltet for å
+   velge noe annet i listen, eller skriv en ny verdi i feltet øverst. Den nye
+   verdien er valgt med en gang. Trykk på valget igjen hvis du vil fjerne det.
+3. Skann eller skriv koden i «Strekkode», rett under kategorien. Har
+   registeret en ting med samme kode fra før, fyller appen inn navnet og
+   feltene fra den nyeste av dem, uten nett, og viser hvor mange registeret
+   har. Datoer fyller appen ikke inn.
+4. Trykk på bildefeltet ved siden av navnet. «Ta bilde» åpner kameraet, og
    «Legg til bilde» åpner bildene dine. Gjenta for flere bilder, for eksempel
    av etiketten. Tallet på bildefeltet viser hvor mange bilder tingen har.
    Appen leser strekkoden på bildene og fyller inn «Strekkode» hvis feltet er
    tomt.
-3. Skriv navnet. «Neste» på tastaturet går til neste felt.
-4. Kategori og plassering står igjen fra forrige ting. Trykk på feltet for å
-   velge noe annet i listen, eller skriv en ny verdi i feltet øverst. Den nye
-   verdien er valgt med en gang. En ny plassering skriver du med skråstrek
-   mellom nivåene: «Bod / Hylle 2 / Blå kasse». Trykk på valget igjen hvis du
-   vil fjerne det.
-5. «Lagre» nederst. Skjermen er klar for neste ting.
+5. Skriv navnet. «Neste» på tastaturet går til neste felt.
+6. Fyll ut de andre feltene. Plassering kommer først. Valglister velges på
+   samme måte som kategorien. En ny plassering skriver du med skråstrek mellom
+   nivåene: «Bod / Hylle 2 / Blå kasse».
+7. «Lagre» nederst. Skjermen går til toppen, klar for neste ting. Valglister,
+   plassering og datoer står igjen, tekst og tall begynner tomme.
 
-På mobilen lagres alt med én gang. Resten fyller du inn ved skrivebordet
-senere; `-har:pris` i søket henter frem de som står igjen.
+Felt du lar stå tomme, kan du fylle inn ved skrivebordet senere. `-har:pris` i
+søket henter frem de som mangler pris.
 
 **Fra kvittering, på mobilen:** Første gang ber appen deg slå på «Les tekst på
 kvitteringer». Den laster da ned KI-modeller og verktøy for tekstgjenkjenning,
@@ -213,22 +221,39 @@ Innstillinger.
 - Appen sier fra når summen av alle linjene ikke stemmer med totalen på
   kvitteringen. Linjer uten hake teller med.
 
-**En bok, på mobilen:** Appen kan slå opp bøker. Velg kategorien «Bøker» på
-«Ny ting», trykk på strekkodesymbolet og ta bilde av strekkoden bak på boka. Trykk
-«Slå opp på nett», så fyller appen inn tittel og forfatter i «Navn». Rett det
-som er feil før du lagrer.
+**En bok, på mobilen:** Velg kategorien «Bøker» på «Ny ting». Feltet «ISBN»
+kommer rett under kategorien. Trykk på strekkodesymbolet og ta bilde av
+strekkoden bak på boka, eller skriv ISBN. Appen henter opplysningene om boka på
+nett med en gang og fyller inn:
 
-**Med strekkoden:** På «Ny ting» ligger feltet «Strekkode», nederst.
+| Felt | Får |
+|---|---|
+| Navn | Tittelen på utgaven |
+| Forfatter | Etternavn, fornavn. Flere forfattere skilles med semikolon |
+| Utgitt | Året utgaven kom ut |
+| Språk | Språket boka er skrevet på, eller oversatt til |
+
+Forfatter, Utgitt og Språk fyller appen bare inn hvis kategorien har en
+egenskap med det navnet. Er Språk en valgliste, bruker appen alternativet du
+har, for eksempel «Norsk» for norsk bokmål. Et felt du har skrevet i selv, blir
+stående. En bok du har registrert fra før, fyller appen inn fra registeret,
+uten nett. Appen lagrer ISBN med 13 sifre, også når du skriver de 10 sifrene
+fra en eldre bok, så et søk på ISBN finner alle eksemplarene.
+
+**Med strekkoden:** På «Ny ting» ligger feltet «Strekkode» rett under
+kategorien. I en kategori for bøker heter feltet «ISBN».
 
 | Vil du                            | Slik                                                                                                                                                                                                                                                                                                                                                                         |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Lese koden fra etiketten          | Strekkodesymbolet ved feltet åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Appen leser også strekkoden på bildene av tingen og fyller inn feltet hvis det er tomt. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Ta et nytt bilde nærmere, rett forfra og uten refleks, hvis leseren ikke finner koden. Eller skriv tallene under streken |
-| Slå opp en bok                    | Knappen «Slå opp på nett» vises når kategorien har symbolet «Bok» og feltet har en ISBN. En kategori med «bok» eller «bøker» i navnet får symbolet av seg selv. Appen henter tittel og forfatter fra Nasjonalbiblioteket eller Open Library |
+| Slå opp en bok                    | Appen slår opp når kategorien har symbolet «Bok» og feltet har en hel ISBN, med 13 eller 10 sifre. En kategori med «bok» eller «bøker» i navnet får symbolet av seg selv. Appen spør Nasjonalbiblioteket først for norske bøker og Open Library først for andre. Knappen «Slå opp på nett» vises hvis oppslaget ikke kom gjennom, så du kan prøve igjen |
 | Ta vare på et serienummer eller en QR-kode | Skann eller skriv inn koden. Appen lagrer den som tekst og slår den ikke opp |
+| Finne en ting ved å skanne den | På mobilen: Strekkodesymbolet i søkefeltet åpner kameraet, og appen søker på koden |
 
-Appen slår bare opp bøker, fordi det ikke finnes noen god, åpen katalog for
-andre ting. For dem sparer skanningen deg for å skrive nummeret, og navnet
-skriver du selv.
+Appen slår bare opp bøker på nett, fordi det ikke finnes noen god, åpen katalog
+for andre ting. Andre ting kjenner appen igjen fra registeret: Den første du
+registrerer, fyller du ut selv. Neste gang du skanner samme kode, fyller appen
+inn resten.
 
 ### Mange ting
 
@@ -316,7 +341,6 @@ Kolonnemenyen er pilen ved kolonnenavnet.
 |---|---|
 | Endre navn, felttype eller enhet | «Endre» |
 | Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
-| Flytte kolonnen | «Flytt til venstre» eller «Flytt til høyre» |
 | Ta den ut av kategorien du står i | «Ikke bruk i …» (når én kategori er valgt). Verdiene blir stående |
 
 Endrer du felttypen, blir verdiene stående som de er. Slik gjør du for eksempel
@@ -410,7 +434,9 @@ samme på hver rad.
 
 Trykk på forstørrelsesglasset, <kbd>⌘</kbd>+<kbd>K</kbd> på Mac eller
 <kbd>Ctrl</kbd>+<kbd>K</kbd> på PC, eller bare begynn å skrive. Søket tåler
-skrivefeil og forstår spørsmål som `pris>1000` og `plassering:loftsbod`.
+skrivefeil og forstår spørsmål som `pris>1000` og `plassering:loftsbod`. Tall
+og koder må stemme nøyaktig. På mobilen søker strekkodesymbolet i feltet etter
+koden du skanner.
 «Søketips» under feltet viser alle, med eksempler fra dine egne kolonner. Se
 [Søk](#søk).
 
@@ -434,6 +460,7 @@ Filtrene ved siden av søkefeltet viser hver verdi med antall, for det du ser.
 | Vil du | Slik |
 |---|---|
 | Sortere | Klikk på kolonnenavnet: Stigende, synkende, av |
+| Flytte en kolonne | Dra kolonnenavnet dit du vil ha kolonnen. En strek viser hvor den havner. På en berøringsskjerm holder du fingeren på navnet til kolonnen løsner, og drar. Navn står alltid først |
 | Endre bredde | Dra i kanten av kolonneoverskriften. Dobbeltklikk der for å tilpasse bredden til innholdet |
 | Se kolonner som er skjult | «Vis n kolonner til» på den grå linja |
 | Skjule en kolonne for godt | Innstillinger › «Egenskaper i tabellen». Der står egenskapene alle kategoriene har, i alfabetisk rekkefølge etter Navn. «Velg alle» og «Fjern alle» viser eller skjuler alle på én gang. Egenskapene til én kategori velger du under [Kategorier](#kategorier) |
@@ -541,7 +568,8 @@ Etter hentingen sier appen hvor mange ting som er nye, endret og slettet.
 
 | Skriv | Finner |
 |---|---|
-| `sovepose` | Ord, tåler skrivefeil |
+| `sovepose` | Ord, tåler skrivefeil. Tall og koder må stemme nøyaktig |
+| `strekkode=7038010009457` | Tingen med koden, også når den er skrevet med bindestrek eller som ISBN med 10 sifre. Strekkodesymbolet i søkefeltet på mobilen skriver dette for deg |
 | `"sovepose vinter"` | Nøyaktig frase |
 | `-sommer` | Uten dette ordet |
 | `s` | Én bokstav: Alle navn som begynner på s |
@@ -562,7 +590,7 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 |---|---|
 | Tekst | Fritekst. Lenker blir klikkbare på tingens side |
 | Valgliste | Velg blant verdiene som finnes, eller skriv en ny. Alternativene skilles med komma |
-| Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Tallene står til høyre, med mellomrom mellom tusener. Kolonner i kr summeres på den grå linja når minst én ting har en verdi |
+| Tall | Skriv bare tallet, `1250`, ikke `1250 gram`. Enheten gjelder hele kolonnen. Tallene står til høyre. Tall med fem sifre eller flere får mellomrom mellom tusenene, så et årstall står som 2003. Kolonner i kr summeres på den grå linja når minst én ting har en verdi |
 | Dato | Skriv `19.09.26` |
 | Sti | Hele veien inn til en plass: `Loftsbod/Hylle 2/Boks 4`, eller med `>` eller `›`. Appen skriver det alltid som `Loftsbod › Hylle 2 › Boks 4`, og foreslår plassene du alt bruker |
 
@@ -608,6 +636,7 @@ Tannhjulet lengst til høyre i topplinja.
 | En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
 | <kbd>Esc</kbd> | Tømmer søket, lukker en liste eller et panel, eller spør om du vil forkaste endringene i tabellen |
 | Piltastene | Flytter i lister og i rutenettet med symboler |
+| <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>←</kbd> eller <kbd>→</kbd> | Flytter kolonnen når du står på kolonnenavnet |
 | <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side og legger til neste rad når du skriver i en ny rad i tabellen |
 
 ---
@@ -620,8 +649,8 @@ Tannhjulet lengst til høyre i topplinja.
 | Brunt tannhjul | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
 | «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
 | «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
-| «Fant ingen strekkode i bildet.» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
-| «Ingen nettforbindelse.» | Oppslaget trenger nett | Skriv navnet selv, eller prøv igjen senere |
+| «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
+| «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen for Face ID eller Touch ID på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Lås opp med Face ID eller Touch ID» av og på igjen i Innstillinger |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og hent fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |

@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import type { Item } from '../db/schema'
+import type { Item, Property } from '../db/schema'
 import {
   appliesTo,
+  categoryFields,
   categoryProperty,
   choiceDefs,
   claimedBy,
   columnDefs,
   defaultFieldSettings,
+  moveColumnTo,
   readFieldSettings,
   withCategory,
 } from './fields'
 import { columnId } from './grid'
+import { pathUnit } from './paths'
 
 function item(name: string, specs: Item['specs']): Item {
   return {
@@ -156,5 +159,57 @@ describe('choiceDefs', () => {
   it('leaves out the lists another category owns', () => {
     expect(ids('Klær')).toEqual(['Kategori', 'Plassering', 'Rom'])
     expect(ids('')).toEqual(['Kategori', 'Plassering', 'Rom'])
+  })
+})
+
+describe('moveColumnTo', () => {
+  const defs = columnDefs(
+    defaultFieldSettings,
+    ['A', 'B', 'C', 'D'].map((key, order) => ({ id: columnId({ key, unit: null }), key, unit: null, createdAt: 0, order })),
+    [],
+  )
+  const ids = (list: ReturnType<typeof moveColumnTo>) => list?.map((d) => d.id)
+  const id = (key: string) => columnId({ key, unit: null })
+
+  it('puts a column moved right after its target, past the hidden ones between', () => {
+    expect(ids(moveColumnTo(defs, id('A'), id('C')))).toEqual(ids([defs[0]!, defs[2]!, defs[3]!, defs[1]!, defs[4]!]))
+  })
+
+  it('puts a column moved left before its target', () => {
+    expect(ids(moveColumnTo(defs, id('D'), id('A')))).toEqual(ids([defs[0]!, defs[4]!, defs[1]!, defs[2]!, defs[3]!]))
+  })
+
+  it('never moves Navn or puts a column before it', () => {
+    expect(moveColumnTo(defs, 'name', id('B'))).toBeNull()
+    expect(moveColumnTo(defs, id('B'), 'name')).toBeNull()
+    expect(moveColumnTo(defs, id('B'), id('B'))).toBeNull()
+  })
+})
+
+describe('categoryFields', () => {
+  const p = (key: string, order: number, extra: Partial<Property> = {}) => ({
+    id: columnId({ key, unit: null }),
+    key,
+    unit: null,
+    createdAt: 0,
+    order,
+    ...extra,
+  })
+  const props: Property[] = [
+    p('Forfatter', 0, { categories: ['Bøker'] }),
+    p('Merke', 1, { categories: ['Verktøy'] }),
+    p('Plassering', 2, { type: 'path', unit: pathUnit }),
+    p('Notat', 3),
+  ]
+  const keys = (category: string, has?: (id: string) => boolean) =>
+    categoryFields(columnDefs(defaultFieldSettings, props, []), category, has).map((d) => d.col.key)
+
+  it('lists the place first, then the category’s own and every-category fields in column order', () => {
+    expect(keys('Bøker')).toEqual(['Plassering', 'Forfatter', 'Notat'])
+    expect(keys('Verktøy')).toEqual(['Plassering', 'Merke', 'Notat'])
+  })
+
+  it('keeps another category’s field only while it holds a value', () => {
+    expect(keys('Bøker', (id) => id === columnId({ key: 'Merke', unit: null }))).toContain('Merke')
   })
 })

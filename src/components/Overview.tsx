@@ -26,6 +26,7 @@ import {
   categoryColumnId,
   claimedBy,
   columnDefs,
+  moveColumnTo,
   propColumns,
   unitFor,
   withCategory,
@@ -861,24 +862,23 @@ export function Overview({
     }
   }
 
-  // Swaps a column with its neighbour and stores the whole order.
   function closeMenu() {
     for (const d of document.querySelectorAll<HTMLDetailsElement>('details.col-menu[open]')) d.open = false
     setMenuPos(null)
   }
 
-  async function moveColumn(def: ColumnDef, dir: -1 | 1) {
+  // Past the neighbour on screen, not the next one in the stored order: that
+  // may be a hidden column, and the move would change nothing in view.
+  async function moveColumn(id: string, targetId: string | undefined) {
     closeMenu()
-    const list = [...defs]
-    const i = list.findIndex((d) => d.id === def.id)
-    const j = i + dir
-    if (i < 0 || j < 0 || j >= list.length) return
-    const a = list[i]
-    const b = list[j]
-    if (!a || !b) return
-    list[i] = b
-    list[j] = a
-    await setColumnOrder(list)
+    const list = targetId === undefined ? null : moveColumnTo(defs, id, targetId)
+    if (!list) return
+    try {
+      await setColumnOrder(list)
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.error.saveFailed)
+    }
   }
 
   async function commitRename() {
@@ -1912,6 +1912,7 @@ export function Overview({
             wrap={wrap}
             headHeight={headHeight}
             label={labelOf}
+            onMove={printing ? undefined : (id, targetId) => void moveColumn(id, targetId)}
             onPaste={onPaste}
             onLeave={() => setNewRows((prev) => (prev.every(touched) ? prev : prev.filter(touched)))}
             headerCheck={
@@ -1926,7 +1927,7 @@ export function Overview({
                 )}
               </>
             }
-            header={(def, index) => (
+            header={(def) => (
               <>
                 {renaming && renaming.def.id === def.id ? (
                   <form
@@ -2047,26 +2048,6 @@ export function Overview({
                               {appliesTo(def.property, cats) ? t.table.notIn(oneCategory) : t.table.alsoIn(oneCategory)}
                             </button>
                           )}
-                          <button
-                            type="button"
-                            className="col-menu-item"
-                            role="menuitem"
-                            disabled={index <= 1}
-                            onClick={() => void moveColumn(def, -1)}
-                          >
-                            <Icon name="chevronLeft" size={16} />
-                            {t.table.moveLeft}
-                          </button>
-                          <button
-                            type="button"
-                            className="col-menu-item"
-                            role="menuitem"
-                            disabled={index === shown.length - 1}
-                            onClick={() => void moveColumn(def, 1)}
-                          >
-                            <Icon name="chevronRight" size={16} />
-                            {t.table.moveRight}
-                          </button>
                           {def.kind !== 'name' && (
                             <button
                               type="button"

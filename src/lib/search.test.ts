@@ -112,3 +112,29 @@ describe('searchItems', () => {
     expect(names('k')).toEqual(['Kokeapparat'])
   })
 })
+
+describe('codes', () => {
+  const coded = [
+    item('Kaffe', [{ key: 'Strekkode', value: '7038010009457', unit: null }]),
+    item('Te', [{ key: 'Strekkode', value: '7038010009458', unit: null }]),
+  ]
+
+  it('finds a code exactly, never one a digit or two off', () => {
+    expect(searchItems(coded, '7038010009457').map((i) => i.name)).toEqual(['Kaffe'])
+  })
+})
+
+describe('a code searched by its property', () => {
+  const coded = [
+    item('Forbrytelse og straff', [{ key: 'Strekkode', value: '0-14-044913-2', unit: null }]),
+    item('Lampe', [{ key: 'Strekkode', value: 12345678905, unit: null }]),
+    item('Ruter', [{ key: 'Strekkode', value: 'https://example.no/a?b=1', unit: null }]),
+  ]
+  const hits = (q: string) => searchItems(coded, q).map((i) => i.name)
+
+  it('finds the same code however it was typed or stored', () => {
+    expect(hits('strekkode=9780140449136')).toEqual(['Forbrytelse og straff'])
+    expect(hits('strekkode=012345678905')).toEqual(['Lampe'])
+    expect(hits('strekkode="https://example.no/a?b=1"')).toEqual(['Ruter'])
+  })
+})

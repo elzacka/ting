@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Item, Property } from '../db/schema'
 import { activeCount, isFacet, levelId, valuesFor, withoutFilter, type Filters, type FilterValue } from '../lib/filters'
 import { isDateUnit } from '../lib/dates'
-import { columnId } from '../lib/grid'
+import { columnId, isBarcode } from '../lib/grid'
 import { maxPathLevels, parsePath } from '../lib/paths'
 import { parseNumber } from '../lib/values'
 import { appliesTo, categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
@@ -22,10 +22,9 @@ type Props = {
 
 type Def = { id: string; label: string; unit: string | null; values: FilterValue[] }
 
-// Short menus show everything; long text menus the top twelve, the rest on
-// request, and a box to type in once opened up. Numbers and years are never
-// cut: their order carries meaning. Which columns get a menu at all is
-// isFacet in lib/filters.ts.
+// Short menus show everything; long text menus the top twelve, the rest and a box to type in on
+// request. Numbers and years are never cut: their order carries meaning. Which columns get a
+// menu at all is isFacet in lib/filters.ts.
 const shortMenu = 12
 const searchable = 30
 
@@ -33,10 +32,9 @@ function isNumeric(values: FilterValue[], unit: string | null): boolean {
   return isDateUnit(unit) || values.every((v) => parseNumber(v.label) !== null)
 }
 
-// One dropdown per filter, counting the rows the other filters and the search
-// leave, so choosing Kategori shrinks Kat2 to what exists there. A menu with
-// nothing left to offer is not shown. Native <details>: no library, works
-// with the keyboard; a click outside closes whichever one is open.
+// One dropdown per filter, counting the rows the other filters and the search leave, so choosing
+// Kategori shrinks the rest to what exists there; an empty menu is not shown. Native <details>:
+// works with the keyboard, and a click outside closes the open one.
 export function FilterPanel({ items, searched, properties, fields, filters, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -80,7 +78,8 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
     // Alphabetical, numbers and years in their own order, as valuesFor delivers
     // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
     const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)
-    if (values.length === 0 || !isFacet(valuesFor(items, d.col), d.col.unit)) return []
+    // A code is found by searching or scanning it, not picked from a menu
+    if (values.length === 0 || isBarcode(d.col) || !isFacet(valuesFor(items, d.col), d.col.unit)) return []
     return [{ id: d.id, label: d.col.key, unit: d.col.unit, values }]
   })
 

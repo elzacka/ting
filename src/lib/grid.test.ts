@@ -55,3 +55,10 @@ describe('cellsFrom and specsFrom', () => {
     ])
   })
 })
+
+describe('Strekkode', () => {
+  it('keeps a code as text, leading zero and all', () => {
+    const col = { key: 'Strekkode', unit: null }
+    expect(specsFrom({ [columnId(col)]: '012345678905' }, [col])).toEqual([{ key: 'Strekkode', value: '012345678905', unit: null }])
+  })
+})

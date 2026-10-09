@@ -5,7 +5,7 @@ import type { Item, Property } from '../db/schema'
 import { parseDateInput } from '../lib/dates'
 import { pathsInUse } from '../lib/paths'
 import { errorText } from '../lib/errors'
-import { appliesTo, categoryColumnId, columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
+import { categoryColumnId, categoryFields, columnDefs, propColumns, type ColumnDef, type FieldSettings } from '../lib/fields'
 import { parseNumber, recentValues } from '../lib/values'
 import { formatValue } from '../lib/format'
 import { cellsFrom, columnId, inputFrom } from '../lib/grid'
@@ -35,14 +35,10 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
   // The properties this thing's category has, the same rule as the table's
   // columns, and any other the thing holds a value in; not every property of
   // every category. The place comes first: it answers where the thing is.
-  const props = useMemo(() => {
-    const category = cells[categoryColumnId] ?? ''
-    const shown = defs.filter(
-      (d): d is PropDef =>
-        d.kind === 'prop' && ((cells[d.id] ?? '') !== '' || appliesTo(d.property, category === '' ? [] : [category])),
-    )
-    return [...shown.filter((d) => d.type === 'path'), ...shown.filter((d) => d.type !== 'path')]
-  }, [defs, cells])
+  const props = useMemo(
+    () => categoryFields(defs, cells[categoryColumnId] ?? '', (id) => (cells[id] ?? '') !== ''),
+    [defs, cells],
+  )
   // The row being edited and what it says so far; 'name' or a column id
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null)
   const [error, setError] = useState<string | null>(null)

@@ -7,6 +7,8 @@ export function parseNumber(raw: string | number): number | null {
   if (typeof raw === 'number') return Number.isFinite(raw) ? raw : null
   const cleaned = raw.trim().replace('−', '-').replace(',', '.').replace(/\s/g, '')
   if (cleaned === '' || !/^-?\d+(\.\d+)?$/.test(cleaned)) return null
+  // Past fifteen digits a number rounds: a serial number would change
+  if (cleaned.replace(/\D/g, '').length > 15) return null
   return Number(cleaned)
 }
 

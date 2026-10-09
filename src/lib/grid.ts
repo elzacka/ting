@@ -9,6 +9,13 @@ export type Column = { key: string; unit: string | null }
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base' })
 
+// Strekkode holds codes, which are text however many digits they have: a
+// number would drop a UPC code's leading zero and print the rest in groups
+export const barcodeKey = 'Strekkode'
+export function isBarcode(col: Column): boolean {
+  return col.unit === null && col.key.trim().toLocaleLowerCase('nb') === 'strekkode'
+}
+
 export function columnId(col: Column): string {
   return JSON.stringify([col.key.toLocaleLowerCase('nb'), (col.unit ?? '').toLocaleLowerCase('nb')])
 }
@@ -53,7 +60,9 @@ export function specsFrom(cells: Record<string, string>, columns: readonly Colum
       ? (parseDateInput(raw) ?? raw)
       : isPathUnit(col.unit)
         ? formatPath(parsePath(raw))
-        : (parseNumber(raw) ?? raw)
+        : isBarcode(col)
+          ? raw
+          : (parseNumber(raw) ?? raw)
     specs.push({ key: col.key, value, unit: col.unit })
   }
   return specs
