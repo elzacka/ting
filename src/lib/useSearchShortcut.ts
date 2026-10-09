@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
+export const isMac = /Mac|iPhone|iPad/.test(navigator.platform)
 
 // As shown, and as aria-keyshortcuts names it
 export const searchKeys = isMac ? '⌘K' : 'Ctrl+K'

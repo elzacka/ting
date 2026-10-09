@@ -16,7 +16,7 @@ import {
 } from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
-import { href, useRoute, type Route } from './lib/route'
+import { href, navigate, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { errorText } from './lib/errors'
@@ -28,6 +28,7 @@ import { usePlainPaste } from './lib/plainPaste'
 import type { Sort } from './lib/sort'
 import { useColumnWidths } from './lib/columnWidths'
 import { searchKeys, searchKeysAria, useSearchShortcut } from './lib/useSearchShortcut'
+import { optionKeys, optionKeysAria, useOptionKey } from './lib/useOptionKey'
 import { useAutoLock } from './lib/useAutoLock'
 import { useNarrow } from './lib/useNarrow'
 import { useKeyboardInset } from './lib/useKeyboardInset'
@@ -207,6 +208,9 @@ export function App() {
     dirty.current = d
     setUnsaved(d)
   }, [])
+  useOptionKey('I', unlocked && !isDemo && route.view !== 'settings', () => {
+    if (!dirty.current || window.confirm(t.confirm.unsaved)) navigate(href.settings)
+  })
   // Paused while something is unsaved: a lock would drop it. Decided by elzacka.
   useAutoLock(vault.status === 'open' && autoLock && !unsaved)
 
@@ -288,9 +292,14 @@ export function App() {
                 href={href.settings}
                 aria-label={settingsLabel}
                 aria-current={route.view === 'settings' ? 'page' : undefined}
+                aria-keyshortcuts={optionKeysAria('I')}
                 onClick={guardNav}
               >
                 <Icon name="settings" />
+                <span className="tip" aria-hidden="true">
+                  {settingsLabel}
+                  <kbd>{optionKeys('I')}</kbd>
+                </span>
               </a>
             )}
           </div>

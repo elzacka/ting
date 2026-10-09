@@ -57,6 +57,7 @@ import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
+import { optionKeys, optionKeysAria, useOptionKey } from '../lib/useOptionKey'
 import { useEscape } from '../lib/useEscape'
 
 type RowEdit = { name?: string; cells?: Record<string, string> }
@@ -436,7 +437,8 @@ export function Overview({
   }
 
   // Skriv ut asks which columns go on paper, starting from what is on screen as Cmd+P does;
-  // Navn always. The choice holds for the session, and the table narrows to it while printing.
+  // Navn always. The choice holds for the session; the view below the open form shows the
+  // paper as chosen so far, and the table narrows to the choice while printing.
   const [printCols, setPrintCols] = useState<Set<string> | null>(null)
   const [printPick, setPrintPick] = useState<Set<string> | null>(null)
   const [printing, setPrinting] = useState(false)
@@ -446,6 +448,9 @@ export function Overview({
   const [printPhotos, setPrintPhotos] = useState(false)
   const [draftGroup, setDraftGroup] = useState<string | null>(null)
   const [draftPhotos, setDraftPhotos] = useState(false)
+  const paperCols = printPick ?? (printing ? printCols : null)
+  const paperGroup = printPick ? draftGroup : printGroup
+  const paperPhotos = printPick ? draftPhotos : printPhotos
   // The head's height goes into --head-h on the card, so the table's header
   // row can stick right under it whatever the head line wraps to
   const cardRef = useRef<HTMLDivElement>(null)
@@ -513,9 +518,10 @@ export function Overview({
     setBulk(null)
   }
   // The rows the table shows, or while printing from the selection, the ticked ones
+  const onPaper = printing || printPick !== null
   const listed = useMemo(
-    () => (printing && printOnly ? visible.filter((i) => printOnly.has(i.id)) : visible),
-    [printing, printOnly, visible],
+    () => (onPaper && printOnly ? visible.filter((i) => printOnly.has(i.id)) : visible),
+    [onPaper, printOnly, visible],
   )
 
   // Endre kategorier stored: a category renamed while it is ticked stays ticked, a removed one is unticked
@@ -539,14 +545,14 @@ export function Overview({
     openPanel(null)
   }
   const shown = useMemo(
-    () => (printing && printCols ? shownAll.filter((d) => d.kind === 'name' || printCols.has(d.id)) : shownAll),
-    [shownAll, printing, printCols],
+    () => (paperCols ? shownAll.filter((d) => d.kind === 'name' || paperCols.has(d.id)) : shownAll),
+    [shownAll, paperCols],
   )
 
   // The report layout instead of the table: asked for by a grouping, by the
   // photos, or by both. The columns and the sums are the ones chosen for the
   // paper, so a column left off is left out of the arithmetic as well.
-  const reporting = printing && printCols !== null && (printGroup !== null || printPhotos)
+  const reporting = paperCols !== null && (paperGroup !== null || paperPhotos)
   const reportColumns = useMemo(
     () => shown.flatMap((d) => (d.kind === 'prop' ? [d] : [])),
     [shown],
@@ -556,8 +562,8 @@ export function Overview({
     [reportColumns],
   )
   const reportGroups = useMemo(
-    () => (reporting ? groupItems(listed, printGroup) : []),
-    [reporting, listed, printGroup],
+    () => (reporting ? groupItems(listed, paperGroup) : []),
+    [reporting, listed, paperGroup],
   )
   // Columns with few enough values to head a page: a Valgliste, or a place at one of its levels.
   // Only those on screen: another category's column, or Kategori inside one, would put
@@ -583,8 +589,8 @@ export function Overview({
     [shownAll, items],
   )
   const groupLabel = useMemo(
-    () => groupChoices.find((d) => d.id === printGroup)?.label ?? null,
-    [groupChoices, printGroup],
+    () => groupChoices.find((d) => d.id === paperGroup)?.label ?? null,
+    [groupChoices, paperGroup],
   )
   const anyPhoto = useMemo(() => visible.some((i) => i.photos.length > 0), [visible])
 
@@ -593,6 +599,18 @@ export function Overview({
   async function waitForPhotos() {
     const imgs = [...document.querySelectorAll<HTMLImageElement>('.print-report img')]
     await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
+  }
+  // The choice must be in the DOM before the browser takes its snapshot
+  function printChoice() {
+    if (!printPick) return
+    flushSync(() => {
+      setPrintCols(printPick)
+      setPrintGroup(draftGroup)
+      setPrintPhotos(draftPhotos)
+      setPrintPick(null)
+      setPrinting(true)
+    })
+    void waitForPhotos().then(() => window.print())
   }
 
   const dirtyIds = Object.keys(edits).filter((id) => {
@@ -1184,6 +1202,12 @@ export function Overview({
     summary?.focus()
   }, menuPos !== null)
   useEscape(closePicker, picking)
+  // The same as the buttons: plus opens its menu, the printer the form, and a second press prints
+  useOptionKey('+', !isDemo && selected.size === 0, () => (addMenu ? closeAddMenu() : openAddMenu()))
+  useOptionKey('P', showTable && items.length > 0, () => {
+    if (printPick) printChoice()
+    else openPanel(selected.size > 0 ? 'print-selected' : 'print')
+  })
 
   return (
     <div className="stack">
@@ -1369,11 +1393,16 @@ export function Overview({
                 ref={addRef}
                 className={`btn btn-icon${addMenu || addingColumn ? ' is-active' : ''}`}
                 aria-label={t.table.add}
+                aria-keyshortcuts={optionKeysAria('+')}
                 aria-haspopup="menu"
                 aria-expanded={addMenu !== null}
                 onClick={() => (addMenu ? closeAddMenu() : openAddMenu())}
               >
                 <Icon name="add" />
+                <span className="tip" aria-hidden="true">
+                  {t.table.add}
+                  <kbd>{optionKeys('+')}</kbd>
+                </span>
               </button>
             )}
             {addMenu &&
@@ -1426,11 +1455,16 @@ export function Overview({
                 type="button"
                 className={`btn btn-icon${printPick ? ' is-active' : ''}`}
                 aria-label={t.report.print}
+                aria-keyshortcuts={optionKeysAria('P')}
                 aria-expanded={printPick !== null}
                 aria-controls="print-form"
                 onClick={() => openPanel(printPick ? null : 'print')}
               >
                 <Icon name="print" />
+                <span className="tip" aria-hidden="true">
+                  {t.report.print}
+                  <kbd>{optionKeys('P')}</kbd>
+                </span>
               </button>
             )}
           </div>
@@ -1467,16 +1501,7 @@ export function Overview({
               className="stack-sm"
               onSubmit={(e) => {
                 e.preventDefault()
-                // The choice must be in the DOM before the browser takes its
-                // snapshot, and a photo that has not decoded yet prints blank.
-                flushSync(() => {
-                  setPrintCols(printPick)
-                  setPrintGroup(draftGroup)
-                  setPrintPhotos(draftPhotos)
-                  setPrintPick(null)
-                  setPrinting(true)
-                })
-                void waitForPhotos().then(() => window.print())
+                printChoice()
               }}
             >
               <p className="panel-title">{t.report.pick}</p>
@@ -1557,7 +1582,7 @@ export function Overview({
                 </div>
               )}
               <div className="row">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" aria-keyshortcuts={optionKeysAria('P')}>
                   {t.report.print}
                 </button>
                 <button type="button" className="btn" onClick={() => setPrintPick(null)}>
@@ -1781,8 +1806,8 @@ export function Overview({
             groups={reportGroups}
             columns={reportColumns}
             properties={reportProperties}
-            photos={printPhotos}
-            groupId={printGroup}
+            photos={paperPhotos}
+            groupId={paperGroup}
             groupKey={groupLabel}
           />
         )}

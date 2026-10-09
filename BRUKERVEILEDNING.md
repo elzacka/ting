@@ -493,16 +493,16 @@ tingene.
 | Regneark (CSV) | Nedlastingsikonet, eller «Last ned» for tingene du har huket av. Fila åpner rett i Excel og Numbers, med norske tall og datoer |
 
 I utskriften er kolonnene du ser, valgt fra start. Fjern hakene for dem som ikke
-skal med, og trykk «Skriv ut». Rapporten får tittel, dato og sidetall. To valg
-bestemmer formen:
+skal med, og trykk «Skriv ut». Registeret under valgene viser utskriften slik
+den blir. Rapporten får tittel, dato og sidetall. To valg bestemmer formen:
 
 | Valg | Gjør |
 |---|---|
 | Grupper etter | En valgliste eller ett nivå i en plassering blant kolonnene du ser, for eksempel Kategori under «Alle» eller «Plassering 2» for hylla. Tingene kommer under hver sin overskrift, med sum per gruppe og en sluttsum |
 | Ta med bilder | Hver ting får hovedbildet sitt. Ting uten bilde får en tom ramme, så du ser hvilke som mangler |
 
-Velger du ingen av dem, skrives tabellen ut som den står. Velger du én, kommer
-tingene under hverandre, én blokk per ting. Summene følger det som kommer med.
+Uten noen av dem skrives tabellen ut som den står. Med ett av dem kommer tingene
+under hverandre, én blokk per ting. Summene følger det som kommer med.
 
 Utskrift og CSV er ukryptert og laget for å leses. De er ikke en sikkerhetskopi.
 
@@ -645,8 +645,14 @@ Tannhjulet lengst til høyre i topplinja.
 | En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
 | <kbd>Esc</kbd> | Lukker det du åpnet sist, slik «Avbryt» eller «Lukk» gjør: Et spørsmål, en liste, et panel eller søket. I søket tømmer den først teksten. Appen spør om du vil forkaste endringene i tabellen hvis ingenting annet er åpent |
 | Piltastene | Flytter i lister og i rutenettet med symboler |
+| <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>I</kbd> | Åpner Innstillinger |
+| <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>+</kbd> | Åpner menyen under pluss: «Legg til ting» eller «Legg til egenskap» |
+| <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>P</kbd> | Åpner «Ta med i utskriften». Trykk en gang til for å skrive ut |
 | <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>←</kbd> eller <kbd>→</kbd> | Flytter kolonnen når du står på kolonnenavnet |
 | <kbd>Enter</kbd> | Velger i en liste, lagrer en verdi på tingens side og legger til neste rad når du skriver i en ny rad i tabellen |
+
+<kbd>⌥</kbd>/<kbd>Alt</kbd> med I, + eller P virker når du ikke skriver i et
+felt. I et felt gir tastene tegn som ± og π.
 
 ---
 
