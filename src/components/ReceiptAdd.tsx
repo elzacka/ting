@@ -40,6 +40,17 @@ const receiptWidth = 1200
 // and postcode, or the card terminal when the receipt prints neither
 const storesKey = 'receiptStores'
 
+// A list sealed under a key this device no longer holds reads as empty, like
+// column widths: the next save seals it again under the current key
+async function knownStores(): Promise<Record<string, string>> {
+  try {
+    return (await getSealedSetting<Record<string, string>>(storesKey)) ?? {}
+  } catch (err) {
+    console.error(errorText(err))
+    return {}
+  }
+}
+
 function specValue(item: Item, id: string): string {
   const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === id)
   return spec ? String(spec.value) : ''
@@ -118,10 +129,10 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
     const flat = warp(img, corners, receiptWidth)
     setScan(await rgbaToJpeg(scanLook(flat), 0.75))
     const r = parseReceipt(await readText(flat), new Date())
-    const known = await getSealedSetting<Record<string, string>>(storesKey)
+    const known = await knownStores()
     const k = storeKey(r)
     setKey(k)
-    setStore((k && known?.[k]) || (r.storeName ? closestValue(r.storeName, storeValues) : ''))
+    setStore((k && known[k]) || (r.storeName ? closestValue(r.storeName, storeValues) : ''))
     setDate(r.date ?? '')
     setTotal(r.total)
     // One thing per unit: two duvets are two things, each with its share
@@ -161,8 +172,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
       const more = specsFrom(cells, propColumns(choices))
       await saveBatch(receiptInputs(rows, cols, { store, date: date || null, more, receipt: scan }), [])
       if (key && store.trim() !== '') {
-        const known = (await getSealedSetting<Record<string, string>>(storesKey)) ?? {}
-        await setSealedSetting(storesKey, { ...known, [key]: store.trim() })
+        await setSealedSetting(storesKey, { ...(await knownStores()), [key]: store.trim() })
       }
       onDirtyChange(false)
       navigate(href.list)
