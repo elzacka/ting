@@ -2,9 +2,9 @@
 // https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.9.2/ (onnx/PP-OCRv6/det, onnx/PP-OCRv6/rec, paddle/PP-OCRv6/rec/PP-OCRv6_rec_small for the dict)
 // Same origin only, fetched when receipt reading is turned on.
 
-// Also the Workbox cache name in vite.config.ts.
 export const ocrCacheName = 'ting-ocr-v1'
 
+// A changed model gets a new file name: a cached file under the old name counts as present.
 export const modelFiles = {
   det: 'PP-OCRv6_det_small.onnx',
   rec: 'PP-OCRv6_rec_small.onnx',

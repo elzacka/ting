@@ -3,8 +3,10 @@ import { getSetting } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { categoryIconFor } from '../lib/categoryIcons'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
+import { errorText } from '../lib/errors'
 import { formatValue } from '../lib/format'
 import { columnId } from '../lib/grid'
+import { prefetchOcr } from '../lib/ocr'
 import { handOverReceipt } from '../lib/receiptImage'
 import { receiptReadingKey } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
@@ -57,7 +59,10 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
   // download. Plus stays one tap to Ny ting.
   const [receipts, setReceipts] = useState(false)
   useEffect(() => {
-    void getSetting<boolean>(receiptReadingKey).then((on) => setReceipts(on === true))
+    void getSetting<boolean>(receiptReadingKey).then((on) => {
+      setReceipts(on === true)
+      if (on === true) prefetchOcr().catch((err: unknown) => console.error(errorText(err)))
+    })
   }, [])
   const receiptRef = useRef<HTMLInputElement>(null)
   function receiptTaken(input: HTMLInputElement) {

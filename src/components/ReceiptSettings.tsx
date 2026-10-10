@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getSetting, setSetting } from '../db/db'
 import { errorText } from '../lib/errors'
-import { disposeOcr, prefetchOcr } from '../lib/ocr'
-import { ocrCacheName } from '../lib/ocr/models'
+import { prefetchOcr, removeOcr } from '../lib/ocr'
 import { receiptReadingKey } from '../lib/receiptItems'
 import { t } from '../lib/strings'
 import { SettingSwitch } from './Setting'
@@ -23,8 +22,7 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
     await setSetting(receiptReadingKey, on)
     if (!on) {
       setState('off')
-      disposeOcr()
-      await caches.delete(ocrCacheName)
+      await removeOcr()
       return
     }
     setState('downloading')

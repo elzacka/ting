@@ -1,6 +1,7 @@
 import { errorText } from '../errors'
 import type { Rgba } from '../flatten'
 import { checkSize } from './limits'
+import { ocrCacheName } from './models'
 import type { WorkerReply, WorkerRequest } from './worker'
 
 const timeoutMs = 180_000
@@ -46,13 +47,42 @@ export async function readText(img: Rgba): Promise<string[]> {
   })
 }
 
-// Puts the models and the runtime in the cache, so reading works offline later.
-export async function prefetchOcr(): Promise<void> {
-  const { fetchOcrFile, ocrUrls } = await import('./cache')
-  for (const url of Object.values(ocrUrls)) await fetchOcrFile(url)
+// The download of this switch-on; the one before, if any, finishes (or stops) first
+let download: Promise<void> | undefined
+let previous: Promise<unknown> = Promise.resolve()
+let generation = 0
+
+// Puts the models and the runtime in the cache, so reading works offline later; also at
+// start, for files an update added. One download at a time; turning reading off stops it.
+export function prefetchOcr(): Promise<void> {
+  if (download) return download
+  const gen = generation
+  const job = previous.then(async () => {
+    const { fetchOcrFile, isOcrCached, ocrUrls } = await import('./cache')
+    for (const url of Object.values(ocrUrls)) {
+      if (gen !== generation) break
+      if (!(await isOcrCached(url))) await fetchOcrFile(url)
+    }
+    // A file that landed after off deleted the cache is dropped again
+    if (gen !== generation) await caches.delete(ocrCacheName)
+  })
+  const done = () => {
+    if (download === job) download = undefined
+  }
+  download = job
+  previous = job.then(done, done)
+  return job
 }
 
 export function disposeOcr(): void {
   worker?.terminate()
   worker = undefined
+}
+
+// Receipt reading off: stops the download, the worker and deletes what was downloaded.
+export async function removeOcr(): Promise<void> {
+  generation++
+  download = undefined
+  disposeOcr()
+  await caches.delete(ocrCacheName)
 }

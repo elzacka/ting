@@ -42,6 +42,11 @@ export async function fetchOcrFile(url: string): Promise<ArrayBuffer> {
   return bytes
 }
 
+export async function isOcrCached(url: string): Promise<boolean> {
+  if (typeof caches === 'undefined') return false
+  return (await (await caches.open(ocrCacheName)).match(url)) !== undefined
+}
+
 // Files an earlier version used (other models, an older runtime) are dropped, so the cache holds one set.
 export async function pruneOcrCache(): Promise<void> {
   if (typeof caches === 'undefined') return
