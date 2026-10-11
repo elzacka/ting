@@ -136,9 +136,10 @@ function uprightRect(r: Rect): Rect {
   return { cx: r.cx, cy: r.cy, w, h, angle }
 }
 
+// Half a line height wider as well: a box that starts at the second digit reads 1.299,00 as .299,00
 function growRect(r: Rect): Rect {
   const d = (r.w * r.h * unclipRatio) / (2 * (r.w + r.h))
-  return { ...r, w: r.w + 2 * d, h: r.h + 2 * d }
+  return { ...r, w: r.w + 2 * d + 0.5 * r.h, h: r.h + 2 * d }
 }
 
 // Mean probability inside the rectangle.
