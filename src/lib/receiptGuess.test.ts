@@ -64,11 +64,8 @@ describe('receiptGuess', () => {
     expect(guess(['Duna 140x200'], 'Lun Sentrum')[categoryColumnId]).toBe('Tekstil')
   })
 
-  it('starts in use, at the place most things are in', () => {
-    const g = guess(['Noe helt annet'])
-    expect(g[id(status)]).toBe('I bruk')
-    expect(g[id(sted)]).toBe('Leilighet')
-    expect(g[categoryColumnId]).toBeUndefined()
+  it('leaves Kategori out when nothing points to one', () => {
+    expect(guess(['Noe helt annet'])[categoryColumnId]).toBeUndefined()
   })
 
   it('fills a field only where every line agrees', () => {
@@ -77,18 +74,6 @@ describe('receiptGuess', () => {
     expect(g[id(merke)]).toBeUndefined()
     expect(g[categoryColumnId]).toBeUndefined()
     expect(guess(['Duna dundyne', 'Annen dyne'])[categoryColumnId]).toBe('Tekstil')
-  })
-
-  it('starts a place kept as a list at the value most things hold', () => {
-    const list = { key: 'Plassering', unit: null }
-    const ps: Property[] = [{ id: categoryColumnId, key: 'Kategori', unit: '', type: 'choice', createdAt: 1 }, { id: id(list), ...list, type: 'choice', createdAt: 1 }]
-    const own = [
-      thing('Sofa', [[kat, 'Møbler'], [list, 'Leilighet']]),
-      thing('Lampe', [[kat, 'Belysning'], [list, 'Leilighet']]),
-      thing('Telt', [[kat, 'Tur'], [list, 'Kjellerbod']]),
-    ]
-    const defs = columnDefs(defaultFieldSettings, ps, own).filter((d): d is ChoiceDef => d.kind === 'prop' && d.type === 'choice')
-    expect(receiptGuess(['Noe'], '', id(butikk), defs, own)[id(list)]).toBe('Leilighet')
   })
 
   it('takes the value every earlier thing from the store holds, when two or more do', () => {

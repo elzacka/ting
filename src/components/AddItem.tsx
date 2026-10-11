@@ -19,6 +19,7 @@ import {
   type FieldSettings,
 } from '../lib/fields'
 import { parseDateInput } from '../lib/dates'
+import { startValues } from '../lib/startValues'
 import { parseNumber } from '../lib/values'
 import { columnId, inputFrom } from '../lib/grid'
 import { lookup } from '../lib/lookup'
@@ -42,7 +43,7 @@ export function AddItem({ items, properties, fields, onDirtyChange }: Props) {
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const nameLabel = fields.name.label ?? t.table.name
   const [name, setName] = useState('')
-  const [cells, setCells] = useState<Record<string, string>>(() => firstCells(items))
+  const [cells, setCells] = useState<Record<string, string>>(() => ({ ...firstCells(items), ...startValues(defs, items) }))
   const category = cells[categoryColumnId]?.trim() ?? ''
   const categoryDef = defs.find((d): d is ChoiceDef => d.id === categoryColumnId && d.kind === 'prop')
   // Read from the properties on every change, so a field added to the category shows at once

@@ -150,6 +150,11 @@ til venstre.
 
 ## Legge til
 
+En ny ting begynner med «I bruk» i Status og «Leilighet» i Plassering, ved
+skrivebordet, på mobilen og fra en kvittering. Appen velger stedet der du har
+flest ting hvis registeret ikke har Leilighet. Velg noe annet hvis det ikke
+stemmer. Den neste tingen du legger til, får det samme som den forrige.
+
 ### En ting
 
 **Ved skrivebordet:** Klikk i «Legg til ting» nederst i tabellen, eller pluss ›
@@ -218,9 +223,6 @@ Innstillinger.
 - Appen foreslår kategori, merke, type og andre valglister ut fra navnet på
   tingen, butikken og tingene du har fra før. Et felt står tomt hvis appen
   finner ulike verdier for tingene på kvitteringen.
-- Plasseringen står på stedet der du har flest ting. En valgliste med verdien
-  «I bruk» står på den, fordi du som regel skanner kvitteringen rett etter
-  kjøpet.
 - Appen bruker egenskapene du har for butikk, kjøpsdato og pris i kr, også
   «Kjøpt» når den er tekst eller en valgliste. Appen lager Kjøpt hvor,
   Kjøpsdato og Pris hvis registeret mangler dem.

@@ -1,17 +1,14 @@
 import type { Item } from '../db/schema'
 import { categoryColumnId, type ChoiceDef } from './fields'
 import { cellsFrom } from './grid'
-import { parsePath } from './paths'
+import { isPlace, mostHeld } from './startValues'
 
-// What a receipt cannot say, read from the register instead: Kategori, the lists
-// a line names (Merke, Type, Farge), where new things go and that they are in use.
+// What a receipt cannot say, read from the register instead: Kategori and the lists
+// a line names (Merke, Type, Farge). Where it starts otherwise is `startValues`.
 // By rule, never a generative model; a field stays empty rather than guessed wrong.
 
 const fold = (s: string) => s.toLocaleLowerCase('nb').replace(/\s+/g, ' ').trim()
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-const inUse = 'i bruk'
-// A place kept as a plain list rather than with levels
-const placeName = /^(?:plassering|sted|lokasjon)$/
 
 type Named = { value: string; test: RegExp; length: number }
 
@@ -27,21 +24,6 @@ function longestIn(text: string, values: readonly Named[]): string | null {
   const t = fold(text)
   let best: Named | null = null
   for (const v of values) if (v.test.test(t) && (!best || v.length > best.length)) best = v
-  return best?.value ?? null
-}
-
-// The value most of them hold, the newest thing's on a tie
-type Held = { value: string; at: number }
-function mostHeld(held: readonly Held[]): string | null {
-  const count = new Map<string, Held & { n: number }>()
-  for (const h of held) {
-    const v = h.value.trim()
-    if (v === '') continue
-    const c = count.get(fold(v)) ?? { value: v, n: 0, at: 0 }
-    count.set(fold(v), { value: c.value, n: c.n + 1, at: Math.max(c.at, h.at) })
-  }
-  let best: (Held & { n: number }) | null = null
-  for (const c of count.values()) if (!best || c.n > best.n || (c.n === best.n && c.at > best.at)) best = c
   return best?.value ?? null
 }
 
@@ -98,9 +80,7 @@ function lineGuess(name: string, store: string, storeId: string, lists: readonly
   return out
 }
 
-// One value per field for every thing on the receipt: a field the lines disagree on is left
-// out. A place starts at the place most things are in (the home, not the storage room), a
-// list that holds "I bruk" starts there, since a receipt is scanned right after buying.
+// One value per field for every thing on the receipt: a field the lines disagree on is left out
 export function receiptGuess(
   names: readonly string[],
   store: string,
@@ -112,20 +92,11 @@ export function receiptGuess(
   const values = new Map<string, Named[]>()
   const out: Record<string, string> = {}
   for (const d of lists) {
-    if (d.type === 'path' || placeName.test(fold(d.col.key))) {
-      const home = mostHeld(rows.map((r) => ({ value: parsePath(r.cells[d.id] ?? '')[0] ?? '', at: r.at })))
-      // A list offers only its own values: a top level no thing holds alone gives way to the commonest value
-      const listed = d.type === 'path' || rows.some((r) => fold(r.cells[d.id] ?? '') === fold(home ?? ''))
-      const value = listed ? home : mostHeld(rows.map((r) => ({ value: r.cells[d.id] ?? '', at: r.at })))
-      if (value) out[d.id] = value
-      continue
-    }
+    if (isPlace(d)) continue
     const all = new Map<string, string>()
     for (const v of [...rows.map((r) => r.cells[d.id] ?? ''), ...(d.property?.options ?? [])]) {
       if (v.trim() !== '' && !all.has(fold(v))) all.set(fold(v), v.trim())
     }
-    const use = all.get(inUse)
-    if (use) out[d.id] = use
     values.set(d.id, [...all.values()].flatMap((v) => named(v) ?? []))
   }
   const guesses = names.filter((n) => n.trim() !== '').map((n) => lineGuess(n, store, storeId, lists, values, rows))

@@ -57,6 +57,7 @@ import { SearchField } from './SearchField'
 import { SortHeader } from './SortHeader'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
+import { startValues } from '../lib/startValues'
 import { optionKeys, optionKeysAria, useOptionKey } from '../lib/useOptionKey'
 import { useEscape } from '../lib/useEscape'
 
@@ -646,7 +647,7 @@ export function Overview({
 
   // A new row inherits the batch from the row above: every Valgliste, date and place (a shop and
   // a date down a receipt, a place down a shelf), never prices, texts or numbers. The first row
-  // takes only the Kategori of the newest thing.
+  // takes the Kategori of the newest thing and where every new thing starts (`startValues`).
   function inherited(prev?: NewRow): Record<string, string> {
     if (prev) {
       const cells: Record<string, string> = {}
@@ -657,14 +658,18 @@ export function Overview({
       }
       return cells
     }
-    // In a category's own view that is what a new thing is; otherwise the
-    // Kategori of the newest thing, which is what the last batch was.
-    if (oneCategory !== null) return { [categoryColumnId]: oneCategory }
-    // Several chosen: the newest thing among them, so the row stays in view
+    // A category's own view is what a new thing is; otherwise the newest thing's Kategori (the last
+    // batch), among those chosen when several are, so the row stays in view
     const pool = cats.length > 1 ? visible : items
     const newest = pool.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
-    const value = newest ? (baseCells.get(newest.id)?.[categoryColumnId] ?? '') : ''
-    return value === '' ? {} : { [categoryColumnId]: value }
+    const category = oneCategory ?? (newest ? (baseCells.get(newest.id)?.[categoryColumnId] ?? '') : '')
+    const start = startValues(defs, items)
+    const cells: Record<string, string> = category === '' ? {} : { [categoryColumnId]: category }
+    for (const def of defs) {
+      const v = start[def.id]
+      if (v && def.kind === 'prop' && appliesTo(def.property, category === '' ? [] : [category])) cells[def.id] = v
+    }
+    return cells
   }
 
   function cell(item: Item, col: Column): string {

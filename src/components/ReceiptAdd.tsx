@@ -11,6 +11,7 @@ import { readText } from '../lib/ocr'
 import { parseReceipt, splitAmount, storeKey } from '../lib/receipt'
 import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
 import { receiptGuess } from '../lib/receiptGuess'
+import { startValues } from '../lib/startValues'
 import { closestValue, dateValue, linesSum, longDate, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
@@ -72,7 +73,10 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   const [store, setStore] = useState('')
   const [date, setDate] = useState('')
   // Kategori and the choice and path columns it asks for, shared by every thing on the receipt
-  const [cells, setCells] = useState<Record<string, string>>(() => firstCells(items))
+  const [cells, setCells] = useState<Record<string, string>>(() => ({
+    ...firstCells(items),
+    ...startValues(columnDefs(fields, properties, items), items),
+  }))
   // A field the user chose keeps its value when a new photo of the receipt is read
   const chosenIds = useRef(new Set<string>())
   const [total, setTotal] = useState<number | null>(null)
@@ -149,7 +153,8 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
       splitAmount(line.amount, line.quantity).map((price) => ({ include: true, name: line.name, price: formatNumber(price), photos: [] })),
     )
     setRows(next.length > 0 ? next : [{ include: true, name: '', price: '', photos: [] }])
-    const guess = receiptGuess(next.map((row) => row.name), storeNow, cols.store.id, lists, items)
+    // Status and the place start where every new thing does, whatever the lines say
+    const guess = { ...receiptGuess(next.map((row) => row.name), storeNow, cols.store.id, lists, items), ...startValues(lists, items) }
     setCells((prev) => {
       const out = { ...prev }
       for (const [id, v] of Object.entries(guess)) if (!chosenIds.current.has(id)) out[id] = v
