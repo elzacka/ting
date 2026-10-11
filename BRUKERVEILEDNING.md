@@ -297,7 +297,7 @@ kan slå opp bøker på nett.
    `Underholdning`. Gjør det samme for `Bøker` og `Leker`. Trykk «Lagre». Hver
    av dem får symbolet sitt av seg selv, og Bøker får «Bok».
 2. Velg Underholdning i kategorifeltet. Pluss › «Legg til egenskap».
-3. Fyll ut skjemaet og trykk «Legg til»:
+3. Fyll ut skjemaet og trykk «Lagre»:
    - Navn på egenskap: `Type`
    - Felttype: Valgliste
    - Alternativer: `Film, Musikk, CD, Brettspill, Dataspill`
@@ -649,7 +649,7 @@ Tannhjulet lengst til høyre i topplinja.
 |---|---|
 | <kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Åpner og lukker søket |
 | En bokstav, når du ikke skriver i et felt | Starter et søk med den bokstaven |
-| <kbd>Esc</kbd> | Lukker det du åpnet sist, slik «Avbryt» eller «Lukk» gjør: Et spørsmål, en liste, et panel eller søket. I søket tømmer den først teksten. Appen spør om du vil forkaste endringene i tabellen hvis ingenting annet er åpent |
+| <kbd>Esc</kbd> | Lukker det du åpnet sist, slik «Avbryt» gjør: Et spørsmål, en liste, et panel eller søket. I søket tømmer den først teksten. Appen spør om du vil forkaste endringene i tabellen hvis ingenting annet er åpent |
 | Piltastene | Flytter i lister og i rutenettet med symboler |
 | <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>I</kbd> | Åpner Innstillinger |
 | <kbd>⌥</kbd>/<kbd>Alt</kbd>+<kbd>+</kbd> | Åpner menyen under pluss: «Legg til ting» eller «Legg til egenskap» |

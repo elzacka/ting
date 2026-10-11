@@ -297,7 +297,7 @@ export function ItemDetail({ item, items, properties, fields }: Props) {
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-text">
           <p id="confirm-text">{t.confirm.delete(item.name)}</p>
           <div className="row">
-            <button type="button" className="btn btn-danger" onClick={onDelete}>
+            <button type="button" className="btn btn-danger-fill" onClick={onDelete}>
               {t.action.delete}
             </button>
             <button type="button" className="btn" onClick={() => setConfirming(false)} autoFocus>

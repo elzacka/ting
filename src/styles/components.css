@@ -171,8 +171,7 @@
 }
 
 .btn-danger {
-  border-color: transparent;
-  background: transparent;
+  border-color: var(--danger);
   color: var(--danger);
 }
 
@@ -798,12 +797,6 @@
   flex: 1;
   min-width: 0;
   padding: var(--s-1) 0;
-}
-
-/* Slett at the foot of a thing's page, under the list's last hairline. The text
-   button's label lines up with the column; only its hover fill reaches past it. */
-.detail-foot .btn-danger {
-  margin-left: calc((var(--s-4) + 1px) * -1);
 }
 
 /* A section's text sits one step under its label, level with rows and inputs */

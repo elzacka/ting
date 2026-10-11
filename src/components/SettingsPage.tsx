@@ -378,7 +378,7 @@ export function SettingsPage({
                   </p>
                 )}
                 <div className="row">
-                  <button type="submit" className="btn" disabled={oldPass === '' || newPass === ''}>
+                  <button type="submit" className="btn btn-primary" disabled={oldPass === '' || newPass === ''}>
                     {t.vault.change}
                   </button>
                   <button

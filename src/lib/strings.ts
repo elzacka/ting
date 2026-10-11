@@ -158,7 +158,6 @@ export const t = {
   action: {
     save: 'Lagre',
     cancel: 'Avbryt',
-    close: 'Lukk',
     delete: 'Slett',
     back: 'Tilbake',
     pickAll: 'Velg alle',
@@ -260,7 +259,6 @@ export const t = {
     columnOptions: 'Alternativer',
     columnUnit: 'Enhet',
     columnUnitOptional: 'Valgfritt',
-    columnAdd: 'Legg til',
     // Symbol and the word for it: the list shows both, the column stores the symbol
     unitOptions: [
       ['kr', 'kroner'],
@@ -285,7 +283,6 @@ export const t = {
     notIn: (category: string) => `Ikke bruk i ${category}`,
     removeColumnConfirm: (key: string, n: number) =>
       `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Slett den og verdiene? Du kan ikke angre.`,
-    removeColumnAction: 'Slett',
     columnMenu: (key: string) => `Valg for ${key}`,
     sortBy: (key: string) => `Sorter etter ${key}`,
     resize: (key: string) => `Endre bredde på ${key}`,
@@ -376,7 +373,6 @@ export const t = {
     unbalanced: (sum: string, total: string) => `Prisene blir ${sum} til sammen, men kvitteringen sier ${total}. Sjekk prisene.`,
     noLines: 'Fant ingen ting på kvitteringen. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
     failed: 'Kunne ikke lese kvitteringen. Ta et nytt bilde rett ovenfra, med godt lys.',
-    save: (n: number) => (n === 1 ? 'Lagre 1 ting' : `Lagre ${n} ting`),
     // Innstillinger: receipt reading is a download, so it is switched on first
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',

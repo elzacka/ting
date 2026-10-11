@@ -264,7 +264,7 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
                   {t.sync.merge}
                 </button>
               )}
-              <button type="button" className="btn btn-danger" onClick={() => void replace(choice)} autoFocus={!choice.mergeable}>
+              <button type="button" className={choice.mergeable ? 'btn btn-danger' : 'btn btn-danger-fill'} onClick={() => void replace(choice)} autoFocus={!choice.mergeable}>
                 {t.sync.replace}
               </button>
               <button type="button" className="btn" onClick={() => setChoice(null)}>

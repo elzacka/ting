@@ -1776,10 +1776,10 @@ export function Overview({
                 )}
                 <div className="field field-actions">
                   <button type="submit" className="btn btn-primary">
-                    {t.table.columnAdd}
+                    {t.action.save}
                   </button>
                   <button type="button" className="btn" onClick={() => openPanel(null)}>
-                    {t.action.close}
+                    {t.action.cancel}
                   </button>
                 </div>
               </div>
@@ -1827,7 +1827,7 @@ export function Overview({
               >
                 {t.action.save}
               </button>
-              <button type="button" className="btn" onClick={reset}>
+              <button type="button" className="btn btn-danger" onClick={reset}>
                 {t.confirm.discard}
               </button>
             </div>
@@ -1842,11 +1842,11 @@ export function Overview({
             <div className="row">
               <button
                 type="button"
-                className="btn btn-danger"
+                className="btn btn-danger-fill"
                 autoFocus
                 onClick={() => void doRemoveColumn(removingColumn)}
               >
-                {t.table.removeColumnAction}
+                {t.action.delete}
               </button>
               <button type="button" className="btn" onClick={() => setRemovingColumn(null)}>
                 {t.action.cancel}
@@ -1859,7 +1859,7 @@ export function Overview({
           <div className="confirm" role="alertdialog" aria-labelledby="confirm-many">
             <p id="confirm-many">{t.confirm.deleteMany(selected.size)}</p>
             <div className="row">
-              <button type="button" className="btn btn-danger" onClick={deleteSelected} autoFocus>
+              <button type="button" className="btn btn-danger-fill" onClick={deleteSelected} autoFocus>
                 {t.action.delete}
               </button>
               <button type="button" className="btn" onClick={() => setConfirmingDelete(false)}>

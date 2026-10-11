@@ -336,7 +336,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
           />
           <div className="row form-bar">
             <button type="submit" className="btn btn-primary" disabled={saving || chosen.length === 0}>
-              {t.receipt.save(chosen.length)}
+              {t.action.save}
             </button>
           </div>
         </>
