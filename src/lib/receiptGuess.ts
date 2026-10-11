@@ -10,6 +10,8 @@ import { parsePath } from './paths'
 const fold = (s: string) => s.toLocaleLowerCase('nb').replace(/\s+/g, ' ').trim()
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const inUse = 'i bruk'
+// A place kept as a plain list rather than with levels
+const placeName = /^(?:plassering|sted|lokasjon)$/
 
 type Named = { value: string; test: RegExp; length: number }
 
@@ -68,15 +70,22 @@ function namedAlike(name: string, rows: readonly Row[]): Row[] {
 
 const categoryOf = (rows: readonly Row[]) => mostHeld(rows.map((r) => ({ value: r.cells[categoryColumnId] ?? '', at: r.at })))
 
+// The value every earlier thing from the store holds, two at least: what Kid sold was Kid
+function sameAtStore(rows: readonly Row[], id: string): string | null {
+  const held = rows.map((r) => r.cells[id] ?? '').filter((v) => v.trim() !== '')
+  return held.length >= 2 && held.every((v) => fold(v) === fold(held[0] ?? '')) ? (held[0] ?? null) : null
+}
+
 function lineGuess(name: string, store: string, storeId: string, lists: readonly ChoiceDef[], values: Map<string, Named[]>, rows: readonly Row[]) {
   const out: Record<string, string> = {}
   const hits: [string, string][] = []
+  const fromStore = store.trim() === '' ? [] : rows.filter((r) => fold(r.cells[storeId] ?? '') === fold(store))
   for (const d of lists) {
-    if (d.id === categoryColumnId) continue
+    if (d.id === categoryColumnId || !values.has(d.id)) continue
     const own = longestIn(name, values.get(d.id) ?? [])
     if (own) hits.push([d.id, fold(own)])
     // A store that is also the brand: IKEA sells IKEA
-    const v = own ?? longestIn(store, values.get(d.id) ?? [])
+    const v = own ?? longestIn(store, values.get(d.id) ?? []) ?? sameAtStore(fromStore, d.id)
     if (v) out[d.id] = v
   }
   // Named outright, else as held by things with the same Merke or Type, named alike, or from the same store
@@ -84,7 +93,7 @@ function lineGuess(name: string, store: string, storeId: string, lists: readonly
     longestIn(name, values.get(categoryColumnId) ?? []) ??
     categoryOf(rows.filter((r) => hits.some(([id, v]) => fold(r.cells[id] ?? '') === v))) ??
     categoryOf(namedAlike(name, rows)) ??
-    (store.trim() === '' ? null : categoryOf(rows.filter((r) => fold(r.cells[storeId] ?? '') === fold(store))))
+    categoryOf(fromStore)
   if (guessed) out[categoryColumnId] = guessed
   return out
 }
@@ -103,9 +112,12 @@ export function receiptGuess(
   const values = new Map<string, Named[]>()
   const out: Record<string, string> = {}
   for (const d of lists) {
-    if (d.type === 'path') {
+    if (d.type === 'path' || placeName.test(fold(d.col.key))) {
       const home = mostHeld(rows.map((r) => ({ value: parsePath(r.cells[d.id] ?? '')[0] ?? '', at: r.at })))
-      if (home) out[d.id] = home
+      // A list offers only its own values: a top level no thing holds alone gives way to the commonest value
+      const listed = d.type === 'path' || rows.some((r) => fold(r.cells[d.id] ?? '') === fold(home ?? ''))
+      const value = listed ? home : mostHeld(rows.map((r) => ({ value: r.cells[d.id] ?? '', at: r.at })))
+      if (value) out[d.id] = value
       continue
     }
     const all = new Map<string, string>()

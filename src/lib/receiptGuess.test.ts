@@ -79,6 +79,29 @@ describe('receiptGuess', () => {
     expect(guess(['Duna dundyne', 'Annen dyne'])[categoryColumnId]).toBe('Tekstil')
   })
 
+  it('starts a place kept as a list at the value most things hold', () => {
+    const list = { key: 'Plassering', unit: null }
+    const ps: Property[] = [{ id: categoryColumnId, key: 'Kategori', unit: '', type: 'choice', createdAt: 1 }, { id: id(list), ...list, type: 'choice', createdAt: 1 }]
+    const own = [
+      thing('Sofa', [[kat, 'Møbler'], [list, 'Leilighet']]),
+      thing('Lampe', [[kat, 'Belysning'], [list, 'Leilighet']]),
+      thing('Telt', [[kat, 'Tur'], [list, 'Kjellerbod']]),
+    ]
+    const defs = columnDefs(defaultFieldSettings, ps, own).filter((d): d is ChoiceDef => d.kind === 'prop' && d.type === 'choice')
+    expect(receiptGuess(['Noe'], '', id(butikk), defs, own)[id(list)]).toBe('Leilighet')
+  })
+
+  it('takes the value every earlier thing from the store holds, when two or more do', () => {
+    const merkeOnly = lists.filter((d) => d.id !== categoryColumnId)
+    const kid = [
+      thing('Dyne', [[merke, 'Nordisk'], [butikk, 'Lun Sentrum']]),
+      thing('Pute', [[merke, 'Nordisk'], [butikk, 'Lun Sentrum']]),
+      thing('Pledd', [[merke, 'Annet'], [butikk, 'Butikk Nord']]),
+    ]
+    expect(receiptGuess(['Dyne 140x200'], 'Lun Sentrum', id(butikk), merkeOnly, kid)[id(merke)]).toBe('Nordisk')
+    expect(receiptGuess(['Dyne 140x200'], 'Butikk Nord', id(butikk), merkeOnly, kid)[id(merke)]).toBeUndefined()
+  })
+
   it('does not read a short value inside a word', () => {
     const short = [...lists.filter((d) => d.id !== id(merke))]
     const withLg = columnDefs(defaultFieldSettings, [...props.filter((p) => p.id !== id(merke)), { id: id(merke), ...merke, type: 'choice', createdAt: 1, options: ['LG'] }], items)
