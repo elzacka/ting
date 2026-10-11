@@ -259,7 +259,6 @@ kategorien. I en kategori for bøker heter feltet «ISBN».
 | Lese koden fra etiketten          | Strekkodesymbolet ved feltet åpner kameraet. Ta et bilde av koden, så fyller appen inn feltet. Bildet blir ikke lagret på tingen. Appen leser også strekkoden på bildene av tingen og fyller inn feltet hvis det er tomt. Leseren kjenner EAN, UPC, ISBN, ITF, Code 128, GS1 DataBar, QR, Data Matrix, PDF417 og flere, og virker uten nett, også på iPhone. Ta et nytt bilde nærmere, rett forfra og uten refleks, hvis leseren ikke finner koden. Eller skriv tallene under streken |
 | Slå opp en bok                    | Appen slår opp når kategorien har symbolet «Bok» og feltet har en hel ISBN, med 13 eller 10 sifre. En kategori med «bok» eller «bøker» i navnet får symbolet av seg selv. Appen spør Nasjonalbiblioteket først for norske bøker og Open Library først for andre. Knappen «Slå opp på nett» vises hvis oppslaget ikke kom gjennom, så du kan prøve igjen |
 | Ta vare på et serienummer eller en QR-kode | Skann eller skriv inn koden. Appen lagrer den som tekst og slår den ikke opp |
-| Finne en ting ved å skanne den | På mobilen: Strekkodesymbolet i søkefeltet åpner kameraet, og appen søker på koden |
 
 Appen slår bare opp bøker på nett, fordi det ikke finnes noen god, åpen katalog
 for andre ting. Andre ting kjenner appen igjen fra registeret: Den første du
@@ -447,8 +446,7 @@ samme på hver rad.
 Trykk på forstørrelsesglasset, <kbd>⌘</kbd>+<kbd>K</kbd> på Mac eller
 <kbd>Ctrl</kbd>+<kbd>K</kbd> på PC, eller bare begynn å skrive. Søket tåler
 skrivefeil og forstår spørsmål som `pris>1000` og `plassering:loftsbod`. Tall
-og koder må stemme nøyaktig. På mobilen søker strekkodesymbolet i feltet etter
-koden du skanner.
+og koder må stemme nøyaktig.
 «Søketips» under feltet viser alle, med eksempler fra dine egne kolonner. Se
 [Søk](#søk).
 
@@ -587,7 +585,7 @@ Etter sammenslåingen sier appen hvor mange ting som er nye, endret og slettet.
 | Skriv | Finner |
 |---|---|
 | `sovepose` | Ord, tåler skrivefeil. Tall og koder må stemme nøyaktig |
-| `strekkode=7038010009457` | Tingen med koden, også når den er skrevet med bindestrek eller som ISBN med 10 sifre. Strekkodesymbolet i søkefeltet på mobilen skriver dette for deg |
+| `strekkode=7038010009457` | Tingen med koden, også når den er skrevet med bindestrek eller som ISBN med 10 sifre |
 | `"sovepose vinter"` | Nøyaktig frase |
 | `-sommer` | Uten dette ordet |
 | `s` | Én bokstav: Alle navn som begynner på s |

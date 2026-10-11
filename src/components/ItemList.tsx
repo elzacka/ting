@@ -76,7 +76,7 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
   return (
     <div className="phone-list">
       <div className="phone-search">
-        <SearchField value={query} onChange={onQueryChange} autoFocus={false} scan />
+        <SearchField value={query} onChange={onQueryChange} autoFocus={false} />
       </div>
       {items.length === 0 ? (
         <p className="hint list-empty">{t.list.empty}</p>

@@ -86,7 +86,7 @@ export function FilterPanel({ items, searched, properties, fields, filters, onCh
     // Alphabetical, numbers and years in their own order, as valuesFor delivers
     // them: a menu you can scan, not a ranking (most-used first until 21 September 2026)
     const values = valuesFor(withoutFilter(searched, filters, d.id), d.col)
-    // A code is found by searching or scanning it, not picked from a menu
+    // A code is found by searching it, not picked from a menu
     if (values.length === 0 || isBarcode(d.col) || !isFacet(valuesFor(items, d.col), d.col.unit)) return []
     return [{ id: d.id, label: d.col.key, unit: d.col.unit, values }]
   })
