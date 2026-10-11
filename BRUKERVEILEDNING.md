@@ -23,8 +23,7 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 - [[#Endre|Endre]]
 	- [[#Endre#En ting|En ting]]
 	- [[#Endre#Mange ting|Mange ting]]
-	- [[#Endre#En egenskap|En egenskap]]
-	- [[#Endre#Mange egenskaper|Mange egenskaper]]
+	- [[#Endre#Egenskaper|Egenskaper]]
 	- [[#Endre#Kategorier|Kategorier]]
 - [[#Slette|Slette]]
 - [[#Finne igjen|Finne igjen]]
@@ -343,44 +342,42 @@ en ny plassering, eller til en annen kategori.
 
 Du kan også kopiere én celle og lime den inn nedover.
 
-### En egenskap
+### Egenskaper
 
-Kolonnemenyen er pilen ved kolonnenavnet.
+Pilen ved kolonnenavnet åpner «Endre egenskaper». Alle egenskapene står der,
+én på hver linje: Navn, felttype, enhet eller alternativer, kategoriene den
+hører til, og antall ting med verdi. Endre det du vil, og trykk «Lagre».
 
-| Vil du | Velg |
+| Vil du | Slik |
 |---|---|
-| Endre navn, felttype eller enhet | «Endre navn og type» |
-| Se, endre og legge til alternativene i en valgliste | «Endre alternativer», se [Alternativer](#alternativer). I Kategori-kolonnen heter valget «Endre kategorier» |
-| Ta den ut av kategorien du står i | «Ikke bruk i …» (når én kategori er valgt). Verdiene blir stående |
+| Endre navn, felttype eller enhet | Skriv eller velg på linja. Navn kan bare få nytt navn |
+| Se, endre og legge til alternativene i en valgliste | «n alternativer» på linja, se [Alternativer](#alternativer) |
+| Velge kategoriene som bruker egenskapen | Knappen med kategoriene |
+| Slette egenskapen | Det røde krysset på linja, se [Slette](#slette) |
 
-Endrer du felttypen, blir verdiene stående som de er. Slik gjør du for eksempel
-en valgliste med plasseringer om til felttypen Plassering.
-
-### Mange egenskaper
-
-Kolonnemenyen › «Endre egenskaper». Hver
-egenskap står på én linje: Navn, felttype, enhet eller alternativer, kategoriene den hører
-til, og antall ting med verdi. Endre det du vil, og trykk «Lagre». Kategori er ikke med; den endrer
-du under «Endre kategorier».
+Verdiene blir stående som de er når du endrer felttypen. Slik gjør du for
+eksempel en valgliste med plasseringer om til felttypen Plassering.
 
 Knappen med kategoriene åpner en liste der du huker av kategoriene som bruker
 egenskapen. «Alle kategorier» tar også med kategorier du lager senere. Uten
 hake bruker ingen kategori egenskapen: Verdiene blir stående, men tabellen viser
 den ikke i noen kategori.
 
+Kategori står ikke i lista. Pilen ved Kategori åpner «Endre kategorier», se
+[Kategorier](#kategorier).
+
 ### Alternativer
 
-Kolonnemenyen › «Endre alternativer», eller knappen «n alternativer» på linja
-til en valgliste under «Endre egenskaper». Lista viser alle alternativene og
-hvor mange ting som har hvert av dem, også dem med 0 ting. «Egenskaper» øverst
-fører tilbake til alle egenskapene.
+Knappen «n alternativer» på linja til en valgliste i «Endre egenskaper». Lista
+viser alle alternativene og hvor mange ting som har hvert av dem, også dem med
+0 ting. «Egenskaper» øverst fører tilbake til alle egenskapene.
 
 | Vil du | Slik |
 |---|---|
 | Endre et alternativ | Skriv det nye navnet. Alle tingene som har det, følger med |
 | Slå sammen to | Gi det ene samme navn som det andre |
 | Legge til et alternativ | «Nytt alternativ» |
-| Fjerne et alternativ | Søppelbøtta. Har ting det, sier appen hvor mange og spør først |
+| Fjerne et alternativ | Det røde krysset. Har ting det, sier appen hvor mange og spør først |
 
 Ingenting lagres før du trykker «Lagre». Har du skrevet et alternativ på flere
 måter, for eksempel «Bøker» og «bøker», står det én gang i lista. Når du
@@ -389,7 +386,7 @@ alternativer under «Endre kategorier».
 
 ### Kategorier
 
-Kategorifeltet › «Endre kategorier» nederst i lista.
+Kategorifeltet › «Endre kategorier» nederst i lista, eller pilen ved Kategori.
 
 | Vil du | Slik |
 |---|---|
@@ -397,7 +394,7 @@ Kategorifeltet › «Endre kategorier» nederst i lista.
 | Velge egenskapene til en kategori | Trykk på «n egenskaper» på linja til kategorien. Huk av dem kategorien skal ha, fjern haken på dem den ikke skal ha, og trykk «Lagre». Står du i kategorien, viser tabellen bare egenskapene med hake |
 | Endre navn | Skriv det nye navnet. Alle tingene i kategorien og egenskapene som hører til den, følger med |
 | Slå sammen to | Gi den ene samme navn som den andre |
-| Slette en kategori | Søppelbøtta. Den står bare ved kategorier som ingen ting har |
+| Slette en kategori | Det røde krysset. Det står bare ved kategorier som ingen ting har |
 
 Ingenting lagres før du trykker «Lagre». Til du velger et symbol selv, foreslår
 appen et ut fra ordene i navnet.
@@ -410,9 +407,8 @@ appen et ut fra ordene i navnet.
 |---|---|
 | Én ting | På tingens side: «Slett» nederst |
 | Flere ting | Huk av tingene › «Slett» i linja øverst |
-| Én egenskap | Kolonnemenyen › «Slett egenskap» |
-| Flere egenskaper | Kolonnemenyen › «Endre egenskaper» › det røde krysset på hver linje › «Lagre» |
-| Et alternativ i en valgliste | Kolonnemenyen › «Endre alternativer» › det røde krysset › «Lagre» |
+| En egenskap | Pilen ved kolonnenavnet › det røde krysset på linja til egenskapen › «Lagre» |
+| Et alternativ i en valgliste | Pilen ved kolonnenavnet › «n alternativer» › det røde krysset › «Lagre» |
 | En kategori | Flytt tingene først til en annen kategori med «Endre verdi». Deretter «Endre kategorier» › det røde krysset › «Lagre» |
 
 Sletter du en egenskap, forsvinner verdien fra alle ting. Har den verdier, sier
@@ -668,8 +664,8 @@ felt. I et felt gir tastene tegn som ± og π.
 |---|---|---|
 | Grønt oppdateringsikon i topplinja | En ny versjon er lastet ned og venter | Trykk på ikonet. Det snurrer til appen har lastet den nye versjonen |
 | Brunt tannhjul | Lagringen til mappen har stoppet | Åpne Innstillinger og gi tilgang på nytt, eller velg mappen igjen |
-| «Denne egenskapen finnes allerede.» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den fra kolonnemenyen i stedet |
-| «Lagre eller forkast endringene i tabellen først.» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
+| «Denne egenskapen finnes allerede» | Egenskapen finnes, men er skjult der du står | Kolonnen vises under meldingen. Endre den med pilen ved kolonnenavnet i stedet |
+| «Lagre eller forkast endringene i tabellen først» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Nettleseren finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så opplåsingen uten passord av og på igjen i Innstillinger |

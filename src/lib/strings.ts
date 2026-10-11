@@ -60,6 +60,7 @@ export const t = {
   // Endre egenskaper: several properties changed or removed at once
   properties: {
     edit: 'Endre egenskaper',
+    editOne: (key: string) => `Endre ${key}`,
     title: 'Egenskaper',
     hint: 'Et nytt navn eller en ny felttype gjelder alle ting. Kategori endrer du under Endre kategorier.',
     name: (key: string) => `Navn på ${key}`,
@@ -78,7 +79,6 @@ export const t = {
   },
   // A Valgliste's alternatives, opened from its line in Endre egenskaper
   options: {
-    edit: 'Endre alternativer',
     count: (n: number) => (n === 0 ? 'Ingen alternativer' : n === 1 ? '1 alternativ' : `${n} alternativer`),
     button: (count: string, key: string) => `${count} for ${key}`,
     title: (key: string) => `Alternativer for ${key}`,
@@ -273,25 +273,14 @@ export const t = {
       ['stk', 'stykk'],
       ['år', 'år'],
     ],
-    removeColumn: 'Slett egenskap',
     // The columns the view leaves out: empty here, or the same on every row
     showMore: (n: number) => (n === 1 ? 'Vis 1 kolonne til' : `Vis ${n} kolonner til`),
     hideMore: 'Vis færre kolonner',
-    // What a column is for while categories are in view: the column form, and the column menu with one
+    // A new column while categories are in view: theirs alone, or every category's
     onlyIn: (category: string) => `Bruk bare i ${category}`,
-    alsoIn: (category: string) => `Bruk også i ${category}`,
-    notIn: (category: string) => `Ikke bruk i ${category}`,
-    removeColumnConfirm: (key: string, n: number) =>
-      `Egenskapen «${key}» brukes av ${n === 1 ? '1 ting' : `${n} ting`}. Slett den og verdiene? Du kan ikke angre.`,
-    columnMenu: (key: string) => `Valg for ${key}`,
     sortBy: (key: string) => `Sorter etter ${key}`,
     resize: (key: string) => `Endre bredde på ${key}`,
     resizeHint: 'Dra for å endre bredde. Dobbeltklikk for å tilpasse bredden til innholdet.',
-    // The column menu's inline edit: Navn has only a name, a property also its type and unit
-    renameColumn: 'Endre navn',
-    editColumn: 'Endre navn og type',
-    renameSave: 'Lagre',
-    renameCancel: 'Avbryt',
     // Counts things (rows), not cells
     unsaved: (n: number) => `${n} ting ikke lagret`,
     cell: (name: string, col: string) => `${col} for ${name === '' ? 'ny rad' : name}`,

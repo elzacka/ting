@@ -29,7 +29,6 @@ import {
   moveColumnTo,
   propColumns,
   unitFor,
-  withCategory,
   type ColumnDef,
   type FieldSettings,
 } from '../lib/fields'
@@ -149,23 +148,14 @@ export function Overview({
 }: Props) {
   const [edits, setEdits] = useState<Record<string, RowEdit>>({})
   const [newRows, setNewRows] = useState<NewRow[]>([])
-  const [removingColumn, setRemovingColumn] = useState<ColumnDef | null>(null)
-  const [renaming, setRenaming] = useState<{
-    def: ColumnDef
-    key: string
-    unit: string
-    type: PropertyType
-  } | null>(null)
-  // The open column menu is fixed to the window so the table's scroll box cannot clip it.
-  const [menuPos, setMenuPos] = useState<{ id: string; top: number; left: number } | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [addingColumn, setAddingColumn] = useState(false)
   const [editingCategories, setEditingCategories] = useState(false)
   const [editingProperties, setEditingProperties] = useState(false)
-  // The Valgliste whose alternatives Endre egenskaper opens on, from its column menu
-  const [optionsFor, setOptionsFor] = useState<string | null>(null)
+  // The line Endre egenskaper opens with focus on: the column whose header opened it
+  const [focusFor, setFocusFor] = useState<string | null>(null)
   // Endre verdi for the ticked things: which property, and the value it gets
   const [bulk, setBulk] = useState<{ defId: string; value: string } | null>(null)
   // Skriv ut from the selection: the things that go on paper, nothing else
@@ -477,7 +467,7 @@ export function Overview({
     setAddingColumn(which === 'columns')
     setEditingCategories(which === 'categories')
     setEditingProperties(which === 'properties')
-    setOptionsFor(null)
+    setFocusFor(null)
     const bulkDefault = bulkDefs.find((d) => d.id === categoryColumnId) ?? bulkDefs[0]
     setBulk(which === 'bulk' ? { defId: bulkDefault?.id ?? categoryColumnId, value: '' } : null)
     setPrintOnly(which === 'print-selected' ? new Set(selected) : null)
@@ -873,31 +863,9 @@ export function Overview({
     return def.property ?? { id: def.id, key: def.col.key, unit: def.col.unit, type: def.type, createdAt: Date.now() }
   }
 
-  // Takes a column out of the category in view, or into it
-  async function scopeColumn(def: ColumnDef, category: string) {
-    closeMenu()
-    if (def.kind !== 'prop') return
-    const on = !appliesTo(def.property, [category])
-    try {
-      await setPropertyCategories(
-        definitionOf(def),
-        withCategory(def.property, category, on, categoryList),
-      )
-    } catch (err) {
-      console.error(errorText(err))
-      setError(t.error.saveFailed)
-    }
-  }
-
-  function closeMenu() {
-    for (const d of document.querySelectorAll<HTMLDetailsElement>('details.col-menu[open]')) d.open = false
-    setMenuPos(null)
-  }
-
   // Past the neighbour on screen, not the next one in the stored order: that
   // may be a hidden column, and the move would change nothing in view.
   async function moveColumn(id: string, targetId: string | undefined) {
-    closeMenu()
     const list = targetId === undefined ? null : moveColumnTo(defs, id, targetId)
     if (!list) return
     try {
@@ -906,51 +874,6 @@ export function Overview({
       console.error(errorText(err))
       setError(t.error.saveFailed)
     }
-  }
-
-  async function commitRename() {
-    if (!renaming) return
-    const key = renaming.key.trim()
-    if (key === '') return
-    const { def } = renaming
-    if (def.kind !== 'prop') {
-      setError(null)
-      await setFieldSettings({ ...fields, [def.kind]: { ...fields[def.kind], label: key } })
-      setRenaming(null)
-      return
-    }
-    const unit = unitFor(renaming.type, renaming.unit)
-    const fromId = def.id
-    const nextId = columnId({ key, unit })
-    if (nextId !== fromId && columns.some((c) => columnId(c) === nextId)) {
-      setError(t.error.columnExists)
-      return
-    }
-    setError(null)
-    await renameProperty(
-      fromId,
-      {
-        id: nextId,
-        key,
-        unit,
-        type: renaming.type,
-        options: renaming.type === 'choice' && def.property?.options ? def.property.options : [],
-      },
-      (s) => columnId({ key: s.key, unit: s.unit }) === fromId,
-    )
-    // Unsaved edits in that column follow it to the new id.
-    if (nextId !== fromId) {
-      const move = (cells: Record<string, string>) => {
-        if (!(fromId in cells)) return cells
-        const { [fromId]: v, ...rest } = cells
-        return { ...rest, [nextId]: v ?? '' }
-      }
-      setEdits((prev) =>
-        Object.fromEntries(Object.entries(prev).map(([id, e]) => [id, { ...e, cells: move(e.cells ?? {}) }])),
-      )
-      setNewRows((prev) => prev.map((r) => ({ ...r, cells: move(r.cells) })))
-    }
-    setRenaming(null)
   }
 
   // Every property but Kategori, as Endre egenskaper edits it. Every one
@@ -985,10 +908,10 @@ export function Overview({
     })
   }
 
-  // Endre egenskaper stored: removals first, then names, types and units
+  // Endre egenskaper stored: Navn's label, removals, then names, types and units
   // (renameProperty carries every thing's value along), then categories,
   // then a Valgliste's alternatives, on the things and in its list
-  async function savePropertyEdit(rows: PropertyRow[]) {
+  async function savePropertyEdit(rows: PropertyRow[], name: string) {
     if (dirtyCount > 0) {
       setError(t.properties.dirtyFirst)
       return
@@ -1002,6 +925,7 @@ export function Overview({
     }
     setError(null)
     try {
+      if (name !== nameLabel) await setFieldSettings({ ...fields, name: { ...fields.name, label: name } })
       for (const r of rows.filter((x) => x.remove)) {
         await removeProperty(r.id, (s) => columnId({ key: s.key, unit: s.unit }) === r.id)
       }
@@ -1059,29 +983,6 @@ export function Overview({
   function usedBy(col: Column): number {
     const id = columnId(col)
     return items.filter((i) => i.specs.some((s) => columnId({ key: s.key, unit: s.unit }) === id)).length
-  }
-
-  // Unused property column goes at once; a used one, and Kategori, ask first.
-  async function requestRemoveColumn(def: ColumnDef) {
-    closeMenu()
-    if (def.kind === 'prop' && usedBy(def.col) === 0) await doRemoveColumn(def)
-    else setRemovingColumn(def)
-  }
-
-  async function doRemoveColumn(def: ColumnDef) {
-    if (def.kind === 'prop') {
-      const id = def.id
-      await removeProperty(id, (s) => columnId({ key: s.key, unit: s.unit }) === id)
-      const drop = (cells: Record<string, string>) => {
-        const { [id]: _gone, ...rest } = cells
-        return rest
-      }
-      setEdits((prev) =>
-        Object.fromEntries(Object.entries(prev).map(([rid, e]) => [rid, { ...e, cells: drop(e.cells ?? {}) }])),
-      )
-      setNewRows((prev) => prev.map((r) => ({ ...r, cells: drop(r.cells) })))
-    }
-    setRemovingColumn(null)
   }
 
   async function save() {
@@ -1155,7 +1056,6 @@ export function Overview({
   function reset() {
     setNewRows([])
     setEdits({})
-    setRemovingColumn(null)
     setSelected(new Set())
     setAddingColumn(false)
     setEditingCategories(false)
@@ -1169,26 +1069,6 @@ export function Overview({
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
   }
 
-  // Column menus are native <details>; a click outside or any scroll closes the open one.
-  useEffect(() => {
-    const closeAll = () => {
-      for (const d of document.querySelectorAll<HTMLDetailsElement>('details.col-menu[open]')) d.open = false
-      setMenuPos(null)
-    }
-    const onDown = (e: MouseEvent) => {
-      if (!(e.target instanceof Node)) return
-      const open = document.querySelector<HTMLDetailsElement>('details.col-menu[open]')
-      const inMenu = e.target instanceof Element && e.target.closest('.col-menu-list') !== null
-      if (open && !open.contains(e.target) && !inMenu) closeAll()
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('scroll', closeAll, true)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('scroll', closeAll, true)
-    }
-  }, [])
-
   // Escape, as Avbryt or Lukk would: the table's own question at the bottom, then a panel,
   // then a question or menu, whichever opened last
   useEscape(() => {
@@ -1198,14 +1078,7 @@ export function Overview({
   useEscape(() => openPanel(null), printPick !== null || bulk !== null || addingColumn || editingCategories || editingProperties)
   useEscape(() => setConfirmingDiscard(false), confirmingDiscard)
   useEscape(() => setConfirmingDelete(false), confirmingDelete)
-  useEscape(() => setRemovingColumn(null), removingColumn !== null)
-  useEscape(() => setRenaming(null), renaming !== null)
   useEscape(closeAddMenu, addMenu !== null)
-  useEscape(() => {
-    const summary = document.querySelector<HTMLElement>('details.col-menu[open] > summary')
-    closeMenu()
-    summary?.focus()
-  }, menuPos !== null)
   useEscape(closePicker, picking)
   // The same as the buttons: plus opens its menu, the printer the form, and a second press prints
   useOptionKey('+', !isDemo && selected.size === 0, () => (addMenu ? closeAddMenu() : openAddMenu()))
@@ -1654,10 +1527,10 @@ export function Overview({
 
           {editingProperties && (
             <PropertyEditor
-              key={optionsFor ?? ''}
               rows={propertyRows()}
+              name={nameLabel}
               categories={allCategories.map((c) => c.label)}
-              open={optionsFor}
+              focus={focusFor}
               onSave={savePropertyEdit}
               onClose={() => openPanel(null)}
             />
@@ -1839,27 +1712,6 @@ export function Overview({
           </div>
         )}
 
-        {removingColumn && (
-          <div className="confirm" role="alertdialog" aria-labelledby="confirm-column">
-            <p id="confirm-column">
-              {removingColumn.kind === 'prop' && t.table.removeColumnConfirm(removingColumn.col.key, usedBy(removingColumn.col))}
-            </p>
-            <div className="row">
-              <button
-                type="button"
-                className="btn btn-danger-fill"
-                autoFocus
-                onClick={() => void doRemoveColumn(removingColumn)}
-              >
-                {t.action.delete}
-              </button>
-              <button type="button" className="btn" onClick={() => setRemovingColumn(null)}>
-                {t.action.cancel}
-              </button>
-            </div>
-          </div>
-        )}
-
         {confirmingDelete && (
           <div className="confirm" role="alertdialog" aria-labelledby="confirm-many">
             <p id="confirm-many">{t.confirm.deleteMany(selected.size)}</p>
@@ -1947,149 +1799,25 @@ export function Overview({
             }
             header={(def) => (
               <>
-                {renaming && renaming.def.id === def.id ? (
-                  <form
-                    className="row grid-col-rename"
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      void commitRename()
+                <span className="grid-col-head">
+                  <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
+                  {/* Kategori's alternatives are the categories; every other column opens on its own line */}
+                  <button
+                    type="button"
+                    className="col-edit"
+                    aria-label={def.id === categoryColumnId ? t.categories.edit : t.properties.editOne(labelOf(def))}
+                    onClick={() => {
+                      if (def.id === categoryColumnId) {
+                        openPanel('categories')
+                        return
+                      }
+                      openPanel('properties')
+                      setFocusFor(def.id)
                     }}
                   >
-                    <input
-                      className="input"
-                      aria-label={t.table.columnKey}
-                      value={renaming.key}
-                      onChange={(e) => setRenaming({ ...renaming, key: e.target.value })}
-                      autoFocus
-                    />
-                    {def.kind === 'prop' && (
-                      <select
-                        className="select input-narrow"
-                        aria-label={t.table.columnType}
-                        value={renaming.type}
-                        onChange={(e) => setRenaming({ ...renaming, type: e.target.value as PropertyType })}
-                      >
-                        {(propertyTypes).map((ty) => (
-                          <option key={ty} value={ty}>
-                            {t.table.types[ty]}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {def.kind === 'prop' && renaming.type === 'number' && (
-                      <input
-                        className="input input-narrow"
-                        list="unit-options"
-                        aria-label={t.table.columnUnit}
-                        value={renaming.unit}
-                        onChange={(e) => setRenaming({ ...renaming, unit: e.target.value })}
-                      />
-                    )}
-                    <button type="submit" className="btn btn-icon" aria-label={t.table.renameSave}>
-                      <Icon name="check" size={20} />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-icon"
-                      aria-label={t.table.renameCancel}
-                      onClick={() => setRenaming(null)}
-                    >
-                      <Icon name="close" size={20} />
-                    </button>
-                  </form>
-                ) : (
-                  <span className="grid-col-head">
-                    <SortHeader def={def} label={labelOf(def)} sort={sort} onSort={onSortChange} />
-                    <details
-                      className="col-menu"
-                      onToggle={(e) => {
-                        const d = e.currentTarget
-                        if (!d.open) {
-                          setMenuPos((p) => (p?.id === def.id ? null : p))
-                          return
-                        }
-                        const r = d.querySelector('summary')?.getBoundingClientRect()
-                        if (r) setMenuPos({ id: def.id, top: r.bottom + 2, left: r.left })
-                      }}
-                    >
-                      <summary aria-label={t.table.columnMenu(labelOf(def))}>
-                        <Icon name="chevronRight" size={14} className="col-menu-chevron" />
-                      </summary>
-                    </details>
-                    {menuPos?.id === def.id &&
-                      createPortal(
-                        <div className="col-menu-list" role="menu" style={{ top: menuPos.top, left: menuPos.left }}>
-                          <button
-                            type="button"
-                            className="col-menu-item"
-                            role="menuitem"
-                            onClick={() => {
-                              closeMenu()
-                              setRenaming({
-                                def,
-                                key: labelOf(def),
-                                unit: def.kind === 'prop' && def.type === 'number' ? (def.col.unit ?? '') : '',
-                                type: def.kind === 'prop' ? def.type : 'text',
-                              })
-                            }}
-                          >
-                            {def.kind === 'prop' ? t.table.editColumn : t.table.renameColumn}
-                          </button>
-                          {def.kind === 'prop' && def.type === 'choice' && (
-                            <button
-                              type="button"
-                              className="col-menu-item"
-                              role="menuitem"
-                              onClick={() => {
-                                closeMenu()
-                                if (def.id === categoryColumnId) {
-                                  openPanel('categories')
-                                  return
-                                }
-                                openPanel('properties')
-                                setOptionsFor(def.id)
-                              }}
-                            >
-                              {def.id === categoryColumnId ? t.categories.edit : t.options.edit}
-                            </button>
-                          )}
-                          {/* Every property at once: names, types, units, which categories use them */}
-                          <button
-                            type="button"
-                            className="col-menu-item"
-                            role="menuitem"
-                            onClick={() => {
-                              closeMenu()
-                              openPanel('properties')
-                            }}
-                          >
-                            {t.properties.edit}
-                          </button>
-                          {oneCategory !== null && def.kind === 'prop' && def.id !== categoryColumnId && (
-                            <button
-                              type="button"
-                              className="col-menu-item"
-                              role="menuitem"
-                              onClick={() => void scopeColumn(def, oneCategory)}
-                            >
-                              {appliesTo(def.property, cats) ? t.table.notIn(oneCategory) : t.table.alsoIn(oneCategory)}
-                            </button>
-                          )}
-                          {def.kind !== 'name' && (
-                            <button
-                              type="button"
-                              className="col-menu-item col-menu-danger"
-                              role="menuitem"
-                              onClick={() => void requestRemoveColumn(def)}
-                            >
-                              {t.table.removeColumn}
-                            </button>
-                          )}
-                        </div>,
-                        document.body,
-                      )}
-                  </span>
-                )}
+                    <Icon name="chevronRight" size={14} className="col-edit-chevron" />
+                  </button>
+                </span>
               </>
             )}
             rowCount={listed.length}

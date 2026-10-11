@@ -10,7 +10,7 @@ import { Icon } from './Icons'
 import { IconPicker } from './IconPicker'
 
 // Endre kategorier: a rename reaches every thing and column in the category;
-// the bin shows only where no thing has it. Under each one, the properties it
+// the cross shows only where no thing has it. Under each one, the properties it
 // uses, ticked; the table shows no other. Nothing is stored before Lagre.
 type Row = { key: string; from: string | null; name: string; icon: string | null; count: number | null; remove: boolean }
 

@@ -10,7 +10,6 @@ import {
   defaultFieldSettings,
   moveColumnTo,
   readFieldSettings,
-  withCategory,
 } from './fields'
 import { columnId } from './grid'
 import { pathUnit } from './paths'
@@ -106,28 +105,6 @@ describe('claimedBy', () => {
 
   it('is asked for by a view of several categories when one of them asks', () => {
     expect(claimedBy(column(['Bok']), ['Bok', 'Elektronikk'])).toBe(true)
-  })
-})
-
-describe('withCategory', () => {
-  const all = ['Bok', 'Elektronikk', 'Kjøkken']
-
-  it('adds a category to a column and takes it off again', () => {
-    expect(withCategory(column(['Bok']), 'Elektronikk', true, all)).toEqual(['Bok', 'Elektronikk'])
-    expect(withCategory(column(['Bok', 'Elektronikk']), 'Bok', false, all)).toEqual(['Elektronikk'])
-  })
-
-  it('leaves a column no category uses when the last one stops, not one every category uses', () => {
-    expect(withCategory(column(['Bok']), 'bok', false, all)).toEqual([])
-  })
-
-  it('keeps every other category on a column every category used', () => {
-    expect(withCategory(column(), 'Bok', false, all)).toEqual(['Elektronikk', 'Kjøkken'])
-    expect(withCategory(column(), 'Bok', true, all)).toBeUndefined()
-  })
-
-  it('does not list the same category twice', () => {
-    expect(withCategory(column(['Bok']), 'bok', true, all)).toEqual(['bok'])
   })
 })
 

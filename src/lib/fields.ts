@@ -139,21 +139,6 @@ export function claimedBy(property: Property | null, categories: readonly string
   return categories.length > 0 && (property?.categories?.length ?? 0) > 0 && appliesTo(property, categories)
 }
 
-// The list a column carries after one category starts or stops using it; undefined is
-// every category. A column every category uses keeps the others when one stops.
-export function withCategory(
-  property: Property | null,
-  category: string,
-  on: boolean,
-  all: readonly string[],
-): string[] | undefined {
-  const own = property?.categories
-  if (!own && on) return undefined
-  const fold = foldCategory(category)
-  const rest = (own ?? all).filter((c) => foldCategory(c) !== fold)
-  return on ? [...rest, category] : rest
-}
-
 // Rows written before types existed: a marker unit means the type it marks,
 // any other unit means number (text columns never carry a unit), otherwise text.
 export function propertyType(p: Pick<Property, 'type' | 'unit'>): PropertyType {

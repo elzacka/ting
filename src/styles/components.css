@@ -1015,7 +1015,7 @@ section {
   color: var(--text-2);
 }
 
-/* The categories as a dropdown under the button. Fixed to the window like the column menu, scrolls
+/* The categories as a dropdown under the button. Fixed to the window like plus's menu, scrolls
    on its own when the list is longer than the room Overview measures, and does not carry the
    scroll on into the page. */
 .category-menu {
@@ -1222,8 +1222,7 @@ section {
   max-width: 60ch;
 }
 
-/* Plus's menu hangs from the button's right edge, above the sticky card
-   head it opens from (the column menu's own level is under it) */
+/* Plus's menu hangs from the button's right edge, above the sticky card head it opens from */
 .col-menu-list.add-menu {
   z-index: 6;
 }
@@ -1687,10 +1686,6 @@ section {
   text-overflow: ellipsis;
 }
 
-.col-menu {
-  flex: none;
-}
-
 .grid th.grid-col {
   padding-right: var(--s-3);
 }
@@ -2067,40 +2062,36 @@ section {
   color: var(--on-accent);
 }
 
-/* Column header menu: the header is the control, the actions live in a menu */
+/* Beside a column name: opens Endre egenskaper on that column, a faint chevron until hover */
 
 .grid-col {
   position: relative;
 }
 
-.col-menu summary {
+.col-edit {
   display: inline-flex;
+  flex: none;
   align-items: center;
-  gap: 2px;
-  list-style: none;
-  cursor: pointer;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
   border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
 }
 
-.col-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.col-menu-chevron {
+.col-edit-chevron {
   color: var(--text-2);
   transform: rotate(90deg);
   opacity: 0;
   transition: opacity var(--duration) ease-out;
 }
 
-.grid-col:hover .col-menu-chevron,
-.col-menu[open] .col-menu-chevron,
-.col-menu summary:focus-visible .col-menu-chevron {
+.grid-col:hover .col-edit-chevron,
+.col-edit:focus-visible .col-edit-chevron {
   opacity: 1;
-}
-
-.col-menu[open] .col-menu-chevron {
-  transform: rotate(-90deg);
 }
 
 .col-menu-list {
@@ -2131,12 +2122,6 @@ section {
   cursor: pointer;
 }
 
-.col-menu-item:disabled {
-  color: var(--text-2);
-  opacity: 0.5;
-  cursor: default;
-}
-
 .col-menu-danger {
   color: var(--danger);
 }
@@ -2148,7 +2133,7 @@ section {
 }
 
 @media (hover: none) {
-  .col-menu-chevron {
+  .col-edit-chevron {
     opacity: 1;
   }
 }
@@ -2159,20 +2144,6 @@ section {
 .grid-col {
   position: relative;
   padding-right: calc(var(--s-2) + 96px);
-}
-
-.grid-col-rename {
-  gap: var(--s-1);
-  font-weight: 400;
-}
-
-.grid-col-rename .input {
-  width: 160px;
-  min-height: 36px;
-}
-
-.grid-col-rename .input-narrow {
-  width: 72px;
 }
 
 .grid-col-tools {
@@ -2659,10 +2630,6 @@ section {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-}
-
-.col-menu summary {
-  padding: 2px;
 }
 
 /* Column resize handle at the right edge of a header */

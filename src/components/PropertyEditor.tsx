@@ -5,7 +5,7 @@ import { isEmptyEdit, optionEdit, type OptionRow } from '../lib/options'
 import { t } from '../lib/strings'
 import { Icon } from './Icons'
 
-// Endre egenskaper: every property but Kategori on one line, so several can be changed or
+// Endre egenskaper: Navn and every property but Kategori on one line, so several can be changed or
 // removed at once; a Valgliste's alternatives open alone, in place of the lines. Nothing is
 // stored before Lagre, and removing values from things asks first.
 export type PropertyRow = {
@@ -23,10 +23,12 @@ export type PropertyRow = {
 
 type Props = {
   rows: PropertyRow[]
+  // Navn's label: only its name changes
+  name: string
   categories: readonly string[]
-  // The property whose alternatives show from the start
-  open?: string | null
-  onSave: (rows: PropertyRow[]) => Promise<void>
+  // The line that has focus from the start: a property id, or 'name'
+  focus: string | null
+  onSave: (rows: PropertyRow[], name: string) => Promise<void>
   onClose: () => void
 }
 
@@ -54,17 +56,18 @@ export function changed(r: PropertyRow): boolean {
   )
 }
 
-export function PropertyEditor({ rows: initial, categories, open: openFirst = null, onSave, onClose }: Props) {
+export function PropertyEditor({ rows: initial, name: initialName, categories, focus, onSave, onClose }: Props) {
   const [rows, setRows] = useState(initial)
+  const [name, setName] = useState(initialName)
   const [scope, setScope] = useState<{ id: string; anchor: DOMRect } | null>(null)
-  const [listing, setListing] = useState<string | null>(openFirst)
+  const [listing, setListing] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [saving, setSaving] = useState(false)
   const idBase = useId()
   const formRef = useRef<HTMLFormElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   // The line to return focus to from its alternatives
-  const backTo = useRef<string | null>(openFirst)
+  const backTo = useRef<string | null>(null)
   const edit = (id: string, patch: Partial<PropertyRow>) => setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
   const editOption = (id: string, key: string, patch: Partial<OptionRow>) =>
     setRows((prev) =>
@@ -89,6 +92,10 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
     // Only as the view switches
   }, [listing])
 
+  useEffect(() => {
+    if (focus !== null) document.getElementById(`${idBase}-name-${focus}`)?.focus()
+  }, [focus, idBase])
+
   const losing = rows.filter((r) => r.remove && r.count > 0)
   // Alternatives taken off things, on the lines that stay a Valgliste
   const losingOptions = rows.flatMap((r) =>
@@ -98,7 +105,7 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
 
   async function store() {
     setSaving(true)
-    await onSave(rows.filter(changed))
+    await onSave(rows.filter(changed), name.trim() || initialName)
     setSaving(false)
   }
 
@@ -177,6 +184,15 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
           <p className="panel-title">{t.properties.title}</p>
           <p className="hint">{t.properties.hint}</p>
           <div className="property-rows" role="list">
+            <div role="listitem" className="property-row">
+              <input
+                id={`${idBase}-name-name`}
+                className="input"
+                aria-label={t.properties.name(initialName)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
             {rows.map((r, i) => {
               const where =
                 r.categories === null
@@ -188,6 +204,7 @@ export function PropertyEditor({ rows: initial, categories, open: openFirst = nu
               return (
                 <div key={r.id} role="listitem" className={`property-row${r.remove ? ' is-removed' : ''}`}>
                   <input
+                    id={`${idBase}-name-${r.id}`}
                     className="input"
                     aria-label={t.properties.name(r.was.key)}
                     value={r.key}
