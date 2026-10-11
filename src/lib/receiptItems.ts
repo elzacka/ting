@@ -1,5 +1,5 @@
 import type { ItemInput, Property, Spec } from '../db/schema'
-import { dateUnit } from './dates'
+import { dateUnit, isDateUnit, parseDateInput } from './dates'
 import { columnId } from './grid'
 import { parseNumber } from './values'
 
@@ -17,8 +17,8 @@ const storeName = /kjøpt (?:hos|hvor|fra|på|i)(?!\p{L})|butikk|forhandler|kjø
 const dateName = /kjøp/i
 const priceName = /pris|verdi|kost|beløp/i
 
-function pick(properties: readonly Property[], fits: (p: Property) => boolean, make: () => Property): { p: Property; made: boolean } {
-  const found = properties.find(fits)
+function pick(properties: readonly Property[], fits: (p: Property) => boolean, make: () => Property, next?: (p: Property) => boolean): { p: Property; made: boolean } {
+  const found = properties.find(fits) ?? (next && properties.find(next))
   return found ? { p: found, made: false } : { p: make(), made: true }
 }
 
@@ -32,6 +32,8 @@ export function receiptColumns(properties: readonly Property[], now: number): Re
     properties,
     (p) => (p.type === 'date' || p.unit === dateUnit) && dateName.test(p.key) && !storeName.test(p.key),
     () => ({ id: columnId({ key: 'Kjøpsdato', unit: dateUnit }), key: 'Kjøpsdato', unit: dateUnit, type: 'date', createdAt: now }),
+    // A "Kjøpt" made as text or a list is still the register's purchase date: filled, not doubled by a Kjøpsdato
+    (p) => p.type !== 'date' && p.type !== 'number' && p.type !== 'path' && dateName.test(p.key) && !storeName.test(p.key) && !priceName.test(p.key),
   )
   const price = pick(
     properties,
@@ -48,6 +50,18 @@ export function receiptColumns(properties: readonly Property[], now: number): Re
 
 export type ReceiptRow = { include: boolean; name: string; price: string; photos: Blob[] }
 
+// The date as the column keeps it: stored as yyyy-mm-dd in a date column, as dd.mm.yyyy in a
+// text one. Null when it is not a date.
+export function dateValue(col: Property, typed: string): string | null {
+  const iso = parseDateInput(typed)
+  if (!iso) return null
+  return isDateUnit(col.unit) ? iso : longDate(iso)
+}
+
+export function longDate(iso: string): string {
+  return iso.split('-').reverse().join('.')
+}
+
 // One thing per ticked row with a name: the shared values (Kategori, a place) in `more`,
 // its own photos first so one of them is the main photo, then the receipt
 export function receiptInputs(
@@ -57,7 +71,8 @@ export function receiptInputs(
 ): ItemInput[] {
   const common: Spec[] = [...shared.more]
   if (shared.store.trim() !== '') common.push({ key: cols.store.key, value: shared.store.trim(), unit: cols.store.unit })
-  if (shared.date) common.push({ key: cols.date.key, value: shared.date, unit: cols.date.unit })
+  const date = shared.date ? dateValue(cols.date, shared.date) : null
+  if (date) common.push({ key: cols.date.key, value: date, unit: cols.date.unit })
   return rows
     .filter((r) => r.include && r.name.trim() !== '')
     .map((r) => {

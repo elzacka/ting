@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Property } from '../db/schema'
-import { closestValue, linesSum, receiptColumns, receiptInputs } from './receiptItems'
+import { closestValue, dateValue, linesSum, receiptColumns, receiptInputs } from './receiptItems'
 
 const photo = new Blob(['k'], { type: 'image/jpeg' })
 
@@ -39,6 +39,22 @@ describe('receiptColumns', () => {
     }
   })
 
+  it('fills a Kjøpt made as text or a list rather than adding a Kjøpsdato', () => {
+    for (const type of ['text', 'choice'] as const) {
+      const cols = receiptColumns([{ id: 'k', key: 'Kjøpt', unit: null, type, createdAt: 1 }, { id: 'p', key: 'Kjøpspris', unit: null, type: 'text', createdAt: 1 }], 7)
+      expect(cols.date.id).toBe('k')
+      expect(cols.missing.map((p) => p.key)).not.toContain('Kjøpsdato')
+    }
+  })
+
+  it('keeps the date as the column does: yyyy-mm-dd in a date column, dd.mm.yyyy in a text one', () => {
+    const text: Property = { id: 'k', key: 'Kjøpt', unit: null, type: 'text', createdAt: 1 }
+    const date: Property = { id: 'd', key: 'Kjøpt', unit: 'dato', type: 'date', createdAt: 1 }
+    expect(dateValue(date, '03.10.2026')).toBe('2026-10-03')
+    expect(dateValue(text, '3.10.26')).toBe('03.10.2026')
+    expect(dateValue(text, 'i går')).toBeNull()
+  })
+
   it('does not take a price column that is not in kroner', () => {
     const cols = receiptColumns([{ id: 'v', key: 'Pris', unit: 'EUR', type: 'number', createdAt: 1 }], 7)
     expect(cols.price.unit).toBe('kr')
@@ -49,7 +65,7 @@ describe('receiptInputs', () => {
   const cols = receiptColumns([], 7)
   const shared = {
     store: 'Butikken Sentrum',
-    date: '2026-01-15',
+    date: '15.01.2026',
     more: [{ key: 'Kategori', value: 'Hjem', unit: '' }],
     receipt: photo,
   }

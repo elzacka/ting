@@ -201,13 +201,13 @@ Innstillinger.
 1. Trykk på kvitteringssymbolet nederst til venstre. Kameraet åpner seg.
 2. Ta bilde av kvitteringen. Legg den flatt, og ta bildet rett ovenfra med
    godt lys.
-3. Appen retter opp bildet og fyller ut Kjøpt hvor, Kjøpsdato og én rad per
-   ting med navn og pris.
+3. Appen retter opp bildet og fyller ut butikken, datoen (for eksempel
+   03.10.2026) og én rad per ting med navn og pris.
 4. Rett det som er feil, og fjern haken på det du ikke vil ha med.
 5. Trykk på bildefeltet foran en ting for å ta bilde av den eller legge til
    bilder du har.
-6. Velg kategori. Fyll ut plassering og de andre feltene kategorien har. De
-   gjelder alle tingene på kvitteringen.
+6. Sjekk kategorien, plasseringen og de andre feltene kategorien har. Appen
+   foreslår dem, og de gjelder alle tingene på kvitteringen.
 7. Trykk på «Lagre». Du kommer tilbake til listen.
 
 - Prisen er det du betalte for hver ting, med mva og etter rabatt. To like ting
@@ -215,9 +215,15 @@ Innstillinger.
 - Hver ting får bildet av kvitteringen som kjøpsbevis, etter sine egne bilder.
   Bildet av tingen blir hovedbildet.
 - Appen husker navnet du ga butikken, og bruker det på neste kvittering derfra.
-- Appen lager egenskapene Kjøpt hvor, Kjøpsdato og Pris hvis registeret mangler
-  dem. Har du en egen egenskap for butikk, kjøpsdato eller pris i kr, bruker
-  appen den.
+- Appen foreslår kategori, merke, type og andre valglister ut fra navnet på
+  tingen, butikken og tingene du har fra før. Et felt står tomt hvis appen
+  finner ulike verdier for tingene på kvitteringen.
+- Plasseringen står på stedet der du har flest ting. En valgliste med verdien
+  «I bruk» står på den, fordi du som regel skanner kvitteringen rett etter
+  kjøpet.
+- Appen bruker egenskapene du har for butikk, kjøpsdato og pris i kr, også
+  «Kjøpt» når den er tekst eller en valgliste. Appen lager Kjøpt hvor,
+  Kjøpsdato og Pris hvis registeret mangler dem.
 - Trykk på det lille bildet av kvitteringen hvis bildet er skjevt eller
   kuttet. Velg «Juster hjørnene», og dra hjørnene ut til kantene av
   kvitteringen. «Ta nytt bilde» åpner kameraet igjen.

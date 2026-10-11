@@ -3,14 +3,15 @@ import { addProperty, getSealedSetting, getSetting, saveBatch, setSealedSetting 
 import type { Item, Property } from '../db/schema'
 import { asImage } from '../lib/backup'
 import { errorText } from '../lib/errors'
-import { categoryColumnId, choiceDefs, columnDefs, propColumns, type FieldSettings } from '../lib/fields'
+import { categoryColumnId, choiceDefs, columnDefs, propColumns, type ChoiceDef, type FieldSettings } from '../lib/fields'
 import { findCorners, scanLook, warp, type Quad, type Rgba } from '../lib/flatten'
 import { formatNumber } from '../lib/format'
 import { columnId, specsFrom } from '../lib/grid'
 import { readText } from '../lib/ocr'
 import { parseReceipt, splitAmount, storeKey } from '../lib/receipt'
 import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
-import { closestValue, linesSum, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
+import { receiptGuess } from '../lib/receiptGuess'
+import { closestValue, dateValue, linesSum, longDate, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
 import { useEscape } from '../lib/useEscape'
@@ -72,6 +73,8 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   const [date, setDate] = useState('')
   // Kategori and the choice and path columns it asks for, shared by every thing on the receipt
   const [cells, setCells] = useState<Record<string, string>>(() => firstCells(items))
+  // A field the user chose keeps its value when a new photo of the receipt is read
+  const chosenIds = useRef(new Set<string>())
   const [total, setTotal] = useState<number | null>(null)
   const [key, setKey] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
@@ -89,8 +92,13 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   )
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const category = cells[categoryColumnId]?.trim() ?? ''
-  // The store is filled above from the receipt, so it is not asked twice
-  const choices = useMemo(() => choiceDefs(defs, category).filter((d) => d.id !== cols.store.id), [defs, category, cols.store.id])
+  // The store and the date are filled above from the receipt, so they are not asked twice
+  const own = (d: ChoiceDef) => d.id !== cols.store.id && d.id !== cols.date.id
+  const choices = useMemo(() => choiceDefs(defs, category).filter(own), [defs, category, cols])
+  const lists = useMemo(
+    () => defs.filter((d): d is ChoiceDef => d.kind === 'prop' && (d.type === 'choice' || d.type === 'path') && own(d)),
+    [defs, cols],
+  )
 
   const dirty = stage === 'review' || stage === 'corners'
   useEffect(() => {
@@ -132,14 +140,21 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
     const known = await knownStores()
     const k = storeKey(r)
     setKey(k)
-    setStore((k && known[k]) || (r.storeName ? closestValue(r.storeName, storeValues) : ''))
-    setDate(r.date ?? '')
+    const storeNow = (k && known[k]) || (r.storeName ? closestValue(r.storeName, storeValues) : '')
+    setStore(storeNow)
+    setDate(r.date ? longDate(r.date) : '')
     setTotal(r.total)
     // One thing per unit: two duvets are two things, each with its share
     const next: ReceiptRow[] = r.lines.flatMap((line) =>
       splitAmount(line.amount, line.quantity).map((price) => ({ include: true, name: line.name, price: formatNumber(price), photos: [] })),
     )
     setRows(next.length > 0 ? next : [{ include: true, name: '', price: '', photos: [] }])
+    const guess = receiptGuess(next.map((row) => row.name), storeNow, cols.store.id, lists, items)
+    setCells((prev) => {
+      const out = { ...prev }
+      for (const [id, v] of Object.entries(guess)) if (!chosenIds.current.has(id)) out[id] = v
+      return out
+    })
     setNote(next.length > 0 ? null : t.receipt.noLines)
     setStage('review')
   }
@@ -166,6 +181,10 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   async function save(e: FormEvent) {
     e.preventDefault()
     if (!scan || chosen.length === 0) return
+    if (date.trim() !== '' && !dateValue(cols.date, date)) {
+      setNote(t.error.notDates(1, cols.date.key))
+      return
+    }
     setSaving(true)
     try {
       for (const p of cols.missing) await addProperty(p)
@@ -259,7 +278,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
               </div>
               <div className="field">
                 <label htmlFor="receipt-date">{cols.date.key}</label>
-                <input id="receipt-date" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <input id="receipt-date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
               </div>
             </div>
           </div>
@@ -310,7 +329,10 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
             choices={choices}
             cells={cells}
             prefix="receipt"
-            onChange={(id, v) => setCells((prev) => ({ ...prev, [id]: v }))}
+            onChange={(id, v) => {
+              chosenIds.current.add(id)
+              setCells((prev) => ({ ...prev, [id]: v }))
+            }}
           />
           <div className="row form-bar">
             <button type="submit" className="btn btn-primary" disabled={saving || chosen.length === 0}>
