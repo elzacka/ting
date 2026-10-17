@@ -15,7 +15,7 @@
     "dexie": "^4.4.6",
     "onnxruntime-web": "1.30.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react-dom": "^19.3.1",
     "zod": "^4.6.5",
     "zxing-wasm": "^3.1.4"
   },
