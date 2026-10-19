@@ -1,6 +1,6 @@
 # Personvern i Ting
 
-Oppdatert: 09.10.26
+Oppdatert: 19.10.26
 
 Det du legger inn, lagres kryptert på enheten din.
 
@@ -28,6 +28,22 @@ passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
 
 Appen ligger på GitHub Pages. GitHub ser IP-adressen din når appen lastes ned
 eller oppdateres, og når appen laster ned modellene som leser kvitteringer.
+
+## Besøksstatistikk
+
+Appen teller besøk med GoatCounter. Tallene viser hvor mye appen blir brukt.
+
+- Appen sender bare adressen `/ting/` når den starter. Hvilke sider du åpner,
+  hva du søker etter og det du har registrert, sendes ikke.
+- Appen lagrer ingenting på enheten din for å telle besøk.
+- GoatCounter bruker IP-adressen din og informasjon om nettleseren i opptil 8
+  timer for å telle deg én gang. De lagres ikke.
+- GoatCounter lagrer bare samlede tall. GoatCounter drives fra Irland og lagrer
+  tallene hos Hetzner i Finland og Tyskland.
+- Grunnlaget er berettiget interesse (personvernforordningen artikkel 6 nr. 1
+  bokstav f): Å se hvilke apper som brukes.
+- Du kan unngå tellingen ved å blokkere `goatcounter.com`, for eksempel med en
+  annonseblokkering.
 
 ## Rettighetene dine
 

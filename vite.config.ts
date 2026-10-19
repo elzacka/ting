@@ -2,8 +2,8 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Everything is local: no fonts, icons or code from outside; only the lookup the user asks for
-// with "Slå opp på nett" (src/lib/lookup.ts) leaves, an ISBN's digits to the catalogues below.
+// Everything is local: no fonts, icons or code from outside. What leaves: an ISBN's digits to the
+// catalogues below (src/lib/lookup.ts), and the start page's path to GoatCounter (src/lib/visitCount.ts).
 const lookupOrigins = ['https://api.nb.no', 'https://openlibrary.org']
 
 const productionCsp = [
@@ -11,7 +11,7 @@ const productionCsp = [
   // 'wasm-unsafe-eval' lets the bundled barcode reader (zxing-wasm) compile; it allows no script
   "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://elzacka.goatcounter.com",
   `connect-src 'self' ${lookupOrigins.join(' ')}`,
   "font-src 'self'",
   "manifest-src 'self'",
