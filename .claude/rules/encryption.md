@@ -9,13 +9,17 @@ paths:
 
 AES-256-GCM (WebCrypto) under a random data key (DEK), wrapped by a key derived from the passphrase with Argon2id (`@noble/hashes`, parameters `kdfDefaults` in `lib/crypto.ts`). `lib/crypto.ts` holds the primitives, `lib/vault.ts` the session key — memory only, zeroed on lock.
 
-The first start of the installed app makes the vault itself: `generateRecoveryCode` (`lib/recoveryCode.ts`, 20 characters from a 32-letter alphabet, 100 bits, the secret `setupVault` stretches), sealed in the `recoveryCode` setting so Innstillinger can show it; `unlockVault` also reads it typed loosely. Choosing a passphrase of one's own deletes the code. `clearTrialRows` clears what an old trial sealed; rows from before encryption are sealed on the first unlock. Only the demo is a trial.
+The first start of the installed app makes the vault itself under `generateRecoveryCode` (`lib/recoveryCode.ts`, 100 bits), sealed in the `recoveryCode` setting and never shown: its presence means no passphrase. «Velg passord» rewraps with `changePassphrase` using it as the old secret, then deletes it; Innstillinger also deletes one that no longer opens the vault (a file's or another device's passphrase was taken over).
+
+`unlockVault` reads a code typed loosely, for files sealed with a 1.16 code, which was shown. `clearTrialRows` clears what an old trial sealed; rows from before encryption are sealed on the first unlock. Only the demo is a trial.
 
 A file sealed on another device opens with the passphrase and its key is adopted, so devices converge on one DEK. Adopting a key (`KeyChange` in `db.ts`) seals the rows and sealed settings under it and stores them in one transaction with its vault; the session key switches only after, so rows and key never disagree.
 
 Plain files and rows still load and are sealed on the first unlock. A record whose `dekId` does not match the vault's is deleted rather than opened (`unlockWithKey`).
 
-A device opens without a question by default (`lib/deviceKey.ts`, switch `rememberDevice`): the `deviceKey` setting holds a second copy of the DEK wrapped under a non-extractable AES-GCM `CryptoKey` kept in IndexedDB, written after any unlock and any adopted vault unless Face ID is on, and used at start only when it opens the vault's `dekId`. It protects files, backups and the folder, not a browser profile someone can run code in. Never in a backup or the folder.
+«Når appen åpner» in Innstillinger is «Husk passord» (`rememberDevice` on, no passkey, the default), «Bruk Face ID …» (a passkey) or «Spør om passord».
+
+A device opens without a question by default (`lib/deviceKey.ts`): the `deviceKey` setting holds a second copy of the DEK wrapped under a non-extractable AES-GCM `CryptoKey` kept in IndexedDB, written after any unlock and any adopted vault unless Face ID is on, and used at start only when it opens the vault's `dekId`. It protects files, backups and the folder, not a browser profile someone can run code in. Never in a backup or the folder.
 
 Face ID, Touch ID, Windows Hello or the screen lock (named per platform, `lib/unlockMethod.ts`) can stand in for the passphrase on one device via a platform passkey (`lib/passkey.ts`, opt-in, off by default): its PRF output through HKDF wraps a second copy of the DEK. The passkey is asked for as `internal` with the `client-device` hint, so the browser does not offer a security key first.
 

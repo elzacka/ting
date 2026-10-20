@@ -41,7 +41,7 @@ type Opened = { loaded: Loaded; open: OpenKey | null; vault: Vault | null; merge
 
 // The register as one sealed file, out to a backup or another device, and back
 // in: merged with what is here, or replacing it. A trial has no vault to seal under.
-export function ImportExport({ trial, held }: { trial: boolean; held: number }) {
+export function ImportExport({ trial, held, askPassword }: { trial: boolean; held: number; askPassword: () => boolean }) {
   const [status, setStatus] = useState<SyncStatus>({ sentAt: null, fetchedAt: null })
   const [result, setResult] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -72,7 +72,9 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
     }
   }, [])
 
+  // A copy sealed without a password opens nowhere else, so the password comes first
   async function exportFile() {
+    if (askPassword()) return
     const vault = currentVault()
     if (!vault) return
     setResult(null)
@@ -291,25 +293,23 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
           </p>
         )}
       </div>
-      {!trial && (
-        <div className="setting-row">
-          <div className="setting-main">
-            <div className="setting-text">
-              <span id="export-title" className="setting-title">
-                {t.sync.exportTitle}
-              </span>
-              {status.sentAt && (
-                <p id="export-what" className="setting-desc num">
-                  {t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}
-                </p>
-              )}
-            </div>
-            <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
-              {share ? t.sync.exportButton : t.sync.exportDownload}
-            </button>
+      <div className="setting-row">
+        <div className="setting-main">
+          <div className="setting-text">
+            <span id="export-title" className="setting-title">
+              {t.sync.exportTitle}
+            </span>
+            {status.sentAt && (
+              <p id="export-what" className="setting-desc num">
+                {t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}
+              </p>
+            )}
           </div>
+          <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
+            {share ? t.sync.exportButton : t.sync.exportDownload}
+          </button>
         </div>
-      )}
+      </div>
     </>
   )
 }

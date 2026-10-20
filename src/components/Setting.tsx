@@ -1,9 +1,9 @@
 import { useId, type ReactNode } from 'react'
 
 // Innstillinger: a group of rows. Each row names itself, so the heading is for screen readers only.
-export function SettingGroup({ title, children }: { title: string; children: ReactNode }) {
+export function SettingGroup({ title, className, children }: { title: string; className?: string; children: ReactNode }) {
   return (
-    <section className="setting-group">
+    <section className={className ? `setting-group ${className}` : 'setting-group'}>
       <h2 className="visually-hidden">{title}</h2>
       {children}
     </section>

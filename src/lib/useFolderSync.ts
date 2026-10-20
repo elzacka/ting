@@ -1,6 +1,6 @@
 import { liveQuery } from 'dexie'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { db, readRegister } from '../db/db'
+import { db, readRegister, vaultKey } from '../db/db'
 import {
   folderSupported,
   forgetFolder,
@@ -44,8 +44,13 @@ export function useFolderSync() {
     unsubscribe.current()
     let timer: ReturnType<typeof setTimeout> | undefined
     let first = true
-    // Watches the sealed rows for change; the decrypted content is read when writing.
-    const sub = liveQuery(async () => ({ i: await db.items.toArray(), p: await db.properties.toArray() })).subscribe({
+    // Watches the sealed rows and the vault for change (a new password rewraps the folder's copy too);
+    // the decrypted content is read when writing.
+    const sub = liveQuery(async () => ({
+      i: await db.items.toArray(),
+      p: await db.properties.toArray(),
+      v: await db.settings.get(vaultKey),
+    })).subscribe({
       next: () => {
         if (first) {
           first = false

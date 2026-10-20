@@ -57,13 +57,6 @@
   font-size: var(--text-sm);
 }
 
-/* The one thing the line asks for, in the accent */
-.trial-link {
-  color: var(--accent);
-  font-weight: 600;
-  text-underline-offset: 2px;
-}
-
 .page > main > section + section,
 .page > main > .stack > section + section {
   padding-top: var(--s-6);
@@ -2399,6 +2392,41 @@ section {
   border-top: 1px solid var(--border);
 }
 
+/* Innstillinger is short rows of a label and its control: one column narrow enough that the two
+   stay close, two of them side by side where the screen has room */
+.settings.narrow {
+  max-width: var(--settings-col);
+}
+
+@media (min-width: 1010px) {
+  .settings.narrow {
+    max-width: calc(2 * var(--settings-col) + var(--s-12));
+  }
+
+  /* Columns, not grid rows, so a form opening in one leaves the other in place */
+  .settings-body {
+    display: block;
+    columns: 2;
+    column-gap: var(--s-12);
+  }
+
+  .setting-group {
+    break-inside: avoid;
+  }
+
+  .setting-group.is-column-start {
+    break-before: column;
+  }
+
+  .setting-group.is-column-start > h2 + .setting-row {
+    border-top: 0;
+  }
+
+  .settings-body > .settings-footer {
+    column-span: all;
+  }
+}
+
 .setting-main {
   display: flex;
   align-items: center;
@@ -2443,6 +2471,27 @@ section {
   cursor: pointer;
 }
 
+/* A row's choice among a few: every option in sight, each a full-height target */
+.setting-options {
+  display: grid;
+}
+
+.setting-option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--row-h);
+  cursor: pointer;
+}
+
+.setting-option input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 .setting-text {
   display: grid;
   gap: 2px;
@@ -2454,26 +2503,10 @@ section {
   color: var(--text-2);
 }
 
-/* The one risk on the page: no folder, so the register lives in this browser alone */
-.setting-desc.is-warn {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--s-1);
-  color: var(--warn);
-}
-
-.setting-desc.is-warn svg {
-  flex: none;
-  margin-top: 1px;
-}
-
-/* A phone has no room beside the text: a button goes under it, a switch stays */
-@media (max-width: 599px) {
-  .setting-main:not(.setting-switch) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--s-3);
-  }
+/* What the register lacks (a folder, a password): the button that adds it, in red */
+.btn.is-missing {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 /* A checkbox drawn as a switch (role="switch"). The knob jumps rather than
@@ -2909,13 +2942,4 @@ body.is-moving-column * {
 
 .grid th.is-drop-after::before {
   right: 0;
-}
-
-/* The recovery code: one block that wraps at its dashes and selects whole */
-.recovery-code {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: var(--text-md, 1rem);
-  letter-spacing: 0.05em;
-  overflow-wrap: anywhere;
-  user-select: all;
 }

@@ -10,7 +10,7 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 
 - [[#Kom i gang|Kom i gang]]
 	- [[#Kom i gang#1. Installer appen|1. Installer appen]]
-	- [[#Kom i gang#2. Lagre gjenopprettingskoden|2. Lagre gjenopprettingskoden]]
+	- [[#Kom i gang#2. Velg et passord|2. Velg et passord]]
 	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
 	- [[#Kom i gang#4. Legg til de første tingene|4. Legg til de første tingene]]
 	- [[#Kom i gang#5. Ta vare på dataene|5. Ta vare på dataene]]
@@ -60,33 +60,38 @@ starter installeringen, eller viser hvor menyvalget er.
 | iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
 | Android | «Installer» i varselet, eller «Installer app» i menyen |
 
-### 2. Lagre gjenopprettingskoden
+### 2. Velg et passord
 
-Første gang du åpner den installerte appen, lager den registeret og en
-gjenopprettingskode. Du trenger ikke velge noe, og appen åpner uten spørsmål
-etterpå.
+Appen åpner uten spørsmål, også første gang. Velg et passord før du tar
+sikkerhetskopi eller kobler til en mappe:
 
-1. Trykk på «Vis koden» i linja under topplinja. Du kommer til Innstillinger.
-2. Kopier koden til passordbehandleren, eller skriv den ned.
-3. Trykk på «Jeg har lagret den». Linja forsvinner.
+1. Åpne Innstillinger.
+2. Trykk på «Velg passord». Knappen er rød til du har valgt et.
+3. Skriv et passord på minst 12 tegn i begge feltene, og lagre det i
+   passordbehandleren.
 
 > [!WARNING]
-> Uten koden kan du ikke åpne en sikkerhetskopi eller fil på en ny enhet.
-> Ingen kan sende deg en ny.
+> Uten passordet kan du ikke åpne en sikkerhetskopi eller fil på en ny enhet.
+> Ingen kan hente det frem igjen.
 
-Du skriver koden én gang på hver enhet som ikke har sett registeret før, og
-enheten husker den. Små bokstaver og manglende bindestreker går bra.
+Du skriver passordet én gang på hver enhet som ikke har sett registeret før.
 
-- «Husk denne enheten» står på som standard. Slår du det av,
-  skriver du koden eller passordet hver gang du åpner appen. Da kommer
-  hengelåsen og «Lås appen etter 10 minutter uten bruk» tilbake.
-- Slår du på «Lås opp med Face ID eller Touch ID», åpner appen med Face ID
-  eller Touch ID i stedet. På Windows heter valget «Lås opp med Windows
-  Hello», og på Android «Lås opp med skjermlåsen». Du kan slette passnøkkelen
-  «Ting» i Passord-appen på iPhone hvis du slår valget av.
-- Under «Passord» velger du et eget passord, på minst 12 tegn. Koden slutter
-  da å gjelde og forsvinner fra Innstillinger.
-- Appen i en nettleserfane er en demo uten ditt register. Den bruker ingen kode.
+«Når appen åpner» bestemmer hva appen spør om på enheten du bruker:
+
+| Valg | Når du åpner appen |
+|---|---|
+| Husk passord | Appen åpner uten å spørre. Dette er standard |
+| Bruk Face ID eller Touch ID | Appen spør om Face ID eller Touch ID. På Windows heter valget «Bruk Windows Hello», og på Android «Bruk skjermlåsen» |
+| Spør om passord | Appen spør om passordet hver gang |
+
+- Med Face ID eller «Spør om passord» får du hengelåsen i topplinja og valget
+  «Lås appen etter 10 minutter uten bruk».
+- Appen ber deg velge passord først hvis du ikke har et når du eksporterer,
+  kobler til en mappe eller velger Face ID eller «Spør om passord».
+- Du kan slette passnøkkelen «Ting» i Passord-appen på iPhone når du ikke
+  bruker Face ID lenger.
+- Appen i en nettleserfane er en demo uten ditt register. Den har ikke noe
+  passord.
 
 ### 3. Lag kategoriene og egenskapene du trenger
 
@@ -519,12 +524,12 @@ enheten, er de borte derfra. Velg én av to måter under Innstillinger:
 
 | Måte | Passer når | Slik |
 |---|---|---|
-| Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi mobil og nettbrett ikke kan nå en mappe |
+| Lagringsmappe | Du bruker Chrome eller Edge på Mac eller PC og vil ha en kopi som alltid er oppdatert | «Velg». Knappen er rød til du har valgt en mappe. Appen skriver `ting.json` og bildene dit hver gang du lagrer. Vises ikke på mobil og nettbrett, fordi mobil og nettbrett ikke kan nå en mappe |
 | Sikkerhetskopi | Du bruker Safari eller iPhone, eller vil ha en fil å legge et trygt sted | På iPhone lagrer «Eksporter/del fil» fila i Filer eller sender den med AirDrop. På Mac og PC laster «Eksporter fil» den ned. «Velg fil» ved «Importer til registeret» henter den inn igjen. Appen spør om du vil slå sammen eller erstatte alt hvis registeret har ting fra før |
 
 Begge tar med alle ting, egenskaper, kategorier, bilder og
-kolonneinnstillinger, er kryptert med koden din og åpnes på enhver enhet
-der du skriver den inn.
+kolonneinnstillinger, er kryptert med passordet ditt og åpnes på enhver enhet
+der du skriver det inn.
 
 «Erstatt alt» gjelder bare enheten du bruker. Når du senere slår sammen med en
 fil fra en annen enhet, kommer det som er nyere der, tilbake. Det gjelder også
@@ -561,8 +566,9 @@ pris du retter på Mac, kommer med på begge enhetene.
 
 Etter sammenslåingen sier appen hvor mange ting som er nye, endret og slettet.
 
-- Første gang ber appen om koden fra den andre enheten. Fra da av åpner begge
-  enhetene uten spørsmål.
+- Velg samme passord på begge enhetene. Hvis passordene er ulike, ber appen
+  om passordet fra den andre enheten første gang. Fra da av låser du opp
+  begge enhetene med det.
 - Appen beholder den nyeste endringen hvis du har endret det samme feltet på
   begge enhetene, og sier fra om det.
 - En ting du sletter, forsvinner også fra den andre enheten. Den blir likevel
@@ -630,15 +636,13 @@ Tannhjulet lengst til høyre i topplinja.
 
 | Valg | Gjør |
 |---|---|
-| Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
+| Passord | «Velg passord» velger passordet. Knappen er rød til du har gjort det. «Endre» bytter passordet, og du skriver det du har nå, først |
+| Når appen åpner | «Husk passord», «Bruk Face ID eller Touch ID» eller «Spør om passord», se [Velg et passord](#2-velg-et-passord). Gjelder bare enheten du bruker |
+| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når appen spør om noe når den åpner |
+| Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
+| Lagringsmappe | «Velg» kobler til en mappe (Chrome og Edge). Knappen er rød når ingen mappe er valgt. Velg på nytt for å bytte mappe. «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Importer til registeret | «Velg fil» henter en fil du har eksportert fra Ting, her eller på en annen enhet, se [Ta vare på dataene](#ta-vare-på-dataene) og [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist importerte |
 | Eksporter registeret | Hele registeret i én kryptert fil, som sikkerhetskopi eller for å flytte registeret til en annen enhet. Knappen heter «Eksporter/del fil» på iPhone og «Eksporter fil» på Mac og PC. Linja under sier når du sist eksporterte |
-| Husk denne enheten | På som standard. Appen spør bare etter koden på en ny enhet. Gjelder bare enheten du bruker |
-| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når «Husk denne enheten» er av, eller Face ID er på |
-| Lås opp med Face ID eller Touch ID | Du låser opp uten passord. På Windows heter valget «Lås opp med Windows Hello», på Android «Lås opp med skjermlåsen». Gjelder bare enheten du bruker |
-| Gjenopprettingskode | Viser koden. «Kopier» legger den på utklippstavla, og «Jeg har lagret den» fjerner påminnelsen |
-| Passord | «Endre» velger et eget passord i stedet for koden |
-| Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
 | Les tekst på kvitteringer | Laster ned KI-modellene for tekstgjenkjenning, omtrent 45 MB. Når den er på, kan du lese inn mange kvitteringer samtidig, og kvitteringssymbolet på mobilen åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
 | Personvern, Kildekode | Nederst. Åpner dokumentene på GitHub. Linja under viser versjonen |
 
@@ -671,12 +675,12 @@ felt. I et felt gir tastene tegn som ± og π.
 | «Lagre eller forkast endringene i tabellen først» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
-| «Ingen passnøkler er tilgjengelige» når appen åpner | Enheten finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med koden eller passordet. Slå så opplåsingen uten passord av og på igjen i Innstillinger |
-| «Appen kunne ikke importere fila.» | Appen fikk ikke lagret innholdet fra fila | Prøv på nytt. Registeret og koden er som før |
+| «Ingen passnøkler er tilgjengelige» når appen åpner | Enheten finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Velg så «Husk passord» og deretter «Bruk Face ID eller Touch ID» igjen under «Når appen åpner» |
+| «Appen kunne ikke importere fila.» | Appen fikk ikke lagret innholdet fra fila | Prøv på nytt. Registeret og passordet er som før |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og importer fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen ting på kvitteringen.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |
-| Mistet koden | Du er på en ny enhet, og koden finnes ikke | På en enhet som åpner uten spørsmål: Les koden i Innstillinger. Ellers kan dataene ikke åpnes. Start på nytt med en tom app |
+| Glemt passordet | Ingen kan hente det frem igjen | Registeret åpner fortsatt på enheter som husker det. Sikkerhetskopier og filer kan ikke åpnes uten passordet |
 
 ---
 

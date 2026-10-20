@@ -4,30 +4,32 @@ export const t = {
   nav: { home: 'Til oversikten', list: 'Oversikt', settings: 'Innstillinger', settingsStalled: 'Innstillinger. Lagring til mappen har stoppet' },
   lock: { lock: 'Lås appen' },
   vault: {
-    setupTitle: 'Velg et passord',
-    passphrase: 'Gjenopprettingskode eller passord',
+    passphrase: 'Passord',
     show: 'Vis passord',
     hide: 'Skjul passord',
     repeat: 'Gjenta passordet',
     minLength: 'Passordet må ha minst 12 tegn. Bruk gjerne en setning.',
     mismatch: 'Passordene er ikke like. Skriv det samme i begge feltene.',
-    create: 'Krypter og fortsett',
     unlockTitle: 'Appen er låst',
     autoLocked: 'Appen låste seg etter 10 minutter uten bruk',
     unlock: 'Lås opp',
-    wrong: 'Feil kode eller passord',
+    wrong: 'Feil passord',
     working: 'Låser opp…',
     // Lås og passord: the idle lock, Face ID or Touch ID in place of the
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
-    rememberOption: 'Husk denne enheten',
-    // The method is named for the platform (lib/unlockMethod.ts): Face ID or Touch ID, Windows Hello, the screen lock
-    passkeyOption: (method: string) => `Lås opp med ${method}`,
+    // How the app opens on this device; the method is named for the platform (lib/unlockMethod.ts)
+    openTitle: 'Når appen åpner',
+    openDirect: 'Husk passord',
+    openPasskey: (method: string) => `Bruk ${method}`,
+    openPassword: 'Spør om passord',
     passkeyUnlock: (method: string) => `Lås opp med ${method}`,
     passkeyFailed: (method: string) => `${method[0]?.toLocaleUpperCase('nb') ?? ''}${method.slice(1)} virket ikke. Lås opp med passordet.`,
     passkeyNotHere: (method: string) => `Denne enheten kan ikke låse opp appen med ${method}`,
-    changeTitle: 'Passord',
+    passwordTitle: 'Passord',
+    choose: 'Velg passord',
+    chosen: 'Du har valgt et passord',
     current: 'Nåværende passord',
     next: 'Nytt passord',
     change: 'Endre passord',
@@ -35,7 +37,7 @@ export const t = {
     changeShort: 'Endre',
     changed: 'Du har endret passordet',
     folderForeign: (name: string) =>
-      `Mappen «${name}» er låst med en annen kode eller et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det.`,
+      `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det.`,
     folderOpen: 'Åpne mappen',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
@@ -311,21 +313,6 @@ export const t = {
     download: 'Installer',
     notice: 'Dette er en demo med eksempler. Installer appen for å registrere tingene dine.',
   },
-  // Before a passphrase: the line under the top bar
-  // The recovery code the app makes for a new register
-  recovery: {
-    title: 'Gjenopprettingskode',
-    what: 'Du trenger koden for å åpne en sikkerhetskopi eller fil på en ny enhet. Lagre den i passordbehandleren, eller skriv den ned',
-    copy: 'Kopier',
-    copied: 'Kopiert',
-    saved: 'Jeg har lagret den',
-    notice: 'Lagre gjenopprettingskoden. Uten den kan du ikke åpne sikkerhetskopier på en ny enhet.',
-    show: 'Vis koden',
-  },
-  trial: {
-    folderFirst: 'Velg et passord først',
-    done: 'Passord valgt. Alt du har lagt til, blir bevart.',
-  },
   settings: {
     title: 'Innstillinger',
     storageTitle: 'Lagring',
@@ -333,9 +320,9 @@ export const t = {
     columnsList: 'Egenskaper i tabellen',
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
-    folderNone: 'Velg lagringsmappe for å bevare det du legger til',
     unsupported: 'Appen kan ikke koble til en mappe her. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Eksporter registeret».',
     choose: 'Velg mappe',
+    chooseNone: 'Velg mappe. Ingen mappe er valgt',
     chooseShort: 'Velg',
     checking: 'Sjekker mappen…',
     needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare på enheten.`,

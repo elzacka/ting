@@ -114,7 +114,7 @@ export function LockScreen(props: Props) {
   )
 }
 
-// The recovery code is asked for, never saved: GitHub Pages gives every app of the account one
+// The passphrase is asked for here, never saved: GitHub Pages gives every app of the account one
 // origin, so a manager cannot tell which login is Ting's and offers another app's
 export const codeField = { 'data-1p-ignore': true, 'data-lpignore': 'true', 'data-bwignore': 'true' } as const
 

@@ -1,6 +1,6 @@
-// The code the app makes for a new register, in place of a passphrase the user must invent:
-// 20 characters, 100 bits, from an alphabet without I, O, 0 and 1 so it can be read aloud and
-// typed from paper. Groups of four; typed in any case, with or without the dashes.
+// The secret a new register is sealed with until the user chooses a password: 20 characters,
+// 100 bits, kept sealed on the device and never shown. Registers from 1.16 showed it, so a file
+// sealed with one opens with it typed in any case, with or without the dashes.
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const length = 20
 

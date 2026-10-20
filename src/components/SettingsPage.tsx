@@ -1,6 +1,20 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { isDemo } from '../lib/useInstall'
-import { deleteDeviceKey, deletePasskey, deleteRecoveryCode, getSetting, readPasskey, readRemember, writePasskey, writeRemember, writeVault } from '../db/db'
+import {
+  deleteDeviceKey,
+  deletePasskey,
+  deleteRecoveryCode,
+  getSetting,
+  readPasskey,
+  readRecoveryCode,
+  readRemember,
+  readVault,
+  writePasskey,
+  writeRecoveryCode,
+  writeRemember,
+  writeVault,
+} from '../db/db'
+import { errorText } from '../lib/errors'
 import { receiptReadingKey } from '../lib/receiptItems'
 import type { Item, Property } from '../db/schema'
 import { categoryNames, sharedByAll } from '../lib/categories'
@@ -9,18 +23,21 @@ import { t } from '../lib/strings'
 import { unlockMethod } from '../lib/unlockMethod'
 import { useEscape } from '../lib/useEscape'
 import type { useFolderSync } from '../lib/useFolderSync'
-import { changePassphrase, currentKey, currentVault, setupVault, useVault } from '../lib/vault'
+import { unlockVault } from '../lib/crypto'
+import { changePassphrase, currentKey, currentVault, useVault } from '../lib/vault'
 import { folderSupported } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
 import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
 import { AboutApp } from './AboutApp'
 import { ImportExport } from './ImportExport'
 import { ReceiptBatch } from './ReceiptBatch'
-import { RecoveryCode } from './RecoveryCode'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { codeField, KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
+
+const openModes = ['direct', 'passkey', 'password'] as const
+type OpenMode = (typeof openModes)[number]
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
@@ -65,7 +82,8 @@ export function SettingsPage({
   onWrapChange,
 }: Props) {
   const { status, connect, grant, adopt, disconnect } = folder
-  const trial = useVault().status === 'trial'
+  const vault = useVault()
+  const trial = vault.status === 'trial'
   // Navn, always shown and first, then the properties every category uses, by name
   const categories = categoryNames(items, properties.find((p) => p.id === categoryColumnId))
   const columns = columnDefs(fields, properties, items)
@@ -73,19 +91,61 @@ export function SettingsPage({
     .sort((a, b) => (a.kind === 'name' ? -1 : b.kind === 'name' ? 1 : collator.compare(a.col.key, b.col.key)))
   const hideable = columns.flatMap((d) => (d.kind === 'prop' ? [d.id] : []))
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
-  const [setupPass, setSetupPass] = useState('')
-  const [setupRepeat, setSetupRepeat] = useState('')
   const [folderPass, setFolderPass] = useState('')
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
+  const [repeatPass, setRepeatPass] = useState('')
   const [passMessage, setPassMessage] = useState<string | null>(null)
-  useFade(passMessage, passMessage === t.trial.done || passMessage === t.vault.changed, setPassMessage)
+  useFade(passMessage, passMessage === t.vault.changed || passMessage === t.vault.chosen, setPassMessage)
   const [changingPass, setChangingPass] = useState(false)
   function cancelPassChange() {
     setOldPass('')
     setNewPass('')
+    setRepeatPass('')
     setPassMessage(null)
     setChangingPass(false)
+    setPendingMode(null)
+  }
+
+  // The secret a register is sealed with until the user chooses a password; null once one is
+  // chosen. A secret for another vault than the stored one (a file's or another device's password
+  // was taken over since) is dropped. The demo shows a new register, without a password.
+  const [secret, setSecret] = useState<string | null | undefined>(undefined)
+  const openVault = vault.status === 'open' ? vault.vault : null
+  useEffect(() => {
+    if (!openVault) return
+    let live = true
+    void (async () => {
+      try {
+        const [stored, saved] = await Promise.all([readRecoveryCode(), readVault()])
+        let valid: string | null = null
+        if (stored && saved && stored.salt) valid = stored.salt === saved.kdf.salt ? stored.code : null
+        else if (stored && saved && (await unlockVault(stored.code, saved))) {
+          valid = stored.code
+          await writeRecoveryCode({ code: stored.code, salt: saved.kdf.salt })
+        }
+        if (stored && !valid) await deleteRecoveryCode()
+        if (live) setSecret(valid)
+      } catch (err) {
+        console.error(errorText(err))
+      }
+    })()
+    return () => {
+      live = false
+    }
+  }, [openVault])
+  const hasPassword = !trial && secret === null
+  const known = trial || secret !== undefined
+  // What needs the password (a copy to open elsewhere, a lock to open with it) opens its form first.
+  // Until the answer is known, nothing goes through.
+  const passwordRow = useRef<HTMLDivElement>(null)
+  function askPassword(): boolean {
+    if (hasPassword) return false
+    if (!known) return true
+    setPassMessage(null)
+    setChangingPass(true)
+    passwordRow.current?.scrollIntoView({ block: 'center' })
+    return true
   }
   useEscape(cancelPassChange, changingPass)
   // The table's own choices are desk work, and so is a folder where the
@@ -116,82 +176,84 @@ export function SettingsPage({
     }
   }, [])
 
-  // Whether this device opens the app without a question; the code row follows a change of passphrase
+  // How the app opens on this device: directly (the device key), with Face ID (a passkey) or with
+  // the password. Face ID and the password need a password to fall back on.
   const [remember, setRemember] = useState(true)
-  const [codeVersion, setCodeVersion] = useState(0)
   useEffect(() => {
     void readRemember().then(setRemember)
   }, [])
-  async function toggleRemember(on: boolean) {
-    await writeRemember(on)
-    if (!on) await deleteDeviceKey()
-    setRemember(on)
-    onGateChange()
-  }
-
-  async function togglePasskey(on: boolean) {
+  const openMode: OpenMode = passkey !== null ? 'passkey' : remember ? 'direct' : 'password'
+  // «Spør om passord» chosen before there is a password: it takes effect once one is chosen.
+  // Face ID is chosen again, since its sheet needs the tap that opens it.
+  const [pendingMode, setPendingMode] = useState<OpenMode | null>(null)
+  async function chooseOpenMode(mode: OpenMode) {
     setPasskeyMessage(null)
-    if (!on) {
+    if (mode === openMode) return
+    if (mode !== 'direct' && askPassword()) return setPendingMode(mode === 'password' ? mode : null)
+    if (mode === 'passkey') {
+      setPasskeyBusy(true)
+      const made = await createPasskey(currentKey())
+      setPasskeyBusy(false)
+      if (made === 'cancelled') return
+      if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere(unlockMethod()))
+      await writePasskey(made)
+      setPasskey(made)
+    } else if (passkey !== null) {
       await deletePasskey()
       setPasskey(null)
-      onGateChange()
-      return
     }
-    setPasskeyBusy(true)
-    const made = await createPasskey(currentKey())
-    setPasskeyBusy(false)
-    if (made === 'cancelled') return
-    if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere(unlockMethod()))
-    await writePasskey(made)
-    setPasskey(made)
+    const direct = mode === 'direct'
+    await writeRemember(direct)
+    if (!direct) await deleteDeviceKey()
+    setRemember(direct)
     onGateChange()
   }
 
-  // The trial's key, wrapped under the passphrase chosen here: what was made
-  // during the trial stays, and from now on the app opens locked.
-  async function onSetup(e: FormEvent) {
-    e.preventDefault()
-    setPassMessage(null)
-    if (setupPass.length < 12) return setPassMessage(t.vault.minLength)
-    if (setupPass !== setupRepeat) return setPassMessage(t.vault.mismatch)
-    await writeVault(await setupVault(setupPass))
-    setSetupPass('')
-    setSetupRepeat('')
-    setPassMessage(t.trial.done)
-  }
+  // A register from 1.16 may already lock, or keep a folder, with no password of its own: ask for one
+  useEffect(() => {
+    if (known && !hasPassword && !trial && (!remember || passkey !== null || status.kind === 'connected')) setChangingPass(true)
+  }, [known, hasPassword, trial, remember, passkey, status.kind])
 
+  // Without a password the register's own secret stands in for the current one
   async function onChangePass(e: FormEvent) {
     e.preventDefault()
     setPassMessage(null)
     if (newPass.length < 12) return setPassMessage(t.vault.minLength)
-    const v = await changePassphrase(oldPass, newPass)
+    if (!hasPassword && newPass !== repeatPass) return setPassMessage(t.vault.mismatch)
+    const v = await changePassphrase(hasPassword ? oldPass : (secret ?? ''), newPass)
     if (!v) return setPassMessage(t.vault.wrong)
     await writeVault(v)
-    await deleteRecoveryCode()
-    setCodeVersion((n) => n + 1)
-    onGateChange()
+    if (!hasPassword) await deleteRecoveryCode()
+    setSecret(null)
+    if (pendingMode === 'password') {
+      await writeRemember(false)
+      await deleteDeviceKey()
+      setRemember(false)
+      setPendingMode(null)
+      onGateChange()
+    }
     setOldPass('')
     setNewPass('')
+    setRepeatPass('')
     setChangingPass(false)
-    setPassMessage(t.vault.changed)
+    setPassMessage(hasPassword ? t.vault.changed : t.vault.chosen)
   }
 
   // The line under the folder's title says where things stand; what the
   // other states ask for comes underneath.
   const folderLine = trial
-    ? t.trial.folderFirst
-    : status.kind === 'none'
-      ? t.settings.folderNone
-      : status.kind === 'connected'
-        ? `${t.settings.connected(status.name)} ${t.settings.lastWritten(formatTime(status.lastWrittenAt))}`
-        : status.kind === 'checking'
-          ? t.settings.checking
-          : status.kind === 'unsupported'
-            ? t.settings.unsupported
-            : null
+    ? null
+    : status.kind === 'connected'
+      ? `${t.settings.connected(status.name)} ${t.settings.lastWritten(formatTime(status.lastWrittenAt))}`
+      : status.kind === 'checking'
+        ? t.settings.checking
+        : status.kind === 'unsupported'
+          ? t.settings.unsupported
+          : null
 
-  // The one risk on the page: everything lives in this browser alone
-  const folderAtRisk = !trial && status.kind === 'none'
+  // The one risk on the page, everything in this browser alone, shows as the button's red border.
+  // The demo shows the button as a new register has it.
+  const folderAtRisk = trial || status.kind === 'none'
 
   const disconnectButton = (
     <button type="button" className="btn" onClick={disconnect}>
@@ -206,65 +268,196 @@ export function SettingsPage({
       {/* The demo shows every setting and changes none */}
       <fieldset className="settings-body" disabled={isDemo}>
 
-      {trial && (
-        <SettingGroup title={t.vault.setupTitle}>
-          <div className="setting-row">
-            <form className="stack-sm" onSubmit={(e) => void onSetup(e)}>
+      <SettingGroup title={t.vault.lockTitle}>
+        <div className="setting-row" ref={passwordRow}>
+          <div className="setting-main" style={known ? undefined : { visibility: 'hidden' }}>
+            <div className="setting-text">
+              <span className="setting-title">{t.vault.passwordTitle}</span>
+            </div>
+            {!changingPass && (
+              <button
+                type="button"
+                className={hasPassword ? 'btn' : 'btn is-missing'}
+                aria-label={hasPassword ? t.vault.change : undefined}
+                onClick={() => {
+                  setPassMessage(null)
+                  setChangingPass(true)
+                }}
+              >
+                {hasPassword ? t.vault.changeShort : t.vault.choose}
+              </button>
+            )}
+          </div>
+          {!changingPass ? (
+            passMessage && (
+              <p className="setting-desc" role="status">
+                {passMessage}
+              </p>
+            )
+          ) : (
+            <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
               <KeychainName />
+              {hasPassword && (
+                <div className="field">
+                  <label htmlFor="old-pass">{t.vault.current}</label>
+                  <input
+                    id="old-pass"
+                    className="input"
+                    type="password"
+                    autoComplete="current-password"
+                    value={oldPass}
+                    onChange={(e) => setOldPass(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              )}
               <div className="field">
-                <label htmlFor="setup-pass">{t.vault.passphrase}</label>
+                <label htmlFor="new-pass">{t.vault.next}</label>
                 <input
-                  id="setup-pass"
+                  id="new-pass"
                   className="input"
                   type="password"
                   autoComplete="new-password"
-                  value={setupPass}
-                  onChange={(e) => setSetupPass(e.target.value)}
-                  autoFocus
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                  autoFocus={!hasPassword}
                 />
               </div>
-              <div className="field">
-                <label htmlFor="setup-repeat">{t.vault.repeat}</label>
-                <input
-                  id="setup-repeat"
-                  className="input"
-                  type="password"
-                  autoComplete="new-password"
-                  value={setupRepeat}
-                  onChange={(e) => setSetupRepeat(e.target.value)}
-                />
-              </div>
+              {!hasPassword && (
+                <div className="field">
+                  <label htmlFor="repeat-pass">{t.vault.repeat}</label>
+                  <input
+                    id="repeat-pass"
+                    className="input"
+                    type="password"
+                    autoComplete="new-password"
+                    value={repeatPass}
+                    onChange={(e) => setRepeatPass(e.target.value)}
+                  />
+                </div>
+              )}
               {passMessage && (
-                <p className="error" role="alert">
+                <p className="error" role="status">
                   {passMessage}
                 </p>
               )}
               <div className="row">
-                <button type="submit" className="btn btn-primary" disabled={setupPass === '' || setupRepeat === ''}>
-                  {t.vault.create}
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={newPass === '' || (hasPassword ? oldPass === '' : repeatPass === '')}
+                >
+                  {hasPassword ? t.vault.change : t.vault.choose}
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={cancelPassChange}
+                >
+                  {t.action.cancel}
                 </button>
               </div>
             </form>
+          )}
+        </div>
+        <div className="setting-row">
+          <span id="open-mode" className="setting-title">
+            {t.vault.openTitle}
+          </span>
+          <div className="setting-options" role="radiogroup" aria-labelledby="open-mode">
+            {openModes.map(
+              (mode) =>
+                (mode !== 'passkey' || canPasskey || openMode === 'passkey') && (
+                  <label key={mode} className="setting-option">
+                    <input
+                      type="radio"
+                      name="open-mode"
+                      checked={openMode === mode}
+                      disabled={passkeyBusy}
+                      onChange={() => void chooseOpenMode(mode)}
+                    />
+                    {mode === 'direct' ? t.vault.openDirect : mode === 'passkey' ? t.vault.openPasskey(unlockMethod()) : t.vault.openPassword}
+                  </label>
+                ),
+            )}
           </div>
+          {passkeyMessage && (
+            <p className="error" role="alert">
+              {passkeyMessage}
+            </p>
+          )}
+        </div>
+        {/* An app that opens directly has nothing to lock */}
+        {openMode !== 'direct' && (
+          <div className="setting-row">
+            <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
+          </div>
+        )}
+      </SettingGroup>
+
+      {!narrow && (
+        <SettingGroup title={t.settings.columnsTitle}>
+          <div className="setting-row">
+            <SettingSwitch title={t.table.wrap} checked={wrap} onChange={onWrapChange} />
+          </div>
+          {columns.length > 1 && (
+            <details className="setting-row disclosure">
+              <summary>
+                <span className="setting-title">{t.settings.columnsList}</span>
+                <span className="disclosure-meta">
+                  {t.settings.columnsShown(visibleCount, columns.length)}
+                  <Icon name="chevronRight" size={16} className="disclosure-chevron" />
+                </span>
+              </summary>
+              <div className="disclosure-body">
+                {/* Only the link that would change something, as in the print dialog */}
+                <div className="disclosure-actions">
+                  {hideable.some((id) => hidden.has(id)) && (
+                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, true)}>
+                      {t.action.pickAll}
+                    </button>
+                  )}
+                  {hideable.some((id) => !hidden.has(id)) && (
+                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, false)}>
+                      {t.action.pickNone}
+                    </button>
+                  )}
+                </div>
+                {columns.map((def) => (
+                  <label key={def.id} className="check-option">
+                    <input
+                      type="checkbox"
+                      checked={def.kind === 'name' || !hidden.has(def.id)}
+                      disabled={def.kind === 'name'}
+                      onChange={(e) => onHiddenChange([def.id], e.target.checked)}
+                    />
+                    <span>{def.kind === 'prop' ? def.col.key : (fields.name.label ?? t.table.name)}</span>
+                  </label>
+                ))}
+              </div>
+            </details>
+          )}
         </SettingGroup>
       )}
 
-      <SettingGroup title={t.settings.storageTitle}>
+      <SettingGroup title={t.settings.storageTitle} className="is-column-start">
         {showFolder && (
           <div className="setting-row">
             <div className="setting-main">
               <div className="setting-text">
                 <span className="setting-title">{t.settings.folderTitle}</span>
                 {folderLine && (
-                  <p className={`setting-desc num${folderAtRisk ? ' is-warn' : ''}`}>
-                    {folderAtRisk && <Icon name="warning" size={16} />}
-                    <span>{folderLine}</span>
-                  </p>
+                  <p className="setting-desc num">{folderLine}</p>
                 )}
               </div>
               <div className="row">
-                {!trial && (status.kind === 'none' || status.kind === 'error') && (
-                  <button type="button" className="btn" aria-label={t.settings.choose} onClick={connect}>
+                {(trial || status.kind === 'none' || status.kind === 'error' || status.kind === 'connected') && (
+                  <button
+                    type="button"
+                    className={folderAtRisk ? 'btn is-missing' : 'btn'}
+                    aria-label={folderAtRisk ? t.settings.chooseNone : t.settings.choose}
+                    onClick={() => askPassword() || void connect()}
+                  >
                     {t.settings.chooseShort}
                   </button>
                 )}
@@ -275,7 +468,7 @@ export function SettingsPage({
               <div className="stack-sm">
                 <p>{t.settings.needsPermission(status.name)}</p>
                 <div className="row">
-                  <button type="button" className="btn btn-primary" onClick={grant}>
+                  <button type="button" className="btn btn-primary" onClick={() => askPassword() || void grant()}>
                     {t.settings.grant}
                   </button>
                   {disconnectButton}
@@ -324,156 +517,9 @@ export function SettingsPage({
           </div>
         )}
 
-        <ImportExport trial={trial} held={items.length} />
+        <ImportExport trial={trial} held={items.length} askPassword={askPassword} />
 
       </SettingGroup>
-
-      {/* A trial has no lock: the passphrase is chosen at the top instead */}
-      {!trial && (
-        <SettingGroup title={t.vault.lockTitle}>
-          <div className="setting-row">
-            <SettingSwitch title={t.vault.rememberOption} checked={remember} onChange={(on) => void toggleRemember(on)} />
-          </div>
-          {/* A device that opens without a question has nothing to lock, unless Face ID asks */}
-          {(!remember || passkey !== null) && (
-            <div className="setting-row">
-              <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
-            </div>
-          )}
-          <RecoveryCode version={codeVersion} onAck={onGateChange} />
-          {canPasskey && (
-            <div className="setting-row">
-              <SettingSwitch
-                title={t.vault.passkeyOption(unlockMethod())}
-                checked={passkey !== null}
-                disabled={passkeyBusy}
-                onChange={(on) => void togglePasskey(on)}
-              />
-              {passkeyMessage && (
-                <p className="error" role="alert">
-                  {passkeyMessage}
-                </p>
-              )}
-            </div>
-          )}
-          <div className="setting-row">
-            <div className="setting-main">
-              <div className="setting-text">
-                <span className="setting-title">{t.vault.changeTitle}</span>
-              </div>
-              {!changingPass && (
-                <button
-                  type="button"
-                  className="btn"
-                  aria-label={t.vault.change}
-                  onClick={() => {
-                    setPassMessage(null)
-                    setChangingPass(true)
-                  }}
-                >
-                  {t.vault.changeShort}
-                </button>
-              )}
-            </div>
-            {!changingPass ? (
-              passMessage && (
-                <p className="setting-desc" role="status">
-                  {passMessage}
-                </p>
-              )
-            ) : (
-              <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
-                <KeychainName />
-                <div className="field">
-                  <label htmlFor="old-pass">{t.vault.current}</label>
-                  <input
-                    id="old-pass"
-                    className="input"
-                    type="password"
-                    autoComplete="current-password"
-                    value={oldPass}
-                    onChange={(e) => setOldPass(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="new-pass">{t.vault.next}</label>
-                  <input
-                    id="new-pass"
-                    className="input"
-                    type="password"
-                    autoComplete="new-password"
-                    value={newPass}
-                    onChange={(e) => setNewPass(e.target.value)}
-                  />
-                </div>
-                {passMessage && (
-                  <p className={passMessage === t.vault.changed ? 'hint' : 'error'} role="status">
-                    {passMessage}
-                  </p>
-                )}
-                <div className="row">
-                  <button type="submit" className="btn btn-primary" disabled={oldPass === '' || newPass === ''}>
-                    {t.vault.change}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={cancelPassChange}
-                  >
-                    {t.action.cancel}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </SettingGroup>
-      )}
-
-      {!narrow && (
-        <SettingGroup title={t.settings.columnsTitle}>
-          <div className="setting-row">
-            <SettingSwitch title={t.table.wrap} checked={wrap} onChange={onWrapChange} />
-          </div>
-          {columns.length > 1 && (
-            <details className="setting-row disclosure">
-              <summary>
-                <span className="setting-title">{t.settings.columnsList}</span>
-                <span className="disclosure-meta">
-                  {t.settings.columnsShown(visibleCount, columns.length)}
-                  <Icon name="chevronRight" size={16} className="disclosure-chevron" />
-                </span>
-              </summary>
-              <div className="disclosure-body">
-                {/* Only the link that would change something, as in the print dialog */}
-                <div className="disclosure-actions">
-                  {hideable.some((id) => hidden.has(id)) && (
-                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, true)}>
-                      {t.action.pickAll}
-                    </button>
-                  )}
-                  {hideable.some((id) => !hidden.has(id)) && (
-                    <button type="button" className="summary-link" onClick={() => onHiddenChange(hideable, false)}>
-                      {t.action.pickNone}
-                    </button>
-                  )}
-                </div>
-                {columns.map((def) => (
-                  <label key={def.id} className="check-option">
-                    <input
-                      type="checkbox"
-                      checked={def.kind === 'name' || !hidden.has(def.id)}
-                      disabled={def.kind === 'name'}
-                      onChange={(e) => onHiddenChange([def.id], e.target.checked)}
-                    />
-                    <span>{def.kind === 'prop' ? def.col.key : (fields.name.label ?? t.table.name)}</span>
-                  </label>
-                ))}
-              </div>
-            </details>
-          )}
-        </SettingGroup>
-      )}
 
       {/* One receipt at a time from the phone's add screen; a batch from any screen, here */}
       <SettingGroup title={t.receipt.settingsTitle}>

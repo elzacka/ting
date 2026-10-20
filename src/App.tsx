@@ -10,15 +10,12 @@ import {
   readItems,
   readPasskey,
   readProperties,
-  readRecoveryAck,
-  readRecoveryCode,
   readRemember,
   readVault,
   resetDemo,
   sealPlaintextRows,
   writeDeviceKey,
-  writeRecoveryCode,
-  writeVault,
+  writeVaultWithSecret,
 } from './db/db'
 import type { Item, Property } from './db/schema'
 import { useSealedQuery } from './db/useSealedQuery'
@@ -50,7 +47,7 @@ import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
 import { SettingsPage } from './components/SettingsPage'
 import { UpdateButton } from './components/UpdateButton'
-import { DemoBanner, DownloadButton, RecoveryBanner } from './components/TrialBanner'
+import { DemoBanner, DownloadButton } from './components/TrialBanner'
 import { isDemo } from './lib/useInstall'
 import { demoRegister } from './lib/demo'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -65,9 +62,9 @@ export function App() {
   const unlocked = hasKey(vault)
   // The demo's reads wait until the examples are in, or they would open what an earlier tab left
   const [demoReady, setDemoReady] = useState(false)
-  // A register that exists opens at once on a device that remembers it (Face ID, when set up,
-  // asks instead). The first start makes the register with a recovery code, after clearing what
-  // an earlier trial left sealed under a key nobody kept; rows from before encryption are sealed.
+  // A register that exists opens at once on a device that remembers it (Face ID, when set up, asks
+  // instead). The first start seals a new register under a secret kept on the device until the user
+  // chooses a password, after clearing what an old trial left; rows from before encryption are sealed.
   const started = useRef(false)
   useEffect(() => {
     // Strict mode runs this twice; a register must be made once
@@ -91,8 +88,7 @@ export function App() {
       }
       if (!(await hasPlainRows())) await clearTrialRows()
       const code = generateRecoveryCode()
-      await writeVault(await setupVault(code))
-      await writeRecoveryCode(code)
+      await writeVaultWithSecret(await setupVault(code), code)
       await migrate()
     })()
   }, [])
@@ -150,7 +146,6 @@ export function App() {
   const [gateTick, setGateTick] = useState(0)
   const onGateChange = useCallback(() => setGateTick((n) => n + 1), [])
   const [canLock, setCanLock] = useState(true)
-  const [nudge, setNudge] = useState(false)
   useEffect(() => {
     if (!openId || isDemo || vault.status !== 'open') return
     const open = vault.open
@@ -159,11 +154,7 @@ export function App() {
       try {
         const [remember, faceId, device] = await Promise.all([readRemember(), readPasskey(), readDeviceKey()])
         if (remember && !faceId && device?.dekId !== open.dekId) await writeDeviceKey(await makeDeviceKey(open))
-        const [code, acked] = await Promise.all([readRecoveryCode(), readRecoveryAck()])
-        if (live) {
-          setCanLock(!remember || !!faceId)
-          setNudge(!!code && !acked)
-        }
+        if (live) setCanLock(!remember || !!faceId)
       } catch (err) {
         console.error(errorText(err))
       }
@@ -350,7 +341,7 @@ export function App() {
         )}
       </header>
 
-      {isDemo ? <DemoBanner stepsOpen={installSteps} /> : nudge && <RecoveryBanner onSettings={route.view === 'settings'} />}
+      {isDemo && <DemoBanner stepsOpen={installSteps} />}
 
       <main className="stack">
         <ErrorBoundary>

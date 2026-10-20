@@ -1,6 +1,6 @@
 # Personvern i Ting
 
-Oppdatert: 19.10.26
+Oppdatert: 20.10.26
 
 Det du legger inn, lagres kryptert på enheten din.
 
@@ -15,10 +15,12 @@ Det du legger inn, lagres kryptert på enheten din.
 | Hvilke egenskaper du har skjult i tabellen, og bredden på kolonnene | I nettleseren | Ja |
 | CSV og utskrift | Der du legger dem | Nei, de er laget for å leses |
 
-Appen krypterer med AES-256-GCM. Appen lager en gjenopprettingskode som åpner
-sikkerhetskopier og filer på en ny enhet. Enheten du bruker, husker nøkkelen i
-nettleseren, så appen åpner uten spørsmål. Koden vises i Innstillinger. Dataene
-kan ikke åpnes på en ny enhet hvis du mister koden.
+Appen krypterer med AES-256-GCM. Passordet du velger, åpner sikkerhetskopier
+og filer på en ny enhet. Appen lagrer ikke passordet. Til du velger et, låser
+appen nøkkelen med en tilfeldig kode som ligger kryptert i nettleseren og aldri
+forlater enheten. Enheten du bruker, husker nøkkelen i nettleseren, så appen
+åpner uten spørsmål. Dataene kan ikke åpnes på en ny enhet hvis du glemmer
+passordet.
 
 ## Det som forlater enheten
 

@@ -1,20 +1,5 @@
-import { href } from '../lib/route'
 import { t } from '../lib/strings'
 import { installSteps, useInstall } from '../lib/useInstall'
-
-// One quiet line under the top bar until the recovery code is marked as saved
-export function RecoveryBanner({ onSettings }: { onSettings: boolean }) {
-  return (
-    <div className="trial-banner" role="note">
-      <span>{t.recovery.notice}</span>
-      {!onSettings && (
-        <a className="trial-link" href={href.settings}>
-          {t.recovery.show}
-        </a>
-      )}
-    </div>
-  )
-}
 
 const stepsId = 'install-steps'
 

@@ -622,31 +622,38 @@ export function writeRemember(on: boolean): Promise<void> {
   return setSetting(rememberName, on)
 }
 
-// The recovery code the app made, kept sealed so Innstillinger can show it again; gone once the
-// user chooses a passphrase of their own, which the code no longer opens
+// The secret a new register is sealed with, kept sealed until the user chooses a password, which
+// rewraps the key and deletes it. Its presence means the register has no password. The salt of the
+// vault it wraps tells a vault taken over since without an Argon2 run; 1.16 stored the code alone.
 const recoveryName = 'recoveryCode'
 const recoveryAckName = 'recoveryAck'
 
-export function readRecoveryCode(): Promise<string | undefined> {
-  return getSealedSetting<string>(recoveryName)
+export type RegisterSecret = { code: string; salt?: string | undefined }
+
+export async function readRecoveryCode(): Promise<RegisterSecret | undefined> {
+  const value = await getSealedSetting<unknown>(recoveryName)
+  if (typeof value === 'string') return { code: value }
+  const secret = value as Partial<RegisterSecret> | undefined
+  return typeof secret?.code === 'string' ? { code: secret.code, salt: typeof secret.salt === 'string' ? secret.salt : undefined } : undefined
 }
 
-export async function writeRecoveryCode(code: string): Promise<void> {
-  await setSealedSetting(recoveryName, code)
-  await deleteSetting(recoveryAckName)
+export function writeRecoveryCode(secret: RegisterSecret): Promise<void> {
+  return setSealedSetting(recoveryName, secret)
+}
+
+// A new register: the vault and its secret are stored together, or a vault would be left that
+// nothing known opens
+export async function writeVaultWithSecret(vault: Vault, code: string): Promise<void> {
+  const sealed = await sealJson(currentKey().key, { code, salt: vault.kdf.salt })
+  await db.transaction('rw', db.settings, async () => {
+    await db.settings.put({ key: recoveryName, sealed })
+    await db.settings.put({ key: vaultKey, value: vault })
+  })
 }
 
 export async function deleteRecoveryCode(): Promise<void> {
   await deleteSetting(recoveryName)
   await deleteSetting(recoveryAckName)
-}
-
-export async function readRecoveryAck(): Promise<boolean> {
-  return (await getSetting<boolean>(recoveryAckName)) === true
-}
-
-export function writeRecoveryAck(): Promise<void> {
-  return setSetting(recoveryAckName, true)
 }
 
 // Kategori was a built-in field until 21 September 2026. Things from before
