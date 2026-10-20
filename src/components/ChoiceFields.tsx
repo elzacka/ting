@@ -1,5 +1,5 @@
 import type { Item } from '../db/schema'
-import { categoryColumnId, type ChoiceDef } from '../lib/fields'
+import type { ChoiceDef } from '../lib/fields'
 import { columnId } from '../lib/grid'
 import { pathsInUse, spellLike } from '../lib/paths'
 import { recentValues } from '../lib/values'
@@ -8,13 +8,6 @@ import { ChoiceMenu } from './ChoiceMenu'
 // Column ids are JSON; encoded they are safe as element ids
 export function domId(prefix: string, id: string): string {
   return `${prefix}-${encodeURIComponent(id)}`
-}
-
-// The first thing starts with the Kategori of the newest thing, like a new row in the table
-export function firstCells(items: readonly Item[]): Record<string, string> {
-  const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
-  const spec = newest?.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId)
-  return spec ? { [categoryColumnId]: String(spec.value) } : {}
 }
 
 export function ChoiceFields({

@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import { isDeviceKeyRecord, type DeviceKeyRecord } from '../lib/deviceKey'
 import { passkeySchema, type PasskeyRecord } from '../lib/passkey'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
 import { fromStored, legacyAsSpecs, storedItemSchema, toStored } from '../lib/backup'
@@ -592,6 +593,60 @@ export function writePasskey(record: PasskeyRecord): Promise<void> {
 
 export function deletePasskey(): Promise<void> {
   return deleteSetting(passkeyKey)
+}
+
+// The device's own way in without a question (`lib/deviceKey.ts`): in the clear like the vault,
+// since only this browser holds the key that opens it; never in a backup or the folder.
+const deviceKeyName = 'deviceKey'
+const rememberName = 'rememberDevice'
+
+export async function readDeviceKey(): Promise<DeviceKeyRecord | null> {
+  const value = await getSetting(deviceKeyName)
+  return isDeviceKeyRecord(value) ? value : null
+}
+
+export function writeDeviceKey(record: DeviceKeyRecord): Promise<void> {
+  return setSetting(deviceKeyName, record)
+}
+
+export function deleteDeviceKey(): Promise<void> {
+  return deleteSetting(deviceKeyName)
+}
+
+// Off only when the user turned it off; a device remembers by default
+export async function readRemember(): Promise<boolean> {
+  return (await getSetting<boolean>(rememberName)) !== false
+}
+
+export function writeRemember(on: boolean): Promise<void> {
+  return setSetting(rememberName, on)
+}
+
+// The recovery code the app made, kept sealed so Innstillinger can show it again; gone once the
+// user chooses a passphrase of their own, which the code no longer opens
+const recoveryName = 'recoveryCode'
+const recoveryAckName = 'recoveryAck'
+
+export function readRecoveryCode(): Promise<string | undefined> {
+  return getSealedSetting<string>(recoveryName)
+}
+
+export async function writeRecoveryCode(code: string): Promise<void> {
+  await setSealedSetting(recoveryName, code)
+  await deleteSetting(recoveryAckName)
+}
+
+export async function deleteRecoveryCode(): Promise<void> {
+  await deleteSetting(recoveryName)
+  await deleteSetting(recoveryAckName)
+}
+
+export async function readRecoveryAck(): Promise<boolean> {
+  return (await getSetting<boolean>(recoveryAckName)) === true
+}
+
+export function writeRecoveryAck(): Promise<void> {
+  return setSetting(recoveryAckName, true)
 }
 
 // Kategori was a built-in field until 21 September 2026. Things from before

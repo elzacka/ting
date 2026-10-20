@@ -1,6 +1,6 @@
 import type { Item } from '../db/schema'
 import { categoryColumnId, type ColumnDef } from './fields'
-import { cellsFrom } from './grid'
+import { cellsFrom, columnId } from './grid'
 import { parsePath } from './paths'
 
 // Where a new thing starts, wherever it is added (elzacka, 2026-10-11): a list holding
@@ -50,4 +50,11 @@ export function startValues(defs: readonly ColumnDef[], items: readonly Item[]):
     if (use) out[d.id] = use.trim()
   }
   return out
+}
+
+// The first thing starts with the Kategori of the newest thing, like a new row in the table
+export function firstCells(items: readonly Item[]): Record<string, string> {
+  const newest = items.reduce<Item | null>((a, i) => (a === null || i.createdAt > a.createdAt ? i : a), null)
+  const spec = newest?.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === categoryColumnId)
+  return spec ? { [categoryColumnId]: String(spec.value) } : {}
 }

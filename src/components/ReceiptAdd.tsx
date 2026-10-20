@@ -1,23 +1,21 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { addProperty, getSealedSetting, getSetting, saveBatch, setSealedSetting } from '../db/db'
+import { addProperty, getSetting, saveBatch } from '../db/db'
 import type { Item, Property } from '../db/schema'
 import { asImage } from '../lib/backup'
 import { errorText } from '../lib/errors'
 import { categoryColumnId, choiceDefs, columnDefs, propColumns, type ChoiceDef, type FieldSettings } from '../lib/fields'
-import { findCorners, scanLook, warp, type Quad, type Rgba } from '../lib/flatten'
+import { findCorners, type Quad, type Rgba } from '../lib/flatten'
 import { formatNumber } from '../lib/format'
 import { columnId, specsFrom } from '../lib/grid'
-import { readText } from '../lib/ocr'
-import { parseReceipt, splitAmount, storeKey } from '../lib/receipt'
 import { fileToRgba, rgbaToJpeg, takeReceipt } from '../lib/receiptImage'
-import { receiptGuess } from '../lib/receiptGuess'
-import { startValues } from '../lib/startValues'
-import { closestValue, dateValue, linesSum, longDate, receiptColumns, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
+import { readReceipt, rememberStore, sourceSide } from '../lib/receiptRead'
+import { firstCells, startValues } from '../lib/startValues'
+import { dateValue, linesSum, receiptColumns, reviewId, receiptInputs, receiptReadingKey, type ReceiptRow } from '../lib/receiptItems'
 import { href, navigate } from '../lib/route'
 import { t } from '../lib/strings'
 import { useEscape } from '../lib/useEscape'
 import { recentValues } from '../lib/values'
-import { ChoiceFields, firstCells } from './ChoiceFields'
+import { ChoiceFields } from './ChoiceFields'
 import { ChoiceMenu } from './ChoiceMenu'
 import { CornerEditor } from './CornerEditor'
 import { Icon } from './Icons'
@@ -33,25 +31,6 @@ type Props = {
 }
 
 type Stage = 'pick' | 'reading' | 'review' | 'corners'
-
-// Long side of the photo kept for cropping, and width of the stored receipt:
-// enough to read every line, small enough to keep on every thing it bought
-const sourceSide = 2400
-const receiptWidth = 1200
-// The store a receipt names, as the user last called it: keyed by org number
-// and postcode, or the card terminal when the receipt prints neither
-const storesKey = 'receiptStores'
-
-// A list sealed under a key this device no longer holds reads as empty, like
-// column widths: the next save seals it again under the current key
-async function knownStores(): Promise<Record<string, string>> {
-  try {
-    return (await getSealedSetting<Record<string, string>>(storesKey)) ?? {}
-  } catch (err) {
-    console.error(errorText(err))
-    return {}
-  }
-}
 
 function specValue(item: Item, id: string): string {
   const spec = item.specs.find((s) => columnId({ key: s.key, unit: s.unit }) === id)
@@ -97,7 +76,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
   const defs = useMemo(() => columnDefs(fields, properties, items), [fields, properties, items])
   const category = cells[categoryColumnId]?.trim() ?? ''
   // The store and the date are filled above from the receipt, so they are not asked twice
-  const own = (d: ChoiceDef) => d.id !== cols.store.id && d.id !== cols.date.id
+  const own = (d: ChoiceDef) => d.id !== cols.store.id && d.id !== cols.date.id && d.id !== reviewId
   const choices = useMemo(() => choiceDefs(defs, category).filter(own), [defs, category, cols])
   const lists = useMemo(
     () => defs.filter((d): d is ChoiceDef => d.kind === 'prop' && (d.type === 'choice' || d.type === 'path') && own(d)),
@@ -135,32 +114,21 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
     }
   }
 
-  // Crop and straighten, keep the scan as the proof of purchase, read the text
   async function read(img: Rgba, corners: Quad) {
     setStage('reading')
-    const flat = warp(img, corners, receiptWidth)
-    setScan(await rgbaToJpeg(scanLook(flat), 0.75))
-    const r = parseReceipt(await readText(flat), new Date())
-    const known = await knownStores()
-    const k = storeKey(r)
-    setKey(k)
-    const storeNow = (k && known[k]) || (r.storeName ? closestValue(r.storeName, storeValues) : '')
-    setStore(storeNow)
-    setDate(r.date ? longDate(r.date) : '')
+    const r = await readReceipt(img, corners, { items, cols, storeValues, lists })
+    setScan(r.scan)
+    setKey(r.key)
+    setStore(r.store)
+    setDate(r.date)
     setTotal(r.total)
-    // One thing per unit: two duvets are two things, each with its share
-    const next: ReceiptRow[] = r.lines.flatMap((line) =>
-      splitAmount(line.amount, line.quantity).map((price) => ({ include: true, name: line.name, price: formatNumber(price), photos: [] })),
-    )
-    setRows(next.length > 0 ? next : [{ include: true, name: '', price: '', photos: [] }])
-    // Status and the place start where every new thing does, whatever the lines say
-    const guess = { ...receiptGuess(next.map((row) => row.name), storeNow, cols.store.id, lists, items), ...startValues(lists, items) }
+    setRows(r.rows)
     setCells((prev) => {
       const out = { ...prev }
-      for (const [id, v] of Object.entries(guess)) if (!chosenIds.current.has(id)) out[id] = v
+      for (const [id, v] of Object.entries(r.guess)) if (!chosenIds.current.has(id)) out[id] = v
       return out
     })
-    setNote(next.length > 0 ? null : t.receipt.noLines)
+    setNote(r.noLines ? t.receipt.noLines : null)
     setStage('review')
   }
 
@@ -195,9 +163,7 @@ export function ReceiptAdd({ items, properties, fields, onDirtyChange }: Props) 
       for (const p of cols.missing) await addProperty(p)
       const more = specsFrom(cells, propColumns(choices))
       await saveBatch(receiptInputs(rows, cols, { store, date: date || null, more, receipt: scan }), [])
-      if (key && store.trim() !== '') {
-        await setSealedSetting(storesKey, { ...(await knownStores()), [key]: store.trim() })
-      }
+      await rememberStore(key, store)
       onDirtyChange(false)
       navigate(href.list)
     } catch (err) {

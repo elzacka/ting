@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { deletePasskey, readPasskey, writePasskey, writeVault } from '../db/db'
+import { isDemo } from '../lib/useInstall'
+import { deleteDeviceKey, deletePasskey, deleteRecoveryCode, getSetting, readPasskey, readRemember, writePasskey, writeRemember, writeVault } from '../db/db'
+import { receiptReadingKey } from '../lib/receiptItems'
 import type { Item, Property } from '../db/schema'
 import { categoryNames, sharedByAll } from '../lib/categories'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
@@ -13,6 +15,8 @@ import { useNarrow } from '../lib/useNarrow'
 import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
 import { AboutApp } from './AboutApp'
 import { ImportExport } from './ImportExport'
+import { ReceiptBatch } from './ReceiptBatch'
+import { RecoveryCode } from './RecoveryCode'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
@@ -30,6 +34,8 @@ type Props = {
   folder: ReturnType<typeof useFolderSync>
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
+  // Remembering the device or Face ID changes whether the app can lock
+  onGateChange: () => void
   hidden: Set<string>
   onHiddenChange: (ids: readonly string[], visible: boolean) => void
   wrap: boolean
@@ -52,6 +58,7 @@ export function SettingsPage({
   folder,
   autoLock,
   onAutoLockChange,
+  onGateChange,
   hidden,
   onHiddenChange,
   wrap,
@@ -84,6 +91,10 @@ export function SettingsPage({
   // The table's own choices are desk work, and so is a folder where the
   // browser cannot reach one: no browser on a phone or a tablet can
   const narrow = useNarrow()
+  const [reading, setReading] = useState(false)
+  useEffect(() => {
+    void getSetting<boolean>(receiptReadingKey).then((on) => setReading(on === true))
+  }, [])
   const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
   const showFolder = folderSupported || !touch
   // Face ID or Touch ID on this device, where it can verify its user. A copy
@@ -105,11 +116,25 @@ export function SettingsPage({
     }
   }, [])
 
+  // Whether this device opens the app without a question; the code row follows a change of passphrase
+  const [remember, setRemember] = useState(true)
+  const [codeVersion, setCodeVersion] = useState(0)
+  useEffect(() => {
+    void readRemember().then(setRemember)
+  }, [])
+  async function toggleRemember(on: boolean) {
+    await writeRemember(on)
+    if (!on) await deleteDeviceKey()
+    setRemember(on)
+    onGateChange()
+  }
+
   async function togglePasskey(on: boolean) {
     setPasskeyMessage(null)
     if (!on) {
       await deletePasskey()
       setPasskey(null)
+      onGateChange()
       return
     }
     setPasskeyBusy(true)
@@ -119,6 +144,7 @@ export function SettingsPage({
     if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere(unlockMethod()))
     await writePasskey(made)
     setPasskey(made)
+    onGateChange()
   }
 
   // The trial's key, wrapped under the passphrase chosen here: what was made
@@ -141,6 +167,9 @@ export function SettingsPage({
     const v = await changePassphrase(oldPass, newPass)
     if (!v) return setPassMessage(t.vault.wrong)
     await writeVault(v)
+    await deleteRecoveryCode()
+    setCodeVersion((n) => n + 1)
+    onGateChange()
     setOldPass('')
     setNewPass('')
     setChangingPass(false)
@@ -174,13 +203,12 @@ export function SettingsPage({
     <div className="settings narrow">
       <h1 className="title">{t.settings.title}</h1>
 
+      {/* The demo shows every setting and changes none */}
+      <fieldset className="settings-body" disabled={isDemo}>
+
       {trial && (
         <SettingGroup title={t.vault.setupTitle}>
           <div className="setting-row">
-            <div className="setting-text">
-              <p className="setting-desc">{t.trial.why}</p>
-              <p className="setting-desc">{t.trial.lost}</p>
-            </div>
             <form className="stack-sm" onSubmit={(e) => void onSetup(e)}>
               <KeychainName />
               <div className="field">
@@ -303,13 +331,19 @@ export function SettingsPage({
       {!trial && (
         <SettingGroup title={t.vault.lockTitle}>
           <div className="setting-row">
-            <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
+            <SettingSwitch title={t.vault.rememberOption} checked={remember} onChange={(on) => void toggleRemember(on)} />
           </div>
+          {/* A device that opens without a question has nothing to lock, unless Face ID asks */}
+          {(!remember || passkey !== null) && (
+            <div className="setting-row">
+              <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
+            </div>
+          )}
+          <RecoveryCode version={codeVersion} onAck={onGateChange} />
           {canPasskey && (
             <div className="setting-row">
               <SettingSwitch
                 title={t.vault.passkeyOption(unlockMethod())}
-                description={t.vault.passkeyWhere}
                 checked={passkey !== null}
                 disabled={passkeyBusy}
                 onChange={(on) => void togglePasskey(on)}
@@ -440,14 +474,14 @@ export function SettingsPage({
         </SettingGroup>
       )}
 
-      {/* Receipts are read from the phone's add screen */}
-      {narrow && (
-        <SettingGroup title={t.receipt.settingsTitle}>
-          <ReceiptSettings />
-        </SettingGroup>
-      )}
+      {/* One receipt at a time from the phone's add screen; a batch from any screen, here */}
+      <SettingGroup title={t.receipt.settingsTitle}>
+        <ReceiptSettings onChange={setReading} />
+        {reading && <ReceiptBatch items={items} properties={properties} fields={fields} />}
+      </SettingGroup>
 
       <AboutApp />
+      </fieldset>
     </div>
   )
 }

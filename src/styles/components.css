@@ -2366,6 +2366,13 @@ section {
   display: grid;
 }
 
+.settings-body {
+  display: contents;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
 .settings > .title {
   padding-bottom: var(--s-4);
 }
@@ -2902,4 +2909,13 @@ body.is-moving-column * {
 
 .grid th.is-drop-after::before {
   right: 0;
+}
+
+/* The recovery code: one block that wraps at its dashes and selects whole */
+.recovery-code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-md, 1rem);
+  letter-spacing: 0.05em;
+  overflow-wrap: anywhere;
+  user-select: all;
 }

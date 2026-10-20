@@ -5,13 +5,19 @@ import {
   deletePasskey,
   ensureCategoryProperty,
   hasPlainRows,
+  readDeviceKey,
   readFieldSettings,
   readItems,
   readPasskey,
   readProperties,
+  readRecoveryAck,
+  readRecoveryCode,
+  readRemember,
   readVault,
   resetDemo,
   sealPlaintextRows,
+  writeDeviceKey,
+  writeRecoveryCode,
   writeVault,
 } from './db/db'
 import type { Item, Property } from './db/schema'
@@ -21,6 +27,8 @@ import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { errorText } from './lib/errors'
 import { hasKey, initVault, lock, setupVault, startTrial, unlock, unlockWithKey, useVault } from './lib/vault'
+import { makeDeviceKey, openWithDeviceKey } from './lib/deviceKey'
+import { generateRecoveryCode } from './lib/recoveryCode'
 import { exposedPasskey, openWithPasskey, passkeySupported, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
 import { categoryColumnId, type FieldSettings } from './lib/fields'
 import type { Filters } from './lib/filters'
@@ -42,26 +50,29 @@ import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
 import { SettingsPage } from './components/SettingsPage'
 import { UpdateButton } from './components/UpdateButton'
-import { DemoBanner, DownloadButton, TrialBanner } from './components/TrialBanner'
+import { DemoBanner, DownloadButton, RecoveryBanner } from './components/TrialBanner'
 import { isDemo } from './lib/useInstall'
 import { demoRegister } from './lib/demo'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 export function App() {
   const hashRoute = useRoute()
-  // The demo adds nothing and has no settings: those routes show the register
-  const route: Route = isDemo && ['settings', 'add', 'receipt'].includes(hashRoute.view) ? { view: 'list' } : hashRoute
+  // The demo adds nothing: those routes show the register. Innstillinger shows, locked.
+  const route: Route = isDemo && ['add', 'receipt'].includes(hashRoute.view) ? { view: 'list' } : hashRoute
   const narrow = useNarrow()
   const vault = useVault()
   // A key in memory, from a passphrase or from trying the app
   const unlocked = hasKey(vault)
-  const trial = vault.status === 'trial'
   // The demo's reads wait until the examples are in, or they would open what an earlier tab left
   const [demoReady, setDemoReady] = useState(false)
-  // No passphrase yet: the app opens as a trial, after clearing what an
-  // earlier one left sealed under a key nobody kept. Rows from before
-  // encryption are the exception: they go to the setup screen as they are.
+  // A register that exists opens at once on a device that remembers it (Face ID, when set up,
+  // asks instead). The first start makes the register with a recovery code, after clearing what
+  // an earlier trial left sealed under a key nobody kept; rows from before encryption are sealed.
+  const started = useRef(false)
   useEffect(() => {
+    // Strict mode runs this twice; a register must be made once
+    if (started.current) return
+    started.current = true
     void (async () => {
       if (isDemo) {
         await startTrial()
@@ -70,9 +81,19 @@ export function App() {
         return setDemoReady(true)
       }
       const stored = await readVault()
-      if (stored || (await hasPlainRows())) return initVault(stored)
-      await clearTrialRows()
-      await startTrial()
+      if (stored) {
+        const faceId = await readPasskey()
+        const device = faceId?.dekId === stored.dekId ? null : await readDeviceKey()
+        const opened = device ? await openWithDeviceKey(device, stored.dekId) : null
+        initVault(stored)
+        if (opened && unlockWithKey(opened)) await migrate()
+        return
+      }
+      if (!(await hasPlainRows())) await clearTrialRows()
+      const code = generateRecoveryCode()
+      await writeVault(await setupVault(code))
+      await writeRecoveryCode(code)
+      await migrate()
     })()
   }, [])
   // Watching keys, not rows: a change anywhere in the table re-runs the read,
@@ -84,12 +105,6 @@ export function App() {
   const folder = useFolderSync()
   usePlainPaste()
   useKeyboardInset()
-
-  async function onSetup(passphrase: string) {
-    const v = await setupVault(passphrase)
-    await writeVault(v)
-    await migrate()
-  }
 
   async function onUnlock(passphrase: string) {
     const ok = await unlock(passphrase)
@@ -128,6 +143,35 @@ export function App() {
     await migrate()
     return 'ok'
   }
+
+  // A device remembers the register it has open, unless the user turned that off or Face ID asks
+  // instead. Runs for a passphrase unlock and for a vault taken over from a file alike.
+  const openId = vault.status === 'open' ? vault.open.dekId : null
+  const [gateTick, setGateTick] = useState(0)
+  const onGateChange = useCallback(() => setGateTick((n) => n + 1), [])
+  const [canLock, setCanLock] = useState(true)
+  const [nudge, setNudge] = useState(false)
+  useEffect(() => {
+    if (!openId || isDemo || vault.status !== 'open') return
+    const open = vault.open
+    let live = true
+    void (async () => {
+      try {
+        const [remember, faceId, device] = await Promise.all([readRemember(), readPasskey(), readDeviceKey()])
+        if (remember && !faceId && device?.dekId !== open.dekId) await writeDeviceKey(await makeDeviceKey(open))
+        const [code, acked] = await Promise.all([readRecoveryCode(), readRecoveryAck()])
+        if (live) {
+          setCanLock(!remember || !!faceId)
+          setNudge(!!code && !acked)
+        }
+      } catch (err) {
+        console.error(errorText(err))
+      }
+    })()
+    return () => {
+      live = false
+    }
+  }, [openId, gateTick])
 
   // Data written by earlier versions is brought forward on every unlock: rows
   // from before encryption get sealed, a legacy Kategori gets its property.
@@ -208,11 +252,11 @@ export function App() {
     dirty.current = d
     setUnsaved(d)
   }, [])
-  useOptionKey('I', unlocked && !isDemo && route.view !== 'settings', () => {
+  useOptionKey('I', unlocked && route.view !== 'settings', () => {
     if (!dirty.current || window.confirm(t.confirm.unsaved)) navigate(href.settings)
   })
   // Paused while something is unsaved: a lock would drop it. Decided by elzacka.
-  useAutoLock(vault.status === 'open' && autoLock && !unsaved)
+  useAutoLock(vault.status === 'open' && autoLock && canLock && !unsaved)
 
   // The folder is not being written: permission gone, a write failed, or a
   // choice is waiting on Innstillinger. Said on the icon, since that is the
@@ -280,13 +324,13 @@ export function App() {
               </button>
             )}
             {/* The phone locks when the app is closed; only the desk needs a lock button */}
-            {vault.status === 'open' && !narrow && (
+            {vault.status === 'open' && canLock && !narrow && (
               <button type="button" className="btn btn-icon" aria-label={t.lock.lock} onClick={lockApp}>
                 <Icon name="lockOpen" />
               </button>
             )}
             {isDemo && <DownloadButton stepsOpen={installSteps} onSteps={setInstallSteps} />}
-            {unlocked && !narrow && !isDemo && (
+            {unlocked && !narrow && (
               <a
                 className={`btn btn-icon${route.view === 'settings' ? ' is-active' : ''}${folderStalled ? ' is-stalled' : ''}`}
                 href={href.settings}
@@ -306,18 +350,18 @@ export function App() {
         )}
       </header>
 
-      {isDemo ? <DemoBanner stepsOpen={installSteps} /> : trial && <TrialBanner onSettings={route.view === 'settings'} />}
+      {isDemo ? <DemoBanner stepsOpen={installSteps} /> : nudge && <RecoveryBanner onSettings={route.view === 'settings'} />}
 
       <main className="stack">
         <ErrorBoundary>
           {vault.status === 'loading' ? (
             <p className="hint">{t.list.loading}</p>
           ) : vault.status === 'none' ? (
-            <LockScreen mode="setup" onSetup={onSetup} />
+            <p className="hint">{t.list.loading}</p>
           ) : vault.status === 'locked' && passkey === undefined ? (
             <p className="hint">{t.list.loading}</p>
           ) : vault.status === 'locked' ? (
-            <LockScreen mode="unlock" onUnlock={onUnlock} onPasskey={passkey ? onPasskey : undefined} idle={vault.idle} />
+            <LockScreen onUnlock={onUnlock} onPasskey={passkey ? onPasskey : undefined} idle={vault.idle} />
           ) : items === undefined || properties === undefined || fields === undefined ? (
             <p className="hint">{t.list.loading}</p>
           ) : (
@@ -344,6 +388,7 @@ export function App() {
               stalled={folderStalled}
               autoLock={autoLock}
               onAutoLockChange={toggleAutoLock}
+              onGateChange={onGateChange}
               hidden={hidden}
               onHiddenChange={toggleHidden}
               wrap={wrap}
@@ -379,6 +424,7 @@ type ScreenProps = {
   stalled: boolean
   autoLock: boolean
   onAutoLockChange: (on: boolean) => void
+  onGateChange: () => void
   hidden: Set<string>
   onHiddenChange: (ids: readonly string[], visible: boolean) => void
   wrap: boolean
@@ -408,6 +454,7 @@ function Screen({
   stalled,
   autoLock,
   onAutoLockChange,
+  onGateChange,
   hidden,
   onHiddenChange,
   wrap,
@@ -456,6 +503,7 @@ function Screen({
         folder={folder}
         autoLock={autoLock}
         onAutoLockChange={onAutoLockChange}
+        onGateChange={onGateChange}
         hidden={hidden}
         onHiddenChange={onHiddenChange}
         wrap={wrap}

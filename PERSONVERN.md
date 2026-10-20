@@ -15,8 +15,10 @@ Det du legger inn, lagres kryptert på enheten din.
 | Hvilke egenskaper du har skjult i tabellen, og bredden på kolonnene | I nettleseren | Ja |
 | CSV og utskrift | Der du legger dem | Nei, de er laget for å leses |
 
-Appen krypterer med AES-256-GCM. Nøkkelen kommer fra passordet ditt, og
-passordet lagres ingen steder. Dataene kan ikke åpnes hvis du mister passordet.
+Appen krypterer med AES-256-GCM. Appen lager en gjenopprettingskode som åpner
+sikkerhetskopier og filer på en ny enhet. Enheten du bruker, husker nøkkelen i
+nettleseren, så appen åpner uten spørsmål. Koden vises i Innstillinger. Dataene
+kan ikke åpnes på en ny enhet hvis du mister koden.
 
 ## Det som forlater enheten
 

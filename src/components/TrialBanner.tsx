@@ -1,19 +1,15 @@
 import { href } from '../lib/route'
 import { t } from '../lib/strings'
 import { installSteps, useInstall } from '../lib/useInstall'
-import { useNarrow } from '../lib/useNarrow'
 
-// One quiet line under the top bar of the installed app while there is no
-// passphrase: that what is added now goes when the app closes, and the way to
-// keep it. It scrolls away with the page.
-export function TrialBanner({ onSettings }: { onSettings: boolean }) {
-  const narrow = useNarrow()
+// One quiet line under the top bar until the recovery code is marked as saved
+export function RecoveryBanner({ onSettings }: { onSettings: boolean }) {
   return (
     <div className="trial-banner" role="note">
-      <span>{narrow ? t.trial.noticePhone : t.trial.notice}</span>
+      <span>{t.recovery.notice}</span>
       {!onSettings && (
         <a className="trial-link" href={href.settings}>
-          {t.trial.setPassphrase}
+          {t.recovery.show}
         </a>
       )}
     </div>

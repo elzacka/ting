@@ -5,7 +5,7 @@ export const t = {
   lock: { lock: 'Lås appen' },
   vault: {
     setupTitle: 'Velg et passord',
-    passphrase: 'Passord',
+    passphrase: 'Gjenopprettingskode eller passord',
     show: 'Vis passord',
     hide: 'Skjul passord',
     repeat: 'Gjenta passordet',
@@ -15,15 +15,15 @@ export const t = {
     unlockTitle: 'Appen er låst',
     autoLocked: 'Appen låste seg etter 10 minutter uten bruk',
     unlock: 'Lås opp',
-    wrong: 'Feil passord',
+    wrong: 'Feil kode eller passord',
     working: 'Låser opp…',
     // Lås og passord: the idle lock, Face ID or Touch ID in place of the
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
+    rememberOption: 'Åpne uten spørsmål på denne enheten',
     // The method is named for the platform (lib/unlockMethod.ts): Face ID or Touch ID, Windows Hello, the screen lock
     passkeyOption: (method: string) => `Lås opp med ${method}`,
-    passkeyWhere: 'Gjelder bare denne enheten',
     passkeyUnlock: (method: string) => `Lås opp med ${method}`,
     passkeyFailed: (method: string) => `${method[0]?.toLocaleUpperCase('nb') ?? ''}${method.slice(1)} virket ikke. Lås opp med passordet.`,
     passkeyNotHere: (method: string) => `Denne enheten kan ikke låse opp appen med ${method}`,
@@ -35,7 +35,7 @@ export const t = {
     changeShort: 'Endre',
     changed: 'Du har endret passordet',
     folderForeign: (name: string) =>
-      `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det passordet.`,
+      `Mappen «${name}» er låst med en annen kode eller et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det.`,
     folderOpen: 'Åpne mappen',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
@@ -312,13 +312,17 @@ export const t = {
     notice: 'Dette er en demo med eksempler. Last ned appen for å registrere tingene dine.',
   },
   // Before a passphrase: the line under the top bar
+  // The recovery code the app makes for a new register
+  recovery: {
+    title: 'Gjenopprettingskode',
+    what: 'Du trenger koden for å åpne en sikkerhetskopi eller fil på en ny enhet. Lagre den i passordbehandleren, eller skriv den ned',
+    copy: 'Kopier',
+    copied: 'Kopiert',
+    saved: 'Jeg har lagret den',
+    notice: 'Lagre gjenopprettingskoden. Uten den kan du ikke åpne sikkerhetskopier på en ny enhet.',
+    show: 'Vis koden',
+  },
   trial: {
-    notice: 'Du bruker appen i prøvemodus. Det du legger til, blir borte når du lukker den.',
-    // A phone closes the app on its own, so the phone says when, not who
-    noticePhone: 'Det du legger til, blir borte når appen lukkes',
-    setPassphrase: 'Velg passord for å bevare det',
-    why: 'Passordet krypterer alt du legger til',
-    lost: 'Ingen kan åpne registeret hvis du mister passordet',
     folderFirst: 'Velg et passord først',
     done: 'Passord valgt. Alt du har lagt til, blir bevart.',
   },
@@ -329,12 +333,12 @@ export const t = {
     columnsList: 'Egenskaper i tabellen',
     columnsShown: (shown: number, total: number) => `${shown} av ${total} vises`,
     folderTitle: 'Lagringsmappe',
-    folderNone: 'Registeret ligger bare i denne nettleseren og blir borte hvis du sletter nettstedsdata',
-    unsupported: 'Denne nettleseren kan ikke koble appen til en mappe. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Eksporter registeret».',
+    folderNone: 'Velg lagringsmappe for å bevare det du legger til',
+    unsupported: 'Appen kan ikke koble til en mappe her. Bruk Chrome eller Edge, eller ta en sikkerhetskopi med «Eksporter registeret».',
     choose: 'Velg mappe',
     chooseShort: 'Velg',
     checking: 'Sjekker mappen…',
-    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare i nettleseren.`,
+    needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare på enheten.`,
     grant: 'Gi tilgang',
     connected: (name: string) => `Appen lagrer i mappen «${name}».`,
     lastWritten: (time: string) => `Sist lagret kl. ${time}.`,
@@ -362,12 +366,16 @@ export const t = {
     unbalanced: (sum: string, total: string) => `Prisene blir ${sum} til sammen, men kvitteringen sier ${total}. Sjekk prisene.`,
     noLines: 'Fant ingen ting på kvitteringen. Skriv dem inn selv, eller ta et nytt bilde rett ovenfra.',
     failed: 'Kunne ikke lese kvitteringen. Ta et nytt bilde rett ovenfra, med godt lys.',
-    // Innstillinger: receipt reading is a download, so it is switched on first
+    // Innstillinger: many receipts at once, stored without review
+    batchFiles: 'Legg til bilder',
+    batchFolder: 'Legg til fra mappe',
+    batchProgress: (done: number, total: number) => `Leser kvittering ${Math.min(done + 1, total)} av ${total}…`,
+    batchDone: (things: number, receipts: number, mark: string) =>
+      `${things} ting lagret fra ${receipts} ${receipts === 1 ? 'kvittering' : 'kvitteringer'}. Søk etter «${mark}» for å finne dem.`,
+    batchFailed: (names: readonly string[]) => `Kunne ikke lese: ${names.join(', ')}.`,
     settingsTitle: 'Kvitteringer',
     option: 'Les tekst på kvitteringer',
-    what: 'Appen laster ned KI-modeller og verktøy på omtrent 45 MB, så den kan kjenne igjen tekst på kvitteringer',
     downloading: 'Laster ned tekstgjenkjenning…',
-    ready: 'Klar til å lese kvitteringer',
     downloadFailed: 'Nedlastingen stoppet. Prøv igjen når du har nett.',
   },
   // The foot of Innstillinger
@@ -380,11 +388,9 @@ export const t = {
   // The register as one sealed file: exported as a backup or to another device, imported by merge or replace
   sync: {
     importTitle: 'Importer til registeret',
-    importWhat: 'Velg en fil du har eksportert fra Ting, her eller på en annen enhet',
     pick: 'Velg fil',
     imported: (date: string, time: string) => `Sist importert ${date} kl. ${time}.`,
     exportTitle: 'Eksporter registeret',
-    exportWhat: 'Hele registeret i én kryptert fil. Bruk den som sikkerhetskopi eller for å flytte registeret til en annen enhet',
     exportButton: 'Eksporter/del fil',
     // A desk only downloads: its share sheet cannot save a file
     exportDownload: 'Eksporter fil',

@@ -1,4 +1,5 @@
 import { argon2id } from '@noble/hashes/argon2.js'
+import { secretsFor } from './recoveryCode'
 
 // Everything stored is encrypted with a random data key (DEK) under AES-256-GCM. The DEK is
 // wrapped by a key derived from the passphrase with Argon2id; the wrapped DEK, salt and
@@ -93,13 +94,17 @@ export async function wrapDek(passphrase: string, kdf: KdfParams, open: OpenKey)
 
 // Wrong passphrase surfaces as a failed GCM tag check; that is turned into null.
 export async function unlockVault(passphrase: string, vault: Vault): Promise<OpenKey | null> {
-  const kek = await importAes(deriveKek(passphrase, vault.kdf))
-  try {
-    const dek = await decryptBytes(kek, fromB64(vault.wrappedDek.iv), fromB64(vault.wrappedDek.data))
-    return await openKeyFrom(dek)
-  } catch {
-    return null
+  // A recovery code typed without its dashes or in lower case is the same code
+  for (const secret of secretsFor(passphrase)) {
+    const kek = await importAes(deriveKek(secret, vault.kdf))
+    try {
+      const dek = await decryptBytes(kek, fromB64(vault.wrappedDek.iv), fromB64(vault.wrappedDek.data))
+      return await openKeyFrom(dek)
+    } catch {
+      // the next reading of what was typed
+    }
   }
+  return null
 }
 
 // Same DEK, new passphrase (or new parameters): only the wrapper changes.

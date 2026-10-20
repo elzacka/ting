@@ -48,6 +48,20 @@ export function receiptColumns(properties: readonly Property[], now: number): Re
   }
 }
 
+// Things read in a batch carry «Ikke gjennomgått» until the user has checked them; a plain list
+// column, so search, filter, print and CSV find them like any other value
+export const reviewKey = 'Gjennomgang'
+export const reviewId = columnId({ key: reviewKey, unit: null })
+export const reviewOpen = 'Ikke gjennomgått'
+export const reviewDone = 'Gjennomgått'
+
+export function reviewColumn(properties: readonly Property[], now: number): { p: Property; made: boolean } {
+  const found = properties.find((p) => p.id === reviewId)
+  return found
+    ? { p: found, made: false }
+    : { p: { id: reviewId, key: reviewKey, unit: null, type: 'choice', options: [reviewOpen, reviewDone], createdAt: now }, made: true }
+}
+
 export type ReceiptRow = { include: boolean; name: string; price: string; photos: Blob[] }
 
 // The date as the column keeps it: stored as yyyy-mm-dd in a date column, as dd.mm.yyyy in a
