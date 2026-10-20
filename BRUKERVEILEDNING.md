@@ -82,6 +82,8 @@ for å låse appen på enheten du bruker:
 - Appen spør om Face ID eller Touch ID der enheten kan det, og ellers om
   passordet. Passordbehandleren fyller det inn etter sin egen Face ID eller
   Touch ID.
+- «Husk passord» står fortsatt på hvis du lukker vinduet for Face ID eller
+  Touch ID.
 - Hengelåsen i topplinja og valget «Lås appen etter 10 minutter uten bruk»
   kommer frem.
 - Appen ber deg velge passord først hvis du ikke har et når du slår av «Husk

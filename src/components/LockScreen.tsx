@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { PasskeyFailure } from '../lib/passkey'
+import { errorText } from '../lib/errors'
 import { t } from '../lib/strings'
 import { unlockMethod } from '../lib/unlockMethod'
 import { Icon } from './Icons'
@@ -26,28 +27,49 @@ export function LockScreen(props: Props) {
     if (!onPasskey) return
     setPasskeyFailed(false)
     setBusy(true)
-    const result = await onPasskey()
-    setBusy(false)
-    if (result === 'failed') setPasskeyFailed(true)
+    try {
+      if ((await onPasskey()) === 'failed') setPasskeyFailed(true)
+    } catch (err) {
+      console.error(errorText(err))
+      setPasskeyFailed(true)
+    } finally {
+      setBusy(false)
+    }
   }
 
-  // Face ID is asked for as the lock screen shows, once: an app that opens
-  // with a glance. Closing the sheet leaves the button and the passphrase.
+  // Face ID is asked for as the lock screen shows, once: an app that opens with a glance. The
+  // browsers ask only a focused window, so a hidden or unfocused one waits for focus first.
+  // Closing the sheet leaves the button and the password.
   useEffect(() => {
-    if (!onPasskey || asked.current || document.visibilityState !== 'visible') return
-    asked.current = true
-    void tryPasskey()
+    if (!onPasskey || asked.current) return
+    const ask = () => {
+      if (asked.current || document.visibilityState !== 'visible' || !document.hasFocus()) return
+      asked.current = true
+      void tryPasskey()
+    }
+    ask()
+    window.addEventListener('focus', ask)
+    document.addEventListener('visibilitychange', ask)
+    return () => {
+      window.removeEventListener('focus', ask)
+      document.removeEventListener('visibilitychange', ask)
+    }
   }, [onPasskey])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setBusy(true)
-    const ok = await props.onUnlock(pass)
-    setBusy(false)
-    if (!ok) {
+    try {
+      if (!(await props.onUnlock(pass))) {
+        setError(t.vault.wrong)
+        passRef.current?.select()
+      }
+    } catch (err) {
+      console.error(errorText(err))
       setError(t.vault.wrong)
-      passRef.current?.select()
+    } finally {
+      setBusy(false)
     }
   }
 

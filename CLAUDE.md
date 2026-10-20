@@ -77,7 +77,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 
 ## Encryption
 
-AES-256-GCM at rest; details in `.claude/rules/encryption.md` (loads with the crypto, vault, passkey, backup, folder and db files). Any change to it needs elzacka's confirmation first. Never log a key, a PRF output or sealed content.
+AES-256-GCM at rest; details in `.claude/rules/encryption.md` (loads with the crypto, vault, passkey, backup, folder and db files). Any change to it needs elzacka's confirmation first. Never log a key or sealed content.
 
 ## Untrusted input
 
@@ -110,12 +110,14 @@ A thing holds a list of photos as `Blob`, never base64; a downloaded backup embe
 - Commit only once elzacka has run and verified the change locally (differs from global).
 - A rule about the data model or its logic (e.g. which properties belong to a category) must give the same answer everywhere it applies: registering, viewing, searching/filtering, printing/CSV.
 - Design decisions: `dev_only/designsystem.md`. One accent colour, no shadows, no illustrations, 44 px targets, visible labels.
-- The lock is a passphrase of the user's own, chosen in Innstillinger and asked once per device; until then a random secret sealed on the device (`recoveryCode`) wraps the vault, and export, the folder and «Husk passord» off open the passphrase form first. Off also sets up Face ID or Touch ID (a PRF passkey) where the device has it, silently falling back to the password. A device that remembers the register (`lib/deviceKey.ts`, on by default) opens without a question.
-- Lock button and idle lock show only where something asks again (remembering off, or Face ID on). Only the demo still runs as a trial (`startTrial`).
+- The lock is a passphrase of the user's own, chosen in Innstillinger and asked once per device.
+- Until then a random secret sealed on the device (`recoveryCode`) wraps the vault, and export, the folder and «Husk passord» off open the passphrase form first. Off also sets up Face ID or Touch ID (a passkey guarding the device key) where the device has it; closing its sheet keeps «Husk passord» on. A device that remembers the register (`lib/deviceKey.ts`, on by default) opens without a question.
+- Lock button and idle lock show only where something asks again («Husk passord» off). Only the demo still runs as a trial (`startTrial`).
 - No edit mode on desktop — the table edits in place, nothing stores before "Lagre"; on the phone `ItemDetail` stores on blur and `AddItem` on Lagre.
 - Escape is Avbryt or Lukk everywhere: a surface with one calls `useEscape` (`lib/useEscape.ts`); the one opened last answers, and a field that handles Escape itself calls `preventDefault`.
 - No mobile-mode switch: viewport size alone decides the phone layout, on any orientation.
 - The page scrolls up and down only, never sideways: a grid column holding text is `minmax(0, 1fr)` (an `auto` column grows to its longest word), a flex row with text gets `overflow-wrap: anywhere`, wide content scrolls in its own box (`.table-wrap`, `.photo-strip`), and `html` clips what is left.
 - On a phone or touch screen without folder access, "Tilpass visning" and "Lagringsmappe" are not rendered; backup goes through the share sheet instead.
-- Forms that set a passphrase carry a hidden `username` field (`KeychainName`) so password managers file it under Ting; fields that ask for another device's or a file's passphrase carry `codeField` instead, since every GitHub Pages app shares one origin and a manager offers another app's login. The lock screen carries `KeychainName` and `current-password`, so a manager fills it after its own Face ID or Touch ID. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.
+- Forms that set a passphrase carry a hidden `username` field (`KeychainName`) so password managers file it under Ting; fields that ask for another device's or a file's passphrase carry `codeField` instead, since every GitHub Pages app shares one origin and a manager offers another app's login.
+- The lock screen carries `KeychainName` and `current-password`, so a manager fills it after its own Face ID or Touch ID. `index.html` sets `viewport-fit=cover`; padding uses the safe-area insets (`--topbar-h` for the top bar), and `--kb` (from `visualViewport`) holds the on-screen keyboard's height so the phone bars sit above it.
 - `main.tsx` requests `navigator.storage.persist()` at every start outside the demo, since a browser can otherwise evict an inactive site's storage.

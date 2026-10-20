@@ -32,11 +32,31 @@ window.addEventListener('appinstalled', () => {
   notify()
 })
 
-const appModes = ['standalone', 'minimal-ui', 'window-controls-overlay', 'fullscreen'].map((m) => window.matchMedia(`(display-mode: ${m})`))
+const windowModes = ['standalone', 'minimal-ui', 'window-controls-overlay'].map((m) => window.matchMedia(`(display-mode: ${m})`))
+const fullscreen = window.matchMedia('(display-mode: fullscreen)')
+const appModes = [...windowModes, fullscreen]
+
+// Chrome reports fullscreen for any full-screen window, a tab too, so it counts only in a window
+// the app launched (its start_url carries ?app, dropped here) or that has been an app window
+const appKey = 'ting-app'
+const launchedAsApp = (() => {
+  try {
+    const url = new URL(location.href)
+    if (url.searchParams.has('app')) {
+      url.searchParams.delete('app')
+      history.replaceState(history.state, '', url)
+      sessionStorage.setItem(appKey, '1')
+    }
+    if (windowModes.some((q) => q.matches)) sessionStorage.setItem(appKey, '1')
+    return sessionStorage.getItem(appKey) === '1'
+  } catch {
+    return false
+  }
+})()
 
 function installed(): boolean {
   if (devInstalled !== null) return devInstalled
-  return appModes.some((q) => q.matches) || (navigator as { standalone?: boolean }).standalone === true
+  return windowModes.some((q) => q.matches) || (fullscreen.matches && launchedAsApp) || (navigator as { standalone?: boolean }).standalone === true
 }
 
 // Opened in a browser tab: a demo with examples, nothing added and nothing kept.

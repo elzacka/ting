@@ -113,20 +113,6 @@ export async function rewrapVault(passphrase: string, open: OpenKey, params: Kdf
   return wrapDek(passphrase, kdf, open)
 }
 
-// A second way to the same data key, on one device: a secret the authenticator hands over after
-// Face ID or Touch ID (a passkey's PRF output), stretched by HKDF. The label keeps this key
-// apart from any other use of the same secret.
-export async function keyFromSecret(secret: Uint8Array, label: string): Promise<CryptoKey> {
-  const base = await subtle.importKey('raw', secret as BufferSource, 'HKDF', false, ['deriveKey'])
-  return subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(32), info: new TextEncoder().encode(label) },
-    base,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  )
-}
-
 export async function wrapWith(kek: CryptoKey, open: OpenKey): Promise<Sealed> {
   const { iv, data } = await encryptBytes(kek, open.dek)
   return { iv: toB64(iv), data: toB64(data) }

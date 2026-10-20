@@ -1,72 +1,23 @@
 import { z } from 'zod'
-import { fromB64, keyFromSecret, randomBytes, toB64, unwrapWith, wrapWith, type OpenKey } from './crypto'
+import { fromB64, randomBytes, toB64 } from './crypto'
 import { errorText } from './errors'
 import { t } from './strings'
 
-// Face ID or Touch ID in place of the passphrase, on one device. A passkey
-// made on the device's own authenticator (WebAuthn) hands over a secret
-// through its PRF extension, and only after the user is verified; that secret
-// is the key a second copy of the data key is wrapped under. The copy is kept
-// on this device alone, never in a backup or the folder, and the passphrase
-// stays the way in everywhere else and whenever the passkey fails.
-// Decided by elzacka, 24 September 2026.
-
-const label = 'ting-passkey-1'
+// Face ID or Touch ID in front of this device's copy of the data key (lib/deviceKey.ts), as an app
+// lock: a platform passkey, user verified, its signature checked here. No PRF secret: providers give
+// it unevenly (iCloud Keychain in Chrome, 1Password). Decided by elzacka, 2026-10-20.
 
 export const passkeySchema = z.object({
   credentialId: z.string().min(1).max(1024),
-  salt: z.string().min(1).max(128),
-  wrappedDek: z.object({ iv: z.string().max(64), data: z.string().max(256) }),
+  // SubjectPublicKeyInfo, as the browser hands it over at creation
+  publicKey: z.string().min(1).max(1024),
+  algorithm: z.union([z.literal(-7), z.literal(-257)]),
   dekId: z.string().max(64),
 })
 export type PasskeyRecord = z.infer<typeof passkeySchema>
 
-// What a ceremony ended in, when it gave no key
+// What a ceremony ended in, when it did not verify the user
 export type PasskeyFailure = 'cancelled' | 'failed'
-
-type PrfResults = { prf?: { enabled?: boolean; results?: { first?: unknown } } }
-
-// The PRF secret is 32 bytes. Browsers hand it over as an ArrayBuffer or a
-// view of one, 1Password's extension as a plain array of numbers. Any other
-// form or length is refused, and so are an array with holes and 32 zeros:
-// read as an empty or a zero secret, it would wrap the data key under a key
-// anyone can derive from this code.
-export function prfBytes(first: unknown): Uint8Array | null {
-  const bytes =
-    first instanceof ArrayBuffer
-      ? new Uint8Array(first)
-      : ArrayBuffer.isView(first)
-        ? new Uint8Array(first.buffer, first.byteOffset, first.byteLength)
-        : Array.isArray(first) && Array.from(first).every((b) => Number.isInteger(b) && b >= 0 && b <= 255)
-          ? Uint8Array.from(first as number[])
-          : null
-  return bytes?.length === 32 && bytes.some((b) => b !== 0) ? bytes : null
-}
-
-// What arrived in place of a secret, never its value: enough to tell a
-// missing secret from one in the wrong form
-function shape(value: unknown): string {
-  if (value === undefined) return 'missing'
-  if (value instanceof ArrayBuffer) return `ArrayBuffer(${value.byteLength})`
-  if (ArrayBuffer.isView(value)) return `${value.constructor.name}(${value.byteLength})`
-  if (Array.isArray(value)) return `Array(${value.length})`
-  return typeof value
-}
-
-// The secret a ceremony handed over. At creation a missing one is normal:
-// some devices give it only when the passkey is used, and are asked again.
-function prfOutput(cred: PublicKeyCredential, creating: boolean): Uint8Array | null {
-  const first = (cred.getClientExtensionResults() as PrfResults).prf?.results?.first
-  const bytes = prfBytes(first)
-  if (!bytes && !(creating && first === undefined)) console.error(`Passkey secret unusable: ${shape(first)}`)
-  return bytes
-}
-
-function prfDisabled(cred: PublicKeyCredential): boolean {
-  const disabled = (cred.getClientExtensionResults() as PrfResults).prf?.enabled === false
-  if (disabled) console.error('Passkey made without a secret (prf.enabled false)')
-  return disabled
-}
 
 // Closing the sheet, or letting it time out, is a choice rather than a fault
 function failure(err: unknown): PasskeyFailure {
@@ -75,53 +26,23 @@ function failure(err: unknown): PasskeyFailure {
   return 'failed'
 }
 
-// A device that can verify its user on its own: Face ID, Touch ID or the
-// device code. Whether it also gives a PRF secret shows only when one is made.
+// A device that can verify its user on its own: Face ID, Touch ID, Windows Hello or the screen lock
 export async function passkeySupported(): Promise<boolean> {
-  if (typeof PublicKeyCredential === 'undefined') return false
   try {
-    const caps = await (
-      PublicKeyCredential as unknown as { getClientCapabilities?: () => Promise<Record<string, boolean>> }
-    ).getClientCapabilities?.()
-    if (caps && caps['extension:prf'] === false) return false
-    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+    return typeof PublicKeyCredential !== 'undefined' && (await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())
   } catch {
     return false
   }
 }
 
-async function secretFrom(credentialId: Uint8Array, salt: Uint8Array): Promise<Uint8Array | PasskeyFailure> {
+// Makes the passkey. The browsers ask only while the document has focus. One user id per device,
+// so a new passkey replaces the device's earlier one in its password list.
+export async function createPasskey(dekId: string, userId: Uint8Array): Promise<PasskeyRecord | PasskeyFailure> {
   try {
-    const cred = (await navigator.credentials.get({
-      publicKey: {
-        challenge: randomBytes(32) as BufferSource,
-        // The passkey was made on this device's own authenticator. Saying so,
-        // and preferring it, keeps the browser from offering a security key or
-        // a phone first. A password manager that saved the passkey (1Password)
-        // answers before Face ID or Touch ID whatever this asks: the page has
-        // no say in which provider holds a passkey or answers for it.
-        allowCredentials: [{ type: 'public-key', id: credentialId as BufferSource, transports: ['internal'] }],
-        hints: ['client-device'],
-        userVerification: 'required',
-        extensions: { prf: { eval: { first: salt as BufferSource } } } as AuthenticationExtensionsClientInputs,
-      } as PublicKeyCredentialRequestOptions, // hints is newer than the DOM types
-    })) as PublicKeyCredential | null
-    return (cred && prfOutput(cred, false)) ?? 'failed'
-  } catch (err) {
-    return failure(err)
-  }
-}
-
-// Makes the passkey and wraps the open data key under its secret. Some
-// devices give the secret as the passkey is made; the rest are asked once more.
-export async function createPasskey(open: OpenKey): Promise<PasskeyRecord | PasskeyFailure> {
-  const salt = randomBytes(32)
-  let cred: PublicKeyCredential | null
-  try {
-    cred = (await navigator.credentials.create({
+    const cred = (await navigator.credentials.create({
       publicKey: {
         rp: { name: t.vault.keychainName },
-        user: { id: randomBytes(16) as BufferSource, name: t.vault.keychainName, displayName: t.vault.keychainName },
+        user: { id: userId as BufferSource, name: t.vault.keychainName, displayName: t.vault.keychainName },
         challenge: randomBytes(32) as BufferSource,
         pubKeyCredParams: [
           { type: 'public-key', alg: -7 },
@@ -129,43 +50,112 @@ export async function createPasskey(open: OpenKey): Promise<PasskeyRecord | Pass
         ],
         authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'preferred', userVerification: 'required' },
         hints: ['client-device'],
-        extensions: { prf: { eval: { first: salt as BufferSource } } } as AuthenticationExtensionsClientInputs,
       } as PublicKeyCredentialCreationOptions, // hints is newer than the DOM types
     })) as PublicKeyCredential | null
+    const response = cred?.response as AuthenticatorAttestationResponse | undefined
+    const publicKey = response?.getPublicKey()
+    const algorithm = response?.getPublicKeyAlgorithm()
+    if (!cred || !publicKey || (algorithm !== -7 && algorithm !== -257)) return 'failed'
+    return { credentialId: toB64(new Uint8Array(cred.rawId)), publicKey: toB64(new Uint8Array(publicKey)), algorithm, dekId }
   } catch (err) {
     return failure(err)
   }
-  if (!cred || prfDisabled(cred)) return 'failed'
-  const id = new Uint8Array(cred.rawId)
-  const secret = prfOutput(cred, true) ?? (await secretFrom(id, salt))
-  if (typeof secret === 'string') return secret
-  return {
-    credentialId: toB64(id),
-    salt: toB64(salt),
-    wrappedDek: await wrapWith(await keyFromSecret(secret, label), open),
-    dekId: open.dekId,
+}
+
+// Face ID or Touch ID: 'ok' only for a signature by this passkey, over this challenge, from this
+// origin, with the user verified
+export async function verifyPasskey(record: PasskeyRecord): Promise<'ok' | PasskeyFailure> {
+  const challenge = randomBytes(32)
+  try {
+    const cred = (await navigator.credentials.get({
+      publicKey: {
+        challenge: challenge as BufferSource,
+        // The passkey was made on this device's own authenticator; saying so keeps the browser
+        // from offering a security key or a phone first. A password manager that saved the passkey
+        // (1Password) answers before the device: the page has no say in which provider answers.
+        allowCredentials: [{ type: 'public-key', id: fromB64(record.credentialId) as BufferSource, transports: ['internal'] }],
+        hints: ['client-device'],
+        userVerification: 'required',
+      } as PublicKeyCredentialRequestOptions, // hints is newer than the DOM types
+    })) as PublicKeyCredential | null
+    const response = cred?.response as AuthenticatorAssertionResponse | undefined
+    if (!response) return 'failed'
+    const ok = await assertionValid(record, challenge, location.origin, location.hostname, {
+      clientDataJSON: new Uint8Array(response.clientDataJSON),
+      authenticatorData: new Uint8Array(response.authenticatorData),
+      signature: new Uint8Array(response.signature),
+    })
+    if (!ok) console.error('Passkey assertion did not verify')
+    return ok ? 'ok' : 'failed'
+  } catch (err) {
+    return failure(err)
   }
 }
 
-// A copy wrapped under the key an empty secret gives opens for anyone who
-// reads this code, so it protects nothing: the lock screen deletes it. A
-// browser that refuses an empty key could never have made one.
-export async function exposedPasskey(record: PasskeyRecord): Promise<boolean> {
+// A passkey the app no longer uses: the device's password list may drop it (Signal API, where there)
+export function forgetPasskey(credentialId: string): void {
+  type Signal = { signalUnknownCredential?: (o: { rpId: string; credentialId: string }) => Promise<void> }
+  if (typeof PublicKeyCredential === 'undefined') return
+  const pkc = PublicKeyCredential as unknown as Signal
+  void pkc.signalUnknownCredential?.({ rpId: location.hostname, credentialId: base64url(fromB64(credentialId)) }).catch(() => undefined)
+}
+
+type Assertion = { clientDataJSON: Uint8Array; authenticatorData: Uint8Array; signature: Uint8Array }
+
+// The checks a relying party makes (WebAuthn §7.2), less the ones that need a server
+export async function assertionValid(record: PasskeyRecord, challenge: Uint8Array, origin: string, rpId: string, a: Assertion): Promise<boolean> {
+  const client = parseClientData(a.clientDataJSON)
+  if (!client || client.type !== 'webauthn.get' || client.origin !== origin || client.challenge !== base64url(challenge)) return false
+  if (client.crossOrigin === true || client.topOrigin !== undefined) return false
+  if (a.authenticatorData.length < 37) return false
+  const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rpId)))
+  if (!rpIdHash.every((b, i) => b === a.authenticatorData[i])) return false
+  // Flags: bit 0 user present, bit 2 user verified
+  const flags = a.authenticatorData[32] ?? 0
+  if ((flags & 0b101) !== 0b101) return false
+  const clientHash = new Uint8Array(await crypto.subtle.digest('SHA-256', a.clientDataJSON as BufferSource))
+  const signed = new Uint8Array(a.authenticatorData.length + clientHash.length)
+  signed.set(a.authenticatorData)
+  signed.set(clientHash, a.authenticatorData.length)
+  const ecdsa = record.algorithm === -7
+  const params = ecdsa ? { name: 'ECDSA', namedCurve: 'P-256' } : { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }
   try {
-    const exposed = (await unwrapWith(await keyFromSecret(new Uint8Array(0), label), record.wrappedDek)) !== null
-    if (exposed) console.error('Passkey copy under an empty secret found: the data key it wrapped was readable')
-    return exposed
+    const key = await crypto.subtle.importKey('spki', fromB64(record.publicKey) as BufferSource, params, false, ['verify'])
+    const signature = ecdsa ? derToRaw(a.signature) : a.signature
+    if (!signature) return false
+    return await crypto.subtle.verify(ecdsa ? { name: 'ECDSA', hash: 'SHA-256' } : params, key, signature as BufferSource, signed as BufferSource)
   } catch {
     return false
   }
 }
 
-// The data key, after Face ID or Touch ID
-export async function openWithPasskey(record: PasskeyRecord): Promise<OpenKey | PasskeyFailure> {
-  const secret = await secretFrom(fromB64(record.credentialId), fromB64(record.salt))
-  if (typeof secret === 'string') return secret
-  const open = await unwrapWith(await keyFromSecret(secret, label), record.wrappedDek)
-  if (open && open.dekId === record.dekId) return open
-  console.error('Passkey secret does not open the data key')
-  return 'failed'
+function parseClientData(bytes: Uint8Array): { type?: unknown; origin?: unknown; challenge?: unknown; crossOrigin?: unknown; topOrigin?: unknown } | null {
+  try {
+    const value: unknown = JSON.parse(new TextDecoder().decode(bytes))
+    return value && typeof value === 'object' ? value : null
+  } catch {
+    return null
+  }
+}
+
+export function base64url(bytes: Uint8Array): string {
+  return toB64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+// An ES256 signature arrives DER-encoded (SEQUENCE of two INTEGERs); WebCrypto wants r and s as
+// 32 bytes each
+export function derToRaw(der: Uint8Array): Uint8Array | null {
+  if (der[0] !== 0x30) return null
+  let at = 2
+  const out = new Uint8Array(64)
+  for (const half of [0, 32]) {
+    if (der[at] !== 0x02) return null
+    const length = der[at + 1] ?? 0
+    let int = der.subarray(at + 2, at + 2 + length)
+    at += 2 + length
+    while (int.length > 32 && int[0] === 0) int = int.subarray(1)
+    if (int.length > 32) return null
+    out.set(int, half + 32 - int.length)
+  }
+  return out
 }

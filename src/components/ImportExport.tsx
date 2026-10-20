@@ -3,7 +3,7 @@ import { readRegister, replaceAll } from '../db/db'
 import { itemsFromDataFile, NewerFileError, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import type { OpenKey, Vault } from '../lib/crypto'
 import { downloadText, exportFilename } from '../lib/export'
-import { formatDate } from '../lib/format'
+import { formatDate, formatTime } from '../lib/format'
 import { requestFullPhotoWrite } from '../lib/folderStore'
 import { nothingNew } from '../lib/merge'
 import { t } from '../lib/strings'
@@ -14,8 +14,6 @@ import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
 import { codeField } from './LockScreen'
 
-const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
-const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
 
 // What a merge did, in the order a reader needs it
 function describe(r: MergeResult, loaded: Loaded): string[] {
@@ -74,26 +72,34 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
 
   // A copy sealed without a password opens nowhere else, so the password comes first
   async function exportFile() {
-    if (askPassword()) return
+    if (busy || askPassword()) return
     const vault = currentVault()
     if (!vault) return
     setResult(null)
     setError(null)
-    const register = await readRegister()
-    const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
-    if (share) {
-      const name = exportFilename('txt')
-      try {
-        await navigator.share({ files: [new File([json], name, { type: 'text/plain' })] })
-      } catch (err) {
-        // Closing the sheet is a choice; anything else falls back to a download
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        console.error(errorText(err))
-        downloadText(name, json, 'text/plain')
-      }
-    } else downloadText(exportFilename('json'), json, 'application/json')
-    await markSent()
-    setStatus(await syncStatus())
+    setBusy(true)
+    try {
+      const register = await readRegister()
+      const json = await toBackupJson(register.items, register.properties, register.fields, currentKey(), vault, await fileExtras(register, vault))
+      if (share) {
+        const name = exportFilename('txt')
+        try {
+          await navigator.share({ files: [new File([json], name, { type: 'text/plain' })] })
+        } catch (err) {
+          // Closing the sheet is a choice; anything else falls back to a download
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          console.error(errorText(err))
+          downloadText(name, json, 'text/plain')
+        }
+      } else downloadText(exportFilename('json'), json, 'application/json')
+      await markSent()
+      setStatus(await syncStatus())
+    } catch (err) {
+      console.error(errorText(err))
+      setError(t.sync.exportFailed)
+    } finally {
+      setBusy(false)
+    }
   }
 
   // An empty register has nothing to lose: the file simply comes in
@@ -169,6 +175,9 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
       setPass('')
       setWrong(false)
       await consider({ loaded: await itemsFromDataFile(opened.file), open: opened.open, vault: foreign.vault, mergeable: !trial })
+    } catch (err) {
+      console.error(errorText(err))
+      setError(err instanceof NewerFileError ? t.sync.newer : t.sync.notTing)
     } finally {
       setBusy(false)
     }
@@ -305,7 +314,7 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
               </p>
             )}
           </div>
-          <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
+          <button type="button" className="btn" aria-describedby="export-title export-what" disabled={busy} onClick={() => void exportFile()}>
             {share ? t.sync.exportButton : t.sync.exportDownload}
           </button>
         </div>

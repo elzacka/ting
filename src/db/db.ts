@@ -1,10 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { isDeviceKeyRecord, type DeviceKeyRecord } from '../lib/deviceKey'
-import { passkeySchema, type PasskeyRecord } from '../lib/passkey'
+import { createPasskey, forgetPasskey, passkeySchema, type PasskeyFailure, type PasskeyRecord } from '../lib/passkey'
 import { itemSchema, propertySchema, type Item, type ItemInput, type Property } from './schema'
 import { fromStored, legacyAsSpecs, storedItemSchema, toStored } from '../lib/backup'
 import { columnId } from '../lib/grid'
-import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, type OpenKey, type Sealed, type Vault } from '../lib/crypto'
+import { decryptBytes, encryptBytes, fromB64, openJson, sealJson, toB64, unlockVault, type OpenKey, type Sealed, type Vault } from '../lib/crypto'
 import {
   categoryColumnId,
   categoryProperty,
@@ -577,22 +577,49 @@ export function writeVault(vault: Vault): Promise<void> {
   return setSetting(vaultKey, vault)
 }
 
-// Face ID or Touch ID on this device: a second wrapped copy of the data key
-// (`lib/passkey.ts`). In the clear like the vault, since only the device's
-// authenticator can open it; never in a backup or the folder.
+// Face ID or Touch ID on this device (`lib/passkey.ts`): the passkey's id and public key, in the
+// clear, since they open nothing; never in a backup or the folder. A record of another shape is
+// from before 1.19 (a PRF-wrapped key) and goes.
 const passkeyKey = 'passkey'
+const passkeyOfferedKey = 'passkeyOffered'
+const passkeyUserKey = 'passkeyUser'
 
 export async function readPasskey(): Promise<PasskeyRecord | null> {
-  const parsed = passkeySchema.safeParse(await getSetting(passkeyKey))
+  const value = await getSetting(passkeyKey)
+  const parsed = passkeySchema.safeParse(value)
+  if (!parsed.success && value !== undefined) await deleteSetting(passkeyKey)
   return parsed.success ? parsed.data : null
+}
+
+// Whether a password unlock already offered Face ID or Touch ID on this device, so it asks once
+export async function readPasskeyOffered(): Promise<boolean> {
+  return (await getSetting<boolean>(passkeyOfferedKey)) === true
+}
+
+export function writePasskeyOffered(offered: boolean): Promise<void> {
+  return offered ? setSetting(passkeyOfferedKey, true) : deleteSetting(passkeyOfferedKey)
+}
+
+// Makes this device's passkey and keeps its record; Face ID or Touch ID then guards the device key
+export async function addPasskey(dekId: string): Promise<PasskeyRecord | PasskeyFailure> {
+  const known = await getSetting<string>(passkeyUserKey)
+  const userId = known ? fromB64(known) : globalThis.crypto.getRandomValues(new Uint8Array(16))
+  if (!known) await setSetting(passkeyUserKey, toB64(userId))
+  const made = await createPasskey(dekId, userId)
+  if (typeof made !== 'string') await setSetting(passkeyKey, made)
+  return made
+}
+
+// Face ID or Touch ID no longer in use here: the record goes, it may be offered again, and the
+// device's password list is told the passkey is gone
+export async function removePasskey(): Promise<void> {
+  const record = await readPasskey()
+  await Promise.all([deleteSetting(passkeyKey), deleteSetting(passkeyOfferedKey)])
+  if (record) forgetPasskey(record.credentialId)
 }
 
 export function writePasskey(record: PasskeyRecord): Promise<void> {
   return setSetting(passkeyKey, record)
-}
-
-export function deletePasskey(): Promise<void> {
-  return deleteSetting(passkeyKey)
 }
 
 // The device's own way in without a question (`lib/deviceKey.ts`): in the clear like the vault,
@@ -639,6 +666,22 @@ export async function readRecoveryCode(): Promise<RegisterSecret | undefined> {
 
 export function writeRecoveryCode(secret: RegisterSecret): Promise<void> {
   return setSealedSetting(recoveryName, secret)
+}
+
+// The secret while the register has no password, null once it has one, undefined while the first
+// start is still storing the vault. One for another vault than the stored one (a password taken
+// over since) goes; a 1.16 record gains its salt.
+export async function currentSecret(): Promise<string | null | undefined> {
+  const [stored, saved] = await Promise.all([readRecoveryCode(), readVault()])
+  if (!saved) return undefined
+  if (!stored) return null
+  const valid = stored.salt ? stored.salt === saved.kdf.salt : (await unlockVault(stored.code, saved)) !== null
+  if (!valid) {
+    await deleteRecoveryCode()
+    return null
+  }
+  if (!stored.salt) await writeRecoveryCode({ code: stored.code, salt: saved.kdf.salt })
+  return stored.code
 }
 
 // A new register: the vault and its secret are stored together, or a vault would be left that

@@ -2,19 +2,24 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react
 import {
   clearTrialRows,
   db,
-  deletePasskey,
+  deleteDeviceKey,
+  addPasskey,
+  removePasskey,
   ensureCategoryProperty,
   hasPlainRows,
   readDeviceKey,
   readFieldSettings,
   readItems,
   readPasskey,
+  readPasskeyOffered,
   readProperties,
   readRemember,
   readVault,
   resetDemo,
   sealPlaintextRows,
   writeDeviceKey,
+  writePasskey,
+  writePasskeyOffered,
   writeVaultWithSecret,
 } from './db/db'
 import type { Item, Property } from './db/schema'
@@ -23,10 +28,10 @@ import { href, navigate, useRoute, type Route } from './lib/route'
 import { t } from './lib/strings'
 import { useFolderSync } from './lib/useFolderSync'
 import { errorText } from './lib/errors'
-import { hasKey, initVault, lock, setupVault, startTrial, unlock, unlockWithKey, useVault } from './lib/vault'
+import { currentKey, hasKey, initVault, lock, setupVault, startTrial, unlock, unlockWithKey, useVault } from './lib/vault'
 import { makeDeviceKey, openWithDeviceKey } from './lib/deviceKey'
 import { generateRecoveryCode } from './lib/recoveryCode'
-import { exposedPasskey, openWithPasskey, passkeySupported, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
+import { passkeySupported, verifyPasskey, type PasskeyFailure, type PasskeyRecord } from './lib/passkey'
 import { categoryColumnId, type FieldSettings } from './lib/fields'
 import type { Filters } from './lib/filters'
 import { usePlainPaste } from './lib/plainPaste'
@@ -46,7 +51,7 @@ import { ItemDetail } from './components/ItemDetail'
 import { LockScreen } from './components/LockScreen'
 import { Overview } from './components/Overview'
 import { SettingsPage } from './components/SettingsPage'
-import { UpdateButton } from './components/UpdateButton'
+import { UpdateButton, useUpdateCheck } from './components/UpdateButton'
 import { DemoBanner, DownloadButton } from './components/TrialBanner'
 import { isDemo } from './lib/useInstall'
 import { demoRegister } from './lib/demo'
@@ -57,6 +62,7 @@ export function App() {
   // The demo adds nothing: those routes show the register. Innstillinger shows, locked.
   const route: Route = isDemo && ['add', 'receipt'].includes(hashRoute.view) ? { view: 'list' } : hashRoute
   const narrow = useNarrow()
+  const needRefresh = useUpdateCheck()
   const vault = useVault()
   // A key in memory, from a passphrase or from trying the app
   const unlocked = hasKey(vault)
@@ -102,15 +108,27 @@ export function App() {
   usePlainPaste()
   useKeyboardInset()
 
+  // A device remembers the register it has open while «Husk passord» is on, or Face ID guards it;
+  // a tick asks again after a change in Innstillinger
+  const [gateTick, setGateTick] = useState(0)
+  const onGateChange = useCallback(() => setGateTick((n) => n + 1), [])
+
+  // A device that locks but has no Face ID or Touch ID yet offers it once, right after the password.
+  // Asked again only if the device could not make one.
   async function onUnlock(passphrase: string) {
     const ok = await unlock(passphrase)
-    if (ok) await migrate()
-    return ok
+    if (!ok) return false
+    const [remember, record, offered] = await Promise.all([readRemember(), readPasskey(), readPasskeyOffered()])
+    if (!remember && !record && !offered && (await passkeySupported())) {
+      if ((await addPasskey(currentKey().dekId)) !== 'failed') await writePasskeyOffered(true)
+    }
+    await migrate()
+    onGateChange()
+    return true
   }
 
-  // Face ID or Touch ID, where this device has it set up for this vault. A copy wrapping another
-  // key opens nothing and one under an empty secret opens for anyone; both go. undefined until
-  // known: the lock screen waits, so the passphrase field does not raise the keyboard over Face ID.
+  // Face ID or Touch ID, where this device has it set up for this vault; one for another key goes.
+  // undefined until known: the lock screen waits, so the field does not raise the keyboard over it.
   const [passkey, setPasskey] = useState<PasskeyRecord | null | undefined>(undefined)
   const lockedVault = vault.status === 'locked' ? vault.vault : null
   useEffect(() => {
@@ -120,31 +138,33 @@ export function App() {
     }
     let live = true
     void (async () => {
-      const record = await readPasskey()
-      const kept = record && record.dekId === lockedVault.dekId && !(await exposedPasskey(record)) ? record : null
-      if (record && !kept) await deletePasskey()
+      const [record, device] = await Promise.all([readPasskey(), readDeviceKey()])
+      const kept = record && record.dekId === lockedVault.dekId && device?.dekId === lockedVault.dekId ? record : null
+      if (record && !kept) await removePasskey()
       const usable = kept && (await passkeySupported()) ? kept : null
       if (live) setPasskey(usable)
     })()
     return () => {
       live = false
     }
-  }, [vault.status, lockedVault])
+  }, [lockedVault])
 
+  // Face ID or Touch ID opens the device's own copy of the key
   async function onPasskey(): Promise<'ok' | PasskeyFailure> {
     if (!passkey) return 'failed'
-    const opened = await openWithPasskey(passkey)
-    if (typeof opened === 'string') return opened
-    if (!unlockWithKey(opened)) return 'failed'
+    const verified = await verifyPasskey(passkey)
+    if (verified !== 'ok') return verified
+    const device = await readDeviceKey()
+    const opened = device ? await openWithDeviceKey(device, passkey.dekId) : null
+    if (!opened || !unlockWithKey(opened)) return 'failed'
     await migrate()
     return 'ok'
   }
 
-  // A device remembers the register it has open, unless the user turned that off or Face ID asks
-  // instead. Runs for a passphrase unlock and for a vault taken over from a file alike.
+  // The device's own copy of the key it has open: kept while «Husk passord» is on or Face ID guards
+  // it, else gone. Runs for a password unlock and for a key taken over from a file or folder alike;
+  // Face ID moves along to the new key, since the user has just shown the password.
   const openId = vault.status === 'open' ? vault.open.dekId : null
-  const [gateTick, setGateTick] = useState(0)
-  const onGateChange = useCallback(() => setGateTick((n) => n + 1), [])
   const [canLock, setCanLock] = useState(true)
   useEffect(() => {
     if (!openId || isDemo || vault.status !== 'open') return
@@ -153,8 +173,11 @@ export function App() {
     void (async () => {
       try {
         const [remember, faceId, device] = await Promise.all([readRemember(), readPasskey(), readDeviceKey()])
-        if (remember && !faceId && device?.dekId !== open.dekId) await writeDeviceKey(await makeDeviceKey(open))
-        if (live) setCanLock(!remember || !!faceId)
+        if (!remember && faceId && faceId.dekId !== open.dekId) await writePasskey({ ...faceId, dekId: open.dekId })
+        const keep = remember || !!faceId
+        if (keep && device?.dekId !== open.dekId) await writeDeviceKey(await makeDeviceKey(open))
+        if (!keep && device) await deleteDeviceKey()
+        if (live) setCanLock(!remember)
       } catch (err) {
         console.error(errorText(err))
       }
@@ -200,16 +223,17 @@ export function App() {
     writeWrap(on)
     setWrap(on)
   }, [])
+  // Saved outside the state updater, which React may run twice
+  const hiddenRef = useRef(hidden)
+  hiddenRef.current = hidden
   const toggleHidden = useCallback((ids: readonly string[], visible: boolean) => {
-    setHidden((prev) => {
-      const next = new Set(prev)
-      for (const id of ids) {
-        if (visible) next.delete(id)
-        else next.add(id)
-      }
-      saveHiddenColumns(next)
-      return next
-    })
+    const next = new Set(hiddenRef.current)
+    for (const id of ids) {
+      if (visible) next.delete(id)
+      else next.add(id)
+    }
+    setHidden(next)
+    saveHiddenColumns(next)
   }, [])
   const toggleAutoLock = useCallback((on: boolean) => {
     writeAutoLock(on)
@@ -280,14 +304,10 @@ export function App() {
           </nav>
         ) : (
           <nav className="row" aria-label={t.action.back}>
-            <a
-              className="btn btn-icon"
-              href={href.list}
-              aria-label={t.action.back}
-            >
+            <a className="btn btn-icon" href={href.list} onClick={guardNav} aria-label={t.action.back}>
               <Icon name="arrowBack" />
             </a>
-            <a className="wordmark" href={href.list} aria-label={t.nav.home}>
+            <a className="wordmark" href={href.list} onClick={guardNav} aria-label={t.nav.home}>
               <Logo />
               {t.appName}
             </a>
@@ -295,7 +315,7 @@ export function App() {
         )}
         {isTop && (
           <div className="row topbar-end">
-            <UpdateButton />
+            <UpdateButton needRefresh={needRefresh} />
             {/* The phone's search is a field at the top of the list */}
             {searchable && unlocked && !narrow && (
               <button
@@ -345,11 +365,7 @@ export function App() {
 
       <main className="stack">
         <ErrorBoundary>
-          {vault.status === 'loading' ? (
-            <p className="hint">{t.list.loading}</p>
-          ) : vault.status === 'none' ? (
-            <p className="hint">{t.list.loading}</p>
-          ) : vault.status === 'locked' && passkey === undefined ? (
+          {vault.status === 'loading' || vault.status === 'none' || (vault.status === 'locked' && passkey === undefined) ? (
             <p className="hint">{t.list.loading}</p>
           ) : vault.status === 'locked' ? (
             <LockScreen onUnlock={onUnlock} onPasskey={passkey ? onPasskey : undefined} idle={vault.idle} />

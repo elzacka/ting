@@ -56,12 +56,13 @@ export default defineConfig(({ command, isPreview }) => {
           description: 'Hold oversikt over det du eier, og hvor du har det',
           lang: 'nb',
           dir: 'ltr',
-          start_url: base,
+          // ?app tells a full-screen app window from a full-screen tab (lib/useInstall.ts)
+          start_url: `${base}?app`,
           scope: base,
           display: 'standalone',
           display_override: ['standalone', 'minimal-ui'],
-          // Reopen the running window instead of a second one when launched again.
-          launch_handler: { client_mode: 'navigate-existing' },
+          // Bring the running window forward when launched again, without reloading it
+          launch_handler: { client_mode: 'focus-existing' },
           theme_color: '#fbfbfa',
           background_color: '#fbfbfa',
           categories: ['productivity', 'utilities'],

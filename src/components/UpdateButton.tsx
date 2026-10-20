@@ -6,6 +6,25 @@ import { Icon } from './Icons'
 
 // Time the new version gets to take over before the page reloads anyway
 const fallbackMs = 4000
+const hourMs = 60 * 60 * 1000
+
+// Registered once for the app's life. A window that stays open never navigates (the routes are
+// hashes), so it looks for a new version itself: when shown again, and every hour.
+export function useUpdateCheck(): boolean {
+  const {
+    needRefresh: [needRefresh],
+  } = useRegisterSW({
+    onRegisteredSW(_url, registration) {
+      if (!registration) return
+      const check = () => {
+        if (navigator.onLine && document.visibilityState === 'visible') void registration.update().catch(() => undefined)
+      }
+      setInterval(check, hourMs)
+      document.addEventListener('visibilitychange', check)
+    },
+  })
+  return needRefresh
+}
 
 // A quiet header button that appears when a new version is ready. The user
 // decides when it takes over; nothing is swapped underneath them.
@@ -15,10 +34,7 @@ const fallbackMs = 4000
 // such event, and the button used to sit there doing nothing. It waits for
 // the new version to be active instead, and reloads at once when it already
 // is (another window took it over first).
-export function UpdateButton() {
-  const {
-    needRefresh: [needRefresh],
-  } = useRegisterSW()
+export function UpdateButton({ needRefresh }: { needRefresh: boolean }) {
   const [busy, setBusy] = useState(false)
 
   if (!needRefresh) return null

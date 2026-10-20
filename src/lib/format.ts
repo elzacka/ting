@@ -7,6 +7,12 @@ import { parseNumber } from './values'
 // Spaces from five digits up, as Norwegian writes them: a year reads 2003, not 2 003
 const numberFormat = new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 2, useGrouping: 'min2' })
 const dateFormat = new Intl.DateTimeFormat('nb-NO', { day: '2-digit', month: '2-digit', year: '2-digit' })
+const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
+
+// Norwegian writes the time with a full stop: kl. 19.51
+export function formatTime(ts: number): string {
+  return timeFormat.format(ts).replace(':', '.')
+}
 
 // Value without its unit: numbers formatted nb-NO with a real minus sign, dates as dd.mm.yy.
 export function formatBare(spec: Spec): string {

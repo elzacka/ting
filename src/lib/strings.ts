@@ -405,6 +405,7 @@ export const t = {
     passphraseChanged: 'Passordet er endret på den andre enheten. Bruk det nye passordet når du låser opp.',
     newer: 'Fila er laget av en nyere versjon av Ting. Oppdater appen og prøv på nytt.',
     failed: 'Appen kunne ikke importere fila. Prøv på nytt.',
+    exportFailed: 'Appen kunne ikke eksportere registeret. Prøv på nytt.',
     notTing: 'Denne fila er ikke fra Ting. Velg en fil du har eksportert fra Ting.',
     foreign: 'Fila er låst med et annet passord. Skriv inn passordet appen hadde da fila ble eksportert.',
   },

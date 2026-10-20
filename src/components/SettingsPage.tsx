@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { isDemo } from '../lib/useInstall'
 import {
-  deleteDeviceKey,
-  deletePasskey,
+  addPasskey,
+  currentSecret,
   deleteRecoveryCode,
   getSetting,
   readPasskey,
-  readRecoveryCode,
   readRemember,
-  readVault,
-  writePasskey,
-  writeRecoveryCode,
+  removePasskey,
+  writePasskeyOffered,
   writeRemember,
   writeVault,
 } from '../db/db'
+import { formatTime } from '../lib/format'
 import { errorText } from '../lib/errors'
 import { receiptReadingKey } from '../lib/receiptItems'
 import type { Item, Property } from '../db/schema'
@@ -22,11 +21,10 @@ import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { useEscape } from '../lib/useEscape'
 import type { useFolderSync } from '../lib/useFolderSync'
-import { unlockVault } from '../lib/crypto'
-import { changePassphrase, currentKey, currentVault, useVault } from '../lib/vault'
+import { changePassphrase, currentKey, useVault } from '../lib/vault'
 import { folderSupported } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
-import { createPasskey, passkeySupported, type PasskeyRecord } from '../lib/passkey'
+import { passkeySupported, type PasskeyRecord } from '../lib/passkey'
 import { AboutApp } from './AboutApp'
 import { ImportExport } from './ImportExport'
 import { ReceiptBatch } from './ReceiptBatch'
@@ -35,11 +33,9 @@ import { Icon } from './Icons'
 import { codeField, KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
 
-
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
-const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
-// Norwegian writes the time with a full stop: kl. 19.51
-const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
+// A touch screen, read once: what it is does not change while the app runs
+const coarsePointer = window.matchMedia('(pointer: coarse)').matches
 
 type Props = {
   items: Item[]
@@ -95,6 +91,10 @@ export function SettingsPage({
   const [passMessage, setPassMessage] = useState<string | null>(null)
   useFade(passMessage, passMessage === t.vault.changed || passMessage === t.vault.chosen, setPassMessage)
   const [changingPass, setChangingPass] = useState(false)
+  // «Husk passord» turned off before there was a password: it takes effect once one is chosen
+  const [pendingLock, setPendingLock] = useState(false)
+  // A password or lock change under way: the form and the switch wait, so a second tap does nothing
+  const [busy, setBusy] = useState(false)
   function cancelPassChange() {
     setOldPass('')
     setNewPass('')
@@ -103,48 +103,37 @@ export function SettingsPage({
     setChangingPass(false)
     setPendingLock(false)
   }
+  useEscape(cancelPassChange, changingPass)
 
-  // The secret a register is sealed with until the user chooses a password; null once one is
-  // chosen. A secret for another vault than the stored one (a file's or another device's password
-  // was taken over since) is dropped. The demo shows a new register, without a password.
+  // The secret a register is sealed with until the user chooses a password (`currentSecret`). The
+  // demo shows a new register, without a password.
   const [secret, setSecret] = useState<string | null | undefined>(undefined)
   const openVault = vault.status === 'open' ? vault.vault : null
   useEffect(() => {
     if (!openVault) return
     let live = true
-    void (async () => {
-      try {
-        const [stored, saved] = await Promise.all([readRecoveryCode(), readVault()])
-        let valid: string | null = null
-        if (stored && saved && stored.salt) valid = stored.salt === saved.kdf.salt ? stored.code : null
-        else if (stored && saved && (await unlockVault(stored.code, saved))) {
-          valid = stored.code
-          await writeRecoveryCode({ code: stored.code, salt: saved.kdf.salt })
-        }
-        if (stored && !valid) await deleteRecoveryCode()
-        if (live) setSecret(valid)
-      } catch (err) {
-        console.error(errorText(err))
-      }
-    })()
+    currentSecret()
+      .then((value) => live && setSecret(value))
+      .catch((err: unknown) => console.error(errorText(err)))
     return () => {
       live = false
     }
   }, [openVault])
   const hasPassword = !trial && secret === null
   const known = trial || secret !== undefined
-  // What needs the password (a copy to open elsewhere, a lock to open with it) opens its form first.
-  // Until the answer is known, nothing goes through.
+  // What needs the password (a copy to open elsewhere, a lock to open with it) opens its form first,
+  // and stops; until it is known whether there is one, it only stops.
   const passwordRow = useRef<HTMLDivElement>(null)
-  function askPassword(): boolean {
+  function askPassword(thenLock = false): boolean {
     if (hasPassword) return false
     if (!known) return true
     setPassMessage(null)
     setChangingPass(true)
+    setPendingLock(thenLock)
     passwordRow.current?.scrollIntoView({ block: 'center' })
     return true
   }
-  useEscape(cancelPassChange, changingPass)
+
   // The table's own choices are desk work, and so is a folder where the
   // browser cannot reach one: no browser on a phone or a tablet can
   const narrow = useNarrow()
@@ -152,56 +141,58 @@ export function SettingsPage({
   useEffect(() => {
     void getSetting<boolean>(receiptReadingKey).then((on) => setReading(on === true))
   }, [])
-  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
-  const showFolder = folderSupported || !touch
-  // Face ID or Touch ID on this device, where it can verify its user. A copy
-  // wrapping another data key (a restore took over another vault) is stale.
+  const showFolder = folderSupported || !coarsePointer
+
+  // «Husk passord» on: the app opens without a question (the device key). Off: it locks and asks for
+  // Face ID or Touch ID where the device has it, else for the password, which a password manager
+  // fills after its own Face ID or Touch ID. Off needs a password behind it.
+  const [remember, setRemember] = useState(true)
   const [canPasskey, setCanPasskey] = useState(false)
   const [passkey, setPasskey] = useState<PasskeyRecord | null>(null)
   useEffect(() => {
     let live = true
-    void (async () => {
-      const [can, record] = await Promise.all([passkeySupported(), readPasskey()])
+    void Promise.all([readRemember(), passkeySupported(), readPasskey()]).then(([on, can, record]) => {
       if (!live) return
+      setRemember(on)
       setCanPasskey(can)
-      setPasskey(record && record.dekId === currentVault()?.dekId ? record : null)
-    })()
+      setPasskey(record)
+    })
     return () => {
       live = false
     }
   }, [])
-
-  // «Husk passord» on: the app opens without a question (the device key). Off: it locks, and asks
-  // for Face ID or Touch ID where the device can give a passkey's secret, else for the password,
-  // which a password manager fills after its own Face ID or Touch ID. Off needs a password behind it.
-  const [remember, setRemember] = useState(true)
-  useEffect(() => {
-    void readRemember().then(setRemember)
-  }, [])
-  // Turned off before there was a password: it takes effect once one is chosen
-  const [pendingLock, setPendingLock] = useState(false)
-  async function toggleRemember(on: boolean) {
-    if (!on && askPassword()) return setPendingLock(true)
-    if (on) {
-      await writeRemember(true)
-      if (passkey !== null) await deletePasskey()
-      setPasskey(null)
-      setRemember(true)
-      return onGateChange()
+  async function run(action: () => Promise<void>) {
+    if (busy) return
+    setBusy(true)
+    try {
+      await action()
+    } catch (err) {
+      console.error(errorText(err))
+    } finally {
+      setBusy(false)
     }
-    await lockThisDevice()
   }
+  function toggleRemember(on: boolean) {
+    if (!on && askPassword(true)) return
+    void run(async () => {
+      if (on) {
+        await writeRemember(true)
+        await removePasskey()
+        setPasskey(null)
+        setRemember(true)
+        return onGateChange()
+      }
+      await lockThisDevice()
+    })
+  }
+  // Face ID or Touch ID first, where the device has it; closing its sheet keeps «Husk passord» on.
+  // The app's gate keeps the device's copy of the key behind it, or deletes the copy without it.
   async function lockThisDevice() {
-    await writeRemember(false)
-    await deleteDeviceKey()
+    const made = canPasskey && passkey === null ? await addPasskey(currentKey().dekId) : null
+    if (made === 'cancelled') return
+    await Promise.all([writeRemember(false), writePasskeyOffered(true)])
     setRemember(false)
-    onGateChange()
-    // Face ID or Touch ID where the device has it; the password stays the way in when it has not
-    if (!canPasskey || passkey !== null) return
-    const made = await createPasskey(currentKey())
-    if (typeof made === 'string') return
-    await writePasskey(made)
-    setPasskey(made)
+    if (made && made !== 'failed') setPasskey(made)
     onGateChange()
   }
 
@@ -211,25 +202,27 @@ export function SettingsPage({
   }, [known, hasPassword, trial, remember, passkey, status.kind])
 
   // Without a password the register's own secret stands in for the current one
-  async function onChangePass(e: FormEvent) {
+  function onChangePass(e: FormEvent) {
     e.preventDefault()
     setPassMessage(null)
     if (newPass.length < 12) return setPassMessage(t.vault.minLength)
     if (!hasPassword && newPass !== repeatPass) return setPassMessage(t.vault.mismatch)
-    const v = await changePassphrase(hasPassword ? oldPass : (secret ?? ''), newPass)
-    if (!v) return setPassMessage(t.vault.wrong)
-    await writeVault(v)
-    if (!hasPassword) await deleteRecoveryCode()
-    setSecret(null)
-    if (pendingLock) {
-      setPendingLock(false)
-      await lockThisDevice()
-    }
-    setOldPass('')
-    setNewPass('')
-    setRepeatPass('')
-    setChangingPass(false)
-    setPassMessage(hasPassword ? t.vault.changed : t.vault.chosen)
+    void run(async () => {
+      const v = await changePassphrase(hasPassword ? oldPass : (secret ?? ''), newPass)
+      if (!v) return setPassMessage(t.vault.wrong)
+      await writeVault(v)
+      if (!hasPassword) await deleteRecoveryCode()
+      setSecret(null)
+      if (pendingLock) {
+        setPendingLock(false)
+        await lockThisDevice()
+      }
+      setOldPass('')
+      setNewPass('')
+      setRepeatPass('')
+      setChangingPass(false)
+      setPassMessage(hasPassword ? t.vault.changed : t.vault.chosen)
+    })
   }
 
   // The line under the folder's title says where things stand; what the
@@ -288,7 +281,7 @@ export function SettingsPage({
               </p>
             )
           ) : (
-            <form className="stack-sm" onSubmit={(e) => void onChangePass(e)}>
+            <form className="stack-sm" onSubmit={onChangePass}>
               <KeychainName />
               {hasPassword && (
                 <div className="field">
@@ -338,7 +331,7 @@ export function SettingsPage({
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={newPass === '' || (hasPassword ? oldPass === '' : repeatPass === '')}
+                  disabled={busy || newPass === '' || (hasPassword ? oldPass === '' : repeatPass === '')}
                 >
                   {hasPassword ? t.vault.change : t.vault.choose}
                 </button>
@@ -354,7 +347,7 @@ export function SettingsPage({
           )}
         </div>
         <div className="setting-row">
-          <SettingSwitch title={t.vault.rememberPassword} checked={remember} onChange={(on) => void toggleRemember(on)} />
+          <SettingSwitch title={t.vault.rememberPassword} checked={remember} disabled={busy} onChange={toggleRemember} />
         </div>
         {/* An app that opens directly has nothing to lock */}
         {!remember && (
