@@ -27,7 +27,7 @@ Face ID, Touch ID, Windows Hello or the screen lock (named per platform, `lib/un
 
 A record whose `dekId` no longer matches goes; after an adopted vault the gate moves it to the new `dekId`. The passkey is asked for as `internal` with the `client-device` hint, so the browser does not offer a security key first.
 
-Only ids, the folder handle, sync times and switches (`clock`, `fieldsChangedAt`, `lastMergedAt`, `rememberDevice`, `passkeyOffered` …), the device id, the passkey record (credential id, public key) and the vault itself (wrapped key, salt, parameters) are ever unencrypted. `db.ts` seals every row (items, properties, field settings, tombstones) and every per-device setting that names content (hidden columns, column widths, remembered receipt stores); backup files keep the vault in the clear and everything else sealed.
+Only ids, the folder handle, sync times and switches (`clock`, `fieldsChangedAt`, `lastMergedAt`, `rememberDevice`, `passkeyOffered` …), the device id and the passkey user id, the passkey record (credential id, public key) and the vault itself (wrapped key, salt, parameters) are ever unencrypted. `db.ts` seals every row (items, properties, field settings, tombstones) and every per-device setting that names content (hidden columns, column widths, remembered receipt stores); backup files keep the vault in the clear and everything else sealed.
 
 A newer passphrase reaches other devices only through the vault copy inside the sealed part (`sync.ts`), never the clear one, which anyone could swap. Photos in the folder are `bilder/<id>-1.bin`, flat and numbered from one, each 12-byte nonce + ciphertext.
 

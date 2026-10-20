@@ -20,6 +20,8 @@ export const t = {
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
     rememberPassword: 'Husk passord',
+    // Turning «Husk passord» off without Face ID: the password is asked once more
+    confirmLock: 'Slå av',
     passkeyUnlock: (method: string) => `Lås opp med ${method}`,
     passkeyFailed: (method: string) => `${method[0]?.toLocaleUpperCase('nb') ?? ''}${method.slice(1)} virket ikke. Lås opp med passordet.`,
     passwordTitle: 'Passord',

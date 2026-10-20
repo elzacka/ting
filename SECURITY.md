@@ -35,7 +35,7 @@ files the app writes, and the code that ships to the browser.
 | CSV and print output | Wherever the user puts them | None: they exist to be read. The app says so |
 
 In the clear: row ids, the photo MIME type, sync times and switches (`clock`,
-`fieldsChangedAt`, `lastMergedAt`, `receiptReading`), a random
+`fieldsChangedAt`, `lastMergedAt`, `receiptReading`, `rememberDevice`, `passkeyOffered`), the passkey user id (`passkeyUser`), a random
 device id, the folder handle, the wrapped key with its salt and parameters, the passkey
 record (credential id, public key, key id), and the
 `exportedAt` on the outside of a file envelope. None of these reveal content.
@@ -44,7 +44,8 @@ record (credential id, public key, key id), and the
 
 | Actor | Can | Cannot |
 |---|---|---|
-| Someone with the unlocked device, or who can run code in the browser profile | See and change everything, like the user: the device copy opens the app without a question | Take the key as bytes (it is non-extractable), open a copy or the folder, or the app on another device |
+| Someone with the unlocked device | See and change everything, like the user: the device copy opens the app without a question, or behind Face ID | Open a copy or the folder, or the app on another device, without the passphrase |
+| Someone who can run code in the browser profile or on the elzacka.github.io origin (DevTools on the unlocked device, an extension, another app on the origin) | Unwrap the device copy and read the DEK itself, while a device copy exists («Husk passord» on, or Face ID): every device shares that DEK and a passphrase change keeps it, so every copy and the folder open with it, later ones too | Anything on a device where «Husk passord» is off and Face ID is not set up: no device copy exists there |
 | Someone who can pass the device's own lock (Face ID, Touch ID, Windows Hello, the screen lock or its code), or the password manager's unlock where the passkey or the passphrase is saved there, where «Husk passord» is off | Open the app, like the user | Open a copy or the folder, or the app on another device: the device copy stays on this one |
 | Someone with the locked device, the folder or a copy | Read ids, counts and timestamps; attempt an offline guess of the passphrase, paying the Argon2id cost per guess | Read content, forge a document (GCM tag), roll back data with an old copy: a merge weighs the stamps inside the sealed document, field by field, so an older copy never replaces newer data |
 | A crafted `ting.json` or folder | Be rejected by the schema | Reference files outside `bilder/<uuid>-<n>.bin` (or the older `<uuid>.<ext>`), inject markup, ask for unbounded key-derivation memory |
@@ -96,7 +97,7 @@ Deliberate choices that shape the model:
 |---|---|---|
 | P1 | Supply chain: a malicious dependency or action update | Pins, audit and Dependabot reduce the window; they do not close it. Review every dependency PR |
 | P2 | Weak passphrase | Twelve characters is a floor, not strength. Argon2id makes each guess expensive, not impossible |
-| P2 | The device opens without a question, or behind Face ID only | Anyone who can use the unlocked device, or run code in its browser profile or on the elzacka.github.io origin, reads the register. Files and the folder stay sealed. «Husk passord» off on a device without Face ID deletes the device copy and closes this |
+| P2 | The device opens without a question, or behind Face ID only | Anyone who can use the unlocked device reads the register; code in its browser profile or on the elzacka.github.io origin can take the DEK itself, which opens every copy and the folder, later ones too. «Husk passord» off on a device without Face ID deletes the device copy and closes this |
 | P2 | With Face ID or Touch ID, the device's own lock is as good as the passphrase on that device | It comes with «Husk passord» off on a device that has it; the device's own lock is then the guard, as it is for a password manager that fills the passphrase. Copies and the folder still need the passphrase |
 | P3 | Sealed-row swap by someone with database write access | Would need AAD on every seal; the attacker already has the device |
 | P3 | Idle lock is paused while edits are unsaved | A device left open mid-edit stays open until the edit is saved or discarded |

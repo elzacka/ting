@@ -8,7 +8,6 @@ import {
   readPasskey,
   readRemember,
   removePasskey,
-  writePasskeyOffered,
   writeRemember,
   writeVault,
 } from '../db/db'
@@ -21,6 +20,7 @@ import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
 import { useEscape } from '../lib/useEscape'
 import type { useFolderSync } from '../lib/useFolderSync'
+import { unlockVault } from '../lib/crypto'
 import { changePassphrase, currentKey, useVault } from '../lib/vault'
 import { folderSupported } from '../lib/folderStore'
 import { useNarrow } from '../lib/useNarrow'
@@ -185,15 +185,39 @@ export function SettingsPage({
       await lockThisDevice()
     })
   }
+  // Without Face ID the password becomes the only way in, so it is asked once more: a forgotten
+  // one must not lock the register for good
+  const [confirmingLock, setConfirmingLock] = useState(false)
+  const [lockPass, setLockPass] = useState('')
+  const [lockWrong, setLockWrong] = useState(false)
   // Face ID or Touch ID first, where the device has it; closing its sheet keeps «Husk passord» on.
   // The app's gate keeps the device's copy of the key behind it, or deletes the copy without it.
-  async function lockThisDevice() {
+  async function lockThisDevice(passwordJustChosen = false) {
     const made = canPasskey && passkey === null ? await addPasskey(currentKey().dekId) : null
     if (made === 'cancelled') return
-    await Promise.all([writeRemember(false), writePasskeyOffered(true)])
-    setRemember(false)
     if (made && made !== 'failed') setPasskey(made)
+    else if (passkey === null && !passwordJustChosen) return setConfirmingLock(true)
+    await finishLock()
+  }
+  async function finishLock() {
+    await writeRemember(false)
+    setRemember(false)
     onGateChange()
+  }
+  function cancelLock() {
+    setConfirmingLock(false)
+    setLockPass('')
+    setLockWrong(false)
+  }
+  useEscape(cancelLock, confirmingLock)
+  function onConfirmLock(e: FormEvent) {
+    e.preventDefault()
+    const stored = vault.status === 'open' ? vault.vault : null
+    void run(async () => {
+      if (!stored || !(await unlockVault(lockPass, stored))) return setLockWrong(true)
+      cancelLock()
+      await finishLock()
+    })
   }
 
   // A register from 1.16 may already lock, or keep a folder, with no password of its own: ask for one
@@ -215,7 +239,7 @@ export function SettingsPage({
       setSecret(null)
       if (pendingLock) {
         setPendingLock(false)
-        await lockThisDevice()
+        await lockThisDevice(true)
       }
       setOldPass('')
       setNewPass('')
@@ -347,7 +371,38 @@ export function SettingsPage({
           )}
         </div>
         <div className="setting-row">
-          <SettingSwitch title={t.vault.rememberPassword} checked={remember} disabled={busy} onChange={toggleRemember} />
+          <SettingSwitch title={t.vault.rememberPassword} checked={remember} disabled={busy || confirmingLock} onChange={toggleRemember} />
+          {confirmingLock && (
+            <form className="stack-sm" onSubmit={onConfirmLock}>
+              <KeychainName />
+              <div className="field">
+                <label htmlFor="lock-pass">{t.vault.current}</label>
+                <input
+                  id="lock-pass"
+                  className="input"
+                  type="password"
+                  autoComplete="current-password"
+                  value={lockPass}
+                  onChange={(e) => setLockPass(e.target.value)}
+                  aria-invalid={lockWrong}
+                  autoFocus
+                />
+              </div>
+              {lockWrong && (
+                <p className="error" role="alert">
+                  {t.vault.wrong}
+                </p>
+              )}
+              <div className="row">
+                <button type="submit" className="btn btn-primary" disabled={busy || lockPass === ''}>
+                  {t.vault.confirmLock}
+                </button>
+                <button type="button" className="btn" onClick={cancelLock}>
+                  {t.action.cancel}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
         {/* An app that opens directly has nothing to lock */}
         {!remember && (

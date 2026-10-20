@@ -23,7 +23,7 @@ async function authenticatorData(flags: number, id = rpId): Promise<Uint8Array> 
   return Uint8Array.from([...hash, flags, 0, 0, 0, 1])
 }
 
-function clientData(challenge: Uint8Array, over: Record<string, string> = {}): Uint8Array {
+function clientData(challenge: Uint8Array, over: Record<string, string | boolean> = {}): Uint8Array {
   return new TextEncoder().encode(JSON.stringify({ type: 'webauthn.get', challenge: base64url(challenge), origin, ...over }))
 }
 
@@ -62,7 +62,7 @@ describe('assertionValid', () => {
     }
   })
 
-  it('refuses another challenge, origin, type or rpId, a user not verified, and a changed signature', async () => {
+  it('refuses another challenge, origin, type or rpId, a cross-origin frame, a user not verified, and a changed signature', async () => {
     const { record, sign } = await es256()
     const challenge = crypto.getRandomValues(new Uint8Array(32))
     const check = async (data: Uint8Array, client: Uint8Array, tamper = false) => {
@@ -74,6 +74,8 @@ describe('assertionValid', () => {
     expect(await check(good, clientData(crypto.getRandomValues(new Uint8Array(32))))).toBe(false)
     expect(await check(good, clientData(challenge, { origin: 'https://evil.example' }))).toBe(false)
     expect(await check(good, clientData(challenge, { type: 'webauthn.create' }))).toBe(false)
+    expect(await check(good, clientData(challenge, { crossOrigin: true }))).toBe(false)
+    expect(await check(good, clientData(challenge, { topOrigin: 'https://evil.example' }))).toBe(false)
     expect(await check(await authenticatorData(0b101, 'evil.example'), clientData(challenge))).toBe(false)
     expect(await check(await authenticatorData(0b001), clientData(challenge))).toBe(false)
     expect(await check(good, clientData(challenge), true)).toBe(false)
