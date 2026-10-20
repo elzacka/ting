@@ -59,7 +59,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 
 ## Components
 
-- Demo: a browser tab (no installed display mode, `isDemo` in `lib/useInstall.ts`) is a demo; only the installed app opens the register. Its database is `ting-demo`, refilled from `lib/demo.ts` at every start. No adding (plus, receipt, Ny rad, multi-row paste), no `persist()`; Innstillinger shows in full but locked (`<fieldset disabled>`, drop-import off); "Installer" in the top bar. The dev server is a tab too: `dev.html` shows the installed app, or install it from Chrome.
+- Demo: a browser tab (no installed display mode, `isDemo` in `lib/useInstall.ts`; a display-mode change reloads) is a demo; only the installed app opens the register. Its database is `ting-demo`, refilled from `lib/demo.ts` at every start. No adding (plus, receipt, Ny rad, multi-row paste), no `persist()`; Innstillinger shows in full but locked (`<fieldset disabled>`, drop-import off); "Installer" in the top bar. The dev server is a tab too: `dev.html` shows the installed app, or install it from Chrome.
 
 - `Overview`: choosing a category changes rows, columns and filters together — it is the view, not a filter. The register opens on "velg kategori", no table, until a category is picked or an action implies "show me things" (a new row, a search, fewer than two categories to choose from).
 - Column visibility is one rule everywhere it applies (table, filters, print, CSV): with categories in view, a column renders only if one of them uses it (`appliesTo`), and then if one lists it or it holds a value on a visible row. "Vis n kolonner til" adds only columns they use, never another category's.

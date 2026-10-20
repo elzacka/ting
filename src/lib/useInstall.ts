@@ -32,17 +32,20 @@ window.addEventListener('appinstalled', () => {
   notify()
 })
 
+const appModes = ['standalone', 'minimal-ui', 'window-controls-overlay', 'fullscreen'].map((m) => window.matchMedia(`(display-mode: ${m})`))
+
 function installed(): boolean {
   if (devInstalled !== null) return devInstalled
-  return (
-    ['standalone', 'minimal-ui', 'window-controls-overlay', 'fullscreen'].some((m) => window.matchMedia(`(display-mode: ${m})`).matches) ||
-    (navigator as { standalone?: boolean }).standalone === true
-  )
+  return appModes.some((q) => q.matches) || (navigator as { standalone?: boolean }).standalone === true
 }
 
 // Opened in a browser tab: a demo with examples, nothing added and nothing kept.
 // The register itself is only ever opened by the installed app (elzacka, 05.10.26).
 export const isDemo = !installed()
+
+// Chrome installs by moving the open tab into the app's window without a reload; the demo and
+// the register are separate databases, so the page starts over in the mode it is now in.
+for (const q of appModes) q.addEventListener('change', () => installed() === isDemo && location.reload())
 
 function current(): Install {
   if (installed()) return null
