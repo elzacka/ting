@@ -50,7 +50,7 @@
   font-size: var(--text-xs);
 }
 
-/* Opened by Last ned gratis: on a line of its own, read rather than skimmed */
+/* Opened by Installer: on a line of its own, read rather than skimmed */
 .install-steps {
   flex-basis: 100%;
   color: var(--text);
@@ -165,7 +165,7 @@
   background: #184a3a;
 }
 
-/* Last ned gratis in the demo's top bar: the one call to action, shaped as one */
+/* Installer in the demo's top bar: the one call to action, shaped as one */
 .btn-pill {
   border-radius: 999px;
 }

@@ -9,7 +9,7 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 ## Innhold
 
 - [[#Kom i gang|Kom i gang]]
-	- [[#Kom i gang#1. Last ned appen|1. Last ned appen]]
+	- [[#Kom i gang#1. Installer appen|1. Installer appen]]
 	- [[#Kom i gang#2. Lagre gjenopprettingskoden|2. Lagre gjenopprettingskoden]]
 	- [[#Kom i gang#3. Lag kategoriene og egenskapene du trenger|3. Lag kategoriene og egenskapene du trenger]]
 	- [[#Kom i gang#4. Legg til de første tingene|4. Legg til de første tingene]]
@@ -45,16 +45,16 @@ slette, finne og hente ut. Nederst står annet å finne ved behov.
 
 ## Kom i gang
 
-### 1. Last ned appen
+### 1. Installer appen
 
 Adressen åpner en demo med eksempler. Der kan du se, søke, filtrere og åpne
-Innstillinger, men ikke legge til eller endre noe. Last ned appen for å
-registrere tingene dine. Trykk på «Last ned gratis» øverst til høyre. Knappen
+Innstillinger, men ikke legge til eller endre noe. Installer appen for å
+registrere tingene dine. Trykk på «Installer» øverst til høyre. Knappen
 starter installeringen, eller viser hvor menyvalget er.
 
 | Enhet | Slik |
 |---|---|
-| Mac eller PC med Chrome eller Edge | «Last ned gratis», eller installeringsikonet til høyre i adressefeltet |
+| Mac eller PC med Chrome eller Edge | «Installer», eller installeringsikonet til høyre i adressefeltet |
 | Mac med Safari | Del-ikonet i verktøylinjen › «Legg til i Dock» |
 | iPhone | Åpne adressen i Safari › ••• ved adressefeltet › «Del» › «Legg til på Hjem-skjerm» |
 | iPad | Åpne adressen i Safari › Del-ikonet › «Legg til på Hjem-skjerm» |
@@ -77,7 +77,7 @@ etterpå.
 Du skriver koden én gang på hver enhet som ikke har sett registeret før, og
 enheten husker den. Små bokstaver og manglende bindestreker går bra.
 
-- «Åpne uten spørsmål på denne enheten» står på som standard. Slår du det av,
+- «Husk denne enheten» står på som standard. Slår du det av,
   skriver du koden eller passordet hver gang du åpner appen. Da kommer
   hengelåsen og «Lås appen etter 10 minutter uten bruk» tilbake.
 - Slår du på «Lås opp med Face ID eller Touch ID», åpner appen med Face ID
@@ -633,8 +633,8 @@ Tannhjulet lengst til høyre i topplinja.
 | Lagringsmappe | «Velg» kobler til (Chrome og Edge), «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Importer til registeret | «Velg fil» henter en fil du har eksportert fra Ting, her eller på en annen enhet, se [Ta vare på dataene](#ta-vare-på-dataene) og [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist importerte |
 | Eksporter registeret | Hele registeret i én kryptert fil, som sikkerhetskopi eller for å flytte registeret til en annen enhet. Knappen heter «Eksporter/del fil» på iPhone og «Eksporter fil» på Mac og PC. Linja under sier når du sist eksporterte |
-| Åpne uten spørsmål på denne enheten | På som standard. Appen spør bare etter koden på en ny enhet. Gjelder bare enheten du bruker |
-| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når «Åpne uten spørsmål» er av, eller Face ID er på |
+| Husk denne enheten | På som standard. Appen spør bare etter koden på en ny enhet. Gjelder bare enheten du bruker |
+| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når «Husk denne enheten» er av, eller Face ID er på |
 | Lås opp med Face ID eller Touch ID | Du låser opp uten passord. På Windows heter valget «Lås opp med Windows Hello», på Android «Lås opp med skjermlåsen». Gjelder bare enheten du bruker |
 | Gjenopprettingskode | Viser koden. «Kopier» legger den på utklippstavla, og «Jeg har lagret den» fjerner påminnelsen |
 | Passord | «Endre» velger et eget passord i stedet for koden |

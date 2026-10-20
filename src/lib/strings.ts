@@ -21,7 +21,7 @@ export const t = {
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
-    rememberOption: 'Åpne uten spørsmål på denne enheten',
+    rememberOption: 'Husk denne enheten',
     // The method is named for the platform (lib/unlockMethod.ts): Face ID or Touch ID, Windows Hello, the screen lock
     passkeyOption: (method: string) => `Lås opp med ${method}`,
     passkeyUnlock: (method: string) => `Lås opp med ${method}`,
@@ -308,8 +308,8 @@ export const t = {
   },
   // In a browser tab: the app as a demo, and the way to the real one
   demo: {
-    download: 'Last ned gratis',
-    notice: 'Dette er en demo med eksempler. Last ned appen for å registrere tingene dine.',
+    download: 'Installer',
+    notice: 'Dette er en demo med eksempler. Installer appen for å registrere tingene dine.',
   },
   // Before a passphrase: the line under the top bar
   // The recovery code the app makes for a new register
