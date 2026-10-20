@@ -19,14 +19,9 @@ export const t = {
     // passphrase (a passkey), and the passphrase itself
     lockTitle: 'Lås og passord',
     autoLockOption: 'Lås appen etter 10 minutter uten bruk',
-    // How the app opens on this device; the method is named for the platform (lib/unlockMethod.ts)
-    openTitle: 'Når appen åpner',
-    openDirect: 'Husk passord',
-    openPasskey: (method: string) => `Bruk ${method}`,
-    openPassword: 'Spør om passord',
+    rememberPassword: 'Husk passord',
     passkeyUnlock: (method: string) => `Lås opp med ${method}`,
     passkeyFailed: (method: string) => `${method[0]?.toLocaleUpperCase('nb') ?? ''}${method.slice(1)} virket ikke. Lås opp med passordet.`,
-    passkeyNotHere: (method: string) => `Denne enheten kan ikke låse opp appen med ${method}`,
     passwordTitle: 'Passord',
     choose: 'Velg passord',
     chosen: 'Du har valgt et passord',

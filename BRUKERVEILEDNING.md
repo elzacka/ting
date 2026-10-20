@@ -76,20 +76,18 @@ sikkerhetskopi eller kobler til en mappe:
 
 Du skriver passordet én gang på hver enhet som ikke har sett registeret før.
 
-«Når appen åpner» bestemmer hva appen spør om på enheten du bruker:
+«Husk passord» står på som standard, og da åpner appen uten å spørre. Slå det av
+for å låse appen på enheten du bruker:
 
-| Valg | Når du åpner appen |
-|---|---|
-| Husk passord | Appen åpner uten å spørre. Dette er standard |
-| Bruk Face ID eller Touch ID | Appen spør om Face ID eller Touch ID. På Windows heter valget «Bruk Windows Hello», og på Android «Bruk skjermlåsen» |
-| Spør om passord | Appen spør om passordet hver gang |
-
-- Med Face ID eller «Spør om passord» får du hengelåsen i topplinja og valget
-  «Lås appen etter 10 minutter uten bruk».
-- Appen ber deg velge passord først hvis du ikke har et når du eksporterer,
-  kobler til en mappe eller velger Face ID eller «Spør om passord».
-- Du kan slette passnøkkelen «Ting» i Passord-appen på iPhone når du ikke
-  bruker Face ID lenger.
+- Appen spør om Face ID eller Touch ID der enheten kan det, og ellers om
+  passordet. Passordbehandleren fyller det inn etter sin egen Face ID eller
+  Touch ID.
+- Hengelåsen i topplinja og valget «Lås appen etter 10 minutter uten bruk»
+  kommer frem.
+- Appen ber deg velge passord først hvis du ikke har et når du slår av «Husk
+  passord», eksporterer eller kobler til en mappe.
+- Du kan slette passnøkkelen «Ting» i Passord-appen når du slår «Husk passord»
+  på igjen.
 - Appen i en nettleserfane er en demo uten ditt register. Den har ikke noe
   passord.
 
@@ -637,8 +635,8 @@ Tannhjulet lengst til høyre i topplinja.
 | Valg | Gjør |
 |---|---|
 | Passord | «Velg passord» velger passordet. Knappen er rød til du har gjort det. «Endre» bytter passordet, og du skriver det du har nå, først |
-| Når appen åpner | «Husk passord», «Bruk Face ID eller Touch ID» eller «Spør om passord», se [Velg et passord](#2-velg-et-passord). Gjelder bare enheten du bruker |
-| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når appen spør om noe når den åpner |
+| Husk passord | På: Appen åpner uten å spørre. Av: Appen spør om Face ID, Touch ID eller passordet, se [Velg et passord](#2-velg-et-passord). Gjelder bare enheten du bruker |
+| Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når «Husk passord» er av |
 | Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
 | Lagringsmappe | «Velg» kobler til en mappe (Chrome og Edge). Knappen er rød når ingen mappe er valgt. Velg på nytt for å bytte mappe. «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
 | Importer til registeret | «Velg fil» henter en fil du har eksportert fra Ting, her eller på en annen enhet, se [Ta vare på dataene](#ta-vare-på-dataene) og [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist importerte |
@@ -675,7 +673,7 @@ felt. I et felt gir tastene tegn som ± og π.
 | «Lagre eller forkast endringene i tabellen først» | Du endrer egenskaper mens tabellen har ulagrede endringer | Trykk «Lagre» nederst, eller <kbd>Esc</kbd> og «Forkast endringene» |
 | «Fant ingen strekkode i bildet» | Leseren fant ingen kode | Nærmere, rett forfra, uten refleks. Eller skriv tallene |
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
-| «Ingen passnøkler er tilgjengelige» når appen åpner | Enheten finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Velg så «Husk passord» og deretter «Bruk Face ID eller Touch ID» igjen under «Når appen åpner» |
+| «Ingen passnøkler er tilgjengelige» når appen åpner | Enheten finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Husk passord» på og av igjen |
 | «Appen kunne ikke importere fila.» | Appen fikk ikke lagret innholdet fra fila | Prøv på nytt. Registeret og passordet er som før |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og importer fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |

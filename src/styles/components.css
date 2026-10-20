@@ -2471,27 +2471,6 @@ section {
   cursor: pointer;
 }
 
-/* A row's choice among a few: every option in sight, each a full-height target */
-.setting-options {
-  display: grid;
-}
-
-.setting-option {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: var(--row-h);
-  cursor: pointer;
-}
-
-.setting-option input {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  accent-color: var(--accent);
-}
-
 .setting-text {
   display: grid;
   gap: 2px;

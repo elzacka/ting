@@ -20,7 +20,6 @@ import type { Item, Property } from '../db/schema'
 import { categoryNames, sharedByAll } from '../lib/categories'
 import { categoryColumnId, columnDefs, type FieldSettings } from '../lib/fields'
 import { t } from '../lib/strings'
-import { unlockMethod } from '../lib/unlockMethod'
 import { useEscape } from '../lib/useEscape'
 import type { useFolderSync } from '../lib/useFolderSync'
 import { unlockVault } from '../lib/crypto'
@@ -36,8 +35,6 @@ import { Icon } from './Icons'
 import { codeField, KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
 
-const openModes = ['direct', 'passkey', 'password'] as const
-type OpenMode = (typeof openModes)[number]
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
@@ -104,7 +101,7 @@ export function SettingsPage({
     setRepeatPass('')
     setPassMessage(null)
     setChangingPass(false)
-    setPendingMode(null)
+    setPendingLock(false)
   }
 
   // The secret a register is sealed with until the user chooses a password; null once one is
@@ -161,8 +158,6 @@ export function SettingsPage({
   // wrapping another data key (a restore took over another vault) is stale.
   const [canPasskey, setCanPasskey] = useState(false)
   const [passkey, setPasskey] = useState<PasskeyRecord | null>(null)
-  const [passkeyBusy, setPasskeyBusy] = useState(false)
-  const [passkeyMessage, setPasskeyMessage] = useState<string | null>(null)
   useEffect(() => {
     let live = true
     void (async () => {
@@ -176,36 +171,37 @@ export function SettingsPage({
     }
   }, [])
 
-  // How the app opens on this device: directly (the device key), with Face ID (a passkey) or with
-  // the password. Face ID and the password need a password to fall back on.
+  // «Husk passord» on: the app opens without a question (the device key). Off: it locks, and asks
+  // for Face ID or Touch ID where the device can give a passkey's secret, else for the password,
+  // which a password manager fills after its own Face ID or Touch ID. Off needs a password behind it.
   const [remember, setRemember] = useState(true)
   useEffect(() => {
     void readRemember().then(setRemember)
   }, [])
-  const openMode: OpenMode = passkey !== null ? 'passkey' : remember ? 'direct' : 'password'
-  // «Spør om passord» chosen before there is a password: it takes effect once one is chosen.
-  // Face ID is chosen again, since its sheet needs the tap that opens it.
-  const [pendingMode, setPendingMode] = useState<OpenMode | null>(null)
-  async function chooseOpenMode(mode: OpenMode) {
-    setPasskeyMessage(null)
-    if (mode === openMode) return
-    if (mode !== 'direct' && askPassword()) return setPendingMode(mode === 'password' ? mode : null)
-    if (mode === 'passkey') {
-      setPasskeyBusy(true)
-      const made = await createPasskey(currentKey())
-      setPasskeyBusy(false)
-      if (made === 'cancelled') return
-      if (made === 'failed') return setPasskeyMessage(t.vault.passkeyNotHere(unlockMethod()))
-      await writePasskey(made)
-      setPasskey(made)
-    } else if (passkey !== null) {
-      await deletePasskey()
+  // Turned off before there was a password: it takes effect once one is chosen
+  const [pendingLock, setPendingLock] = useState(false)
+  async function toggleRemember(on: boolean) {
+    if (!on && askPassword()) return setPendingLock(true)
+    if (on) {
+      await writeRemember(true)
+      if (passkey !== null) await deletePasskey()
       setPasskey(null)
+      setRemember(true)
+      return onGateChange()
     }
-    const direct = mode === 'direct'
-    await writeRemember(direct)
-    if (!direct) await deleteDeviceKey()
-    setRemember(direct)
+    await lockThisDevice()
+  }
+  async function lockThisDevice() {
+    await writeRemember(false)
+    await deleteDeviceKey()
+    setRemember(false)
+    onGateChange()
+    // Face ID or Touch ID where the device has it; the password stays the way in when it has not
+    if (!canPasskey || passkey !== null) return
+    const made = await createPasskey(currentKey())
+    if (typeof made === 'string') return
+    await writePasskey(made)
+    setPasskey(made)
     onGateChange()
   }
 
@@ -225,12 +221,9 @@ export function SettingsPage({
     await writeVault(v)
     if (!hasPassword) await deleteRecoveryCode()
     setSecret(null)
-    if (pendingMode === 'password') {
-      await writeRemember(false)
-      await deleteDeviceKey()
-      setRemember(false)
-      setPendingMode(null)
-      onGateChange()
+    if (pendingLock) {
+      setPendingLock(false)
+      await lockThisDevice()
     }
     setOldPass('')
     setNewPass('')
@@ -361,34 +354,10 @@ export function SettingsPage({
           )}
         </div>
         <div className="setting-row">
-          <span id="open-mode" className="setting-title">
-            {t.vault.openTitle}
-          </span>
-          <div className="setting-options" role="radiogroup" aria-labelledby="open-mode">
-            {openModes.map(
-              (mode) =>
-                (mode !== 'passkey' || canPasskey || openMode === 'passkey') && (
-                  <label key={mode} className="setting-option">
-                    <input
-                      type="radio"
-                      name="open-mode"
-                      checked={openMode === mode}
-                      disabled={passkeyBusy}
-                      onChange={() => void chooseOpenMode(mode)}
-                    />
-                    {mode === 'direct' ? t.vault.openDirect : mode === 'passkey' ? t.vault.openPasskey(unlockMethod()) : t.vault.openPassword}
-                  </label>
-                ),
-            )}
-          </div>
-          {passkeyMessage && (
-            <p className="error" role="alert">
-              {passkeyMessage}
-            </p>
-          )}
+          <SettingSwitch title={t.vault.rememberPassword} checked={remember} onChange={(on) => void toggleRemember(on)} />
         </div>
         {/* An app that opens directly has nothing to lock */}
-        {openMode !== 'direct' && (
+        {!remember && (
           <div className="setting-row">
             <SettingSwitch title={t.vault.autoLockOption} checked={autoLock} onChange={onAutoLockChange} />
           </div>

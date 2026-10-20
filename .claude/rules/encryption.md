@@ -17,7 +17,7 @@ A file sealed on another device opens with the passphrase and its key is adopted
 
 Plain files and rows still load and are sealed on the first unlock. A record whose `dekId` does not match the vault's is deleted rather than opened (`unlockWithKey`).
 
-«Når appen åpner» in Innstillinger is «Husk passord» (`rememberDevice` on, no passkey, the default), «Bruk Face ID …» (a passkey) or «Spør om passord».
+«Husk passord» in Innstillinger is `rememberDevice`: on (the default) opens with the device key; off deletes it and makes a passkey where the device has one, so the lock asks for Face ID or Touch ID, else the passphrase.
 
 A device opens without a question by default (`lib/deviceKey.ts`): the `deviceKey` setting holds a second copy of the DEK wrapped under a non-extractable AES-GCM `CryptoKey` kept in IndexedDB, written after any unlock and any adopted vault unless Face ID is on, and used at start only when it opens the vault's `dekId`. It protects files, backups and the folder, not a browser profile someone can run code in. Never in a backup or the folder.
 
