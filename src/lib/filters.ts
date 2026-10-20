@@ -4,13 +4,12 @@ import { formatNumber } from './format'
 import { isPathUnit, pathPrefix } from './paths'
 import { parseNumber } from './values'
 import { columnId, type Column } from './grid'
+import { naturalOrder } from './collator'
 
 // One filter per column: the accepted values, compared as normalised text so "5" and 5 agree;
 // empty is no filter. A path column has one per level, "<column>#1", "<column>#2", so the level
 // is in the id and nothing downstream needs to know the types.
 export type Filters = Record<string, string[]>
-
-export const categoryFilterId = 'category'
 
 const levelMark = '#'
 
@@ -26,8 +25,6 @@ export function splitLevel(filterId: string): { id: string; level: number | null
   const level = Number(filterId.slice(at + 1))
   return Number.isInteger(level) && level > 0 ? { id: filterId.slice(0, at), level } : { id: filterId, level: null }
 }
-
-const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
 export function valueKey(v: string | number): string {
   const n = parseNumber(v)
@@ -80,7 +77,7 @@ export function valuesFor(items: readonly Item[], col: Column, level: number | n
       if (key !== null) add(key, labelOf(s.value, s.unit, level))
     }
   }
-  return [...seen.values()].sort((a, b) => collator.compare(a.label, b.label))
+  return [...seen.values()].sort((a, b) => naturalOrder.compare(a.label, b.label))
 }
 
 export function itemValueKeys(item: Item, filterId: string): string[] {

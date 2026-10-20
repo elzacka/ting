@@ -2,12 +2,11 @@ import type { Item, ItemInput, Spec } from '../db/schema'
 import { formatStoredDate, isDateUnit, parseDateInput } from './dates'
 import { formatPath, isPathUnit, parsePath } from './paths'
 import { parseNumber } from './values'
+import { looseOrder } from './collator'
 
 // A column is one spec key with one unit. The same key with two different
 // units becomes two columns, which keeps every cell a plain value.
 export type Column = { key: string; unit: string | null }
-
-const collator = new Intl.Collator('nb', { sensitivity: 'base' })
 
 // Strekkode holds codes, which are text however many digits they have: a
 // number would drop a UPC code's leading zero and print the rest in groups
@@ -30,7 +29,7 @@ export function columnsFrom(items: readonly Item[]): Column[] {
     }
   }
   return [...seen.values()].sort(
-    (a, b) => collator.compare(a.key, b.key) || collator.compare(a.unit ?? '', b.unit ?? ''),
+    (a, b) => looseOrder.compare(a.key, b.key) || looseOrder.compare(a.unit ?? '', b.unit ?? ''),
   )
 }
 

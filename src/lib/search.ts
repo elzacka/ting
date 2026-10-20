@@ -3,6 +3,7 @@ import { isDateUnit, parseDateInput } from './dates'
 import { isBarcode } from './grid'
 import { codeKey } from './known'
 import { parseNumber } from './values'
+import { looseOrder } from './collator'
 
 // Query syntax, kept small: words (typo-tolerant), "phrases", -exclude, key<value with
 // < > <= >= = : (key a prefix, ":" contains, dates as dates), har:/has: for a property or bilde.
@@ -207,19 +208,17 @@ export function scoreItem(item: Item, terms: readonly Term[]): Score {
   return weakest
 }
 
-const collator = new Intl.Collator('nb', { sensitivity: 'base' })
-
 export function searchItems(items: readonly Item[], query: string): Item[] {
   const trimmed = query.trim()
   // One letter: browse names starting with it, no fuzzing, no operators.
   if (trimmed.length === 1) {
     const letter = norm(trimmed)
-    return items.filter((i) => norm(i.name).startsWith(letter)).sort((a, b) => collator.compare(a.name, b.name))
+    return items.filter((i) => norm(i.name).startsWith(letter)).sort((a, b) => looseOrder.compare(a.name, b.name))
   }
   const terms = parseQuery(trimmed)
   return items
     .map((item) => ({ item, score: scoreItem(item, terms) }))
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score || collator.compare(a.item.name, b.item.name))
+    .sort((a, b) => b.score - a.score || looseOrder.compare(a.item.name, b.item.name))
     .map((r) => r.item)
 }

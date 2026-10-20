@@ -14,7 +14,6 @@ import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
 import { codeField } from './LockScreen'
 
-
 // What a merge did, in the order a reader needs it
 function describe(r: MergeResult, loaded: Loaded): string[] {
   const date = formatDate(loaded.exportedAt)
@@ -37,8 +36,16 @@ function describe(r: MergeResult, loaded: Loaded): string[] {
 // proves it came from a device holding the key; a plain one only replaces
 type Opened = { loaded: Loaded; open: OpenKey | null; vault: Vault | null; mergeable: boolean }
 
+// A touch screen shares, as plain text since Chrome's share sheet refuses .json (Lagre i
+// Filer is in the sheet). A desk downloads .json: its sheet cannot save, so one button can't do both
+const share =
+  window.matchMedia('(pointer: coarse)').matches &&
+  typeof navigator.canShare === 'function' &&
+  navigator.canShare({ files: [new File([''], 'ting.txt', { type: 'text/plain' })] })
+
 // The register as one sealed file, out to a backup or another device, and back
 // in: merged with what is here, or replacing it. A trial has no vault to seal under.
+
 export function ImportExport({ trial, held, askPassword }: { trial: boolean; held: number; askPassword: () => boolean }) {
   const [status, setStatus] = useState<SyncStatus>({ sentAt: null, fetchedAt: null })
   const [result, setResult] = useState<string[] | null>(null)
@@ -51,14 +58,6 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
   const fileRef = useRef<HTMLInputElement>(null)
   useEscape(() => setForeign(null), foreign !== null)
   useEscape(() => setChoice(null), choice !== null)
-  // A touch screen shares, as plain text since Chrome's share sheet refuses .json (Lagre i
-  // Filer is in the sheet). A desk downloads .json: its sheet cannot save, so one button can't do both
-  const [share] = useState(
-    () =>
-      window.matchMedia('(pointer: coarse)').matches &&
-      typeof navigator.canShare === 'function' &&
-      navigator.canShare({ files: [new File([''], 'ting.txt', { type: 'text/plain' })] }),
-  )
 
   useEffect(() => {
     let live = true

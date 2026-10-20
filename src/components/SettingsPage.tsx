@@ -32,8 +32,8 @@ import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { codeField, KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
+import { naturalOrder } from '../lib/collator'
 
-const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 // A touch screen, read once: what it is does not change while the app runs
 const coarsePointer = window.matchMedia('(pointer: coarse)').matches
 
@@ -81,7 +81,7 @@ export function SettingsPage({
   const categories = categoryNames(items, properties.find((p) => p.id === categoryColumnId))
   const columns = columnDefs(fields, properties, items)
     .filter((d) => d.kind === 'name' || sharedByAll(d.property, categories))
-    .sort((a, b) => (a.kind === 'name' ? -1 : b.kind === 'name' ? 1 : collator.compare(a.col.key, b.col.key)))
+    .sort((a, b) => (a.kind === 'name' ? -1 : b.kind === 'name' ? 1 : naturalOrder.compare(a.col.key, b.col.key)))
   const hideable = columns.flatMap((d) => (d.kind === 'prop' ? [d.id] : []))
   const visibleCount = columns.filter((d) => !hidden.has(d.id)).length
   const [folderPass, setFolderPass] = useState('')

@@ -59,6 +59,7 @@ import { isDemo } from '../lib/useInstall'
 import { startValues } from '../lib/startValues'
 import { optionKeys, optionKeysAria, useOptionKey } from '../lib/useOptionKey'
 import { useEscape } from '../lib/useEscape'
+import { naturalOrder } from '../lib/collator'
 
 type RowEdit = { name?: string; cells?: Record<string, string> }
 type NewRow = {
@@ -116,7 +117,6 @@ type Props = {
 
 // "Interiør, Kjøkken og Bøker"
 const listFormat = new Intl.ListFormat('nb', { type: 'conjunction' })
-const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
 // Every field type a column can have, in the order the menus offer them.
 const propertyTypes: readonly PropertyType[] = ['text', 'choice', 'number', 'date', 'path']
@@ -231,7 +231,7 @@ export function Overview({
     const empty = (categoryDef.property?.options ?? [])
       .filter((o) => !known.has(valueKey(o)))
       .map((o) => ({ key: valueKey(o), label: o, count: 0 }))
-    return [...inUse, ...empty].sort((a, b) => collator.compare(a.label, b.label))
+    return [...inUse, ...empty].sort((a, b) => naturalOrder.compare(a.label, b.label))
   }, [categoryDef, searched, filters, items])
   // Every category with every thing it holds, for Endre kategorier
   const allCategories = useMemo(() => {
@@ -241,7 +241,7 @@ export function Overview({
     const empty = (categoryDef.property?.options ?? [])
       .filter((o) => !known.has(valueKey(o)))
       .map((o) => ({ key: valueKey(o), label: o, count: 0 }))
-    return [...inUse, ...empty].sort((a, b) => collator.compare(a.label, b.label))
+    return [...inUse, ...empty].sort((a, b) => naturalOrder.compare(a.label, b.label))
   }, [categoryDef, items])
   const categoryList = useMemo(() => allCategories.map((c) => c.label), [allCategories])
   const cats = useMemo(() => filters[categoryColumnId] ?? [], [filters])
@@ -498,7 +498,7 @@ export function Overview({
         .flatMap((d) =>
           d.kind === 'prop' && (d.id === categoryColumnId || appliesTo(d.property, cats)) ? [d] : [],
         )
-        .sort((a, b) => collator.compare(a.col.key, b.col.key)),
+        .sort((a, b) => naturalOrder.compare(a.col.key, b.col.key)),
     [defs, cats],
   )
   // The same value into one property of every ticked thing, as edits: the
@@ -1470,7 +1470,6 @@ export function Overview({
             </form>
           )}
 
-
           {bulk && (
             <form
               id="bulk-form"
@@ -1564,7 +1563,6 @@ export function Overview({
               />
             </div>
           )}
-
 
           {addingColumn && (
             <form

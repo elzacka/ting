@@ -1,6 +1,5 @@
 import type { Item } from '../db/schema'
-
-const collator = new Intl.Collator('nb', { sensitivity: 'base' })
+import { looseOrder, naturalOrder } from './collator'
 
 // Accepts "-5", "−5", "5,5" and "5.5". Returns null for non-numeric text.
 export function parseNumber(raw: string | number): number | null {
@@ -20,7 +19,7 @@ export function distinct(items: readonly Item[], pick: (item: Item) => string): 
     const k = v.toLocaleLowerCase('nb')
     if (v.trim() !== '' && !seen.has(k)) seen.set(k, v)
   }
-  return [...seen.values()].sort(collator.compare)
+  return [...seen.values()].sort(looseOrder.compare)
 }
 
 // Every value of a text field, the one used last first: on a phone the next
@@ -49,8 +48,6 @@ export function suggest(values: readonly string[], typed: string, limit: number)
   return values.filter((v) => v.toLocaleLowerCase('nb').includes(q)).slice(0, limit)
 }
 
-const menuOrder = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
-
 // A dropdown's values: alphabetical, one per spelling, and the chosen one
 // listed even before any thing holds it
 export function menuValues(values: readonly string[], current: string): string[] {
@@ -59,5 +56,5 @@ export function menuValues(values: readonly string[], current: string): string[]
     const k = v.trim().toLocaleLowerCase('nb')
     if (k !== '' && !seen.has(k)) seen.set(k, v.trim())
   }
-  return [...seen.values()].sort(menuOrder.compare)
+  return [...seen.values()].sort(naturalOrder.compare)
 }

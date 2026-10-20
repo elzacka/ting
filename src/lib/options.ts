@@ -1,6 +1,7 @@
 import type { Item, Property } from '../db/schema'
 import { unique } from './categories'
 import { columnId } from './grid'
+import { naturalOrder } from './collator'
 
 // The alternatives of a Valgliste: the values things hold and the ones the
 // list offers before any thing holds them. Endre egenskaper shows them, and
@@ -27,12 +28,10 @@ export type OptionRow = {
 }
 
 const fold = (s: string) => s.trim().toLocaleLowerCase('nb')
-const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
-// Every alternative with how many things hold it, one per value however it
-// was typed: spelled the way the list offers it, else the way most things
-// spell it. `mixed` marks one that some things spell another way, which
-// saving the list evens out.
+// Every alternative with how many things hold it, one per value however typed: spelled as the
+// list offers it, else as most things spell it. `mixed` marks one that some things spell another
+// way, which saving the list evens out.
 export function optionValues(
   items: readonly Item[],
   id: string,
@@ -56,7 +55,7 @@ export function optionValues(
     const count = [...forms.values()].reduce((n, c) => n + c, 0)
     out.set(key, { label, count, mixed: [...forms.keys()].some((f) => f !== label) })
   }
-  return [...out.values()].sort((a, b) => collator.compare(a.label, b.label))
+  return [...out.values()].sort((a, b) => naturalOrder.compare(a.label, b.label))
 }
 
 // What the lines in the editor ask for. A line left without a name keeps the

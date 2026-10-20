@@ -2,10 +2,9 @@ import type { Item } from '../db/schema'
 import { isDateUnit } from './dates'
 import { columnId, type Column } from './grid'
 import { parseNumber } from './values'
+import { naturalOrder } from './collator'
 
 export type Sort = { id: string; dir: 'asc' | 'desc' }
-
-const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
 
 // Sort key for a column: numbers by value, dates by ISO text, everything else by text.
 // null means the item has no value for the column and goes last either way.
@@ -33,7 +32,7 @@ export function sortItems(items: readonly Item[], columns: readonly Column[], so
       if (typeof a.key === 'number' && typeof b.key === 'number') c = a.key - b.key
       else if (typeof a.key === 'number') c = -1
       else if (typeof b.key === 'number') c = 1
-      else c = collator.compare(a.key, b.key)
+      else c = naturalOrder.compare(a.key, b.key)
       return c === 0 ? a.i - b.i : c * dir
     })
     .map((r) => r.item)

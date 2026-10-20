@@ -56,7 +56,6 @@ export const t = {
   },
   // Endre egenskaper: several properties changed or removed at once
   properties: {
-    edit: 'Endre egenskaper',
     editOne: (key: string) => `Endre ${key}`,
     title: 'Egenskaper',
     hint: 'Et nytt navn eller en ny felttype gjelder alle ting. Kategori endrer du under Endre kategorier.',
