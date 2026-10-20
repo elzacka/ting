@@ -12,6 +12,7 @@ import { fileExtras, markFetched, markSent, mergeIn, syncStatus, type MergeResul
 import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
+import { codeField } from './LockScreen'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
@@ -230,7 +231,8 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
                 id="import-pass"
                 className="input"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="off"
+                {...codeField}
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
                 autoFocus

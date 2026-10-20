@@ -19,7 +19,7 @@ import { ReceiptBatch } from './ReceiptBatch'
 import { RecoveryCode } from './RecoveryCode'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
-import { KeychainName } from './LockScreen'
+import { codeField, KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
 
 const collator = new Intl.Collator('nb', { sensitivity: 'base', numeric: true })
@@ -297,7 +297,8 @@ export function SettingsPage({
                     id="folder-pass"
                     className="input"
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete="off"
+                    {...codeField}
                     value={folderPass}
                     onChange={(e) => setFolderPass(e.target.value)}
                   />

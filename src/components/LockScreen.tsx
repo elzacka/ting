@@ -53,7 +53,6 @@ export function LockScreen(props: Props) {
 
   return (
     <form className="stack narrow" onSubmit={onSubmit}>
-      <KeychainName />
       <div>
         <h1 className="title">{t.vault.unlockTitle}</h1>
         {props.idle && <p className="hint">{t.vault.autoLocked}</p>}
@@ -81,7 +80,8 @@ export function LockScreen(props: Props) {
             ref={passRef}
             className="input"
             type={show ? 'text' : 'password'}
-            autoComplete="current-password"
+            autoComplete="off"
+            {...codeField}
             value={pass}
             onChange={(e) => setPass(e.target.value)}
             aria-invalid={error !== null}
@@ -113,6 +113,10 @@ export function LockScreen(props: Props) {
     </form>
   )
 }
+
+// The recovery code is asked for, never saved: GitHub Pages gives every app of the account one
+// origin, so a manager cannot tell which login is Ting's and offers another app's
+export const codeField = { 'data-1p-ignore': true, 'data-lpignore': 'true', 'data-bwignore': 'true' } as const
 
 // A password manager files a password under an account name, and iOS and
 // 1Password offer to fill one without it less readily. Out of sight and out
