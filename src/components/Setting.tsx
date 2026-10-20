@@ -12,15 +12,13 @@ export function SettingGroup({ title, children }: { title: string; children: Rea
 
 type SwitchProps = {
   title: string
-  description?: string
   checked: boolean
   disabled?: boolean
   onChange: (on: boolean) => void
 }
 
-// A setting that applies at once: the whole line toggles it, and the title
-// alone names it, so a screen reader hears the description after the state
-export function SettingSwitch({ title, description, checked, disabled = false, onChange }: SwitchProps) {
+// A setting that applies at once: the whole line toggles it
+export function SettingSwitch({ title, checked, disabled = false, onChange }: SwitchProps) {
   const id = useId()
   return (
     <label className="setting-main setting-switch">
@@ -28,11 +26,6 @@ export function SettingSwitch({ title, description, checked, disabled = false, o
         <span id={`${id}-title`} className="setting-title">
           {title}
         </span>
-        {description && (
-          <span id={`${id}-desc`} className="setting-desc">
-            {description}
-          </span>
-        )}
       </span>
       <input
         type="checkbox"
@@ -41,7 +34,6 @@ export function SettingSwitch({ title, description, checked, disabled = false, o
         checked={checked}
         disabled={disabled}
         aria-labelledby={`${id}-title`}
-        aria-describedby={description ? `${id}-desc` : undefined}
         onChange={(e) => onChange(e.target.checked)}
       />
     </label>

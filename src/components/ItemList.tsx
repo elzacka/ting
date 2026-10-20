@@ -89,45 +89,45 @@ export function ItemList({ items, properties, fields, query, onQueryChange, stal
           ))}
         </ul>
       )}
-      {!isDemo && (
-        <nav className="phone-bar" aria-label={t.nav.list}>
-          {receipts ? (
-            <>
-              <input
-                ref={receiptRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="visually-hidden"
-                tabIndex={-1}
-                onChange={(e) => receiptTaken(e.target)}
-              />
-              <button
-                type="button"
-                className="btn btn-icon btn-round"
-                aria-label={t.receipt.fromReceipt}
-                onClick={() => receiptRef.current?.click()}
-              >
-                <Icon name="receiptLong" />
-              </button>
-            </>
-          ) : (
-            <a className="btn btn-icon btn-round" href={href.receipt} aria-label={t.receipt.fromReceipt}>
+      <nav className="phone-bar" aria-label={t.nav.list}>
+        {!isDemo && (receipts ? (
+          <>
+            <input
+              ref={receiptRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="visually-hidden"
+              tabIndex={-1}
+              onChange={(e) => receiptTaken(e.target)}
+            />
+            <button
+              type="button"
+              className="btn btn-icon btn-round"
+              aria-label={t.receipt.fromReceipt}
+              onClick={() => receiptRef.current?.click()}
+            >
               <Icon name="receiptLong" />
-            </a>
-          )}
+            </button>
+          </>
+        ) : (
+          <a className="btn btn-icon btn-round" href={href.receipt} aria-label={t.receipt.fromReceipt}>
+            <Icon name="receiptLong" />
+          </a>
+        ))}
+        {!isDemo && (
           <a className="btn btn-icon btn-round" href={href.add} aria-label={t.table.addRow}>
             <Icon name="add" />
           </a>
-          <a
-            className={`btn btn-icon btn-round${stalled ? ' is-stalled' : ''}`}
-            href={href.settings}
-            aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
-          >
-            <Icon name="settings" />
-          </a>
-        </nav>
-      )}
+        )}
+        <a
+          className={`btn btn-icon btn-round${stalled ? ' is-stalled' : ''}`}
+          href={href.settings}
+          aria-label={stalled ? t.nav.settingsStalled : t.nav.settings}
+        >
+          <Icon name="settings" />
+        </a>
+      </nav>
     </div>
   )
 }

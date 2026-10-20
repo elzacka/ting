@@ -11,6 +11,7 @@ import { useEscape } from '../lib/useEscape'
 import { fileExtras, markFetched, markSent, mergeIn, syncStatus, type MergeResult, type SyncStatus } from '../lib/sync'
 import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
+import { isDemo } from '../lib/useInstall'
 
 const timeFormat = new Intl.DateTimeFormat('nb-NO', { timeStyle: 'short' })
 const formatTime = (ts: number) => timeFormat.format(ts).replace(':', '.')
@@ -177,7 +178,7 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
     }
     const drop = (e: DragEvent) => {
       const file = e.dataTransfer?.files[0]
-      if (!file) return
+      if (!file || isDemo) return
       e.preventDefault()
       void receive(file)
     }
@@ -197,11 +198,11 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
             <span id="import-title" className="setting-title">
               {t.sync.importTitle}
             </span>
-            <p id="import-what" className="setting-desc num">
-              {status.fetchedAt
-                ? `${t.sync.importWhat}. ${t.sync.imported(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}`
-                : t.sync.importWhat}
-            </p>
+            {status.fetchedAt && (
+              <p id="import-what" className="setting-desc num">
+                {t.sync.imported(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}
+              </p>
+            )}
           </div>
           <input
             ref={fileRef}
@@ -295,11 +296,11 @@ export function ImportExport({ trial, held }: { trial: boolean; held: number }) 
               <span id="export-title" className="setting-title">
                 {t.sync.exportTitle}
               </span>
-              <p id="export-what" className="setting-desc num">
-                {status.sentAt
-                  ? `${t.sync.exportWhat}. ${t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}`
-                  : t.sync.exportWhat}
-              </p>
+              {status.sentAt && (
+                <p id="export-what" className="setting-desc num">
+                  {t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}
+                </p>
+              )}
             </div>
             <button type="button" className="btn" aria-describedby="export-title export-what" onClick={() => void exportFile()}>
               {share ? t.sync.exportButton : t.sync.exportDownload}

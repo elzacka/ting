@@ -11,7 +11,7 @@ type State = 'off' | 'downloading' | 'ready' | 'failed'
 // Kvitteringer: on downloads the text recognition into the cache, so a receipt
 // reads without a network; off deletes it. One row: in its group on
 // Innstillinger, in a card of its own on the receipt screen while it is off.
-export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
+export function ReceiptSettings({ onReady, onChange }: { onReady?: () => void; onChange?: (on: boolean) => void }) {
   const [state, setState] = useState<State>('off')
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
     await setSetting(receiptReadingKey, on)
     if (!on) {
       setState('off')
+      onChange?.(false)
       await removeOcr()
       return
     }
@@ -29,6 +30,7 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
     try {
       await prefetchOcr()
       setState('ready')
+      onChange?.(true)
       onReady?.()
     } catch (err) {
       console.error(errorText(err))
@@ -40,8 +42,6 @@ export function ReceiptSettings({ onReady }: { onReady?: () => void }) {
     <div className="setting-row">
       <SettingSwitch
         title={t.receipt.option}
-        // Once on, the line says only that it is on; what it downloads matters until then
-        description={state === 'ready' ? t.receipt.ready : t.receipt.what}
         checked={state !== 'off'}
         disabled={state === 'downloading'}
         onChange={(on) => void toggle(on)}

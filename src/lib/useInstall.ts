@@ -34,7 +34,10 @@ window.addEventListener('appinstalled', () => {
 
 function installed(): boolean {
   if (devInstalled !== null) return devInstalled
-  return window.matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true
+  return (
+    ['standalone', 'minimal-ui', 'window-controls-overlay', 'fullscreen'].some((m) => window.matchMedia(`(display-mode: ${m})`).matches) ||
+    (navigator as { standalone?: boolean }).standalone === true
+  )
 }
 
 // Opened in a browser tab: a demo with examples, nothing added and nothing kept.
