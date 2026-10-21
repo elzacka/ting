@@ -2266,6 +2266,20 @@ section {
   margin: 0;
 }
 
+/* A line and the action it belongs to: the text wraps, the button stays at the right, level with
+   its first line */
+.setting-more-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  justify-self: stretch;
+}
+
+.setting-more-row > .btn {
+  flex: none;
+}
+
 .disclosure-body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -2391,6 +2405,7 @@ section {
 /* A row's own button is drawn as small as the switch beside it and one width
    for every label; the hit area stays 44 px */
 .setting-main .btn,
+.setting-more .btn,
 .setting-row > .toolbar .btn {
   position: relative;
   min-width: 88px;
@@ -2409,6 +2424,7 @@ section {
 }
 
 .setting-main .btn::before,
+.setting-more .btn::before,
 .setting-row > .toolbar .btn::before {
   content: '';
   position: absolute;

@@ -477,10 +477,14 @@ export function SettingsPage({
             </div>
             {status.kind === 'connected' && (
               <SettingMore id={folderFold} open={folderOpen}>
-                <p className="num">
-                  {t.settings.connected(status.name)} {t.settings.lastWritten(formatTime(status.lastWrittenAt))}
-                </p>
-                {disconnectButton}
+                <div className="setting-more-row">
+                  <p className="num">
+                    {t.settings.connected(status.name)}
+                    <br />
+                    {t.settings.lastWritten(formatTime(status.lastWrittenAt))}
+                  </p>
+                  {disconnectButton}
+                </div>
               </SettingMore>
             )}
             {status.kind === 'needs-permission' && (
