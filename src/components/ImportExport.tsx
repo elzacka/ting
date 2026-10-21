@@ -12,7 +12,7 @@ import { fileExtras, markFetched, markSent, mergeIn, syncStatus, type MergeResul
 import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
-import { codeField } from './LockScreen'
+import { KeychainName } from './LockScreen'
 
 // What a merge did, in the order a reader needs it
 function describe(r: MergeResult, loaded: Loaded): string[] {
@@ -123,8 +123,9 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
 
   async function replace(o: Opened) {
     setChoice(null)
-    // The trial's key dies with the tab, so a file under another key brings its own
-    const change = trial && o.open && o.vault && o.open.dekId !== currentKey().dekId ? { vault: o.vault, open: o.open } : undefined
+    // A file under another key brings its own, as a merge does, so the next file from there opens
+    // without a question
+    const change = o.open && o.vault && o.open.dekId !== currentKey().dekId ? { vault: o.vault, open: o.open } : undefined
     try {
       requestFullPhotoWrite()
       await replaceAll(o.loaded.items, o.loaded.properties, o.loaded.fields, o.loaded.tombstones, change)
@@ -235,14 +236,14 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
         {foreign && (
           <form className="stack-sm" onSubmit={(e) => void openForeign(e)}>
             <p>{t.sync.foreign}</p>
+            <KeychainName />
             <div className="field">
               <label htmlFor="import-pass">{t.vault.passphrase}</label>
               <input
                 id="import-pass"
                 className="input"
                 type="password"
-                autoComplete="off"
-                {...codeField}
+                autoComplete="current-password"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
                 autoFocus
@@ -269,7 +270,7 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
             <p id="import-ask">
               {choice.mergeable ? t.sync.ask(held, choice.loaded.items.length) : t.sync.replaceOnly(choice.loaded.items.length)}
               {/* A merge under another key takes over that key's passphrase: said before, not only after */}
-              {choice.mergeable && choice.open && choice.open.dekId !== currentKey().dekId && ` ${t.sync.askAdopt}`}
+              {choice.open && choice.open.dekId !== currentKey().dekId && ` ${t.sync.askAdopt}`}
             </p>
             <div className="row">
               {choice.mergeable && (

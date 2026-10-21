@@ -74,7 +74,8 @@ sikkerhetskopi eller kobler til en mappe:
 > Uten passordet kan du ikke åpne en sikkerhetskopi eller fil på en ny enhet.
 > Ingen kan hente det frem igjen.
 
-Du skriver passordet én gang på hver enhet som ikke har sett registeret før.
+På en ny enhet skriver du passordet én gang: Første gang du henter inn en fil
+eller en mappe fra registeret ditt.
 
 «Husk passord» står på som standard, og da åpner appen uten å spørre. Slå det av
 for å låse appen på enheten du bruker:
@@ -91,8 +92,8 @@ for å låse appen på enheten du bruker:
   kommer frem.
 - Appen ber deg velge passord først hvis du ikke har et når du slår av «Husk
   passord», eksporterer eller kobler til en mappe.
-- Du kan slette passnøkkelen «Ting» i Passord-appen når du slår «Husk passord»
-  på igjen.
+- Appen ber Passord-appen fjerne passnøkkelen «Ting» når du slår «Husk
+  passord» på igjen. Slett den selv hvis den blir liggende.
 - Appen i en nettleserfane er en demo uten ditt register. Den har ikke noe
   passord.
 
@@ -542,6 +543,8 @@ ting som mangler i kopien.
 <summary>Mer om mappen</summary>
 
 - Velg en tom mappe. Appen rydder selv i undermappen `bilder`.
+- Appen ber om passordet én gang hvis mappen er brukt av et annet
+  Ting-register, for eksempel før du installerte appen på nytt.
 - Appen slår sammen mappen og det som ligger i appen når du kobler til,
   og hver gang appen starter. Ingenting går tapt, se [Bruke flere
   enheter](#bruke-flere-enheter).
@@ -569,9 +572,11 @@ pris du retter på Mac, kommer med på begge enhetene.
 
 Etter sammenslåingen sier appen hvor mange ting som er nye, endret og slettet.
 
-- Velg samme passord på begge enhetene. Hvis passordene er ulike, ber appen
-  om passordet fra den andre enheten første gang. Fra da av låser du opp
-  begge enhetene med det.
+- Hvert register har sin egen nøkkel, også med samme passord. Første gang du
+  henter inn en fil eller en mappe fra en annen enhet, ber appen derfor om
+  passordet du brukte der. Det gjelder både «Slå sammen» og «Erstatt alt».
+  Etterpå deler enhetene nøkkel, og appen spør ikke igjen. Fra da av låser du
+  opp begge enhetene med det passordet.
 - Appen beholder den nyeste endringen hvis du har endret det samme feltet på
   begge enhetene, og sier fra om det.
 - En ting du sletter, forsvinner også fra den andre enheten. Den blir likevel
@@ -680,6 +685,7 @@ felt. I et felt gir tastene tegn som ± og π.
 | «Ingen nettforbindelse» | Oppslaget av boka trenger nett | Trykk «Slå opp på nett» når du har nett igjen, eller skriv opplysningene selv |
 | «Ingen passnøkler er tilgjengelige» når appen åpner | Enheten finner ikke passnøkkelen på enheten, for eksempel fordi den er slettet eller ligger i en passordbehandler | Trykk «Lukk» og lås opp med passordet. Slå så «Husk passord» på og av igjen |
 | «Appen kunne ikke importere fila.» | Appen fikk ikke lagret innholdet fra fila | Prøv på nytt. Registeret og passordet er som før |
+| «Fila er laget av et annet Ting-register» eller «Mappen … er laget av et annet Ting-register» | Hvert register har sin egen nøkkel, også med samme passord | Skriv passordet du brukte der. Appen spør bare denne ene gangen |
 | «Fila er laget av en nyere versjon av Ting.» | Den andre enheten har en nyere versjon av appen | Trykk på oppdateringsikonet, og importer fila på nytt |
 | «Klokka på den andre enheten går mer enn ett døgn foran.» | Dato eller klokkeslett er feil på den andre enheten | Rett dato og klokkeslett der. Til da regner appen endringene derfra som nyest |
 | «Fant ingen ting på kvitteringen.» eller feil pris fra en kvittering | Bildet er skjevt, uskarpt eller kuttet | Trykk på det lille bildet av kvitteringen og velg «Juster hjørnene» eller «Ta nytt bilde». Ta bildet rett ovenfra med godt lys. Du kan også skrive radene selv |

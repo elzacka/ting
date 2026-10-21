@@ -137,10 +137,6 @@ export function LockScreen(props: Props) {
   )
 }
 
-// Another device's or file's password is asked for, never saved: GitHub Pages gives every app of
-// the account one origin, so a manager cannot tell which login it is and offers another app's
-export const codeField = { 'data-1p-ignore': true, 'data-lpignore': 'true', 'data-bwignore': 'true' } as const
-
 // A password manager files a password under an account name, and iOS and
 // 1Password offer to fill one without it less readily. Out of sight and out
 // of the tab order; it only gives the passphrase a name.

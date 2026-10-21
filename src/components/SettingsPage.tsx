@@ -30,7 +30,7 @@ import { ImportExport } from './ImportExport'
 import { ReceiptBatch } from './ReceiptBatch'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
-import { codeField, KeychainName } from './LockScreen'
+import { KeychainName } from './LockScreen'
 import { SettingGroup, SettingSwitch } from './Setting'
 import { naturalOrder } from '../lib/collator'
 
@@ -501,14 +501,14 @@ export function SettingsPage({
                 }}
               >
                 <p>{t.vault.folderForeign(status.name)}</p>
+                <KeychainName />
                 <div className="field">
                   <label htmlFor="folder-pass">{t.vault.passphrase}</label>
                   <input
                     id="folder-pass"
                     className="input"
                     type="password"
-                    autoComplete="off"
-                    {...codeField}
+                    autoComplete="current-password"
                     value={folderPass}
                     onChange={(e) => setFolderPass(e.target.value)}
                   />

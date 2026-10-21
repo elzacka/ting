@@ -34,7 +34,7 @@ export const t = {
     changeShort: 'Endre',
     changed: 'Du har endret passordet',
     folderForeign: (name: string) =>
-      `Mappen «${name}» er låst med et annet passord. Skriv det inn for å åpne mappen. Fra nå av låser du opp appen med det.`,
+      `Mappen «${name}» er laget av et annet Ting-register, for eksempel før du installerte appen på nytt. Hvert register har sin egen nøkkel, også med samme passord. Skriv passordet du brukte der. Fra nå av låser du opp appen med det, og appen spør ikke igjen.`,
     folderOpen: 'Åpne mappen',
     // The account a password manager files the passphrase under
     keychainName: 'Ting',
@@ -381,7 +381,7 @@ export const t = {
     // Asked only when the register already holds things
     ask: (held: number, incoming: number) =>
       `Registeret har ${held} ting fra før, og fila har ${incoming}. Vil du slå sammen endringene fra begge, eller erstatte alt i registeret med innholdet i fila? Du kan ikke angre hvis du erstatter alt.`,
-    askAdopt: 'Hvis du slår sammen, bruker du passordet fra fila når du låser opp appen etterpå.',
+    askAdopt: 'Etterpå låser du opp appen med passordet fra fila, uansett hva du velger.',
     // A plain file or a trial cannot merge
     replaceOnly: (incoming: number) => `Erstatt alt i registeret med ${incoming} ting fra fila? Du kan ikke angre.`,
     merge: 'Slå sammen',
@@ -408,6 +408,6 @@ export const t = {
     failed: 'Appen kunne ikke importere fila. Prøv på nytt.',
     exportFailed: 'Appen kunne ikke eksportere registeret. Prøv på nytt.',
     notTing: 'Denne fila er ikke fra Ting. Velg en fil du har eksportert fra Ting.',
-    foreign: 'Fila er låst med et annet passord. Skriv inn passordet appen hadde da fila ble eksportert.',
+    foreign: 'Fila er laget av et annet Ting-register, for eksempel på en annen enhet. Hvert register har sin egen nøkkel, også med samme passord. Skriv passordet du brukte der. Appen spør bare denne ene gangen.',
   },
 } as const
