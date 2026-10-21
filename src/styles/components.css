@@ -2223,8 +2223,47 @@ section {
   transition: transform var(--duration) ease-out;
 }
 
-.disclosure[open] .disclosure-chevron {
+.disclosure[open] .disclosure-chevron,
+[aria-expanded='true'] > .disclosure-chevron {
   transform: rotate(-90deg);
+}
+
+/* A row title that opens what is folded under it: plain text with a quiet chevron, the row's
+   full height to tap */
+.setting-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--row-h);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.setting-fold .disclosure-chevron {
+  flex: none;
+  color: var(--text-2);
+}
+
+/* Status and rarer actions under a row's title: small and quiet, one line apart */
+.setting-more {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+  font-size: var(--text-xs);
+  color: var(--text-2);
+}
+
+.setting-more[hidden] {
+  display: none;
+}
+
+.setting-more p {
+  margin: 0;
 }
 
 .disclosure-body {

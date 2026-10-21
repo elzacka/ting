@@ -640,7 +640,8 @@ Står navnet på egenskapen med mellomrom, setter du det i anførselstegn:
 
 ### Innstillinger
 
-Tannhjulet lengst til høyre i topplinja.
+Tannhjulet lengst til høyre i topplinja. Et navn med en liten pil ved siden av
+viser mer når du trykker på det, for eksempel når du sist eksporterte.
 
 | Valg | Gjør |
 |---|---|
@@ -648,9 +649,9 @@ Tannhjulet lengst til høyre i topplinja.
 | Husk passord | På: Appen åpner uten å spørre. Av: Appen spør om Face ID, Touch ID eller passordet, se [Velg et passord](#2-velg-et-passord). Gjelder bare enheten du bruker |
 | Lås appen etter 10 minutter uten bruk | Slår den automatiske låsen av eller på. Vises bare når «Husk passord» er av |
 | Bryt lang tekst i tabellen, Egenskaper i tabellen | Om lange verdier brytes, og om tabellen skal vise egenskapene alle kategoriene har. Navn vises alltid. Enheten husker valgene |
-| Lagringsmappe | «Velg» kobler til en mappe (Chrome og Edge). Knappen er rød når ingen mappe er valgt. Velg på nytt for å bytte mappe. «Koble fra» kobler fra. Linja under sier hvor appen lagrer |
-| Importer til registeret | «Velg fil» henter en fil du har eksportert fra Ting, her eller på en annen enhet, se [Ta vare på dataene](#ta-vare-på-dataene) og [Bruke flere enheter](#bruke-flere-enheter). Linja under sier når du sist importerte |
-| Eksporter registeret | Hele registeret i én kryptert fil, som sikkerhetskopi eller for å flytte registeret til en annen enhet. Knappen heter «Eksporter/del fil» på iPhone og «Eksporter fil» på Mac og PC. Linja under sier når du sist eksporterte |
+| Lagringsmappe | «Velg» kobler til en mappe (Chrome og Edge). Knappen er rød når ingen mappe er valgt. «Bytt» velger en annen mappe. Trykk på «Lagringsmappe» for å se mappen og når appen sist lagret, og for å koble fra |
+| Importer til registeret | «Velg fil» henter en fil du har eksportert fra Ting, her eller på en annen enhet, se [Ta vare på dataene](#ta-vare-på-dataene) og [Bruke flere enheter](#bruke-flere-enheter). Trykk på navnet for å se når du sist importerte. Resultatet av en import vises der rett etterpå |
+| Eksporter registeret | Hele registeret i én kryptert fil, som sikkerhetskopi eller for å flytte registeret til en annen enhet. Knappen heter «Eksporter/del fil» på iPhone og «Eksporter fil» på Mac og PC. Trykk på navnet for å se når du sist eksporterte |
 | Les tekst på kvitteringer | Laster ned KI-modellene for tekstgjenkjenning, omtrent 45 MB. Når den er på, kan du lese inn mange kvitteringer samtidig, og kvitteringssymbolet på mobilen åpner kameraet med en gang. Nedlastingen slettes når du slår det av |
 | Personvern, Kildekode | Nederst. Åpner dokumentene på GitHub. Linja under viser versjonen |
 

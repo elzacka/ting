@@ -65,6 +65,7 @@ Production build injects `default-src 'self'`; `connect-src` adds the two lookup
 - Column visibility is one rule everywhere it applies (table, filters, print, CSV): with categories in view, a column renders only if one of them uses it (`appliesTo`), and then if one lists it or it holds a value on a visible row. "Vis n kolonner til" adds only columns they use, never another category's.
 - With exactly one category in view, that category's own column drops since it says the same on every row.
 - Tilpass visning lists Navn (locked) and the properties every category uses (`sharedByAll`); a hidden id counts only while its property is one of those, so a category's own column is never hidden out of reach. A change here must hold across table, phone list, search/filter and print/CSV at once.
+- Innstillinger: a row's status and rarer actions fold under its title (`SettingTitle`, `SettingMore`); only what asks for action stays in sight. A new import result opens its fold once.
 - `PropertyEditor`: removing a value asks for confirmation naming it and counting the affected things.
 - Filter menus count the rows every other filter and the search leave (`withoutFilter`).
 - A new row inherits the Valgliste and date values of the row above, never numbers or text; the first row takes the Kategori of the newest thing.

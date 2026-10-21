@@ -320,6 +320,9 @@ export const t = {
     choose: 'Velg mappe',
     chooseNone: 'Velg mappe. Ingen mappe er valgt',
     chooseShort: 'Velg',
+    // A folder in use: the same button chooses another
+    switchFolder: 'Bytt mappe',
+    switchShort: 'Bytt',
     checking: 'Sjekker mappen…',
     needsPermission: (name: string) => `Mappen «${name}» trenger tillatelse på nytt. Frem til da lagrer appen bare på enheten.`,
     grant: 'Gi tilgang',

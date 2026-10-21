@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { isDemo } from '../lib/useInstall'
 import {
   addPasskey,
@@ -31,7 +31,7 @@ import { ReceiptBatch } from './ReceiptBatch'
 import { ReceiptSettings } from './ReceiptSettings'
 import { Icon } from './Icons'
 import { KeychainName } from './LockScreen'
-import { SettingGroup, SettingSwitch } from './Setting'
+import { SettingGroup, SettingMore, SettingSwitch, SettingTitle } from './Setting'
 import { naturalOrder } from '../lib/collator'
 
 // A touch screen, read once: what it is does not change while the app runs
@@ -249,17 +249,11 @@ export function SettingsPage({
     })
   }
 
-  // The line under the folder's title says where things stand; what the
-  // other states ask for comes underneath.
-  const folderLine = trial
-    ? null
-    : status.kind === 'connected'
-      ? `${t.settings.connected(status.name)} ${t.settings.lastWritten(formatTime(status.lastWrittenAt))}`
-      : status.kind === 'checking'
-        ? t.settings.checking
-        : status.kind === 'unsupported'
-          ? t.settings.unsupported
-          : null
+  // Under the folder's title only what explains a missing button; where and when it last saved is
+  // folded under the title, and what the other states ask for comes underneath
+  const folderLine = trial ? null : status.kind === 'checking' ? t.settings.checking : status.kind === 'unsupported' ? t.settings.unsupported : null
+  const folderFold = useId()
+  const [folderOpen, setFolderOpen] = useState(false)
 
   // The one risk on the page, everything in this browser alone, shows as the button's red border.
   // The demo shows the button as a new register has it.
@@ -462,25 +456,33 @@ export function SettingsPage({
           <div className="setting-row">
             <div className="setting-main">
               <div className="setting-text">
-                <span className="setting-title">{t.settings.folderTitle}</span>
-                {folderLine && (
-                  <p className="setting-desc num">{folderLine}</p>
-                )}
+                <SettingTitle
+                  title={t.settings.folderTitle}
+                  foldId={status.kind === 'connected' ? folderFold : undefined}
+                  open={folderOpen}
+                  onOpenChange={setFolderOpen}
+                />
+                {folderLine && <p className="setting-desc">{folderLine}</p>}
               </div>
-              <div className="row">
-                {(trial || status.kind === 'none' || status.kind === 'error' || status.kind === 'connected') && (
-                  <button
-                    type="button"
-                    className={folderAtRisk ? 'btn is-missing' : 'btn'}
-                    aria-label={folderAtRisk ? t.settings.chooseNone : t.settings.choose}
-                    onClick={() => askPassword() || void connect()}
-                  >
-                    {t.settings.chooseShort}
-                  </button>
-                )}
-                {(status.kind === 'connected' || status.kind === 'error') && disconnectButton}
-              </div>
+              {(trial || status.kind === 'none' || status.kind === 'error' || status.kind === 'connected') && (
+                <button
+                  type="button"
+                  className={folderAtRisk ? 'btn is-missing' : 'btn'}
+                  aria-label={folderAtRisk ? t.settings.chooseNone : status.kind === 'connected' ? t.settings.switchFolder : t.settings.choose}
+                  onClick={() => askPassword() || void connect()}
+                >
+                  {status.kind === 'connected' ? t.settings.switchShort : t.settings.chooseShort}
+                </button>
+              )}
             </div>
+            {status.kind === 'connected' && (
+              <SettingMore id={folderFold} open={folderOpen}>
+                <p className="num">
+                  {t.settings.connected(status.name)} {t.settings.lastWritten(formatTime(status.lastWrittenAt))}
+                </p>
+                {disconnectButton}
+              </SettingMore>
+            )}
             {status.kind === 'needs-permission' && (
               <div className="stack-sm">
                 <p>{t.settings.needsPermission(status.name)}</p>
@@ -527,9 +529,12 @@ export function SettingsPage({
               </form>
             )}
             {status.kind === 'error' && (
-              <p className="error" role="alert">
-                {t.settings.error(status.name)}
-              </p>
+              <div className="stack-sm">
+                <p className="error" role="alert">
+                  {t.settings.error(status.name)}
+                </p>
+                <div className="row">{disconnectButton}</div>
+              </div>
             )}
           </div>
         )}

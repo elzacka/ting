@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { readRegister, replaceAll } from '../db/db'
 import { itemsFromDataFile, NewerFileError, openEnvelope, parseAnyFile, toBackupJson, type Envelope, type Loaded } from '../lib/backup'
 import type { OpenKey, Vault } from '../lib/crypto'
@@ -13,6 +13,7 @@ import { currentKey, currentVault } from '../lib/vault'
 import { errorText } from '../lib/errors'
 import { isDemo } from '../lib/useInstall'
 import { KeychainName } from './LockScreen'
+import { SettingMore, SettingTitle } from './Setting'
 
 // What a merge did, in the order a reader needs it
 function describe(r: MergeResult, loaded: Loaded): string[] {
@@ -49,6 +50,15 @@ const share =
 export function ImportExport({ trial, held, askPassword }: { trial: boolean; held: number; askPassword: () => boolean }) {
   const [status, setStatus] = useState<SyncStatus>({ sentAt: null, fetchedAt: null })
   const [result, setResult] = useState<string[] | null>(null)
+  // Status folded under the titles; a new result opens its fold once, so the import is seen
+  const importFold = useId()
+  const exportFold = useId()
+  const [importOpen, setImportOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [exportError, setExportError] = useState(false)
+  useEffect(() => {
+    if (result) setImportOpen(true)
+  }, [result])
   const [error, setError] = useState<string | null>(null)
   const [foreign, setForeign] = useState<Envelope | null>(null)
   const [pass, setPass] = useState('')
@@ -74,8 +84,7 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
     if (busy || askPassword()) return
     const vault = currentVault()
     if (!vault) return
-    setResult(null)
-    setError(null)
+    setExportError(false)
     setBusy(true)
     try {
       const register = await readRegister()
@@ -95,7 +104,7 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
       setStatus(await syncStatus())
     } catch (err) {
       console.error(errorText(err))
-      setError(t.sync.exportFailed)
+      setExportError(true)
     } finally {
       setBusy(false)
     }
@@ -207,14 +216,13 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
       <div className="setting-row">
         <div className="setting-main">
           <div className="setting-text">
-            <span id="import-title" className="setting-title">
-              {t.sync.importTitle}
-            </span>
-            {status.fetchedAt && (
-              <p id="import-what" className="setting-desc num">
-                {t.sync.imported(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}
-              </p>
-            )}
+            <SettingTitle
+              id="import-title"
+              title={t.sync.importTitle}
+              foldId={status.fetchedAt || result ? importFold : undefined}
+              open={importOpen}
+              onOpenChange={setImportOpen}
+            />
           </div>
           <input
             ref={fileRef}
@@ -227,7 +235,7 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
             type="button"
             className="btn"
             disabled={busy}
-            aria-describedby="import-title import-what"
+            aria-describedby="import-title"
             onClick={() => fileRef.current?.click()}
           >
             {t.sync.pick}
@@ -287,14 +295,17 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
             </div>
           </div>
         )}
-        {result && (
-          <div role="status">
-            {result.map((line) => (
-              <p key={line} className="hint">
-                {line}
-              </p>
-            ))}
-          </div>
+        {(status.fetchedAt || result) && (
+          <SettingMore id={importFold} open={importOpen}>
+            {result && (
+              <div role="status">
+                {result.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+            )}
+            {status.fetchedAt && <p className="num">{t.sync.imported(formatDate(status.fetchedAt), formatTime(status.fetchedAt))}</p>}
+          </SettingMore>
         )}
         {error && (
           <p className="error" role="alert">
@@ -305,19 +316,28 @@ export function ImportExport({ trial, held, askPassword }: { trial: boolean; hel
       <div className="setting-row">
         <div className="setting-main">
           <div className="setting-text">
-            <span id="export-title" className="setting-title">
-              {t.sync.exportTitle}
-            </span>
-            {status.sentAt && (
-              <p id="export-what" className="setting-desc num">
-                {t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}
-              </p>
-            )}
+            <SettingTitle
+              id="export-title"
+              title={t.sync.exportTitle}
+              foldId={status.sentAt ? exportFold : undefined}
+              open={exportOpen}
+              onOpenChange={setExportOpen}
+            />
           </div>
-          <button type="button" className="btn" aria-describedby="export-title export-what" disabled={busy} onClick={() => void exportFile()}>
+          <button type="button" className="btn" aria-describedby="export-title" disabled={busy} onClick={() => void exportFile()}>
             {share ? t.sync.exportButton : t.sync.exportDownload}
           </button>
         </div>
+        {exportError && (
+          <p className="error" role="alert">
+            {t.sync.exportFailed}
+          </p>
+        )}
+        {status.sentAt && (
+          <SettingMore id={exportFold} open={exportOpen}>
+            <p className="num">{t.sync.exported(formatDate(status.sentAt), formatTime(status.sentAt))}</p>
+          </SettingMore>
+        )}
       </div>
     </>
   )
